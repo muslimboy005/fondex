@@ -1,0 +1,151 @@
+{
+  "project_info": {
+    "project_number": "893074789710",
+    "firebase_url": "https://fondexuzb-default-rtdb.firebaseio.com",
+    "project_id": "fondexuzb",
+    "storage_bucket": "fondexuzb.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:893074789710:android:70c2e98114a8ef1ac4ba1f",
+        "android_client_info": {
+          "package_name": "felix.fondex.driver"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "893074789710-5h9pukae97etd0fkf2kosarumq7sj5n7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "felix.fondex.driver",
+            "certificate_hash": "fbda29b50bf84a2e155b5922a61ec8f30096e877"
+          }
+        },
+        {
+          "client_id": "893074789710-cut8iu79ocrnkrao59vlrquh5hlrgsh5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "felix.fondex.driver",
+            "certificate_hash": "1113b025871bdf52c5061522530ccd0413849cb0"
+          }
+        },
+        {
+          "client_id": "893074789710-nqkeis20f6b64luas7g44c836fvi0qms.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDxOSX6rowgZnN20x7smx7V9COeW1I7hkU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "893074789710-nqkeis20f6b64luas7g44c836fvi0qms.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "893074789710-7am77oq925d324gvpga8g6r6ggul4v9i.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.emart.driver"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:893074789710:android:f2f082867ee43b93c4ba1f",
+        "android_client_info": {
+          "package_name": "felix.fondex.store"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "893074789710-nqkeis20f6b64luas7g44c836fvi0qms.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDxOSX6rowgZnN20x7smx7V9COeW1I7hkU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "893074789710-nqkeis20f6b64luas7g44c836fvi0qms.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "893074789710-7am77oq925d324gvpga8g6r6ggul4v9i.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.emart.driver"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:893074789710:android:e932bc88da6665b3c4ba1f",
+        "android_client_info": {
+          "package_name": "felix.fondex.uz"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "893074789710-0l3vbjo032et95r50si36cd0339lstpq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "felix.fondex.uz",
+            "certificate_hash": "6075e9ae1295737d14c2d7c67cfbb0126b2cc807"
+          }
+        },
+        {
+          "client_id": "893074789710-9ajtu8firdhgje07qknaf4m7jn310vph.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "felix.fondex.uz",
+            "certificate_hash": "fbda29b50bf84a2e155b5922a61ec8f30096e877"
+          }
+        },
+        {
+          "client_id": "893074789710-nqkeis20f6b64luas7g44c836fvi0qms.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDxOSX6rowgZnN20x7smx7V9COeW1I7hkU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "893074789710-nqkeis20f6b64luas7g44c836fvi0qms.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "893074789710-7am77oq925d324gvpga8g6r6ggul4v9i.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.emart.driver"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
