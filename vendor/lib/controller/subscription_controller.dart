@@ -147,7 +147,7 @@ class SubscriptionController extends GetxController {
       walletSettingModel.value = WalletSettingModel.fromJson(jsonDecode(Preferences.getString(Preferences.walletSettings)));
       if (stripeModel.value.isEnabled == true) {
         Stripe.publishableKey = stripeModel.value.clientpublishableKey.toString();
-        Stripe.merchantIdentifier = 'eMart Store'.tr;
+        Stripe.merchantIdentifier = 'Fondex'.tr;
         Stripe.instance.applySettings();
       }
       setRef();

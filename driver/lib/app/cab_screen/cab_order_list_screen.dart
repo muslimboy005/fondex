@@ -21,7 +21,8 @@ class CabOrderListScreen extends StatelessWidget {
         builder: (controller) {
           return DefaultTabController(
             length: controller.tabTitles.length,
-            initialIndex: controller.tabTitles.indexOf(controller.selectedTab.value),
+            initialIndex:
+                controller.tabTitles.indexOf(controller.selectedTab.value),
             child: Scaffold(
               body: Column(
                 children: [
@@ -34,10 +35,14 @@ class CabOrderListScreen extends StatelessWidget {
                     indicatorColor: AppThemeData.primary300,
                     labelColor: AppThemeData.primary300,
                     dividerColor: isDark ? Colors.black : Colors.white,
-                    unselectedLabelColor: AppThemeData.primary300.withOpacity(0.60),
+                    unselectedLabelColor:
+                        AppThemeData.primary300.withOpacity(0.60),
                     labelStyle: AppThemeData.boldTextStyle(fontSize: 14),
-                    unselectedLabelStyle: AppThemeData.mediumTextStyle(fontSize: 14),
-                    tabs: controller.tabTitles.map((title) => Tab(child: Center(child: Text(title)))).toList(),
+                    unselectedLabelStyle:
+                        AppThemeData.mediumTextStyle(fontSize: 14),
+                    tabs: controller.tabTitles
+                        .map((title) => Tab(child: Center(child: Text(title))))
+                        .toList(),
                   ),
 
                   // Body: loader or TabBarView
@@ -53,7 +58,10 @@ class CabOrderListScreen extends StatelessWidget {
                                 return Center(
                                   child: Text(
                                     "No orders found",
-                                    style: AppThemeData.mediumTextStyle(color: isDark ? AppThemeData.greyDark900 : AppThemeData.grey900),
+                                    style: AppThemeData.mediumTextStyle(
+                                        color: isDark
+                                            ? AppThemeData.greyDark900
+                                            : AppThemeData.grey900),
                                   ),
                                 );
                               }
@@ -65,97 +73,175 @@ class CabOrderListScreen extends StatelessWidget {
                                   CabOrderModel order = orders[index];
                                   return GestureDetector(
                                     onTap: () {
-                                      Get.to(() => CabOrderDetails(), arguments: {"cabOrderModel": order});
+                                      Get.to(() => CabOrderDetails(),
+                                          arguments: {"cabOrderModel": order});
                                     },
                                     child: Container(
                                       margin: const EdgeInsets.only(bottom: 16),
                                       padding: const EdgeInsets.all(16),
                                       decoration: BoxDecoration(
-                                        color: isDark ? AppThemeData.greyDark50 : AppThemeData.grey50,
+                                        color: isDark
+                                            ? AppThemeData.greyDark50
+                                            : AppThemeData.grey50,
                                         borderRadius: BorderRadius.circular(15),
-                                        border: Border.all(color: isDark ? AppThemeData.greyDark200 : AppThemeData.grey200),
+                                        border: Border.all(
+                                            color: isDark
+                                                ? AppThemeData.greyDark200
+                                                : AppThemeData.grey200),
                                       ),
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            "${'Booking Date:'.tr} ${controller.formatDate(order.scheduleDateTime!)}".tr,
+                                            "${'Booking Date:'.tr} ${controller.formatDate(order.scheduleDateTime!)}"
+                                                .tr,
                                             textAlign: TextAlign.start,
                                             style: TextStyle(
                                               fontFamily: AppThemeData.semiBold,
                                               fontSize: 18,
-                                              color: isDark ? AppThemeData.grey50 : AppThemeData.grey900,
+                                              color: isDark
+                                                  ? AppThemeData.grey50
+                                                  : AppThemeData.grey900,
                                             ),
                                           ),
                                           SizedBox(height: 10),
                                           Row(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
                                             children: [
                                               Column(
                                                 children: [
-                                                  Icon(Icons.stop_circle_outlined, color: Colors.green),
+                                                  Icon(
+                                                      Icons
+                                                          .stop_circle_outlined,
+                                                      color: AppThemeData.primary300),
                                                   DottedBorder(
-                                                    options: CustomPathDottedBorderOptions(
-                                                      color: Colors.grey.shade400,
+                                                    options:
+                                                        CustomPathDottedBorderOptions(
+                                                      color:
+                                                          Colors.grey.shade400,
                                                       strokeWidth: 2,
                                                       dashPattern: [4, 4],
-                                                      customPath: (size) => Path()
-                                                        ..moveTo(size.width / 2, 0)
-                                                        ..lineTo(size.width / 2, size.height),
+                                                      customPath: (size) =>
+                                                          Path()
+                                                            ..moveTo(
+                                                                size.width / 2,
+                                                                0)
+                                                            ..lineTo(
+                                                                size.width / 2,
+                                                                size.height),
                                                     ),
-                                                    child: const SizedBox(width: 20, height: 55),
+                                                    child: const SizedBox(
+                                                        width: 20, height: 55),
                                                   ),
-                                                  Icon(Icons.radio_button_checked, color: Colors.red),
+                                                  Icon(
+                                                      Icons
+                                                          .radio_button_checked,
+                                                      color: Colors.red),
                                                 ],
                                               ),
                                               const SizedBox(width: 12),
                                               Expanded(
                                                 child: Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
                                                   children: [
                                                     Row(
                                                       children: [
                                                         // Source Location Name
                                                         Expanded(
                                                           child: Text(
-                                                            order.sourceLocationName.toString(),
-                                                            style: AppThemeData.semiBoldTextStyle(fontSize: 16, color: isDark ? AppThemeData.greyDark900 : AppThemeData.grey900),
+                                                            order
+                                                                .sourceLocationName
+                                                                .toString(),
+                                                            style: AppThemeData.semiBoldTextStyle(
+                                                                fontSize: 16,
+                                                                color: isDark
+                                                                    ? AppThemeData
+                                                                        .greyDark900
+                                                                    : AppThemeData
+                                                                        .grey900),
                                                             maxLines: 2,
-                                                            overflow: TextOverflow.ellipsis,
+                                                            overflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
                                                           ),
                                                         ),
-                                                        const SizedBox(width: 8),
+                                                        const SizedBox(
+                                                            width: 8),
                                                         Container(
-                                                          decoration: BoxDecoration(
-                                                            borderRadius: BorderRadius.circular(10),
-                                                            border: Border.all(color: AppThemeData.warning300, width: 1),
-                                                            color: AppThemeData.warning50,
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        10),
+                                                            border: Border.all(
+                                                                color: AppThemeData
+                                                                    .warning300,
+                                                                width: 1),
+                                                            color: AppThemeData
+                                                                .warning50,
                                                           ),
-                                                          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .symmetric(
+                                                                  vertical: 8,
+                                                                  horizontal:
+                                                                      12),
                                                           child: Text(
-                                                            order.status.toString(),
-                                                            style: AppThemeData.boldTextStyle(fontSize: 14, color: AppThemeData.warning500),
-                                                            overflow: TextOverflow.ellipsis,
+                                                            order.status
+                                                                .toString(),
+                                                            style: AppThemeData
+                                                                .boldTextStyle(
+                                                                    fontSize:
+                                                                        14,
+                                                                    color: AppThemeData
+                                                                        .warning500),
+                                                            overflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
                                                           ),
                                                         ),
                                                       ],
                                                     ),
                                                     SizedBox(height: 15),
                                                     DottedBorder(
-                                                      options: CustomPathDottedBorderOptions(
-                                                        color: Colors.grey.shade400,
+                                                      options:
+                                                          CustomPathDottedBorderOptions(
+                                                        color: Colors
+                                                            .grey.shade400,
                                                         strokeWidth: 2,
                                                         dashPattern: [4, 4],
-                                                        customPath: (size) => Path()
-                                                          ..moveTo(0, size.height / 2) // start from left center
-                                                          ..lineTo(size.width, size.height / 2), // draw to right center
+                                                        customPath: (size) =>
+                                                            Path()
+                                                              ..moveTo(
+                                                                  0,
+                                                                  size.height /
+                                                                      2) // start from left center
+                                                              ..lineTo(
+                                                                  size.width,
+                                                                  size.height /
+                                                                      2), // draw to right center
                                                       ),
-                                                      child: const SizedBox(width: 295, height: 3),
+                                                      child: const SizedBox(
+                                                          width: 295,
+                                                          height: 3),
                                                     ),
                                                     SizedBox(height: 15),
                                                     Text(
-                                                      order.destinationLocationName.toString(),
-                                                      style: AppThemeData.semiBoldTextStyle(fontSize: 16, color: isDark ? AppThemeData.greyDark900 : AppThemeData.grey900),
+                                                      order
+                                                          .destinationLocationName
+                                                          .toString(),
+                                                      style: AppThemeData
+                                                          .semiBoldTextStyle(
+                                                              fontSize: 16,
+                                                              color: isDark
+                                                                  ? AppThemeData
+                                                                      .greyDark900
+                                                                  : AppThemeData
+                                                                      .grey900),
                                                     ),
                                                   ],
                                                 ),

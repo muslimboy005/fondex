@@ -17,7 +17,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:timelines_plus/timelines_plus.dart';
-import 'package:yandex_mapkit/yandex_mapkit.dart' as yandex;
+import 'package:google_maps_flutter/google_maps_flutter.dart' as google_maps;
 
 class CabHomeScreen extends StatelessWidget {
   const CabHomeScreen({super.key});
@@ -185,104 +185,93 @@ class CabHomeScreen extends StatelessWidget {
                                       final hasValidLocation =
                                           !(currentLocation.latitude == 0.0 &&
                                               currentLocation.longitude == 0.0);
+                                      final isDark = themeController.isDark.value;
 
-                                      // Get placemarks and polylines reactively
-                                      final placemarks =
-                                          controller.yandexPlacemarks.toList();
-                                      final polylines =
-                                          controller.yandexPolylines.toList();
-
-                                      return yandex.YandexMap(
-                                        mapType: yandex.MapType.map,
+                                      return google_maps.GoogleMap(
+                                        key: ValueKey('google_map_${isDark ? 'dark' : 'light'}'),
                                         onMapCreated:
-                                            (yandex.YandexMapController
-                                                yandexController) {
+                                            (google_maps.GoogleMapController
+                                                mapController) {
                                           // Store controller reference
-                                          controller.yandexMapController =
-                                              yandexController;
+                                          controller.mapController =
+                                              mapController;
+
+                                          // Apply dark mode style if needed
+                                          if (isDark) {
+                                            mapController.setMapStyle(
+                                                Utils.getGoogleMapDarkStyle());
+                                          }
 
                                           // Move to current location
                                           if (hasValidLocation) {
-                                            yandexController.moveCamera(
-                                              yandex.CameraUpdate
+                                            mapController.animateCamera(
+                                              google_maps.CameraUpdate
                                                   .newCameraPosition(
-                                                yandex.CameraPosition(
-                                                  target: yandex.Point(
-                                                    latitude: currentLocation
-                                                        .latitude,
-                                                    longitude: currentLocation
-                                                        .longitude,
+                                                google_maps.CameraPosition(
+                                                  target: google_maps.LatLng(
+                                                    currentLocation.latitude,
+                                                    currentLocation.longitude,
                                                   ),
                                                   zoom: 16,
                                                 ),
-                                              ),
-                                              animation:
-                                                  const yandex.MapAnimation(
-                                                type: yandex
-                                                    .MapAnimationType.smooth,
-                                                duration: 1.0,
                                               ),
                                             );
                                           }
 
                                           // Update markers after map is created
-                                          controller.updateYandexMarkers();
+                                          controller.updateGoogleMarkers();
                                         },
-                                        onCameraPositionChanged:
-                                            (yandex.CameraPosition position,
-                                                yandex.CameraUpdateReason
-                                                    reason,
-                                                bool finished) {
-                                          // Handle camera position changes if needed
-                                        },
-                                        mapObjects: [
-                                          ...placemarks,
-                                          ...polylines,
-                                        ],
+                                        myLocationEnabled: true,
+                                        myLocationButtonEnabled: false,
+                                        mapType: google_maps.MapType.normal,
+                                        zoomControlsEnabled: false,
+                                        polylines: Set<google_maps.Polyline>.of(
+                                            controller.polyLines.values),
+                                        markers: controller.markers.values.toSet(),
+                                        initialCameraPosition:
+                                            google_maps.CameraPosition(
+                                          zoom: hasValidLocation ? 16 : 12,
+                                          target: google_maps.LatLng(
+                                            hasValidLocation
+                                                ? currentLocation.latitude
+                                                : 41.3111,
+                                            hasValidLocation
+                                                ? currentLocation.longitude
+                                                : 69.2797,
+                                          ),
+                                        ),
                                       );
                                     }),
-                                    // Center location button for Yandex Map
+                                    // Center location button for Google Map
                                     if (Constant.mapType == "inappmap")
                                       Positioned(
                                         top: 20,
                                         right: 20,
                                         child: FloatingActionButton(
-                                          heroTag: 'center_yandex',
+                                          heroTag: 'center_google',
                                           onPressed: () {
                                             try {
-                                              if (controller
-                                                      .yandexMapController !=
+                                              if (controller.mapController !=
                                                   null) {
                                                 final currentLocation =
                                                     controller.current.value;
-                                                if (!(currentLocation
-                                                            .latitude ==
+                                                if (!(currentLocation.latitude ==
                                                         0.0 &&
                                                     currentLocation.longitude ==
                                                         0.0)) {
-                                                  controller
-                                                      .yandexMapController!
-                                                      .moveCamera(
-                                                    yandex.CameraUpdate
+                                                  controller.mapController!
+                                                      .animateCamera(
+                                                    google_maps.CameraUpdate
                                                         .newCameraPosition(
-                                                      yandex.CameraPosition(
-                                                        target: yandex.Point(
-                                                          latitude:
-                                                              currentLocation
-                                                                  .latitude,
-                                                          longitude:
-                                                              currentLocation
-                                                                  .longitude,
+                                                      google_maps.CameraPosition(
+                                                        target: google_maps.LatLng(
+                                                          currentLocation
+                                                              .latitude,
+                                                          currentLocation
+                                                              .longitude,
                                                         ),
                                                         zoom: 16,
                                                       ),
-                                                    ),
-                                                    animation: const yandex
-                                                        .MapAnimation(
-                                                      type: yandex
-                                                          .MapAnimationType
-                                                          .smooth,
-                                                      duration: 1.0,
                                                     ),
                                                   );
                                                 }

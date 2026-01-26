@@ -43,7 +43,8 @@ class DriverLocationController extends GetxController {
         .where("isOwner", isEqualTo: false)
         .snapshots()
         .listen((event) {
-      driverList.value = event.docs.map((e) => UserModel.fromJson(e.data())).toList();
+      driverList.value =
+          event.docs.map((e) => UserModel.fromJson(e.data())).toList();
       updateMarkers();
     });
 
@@ -51,7 +52,8 @@ class DriverLocationController extends GetxController {
   }
 
   Future<void> _loadDriverIcon() async {
-    final Uint8List driverBytes = await Constant().getBytesFromAsset('assets/images/ic_cab.png', 70);
+    final Uint8List driverBytes =
+        await Constant().getBytesFromAsset('assets/images/ic_cab.png', 50);
     driverIcon = BitmapDescriptor.fromBytes(driverBytes);
   }
 
@@ -96,7 +98,8 @@ class DriverLocationController extends GetxController {
     if (driverList.isNotEmpty) {
       final first = driverList.first;
       if (first.location != null) {
-        current.value = latLng2.LatLng(first.location!.latitude!, first.location!.longitude!);
+        current.value = latLng2.LatLng(
+            first.location!.latitude!, first.location!.longitude!);
       }
     }
   }
@@ -138,9 +141,12 @@ class DriverLocationController extends GetxController {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(driver.fullName(), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                        Text("Email: ${driver.email ?? '-'}"),
-                        Text("Phone: ${driver.countryCode ?? ''} ${driver.phoneNumber ?? ''}"),
+                        Text(driver.fullName(),
+                            style: const TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold)),
+                        Text("${'Email:'.tr} ${driver.email ?? '-'}"),
+                        Text(
+                            "${'Phone:'.tr} ${driver.countryCode ?? ''} ${driver.phoneNumber ?? ''}"),
                       ],
                     ),
                   ),
@@ -190,15 +196,19 @@ class DriverLocationController extends GetxController {
   }
 
   /// Move camera for Google Map
-  Future<void> moveCameraToFirstDriver(GoogleMapController mapController) async {
+  Future<void> moveCameraToFirstDriver(
+      GoogleMapController mapController) async {
     if (driverList.isNotEmpty) {
       final firstDriver = driverList.first;
-      if (firstDriver.location?.latitude != null && firstDriver.location?.longitude != null) {
+      if (firstDriver.location?.latitude != null &&
+          firstDriver.location?.longitude != null) {
         final position = CameraPosition(
-          target: LatLng(firstDriver.location!.latitude!, firstDriver.location!.longitude!),
+          target: LatLng(firstDriver.location!.latitude!,
+              firstDriver.location!.longitude!),
           zoom: 15,
         );
-        await mapController.animateCamera(CameraUpdate.newCameraPosition(position));
+        await mapController
+            .animateCamera(CameraUpdate.newCameraPosition(position));
       }
     }
   }
@@ -207,7 +217,8 @@ class DriverLocationController extends GetxController {
   void animateToSource() {
     if (driverList.isNotEmpty && driverList.first.location != null) {
       osmMapController.move(
-        latLng2.LatLng(driverList.first.location!.latitude!, driverList.first.location!.longitude!),
+        latLng2.LatLng(driverList.first.location!.latitude!,
+            driverList.first.location!.longitude!),
         14.5,
       );
     }
@@ -258,7 +269,7 @@ class DriverLocationController extends GetxController {
 //   }
 //
 //   Future<void> _loadDriverIcon() async {
-//     final Uint8List driverBytes = await Constant().getBytesFromAsset('assets/images/ic_cab.png', 70);
+//     final Uint8List driverBytes = await Constant().getBytesFromAsset('assets/images/ic_cab.png', 60);
 //     driverIcon = BitmapDescriptor.fromBytes(driverBytes);
 //   }
 //

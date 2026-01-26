@@ -95,10 +95,11 @@ class ProfileScreen extends StatelessWidget {
                                         title: "Edit Profile".tr,
                                         color: AppThemeData.secondary50,
                                         textColor: AppThemeData.primary300,
-                                        width: 24,
-                                        height: 4,
+                                        width: 50,
+                                        height: 5.5,
+                                        fontSizes: 14,
                                         onPress: () async {
-                                          Get.to(const EditProfileScreen())!.then((value) {
+                                          Get.to(const EditProfileScreen())?.then((value) {
                                             if (value == true) {
                                               controller.getUserProfile();
                                             }
@@ -160,7 +161,7 @@ class ProfileScreen extends StatelessWidget {
                                               child: SvgPicture.asset("assets/icons/ic_story.svg", colorFilter: ColorFilter.mode(AppThemeData.primary300, BlendMode.srcIn)),
                                             ),
                                           ),
-                                          "Add Story",
+                                          "Add Story".tr,
                                           () {
                                             Get.to(const AddStoryScreen());
                                           },
@@ -239,10 +240,10 @@ class ProfileScreen extends StatelessWidget {
                                           "Manage Products",
                                           () {
                                             DashBoardController dashBoardController = Get.find<DashBoardController>();
-                                            dashBoardController.selectedIndex.value = Constant.selectedSection!.dineInActive == true ? 2 : 1;
+                                            dashBoardController.selectedIndex.value = (Constant.selectedSection?.dineInActive == true) ? 2 : 1;
                                           },
                                         ),
-                                  Constant.selectedSection!.serviceTypeFlag == "ecommerce-service"
+                                  (Constant.selectedSection?.serviceTypeFlag == "ecommerce-service")
                                       ? SizedBox()
                                       : (Constant.isStoreVerification == true && controller.userModel.value.isDocumentVerify == false) ||
                                             (controller.userModel.value.vendorID == null || controller.userModel.value.vendorID!.isEmpty)
@@ -291,7 +292,7 @@ class ProfileScreen extends StatelessWidget {
                               ),
                             ),
                           ),
-                          Constant.selectedSection!.serviceTypeFlag == "ecommerce-service"
+                          (Constant.selectedSection?.serviceTypeFlag == "ecommerce-service")
                               ? SizedBox()
                               : Constant.isSelfDeliveryFeature == true
                               ? Column(
@@ -343,7 +344,7 @@ class ProfileScreen extends StatelessWidget {
                           (Constant.isStoreVerification == true && controller.userModel.value.isDocumentVerify == false) ||
                                   (controller.userModel.value.vendorID == null || controller.userModel.value.vendorID!.isEmpty)
                               ? const SizedBox()
-                              : Constant.selectedSection!.dineInActive == true
+                              : (Constant.selectedSection?.dineInActive == true)
                               ? Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -745,6 +746,7 @@ class ProfileScreen extends StatelessWidget {
                                             Constant.userModel = null;
                                             await FirebaseAuth.instance.signOut();
                                             ShowToastDialog.closeLoader();
+                                            // Navigate to email login screen for Android/iOS
                                             Get.offAll(const LoginScreen());
                                           },
                                           negativeClick: () {
@@ -946,13 +948,13 @@ class SubscriptionPlanWidget extends StatelessWidget {
                 ),
                 const SizedBox(height: 30),
                 RoundedButtonFill(radius: 14, textColor: AppThemeData.grey200, title: "Change Plan".tr, color: AppThemeData.primary300, width: 80, height: 5, onPress: onClick),
-                if (Constant.selectedSection!.adminCommision?.isEnabled == true)
+                if (Constant.selectedSection?.adminCommision?.isEnabled == true)
                   Padding(
                     padding: const EdgeInsets.only(top: 10),
                     child: Text(
-                      Constant.userModel!.vendorID != null && Constant.userModel!.vendorID!.isNotEmpty
+                      Constant.userModel?.vendorID != null && Constant.userModel!.vendorID!.isNotEmpty
                           ? "${Constant.vendorAdminCommission?.commissionType == 'Percent' || Constant.vendorAdminCommission?.commissionType == 'percentage' ? "${Constant.vendorAdminCommission?.amount} %" : "${Constant.amountShow(amount: Constant.vendorAdminCommission?.amount)} Flat"} ${"admin commission will be charged from customer billing orders and the admin charge will be earned after the order is accepted by the store.".tr}"
-                          : "${Constant.selectedSection!.adminCommision!.commissionType == 'Percent' || Constant.selectedSection!.adminCommision!.commissionType == 'percentage' ? "${Constant.selectedSection!.adminCommision!.amount} %" : "${Constant.amountShow(amount: Constant.selectedSection!.adminCommision!.amount)} Flat"} ${"admin commission will be charged from customer billing orders and the admin charge will be earned after the order is accepted by the store.".tr}",
+                          : "${Constant.selectedSection?.adminCommision?.commissionType == 'Percent' || Constant.selectedSection?.adminCommision?.commissionType == 'percentage' ? "${Constant.selectedSection?.adminCommision?.amount} %" : "${Constant.amountShow(amount: Constant.selectedSection?.adminCommision?.amount)} Flat"} ${"admin commission will be charged from customer billing orders and the admin charge will be earned after the order is accepted by the store.".tr}",
                       style: const TextStyle(fontFamily: AppThemeData.medium, fontSize: 9, color: AppThemeData.grey400),
                     ),
                   ),

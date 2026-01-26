@@ -103,8 +103,7 @@ class MoreStoriesState extends State<MoreStories> {
                     return SizedBox();
                   } else {
                     if (snapshot.hasError) {
-                      return Center(child: Text('${"Error".tr}: ${snapshot.error}'));
-                      return Center(child: Text('Error: ${snapshot.error}'));
+                      return Center(child: Text('${'Error:'.tr} ${snapshot.error}'));
                     } else if (snapshot.data == null) {
                       return const SizedBox();
                     } else {

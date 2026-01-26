@@ -33,11 +33,11 @@ class ChangeLanguageController extends GetxController {
 
         if (Preferences.getString(Preferences.languageCodeKey).toString().isNotEmpty) {
           LanguageModel pref = Constant.getLanguage();
-          // If saved language is English, default to Russian
+          // If saved language is English, default to Uzbek
           if (pref.slug == 'en' || pref.slug == 'english') {
-            // Find Russian language or default to first available
+            // Find Uzbek language or default to first available
             for (var element in languageList) {
-              if (element.slug == 'ru') {
+              if (element.slug == 'uz') {
                 selectedLanguage.value = element;
                 break;
               }

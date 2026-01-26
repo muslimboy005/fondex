@@ -22,10 +22,10 @@ class PermissionDialog extends StatelessWidget {
           child: Column(mainAxisSize: MainAxisSize.min, children: [
             Icon(Icons.add_location_alt_rounded, color: Theme.of(context).primaryColor, size: 100),
             const SizedBox(height: 20),
-            const Text(
-              'You denied location permission forever. Please allow location permission from your app settings and receive more accurate delivery.',
+            Text(
+              'You denied location permission forever. Please allow location permission from your app settings and receive more accurate delivery.'.tr,
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 18),
+              style: const TextStyle(fontSize: 18),
             ),
             const SizedBox(height: 20),
             Row(children: [
@@ -35,7 +35,7 @@ class PermissionDialog extends StatelessWidget {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30), side: BorderSide(width: 2, color: Theme.of(context).primaryColor)),
                     minimumSize: const Size(1, 50),
                   ),
-                  child: const Text('close'),
+                  child: Text('close'.tr),
                   onPressed: () => Navigator.pop(context),
                 ),
               ),
@@ -55,7 +55,7 @@ class PermissionDialog extends StatelessWidget {
                       ),
                     ),
                     child: Text(
-                      'settings',
+                      'Settings'.tr,
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,

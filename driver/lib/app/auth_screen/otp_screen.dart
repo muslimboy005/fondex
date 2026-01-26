@@ -34,26 +34,36 @@ class OtpScreen extends StatelessWidget {
         builder: (controller) {
           return Scaffold(
             appBar: AppBar(
-              backgroundColor: isDark ? AppThemeData.surfaceDark : AppThemeData.surface,
+              backgroundColor:
+                  isDark ? AppThemeData.surfaceDark : AppThemeData.surface,
             ),
             body: controller.isLoading.value
                 ? Constant.loader()
                 : SingleChildScrollView(
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 10),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.start,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             "Verify Your Mobile Number".tr,
-                            style: TextStyle(color: isDark ? AppThemeData.grey50 : AppThemeData.grey900, fontSize: 22, fontFamily: AppThemeData.semiBold),
+                            style: TextStyle(
+                                color: isDark
+                                    ? AppThemeData.grey50
+                                    : AppThemeData.grey900,
+                                fontSize: 22,
+                                fontFamily: AppThemeData.semiBold),
                           ),
                           Text(
-                            "Enter the OTP sent to your mobile number to verify and secure your account.".tr,
+                            "Enter the OTP sent to your mobile number to verify and secure your account."
+                                .tr,
                             textAlign: TextAlign.start,
                             style: TextStyle(
-                              color: isDark ? AppThemeData.grey200 : AppThemeData.grey700,
+                              color: isDark
+                                  ? AppThemeData.grey200
+                                  : AppThemeData.grey700,
                               fontFamily: AppThemeData.regular,
                               fontWeight: FontWeight.w400,
                             ),
@@ -69,21 +79,46 @@ class OtpScreen extends StatelessWidget {
                               keyboardType: TextInputType.phone,
                               enablePinAutofill: true,
                               hintCharacter: "-",
-                              hintStyle: TextStyle(color: isDark ? AppThemeData.grey50 : AppThemeData.grey900, fontFamily: AppThemeData.regular),
-                              textStyle: TextStyle(color: isDark ? AppThemeData.grey50 : AppThemeData.grey900, fontFamily: AppThemeData.regular),
+                              hintStyle: TextStyle(
+                                  color: isDark
+                                      ? AppThemeData.grey50
+                                      : AppThemeData.grey900,
+                                  fontFamily: AppThemeData.regular),
+                              textStyle: TextStyle(
+                                  color: isDark
+                                      ? AppThemeData.grey50
+                                      : AppThemeData.grey900,
+                                  fontFamily: AppThemeData.regular),
                               pinTheme: PinTheme(
                                   fieldHeight: 50,
                                   fieldWidth: 50,
-                                  inactiveFillColor: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
-                                  selectedFillColor: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
-                                  activeFillColor: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
-                                  selectedColor: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
-                                  activeColor: isDark ? AppThemeData.primary300 : AppThemeData.primary300,
-                                  inactiveColor: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
-                                  disabledColor: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
+                                  inactiveFillColor: isDark
+                                      ? AppThemeData.grey900
+                                      : AppThemeData.grey50,
+                                  selectedFillColor: isDark
+                                      ? AppThemeData.grey900
+                                      : AppThemeData.grey50,
+                                  activeFillColor: isDark
+                                      ? AppThemeData.grey900
+                                      : AppThemeData.grey50,
+                                  selectedColor: isDark
+                                      ? AppThemeData.grey900
+                                      : AppThemeData.grey50,
+                                  activeColor: isDark
+                                      ? AppThemeData.primary300
+                                      : AppThemeData.primary300,
+                                  inactiveColor: isDark
+                                      ? AppThemeData.grey900
+                                      : AppThemeData.grey50,
+                                  disabledColor: isDark
+                                      ? AppThemeData.grey900
+                                      : AppThemeData.grey50,
                                   shape: PinCodeFieldShape.box,
-                                  errorBorderColor: isDark ? AppThemeData.grey600 : AppThemeData.grey300,
-                                  borderRadius: BorderRadius.all(Radius.circular(10))),
+                                  errorBorderColor: isDark
+                                      ? AppThemeData.grey600
+                                      : AppThemeData.grey300,
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(10))),
                               cursorColor: AppThemeData.primary300,
                               enableActiveFill: true,
                               controller: controller.otpController.value,
@@ -103,7 +138,9 @@ class OtpScreen extends StatelessWidget {
                                   fontWeight: FontWeight.w500,
                                   fontSize: 14,
                                   fontFamily: AppThemeData.medium,
-                                  color: isDark ? AppThemeData.grey100 : AppThemeData.grey800,
+                                  color: isDark
+                                      ? AppThemeData.grey100
+                                      : AppThemeData.grey800,
                                 ),
                                 children: <TextSpan>[
                                   TextSpan(
@@ -114,12 +151,15 @@ class OtpScreen extends StatelessWidget {
                                       },
                                     text: 'Send Again'.tr,
                                     style: TextStyle(
-                                        color: isDark ? AppThemeData.primary300 : AppThemeData.primary300,
+                                        color: isDark
+                                            ? AppThemeData.primary300
+                                            : AppThemeData.primary300,
                                         fontWeight: FontWeight.w500,
                                         fontSize: 14,
                                         fontFamily: AppThemeData.medium,
                                         decoration: TextDecoration.underline,
-                                        decorationColor: AppThemeData.primary300),
+                                        decorationColor:
+                                            AppThemeData.primary300),
                                   ),
                                 ],
                               ),
@@ -133,7 +173,8 @@ class OtpScreen extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Padding(
-                  padding: EdgeInsets.symmetric(vertical: Platform.isAndroid ? 10 : 30),
+                  padding: EdgeInsets.symmetric(
+                      vertical: Platform.isAndroid ? 10 : 30),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -143,7 +184,9 @@ class OtpScreen extends StatelessWidget {
                             TextSpan(
                                 text: 'Already Have an account?'.tr,
                                 style: TextStyle(
-                                  color: isDark ? AppThemeData.grey50 : AppThemeData.grey900,
+                                  color: isDark
+                                      ? AppThemeData.grey50
+                                      : AppThemeData.grey900,
                                   fontFamily: AppThemeData.medium,
                                   fontWeight: FontWeight.w500,
                                 )),
@@ -174,9 +217,14 @@ class OtpScreen extends StatelessWidget {
                     if (controller.otpController.value.text.length == 6) {
                       ShowToastDialog.showLoader("Verify otp".tr);
 
-                      PhoneAuthCredential credential = PhoneAuthProvider.credential(verificationId: controller.verificationId.value, smsCode: controller.otpController.value.text);
+                      PhoneAuthCredential credential =
+                          PhoneAuthProvider.credential(
+                              verificationId: controller.verificationId.value,
+                              smsCode: controller.otpController.value.text);
                       String fcmToken = await NotificationService.getToken();
-                      await FirebaseAuth.instance.signInWithCredential(credential).then((value) async {
+                      await FirebaseAuth.instance
+                          .signInWithCredential(credential)
+                          .then((value) async {
                         if (value.additionalUserInfo!.isNewUser) {
                           UserModel userModel = UserModel();
                           userModel.id = value.user!.uid;
@@ -191,42 +239,56 @@ class OtpScreen extends StatelessWidget {
                             "type": "mobileNumber",
                           });
                         } else {
-                          await FireStoreUtils.userExistOrNot(value.user!.uid).then((userExit) async {
+                          await FireStoreUtils.userExistOrNot(value.user!.uid)
+                              .then((userExit) async {
                             ShowToastDialog.closeLoader();
                             if (userExit == true) {
-                              UserModel? userModel = await FireStoreUtils.getUserProfile(value.user!.uid);
+                              UserModel? userModel =
+                                  await FireStoreUtils.getUserProfile(
+                                      value.user!.uid);
                               if (userModel!.role == Constant.userRoleDriver) {
                                 if (userModel.active == true) {
-                                  userModel.fcmToken = await NotificationService.getToken();
+                                  userModel.fcmToken =
+                                      await NotificationService.getToken();
                                   await FireStoreUtils.updateUser(userModel);
                                   if (userModel.isOwner == true) {
                                     Get.offAll(OwnerDashboardScreen());
                                   } else {
-                                    if (userModel.serviceType == "delivery-service") {
+                                    if (userModel.serviceType ==
+                                        "delivery-service") {
                                       Get.offAll(const DashBoardScreen());
-                                    } else if (userModel.serviceType == "cab-service") {
+                                    } else if (userModel.serviceType ==
+                                        "cab-service") {
                                       Get.offAll(const CabDashboardScreen());
-                                    } else if (userModel.serviceType == "parcel_delivery") {
+                                    } else if (userModel.serviceType ==
+                                        "parcel_delivery") {
                                       Get.offAll(const ParcelDashboardScreen());
-                                    } else if (userModel.serviceType == "rental-service") {
+                                    } else if (userModel.serviceType ==
+                                        "rental-service") {
                                       Get.offAll(const RentalDashboardScreen());
                                     }
                                   }
                                 } else {
-                                  ShowToastDialog.showToast("This user is disable please contact to administrator".tr);
+                                  ShowToastDialog.showToast(
+                                      "This user is disable please contact to administrator"
+                                          .tr);
                                   await FirebaseAuth.instance.signOut();
                                   Get.offAll(const LoginScreen());
                                 }
                               } else {
                                 await FirebaseAuth.instance.signOut();
                                 Get.offAll(const LoginScreen());
-                                ShowToastDialog.showToast("Account already created in other application. You are not able login this application.".tr);
+                                ShowToastDialog.showToast(
+                                    "Account already created in other application. You are not able login this application."
+                                        .tr);
                               }
                             } else {
                               UserModel userModel = UserModel();
                               userModel.id = value.user!.uid;
-                              userModel.countryCode = controller.countryCode.value;
-                              userModel.phoneNumber = controller.phoneNumber.value;
+                              userModel.countryCode =
+                                  controller.countryCode.value;
+                              userModel.phoneNumber =
+                                  controller.phoneNumber.value;
                               userModel.fcmToken = fcmToken;
                               userModel.provider = 'phone';
 
@@ -254,7 +316,9 @@ class OtpScreen extends StatelessWidget {
                         "Verify Code".tr,
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          color: isDark ? AppThemeData.grey50 : AppThemeData.grey50,
+                          color: isDark
+                              ? AppThemeData.grey50
+                              : AppThemeData.grey50,
                           fontSize: 16,
                           fontFamily: AppThemeData.medium,
                           fontWeight: FontWeight.w400,

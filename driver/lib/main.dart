@@ -70,16 +70,6 @@ void main() async {
     }
     await Preferences.initPref();
 
-    // Initialize Yandex MapKit with API key
-    // Note: Yandex MapKit API key is set automatically by the plugin
-    // The API key should be configured in the plugin's native code
-    try {
-      // Yandex MapKit will read the API key from native configuration
-      debugPrint('Yandex MapKit will be initialized by the plugin');
-    } catch (e) {
-      debugPrint('Yandex MapKit initialization error: $e');
-    }
-
     Get.put(ThemeController());
     await configEasyLoading();
     runApp(const MyApp());
@@ -111,9 +101,10 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         LocalizationService().changeLocale(languageModel.slug.toString());
       } else {
         LanguageModel languageModel =
-            LanguageModel(slug: "en", isRtl: false, title: "English");
+            LanguageModel(slug: "uz", isRtl: false, title: "O'zbek");
         Preferences.setString(
             Preferences.languageCodeKey, jsonEncode(languageModel.toJson()));
+        LocalizationService().changeLocale("uz");
       }
     });
     super.initState();
@@ -131,7 +122,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     Get.put(ThemeController());
     return Obx(() => GetMaterialApp(
-          title: 'Driver'.tr,
+          title: 'Fondex Driver'.tr,
           debugShowCheckedModeBanner: false,
           themeMode: themeController.themeMode,
           theme: ThemeData(

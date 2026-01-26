@@ -32,7 +32,8 @@ class SignupScreen extends StatelessWidget {
         builder: (controller) {
           return Scaffold(
             appBar: AppBar(
-              backgroundColor: isDark ? AppThemeData.surfaceDark : AppThemeData.surface,
+              backgroundColor:
+                  isDark ? AppThemeData.surfaceDark : AppThemeData.surface,
             ),
             body: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -43,11 +44,20 @@ class SignupScreen extends StatelessWidget {
                     Text(
                       "Create an Account".tr,
                       style: TextStyle(
-                          color: isDark ? AppThemeData.grey50 : AppThemeData.grey900, fontSize: 22, fontFamily: AppThemeData.semiBold),
+                          color: isDark
+                              ? AppThemeData.grey50
+                              : AppThemeData.grey900,
+                          fontSize: 22,
+                          fontFamily: AppThemeData.semiBold),
                     ),
                     Text(
-                      "Sign up now to start your journey as a eMart driver and begin earning with every delivery.".tr,
-                      style: TextStyle(color: isDark ? AppThemeData.grey50 : AppThemeData.grey500, fontFamily: AppThemeData.regular),
+                      "Sign up now to start your journey as a eMart driver and begin earning with every delivery."
+                          .tr,
+                      style: TextStyle(
+                          color: isDark
+                              ? AppThemeData.grey50
+                              : AppThemeData.grey500,
+                          fontFamily: AppThemeData.regular),
                     ),
                     const SizedBox(
                       height: 10,
@@ -58,7 +68,9 @@ class SignupScreen extends StatelessWidget {
                           TextSpan(
                               text: 'Already Have an account?'.tr,
                               style: TextStyle(
-                                color: isDark ? AppThemeData.grey50 : AppThemeData.grey900,
+                                color: isDark
+                                    ? AppThemeData.grey50
+                                    : AppThemeData.grey900,
                                 fontFamily: AppThemeData.medium,
                                 fontWeight: FontWeight.w500,
                               )),
@@ -88,7 +100,11 @@ class SignupScreen extends StatelessWidget {
                         Text(
                           "Service".tr,
                           style: TextStyle(
-                              fontFamily: AppThemeData.semiBold, fontSize: 14, color: isDark ? AppThemeData.grey100 : AppThemeData.grey800),
+                              fontFamily: AppThemeData.semiBold,
+                              fontSize: 14,
+                              color: isDark
+                                  ? AppThemeData.grey100
+                                  : AppThemeData.grey800),
                         ),
                         const SizedBox(height: 5),
                         DropdownButtonFormField<String>(
@@ -96,27 +112,43 @@ class SignupScreen extends StatelessWidget {
                             'Service Type'.tr,
                             style: TextStyle(
                                 fontSize: 14,
-                                color: isDark ? AppThemeData.grey700 : AppThemeData.grey700,
+                                color: isDark
+                                    ? AppThemeData.grey700
+                                    : AppThemeData.grey700,
                                 fontFamily: AppThemeData.regular),
                           ),
                           icon: const Icon(Icons.keyboard_arrow_down),
-                          dropdownColor: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
+                          dropdownColor: isDark
+                              ? AppThemeData.grey900
+                              : AppThemeData.grey50,
                           decoration: InputDecoration(
                             errorStyle: const TextStyle(color: Colors.red),
                             isDense: true,
                             filled: true,
-                            fillColor: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
+                            fillColor: isDark
+                                ? AppThemeData.grey900
+                                : AppThemeData.grey50,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: isDark ? AppThemeData.primary300 : AppThemeData.primary300),
+                              borderSide: BorderSide(
+                                  color: isDark
+                                      ? AppThemeData.primary300
+                                      : AppThemeData.primary300),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: isDark ? AppThemeData.greyDark400 : AppThemeData.grey400),
+                              borderSide: BorderSide(
+                                  color: isDark
+                                      ? AppThemeData.greyDark400
+                                      : AppThemeData.grey400),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: isDark ? AppThemeData.greyDark400 : AppThemeData.grey400, width: 1.2),
+                              borderSide: BorderSide(
+                                  color: isDark
+                                      ? AppThemeData.greyDark400
+                                      : AppThemeData.grey400,
+                                  width: 1.2),
                             ),
                             errorBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
@@ -124,10 +156,15 @@ class SignupScreen extends StatelessWidget {
                             ),
                             disabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: isDark ? AppThemeData.greyDark400 : AppThemeData.grey400),
+                              borderSide: BorderSide(
+                                  color: isDark
+                                      ? AppThemeData.greyDark400
+                                      : AppThemeData.grey400),
                             ),
                           ),
-                          initialValue: controller.selectedService.value.isEmpty ? null : controller.selectedService.value,
+                          initialValue: controller.selectedService.value.isEmpty
+                              ? null
+                              : controller.selectedService.value,
                           onChanged: (value) {
                             controller.selectedService.value = value!;
                             if (value != "Delivery Service") {
@@ -136,9 +173,14 @@ class SignupScreen extends StatelessWidget {
                             controller.update();
                           },
                           style: TextStyle(
-                              fontSize: 14, color: isDark ? AppThemeData.grey50 : AppThemeData.grey900, fontFamily: AppThemeData.medium),
+                              fontSize: 14,
+                              color: isDark
+                                  ? AppThemeData.grey50
+                                  : AppThemeData.grey900,
+                              fontFamily: AppThemeData.medium),
                           items: controller.service.map((item) {
-                            return DropdownMenuItem<String>(value: item, child: Text(item.toString()));
+                            return DropdownMenuItem<String>(
+                                value: item, child: Text(item.toString()));
                           }).toList(),
                         ),
                         const SizedBox(height: 10),
@@ -153,7 +195,10 @@ class SignupScreen extends StatelessWidget {
                                 'Continue as a.'.tr,
                                 textAlign: TextAlign.center,
                                 style: AppThemeData.mediumTextStyle(
-                                    fontSize: 14, color: isDark ? AppThemeData.greyDark700 : AppThemeData.grey700),
+                                    fontSize: 14,
+                                    color: isDark
+                                        ? AppThemeData.greyDark700
+                                        : AppThemeData.grey700),
                               ),
                               Row(
                                 children: [
@@ -161,10 +206,14 @@ class SignupScreen extends StatelessWidget {
                                     child: RadioListTile<String>(
                                       title: Text(
                                         'Individual'.tr,
-                                        style: TextStyle(color: isDark ? AppThemeData.greyDark700 : AppThemeData.grey700),
+                                        style: TextStyle(
+                                            color: isDark
+                                                ? AppThemeData.greyDark700
+                                                : AppThemeData.grey700),
                                       ),
                                       value: 'Individual',
-                                      groupValue: controller.selectedValue.value,
+                                      groupValue:
+                                          controller.selectedValue.value,
                                       activeColor: AppThemeData.primary300,
                                       onChanged: (value) {
                                         controller.selectedValue.value = value!;
@@ -174,9 +223,13 @@ class SignupScreen extends StatelessWidget {
                                   Expanded(
                                     child: RadioListTile<String>(
                                       title: Text('Company'.tr,
-                                          style: TextStyle(color: isDark ? AppThemeData.greyDark700 : AppThemeData.grey700)),
+                                          style: TextStyle(
+                                              color: isDark
+                                                  ? AppThemeData.greyDark700
+                                                  : AppThemeData.grey700)),
                                       value: 'Company',
-                                      groupValue: controller.selectedValue.value,
+                                      groupValue:
+                                          controller.selectedValue.value,
                                       activeColor: AppThemeData.primary300,
                                       onChanged: (value) {
                                         controller.selectedValue.value = value!;
@@ -193,8 +246,10 @@ class SignupScreen extends StatelessWidget {
                     controller.selectedValue.value == "Company"
                         ? SizedBox()
                         : controller.selectedService.value == "Cab Service" ||
-                                controller.selectedService.value == "Rental Service" ||
-                                controller.selectedService.value == "Parcel Service"
+                                controller.selectedService.value ==
+                                    "Rental Service" ||
+                                controller.selectedService.value ==
+                                    "Parcel Service"
                             ? Column(
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -204,7 +259,9 @@ class SignupScreen extends StatelessWidget {
                                     style: TextStyle(
                                         fontFamily: AppThemeData.semiBold,
                                         fontSize: 14,
-                                        color: isDark ? AppThemeData.grey100 : AppThemeData.grey800),
+                                        color: isDark
+                                            ? AppThemeData.grey100
+                                            : AppThemeData.grey800),
                                   ),
                                   const SizedBox(height: 5),
                                   DropdownButtonFormField<SectionModel>(
@@ -212,38 +269,63 @@ class SignupScreen extends StatelessWidget {
                                       'Select Section'.tr,
                                       style: TextStyle(
                                           fontSize: 14,
-                                          color: isDark ? AppThemeData.grey700 : AppThemeData.grey700,
+                                          color: isDark
+                                              ? AppThemeData.grey700
+                                              : AppThemeData.grey700,
                                           fontFamily: AppThemeData.regular),
                                     ),
                                     icon: const Icon(Icons.keyboard_arrow_down),
-                                    dropdownColor: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
+                                    dropdownColor: isDark
+                                        ? AppThemeData.grey900
+                                        : AppThemeData.grey50,
                                     decoration: InputDecoration(
-                                      errorStyle: const TextStyle(color: Colors.red),
+                                      errorStyle:
+                                          const TextStyle(color: Colors.red),
                                       isDense: true,
                                       filled: true,
-                                      fillColor: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
+                                      fillColor: isDark
+                                          ? AppThemeData.grey900
+                                          : AppThemeData.grey50,
                                       border: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(8),
-                                        borderSide: BorderSide(color: isDark ? AppThemeData.primary300 : AppThemeData.primary300),
+                                        borderSide: BorderSide(
+                                            color: isDark
+                                                ? AppThemeData.primary300
+                                                : AppThemeData.primary300),
                                       ),
                                       enabledBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(8),
-                                        borderSide: BorderSide(color: isDark ? AppThemeData.greyDark400 : AppThemeData.grey400),
+                                        borderSide: BorderSide(
+                                            color: isDark
+                                                ? AppThemeData.greyDark400
+                                                : AppThemeData.grey400),
                                       ),
                                       focusedBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(8),
-                                        borderSide: BorderSide(color: isDark ? AppThemeData.greyDark400 : AppThemeData.grey400, width: 1.2),
+                                        borderSide: BorderSide(
+                                            color: isDark
+                                                ? AppThemeData.greyDark400
+                                                : AppThemeData.grey400,
+                                            width: 1.2),
                                       ),
                                       errorBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(8),
-                                        borderSide: const BorderSide(color: Colors.red),
+                                        borderSide:
+                                            const BorderSide(color: Colors.red),
                                       ),
                                       disabledBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(8),
-                                        borderSide: BorderSide(color: isDark ? AppThemeData.greyDark400 : AppThemeData.grey400),
+                                        borderSide: BorderSide(
+                                            color: isDark
+                                                ? AppThemeData.greyDark400
+                                                : AppThemeData.grey400),
                                       ),
                                     ),
-                                    initialValue: controller.selectedSection.value.id == null ? null : controller.selectedSection.value,
+                                    initialValue:
+                                        controller.selectedSection.value.id ==
+                                                null
+                                            ? null
+                                            : controller.selectedSection.value,
                                     onChanged: (value) {
                                       controller.selectedSection.value = value!;
                                       controller.getVehicleType();
@@ -251,84 +333,152 @@ class SignupScreen extends StatelessWidget {
                                     },
                                     style: TextStyle(
                                         fontSize: 14,
-                                        color: isDark ? AppThemeData.grey50 : AppThemeData.grey900,
+                                        color: isDark
+                                            ? AppThemeData.grey50
+                                            : AppThemeData.grey900,
                                         fontFamily: AppThemeData.medium),
                                     items: controller.sectionList.map((item) {
-                                      return DropdownMenuItem<SectionModel>(value: item, child: Text(item.name.toString()));
+                                      return DropdownMenuItem<SectionModel>(
+                                          value: item,
+                                          child: Text(item.name.toString()));
                                     }).toList(),
                                   ),
                                   const SizedBox(height: 10),
-                                  controller.selectedService.value == "Cab Service" || controller.selectedService.value == "Rental Service"
+                                  controller.selectedService.value ==
+                                              "Cab Service" ||
+                                          controller.selectedService.value ==
+                                              "Rental Service"
                                       ? Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             Text(
                                               "Select Vehicle Type".tr,
                                               style: TextStyle(
-                                                  fontFamily: AppThemeData.semiBold,
+                                                  fontFamily:
+                                                      AppThemeData.semiBold,
                                                   fontSize: 14,
-                                                  color: isDark ? AppThemeData.grey100 : AppThemeData.grey800),
+                                                  color: isDark
+                                                      ? AppThemeData.grey100
+                                                      : AppThemeData.grey800),
                                             ),
                                             const SizedBox(height: 5),
-                                            DropdownButtonFormField<VehicleType>(
+                                            DropdownButtonFormField<
+                                                VehicleType>(
                                               hint: Text(
                                                 'Vehicle Type'.tr,
                                                 style: TextStyle(
                                                     fontSize: 14,
-                                                    color: isDark ? AppThemeData.grey700 : AppThemeData.grey700,
-                                                    fontFamily: AppThemeData.regular),
+                                                    color: isDark
+                                                        ? AppThemeData.grey700
+                                                        : AppThemeData.grey700,
+                                                    fontFamily:
+                                                        AppThemeData.regular),
                                               ),
-                                              icon: const Icon(Icons.keyboard_arrow_down),
-                                              dropdownColor: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
+                                              icon: const Icon(
+                                                  Icons.keyboard_arrow_down),
+                                              dropdownColor: isDark
+                                                  ? AppThemeData.grey900
+                                                  : AppThemeData.grey50,
                                               decoration: InputDecoration(
-                                                errorStyle: const TextStyle(color: Colors.red),
+                                                errorStyle: const TextStyle(
+                                                    color: Colors.red),
                                                 isDense: true,
                                                 filled: true,
-                                                fillColor: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
+                                                fillColor: isDark
+                                                    ? AppThemeData.grey900
+                                                    : AppThemeData.grey50,
                                                 border: OutlineInputBorder(
-                                                  borderRadius: BorderRadius.circular(8),
-                                                  borderSide: BorderSide(color: isDark ? AppThemeData.primary300 : AppThemeData.primary300),
-                                                ),
-                                                enabledBorder: OutlineInputBorder(
-                                                  borderRadius: BorderRadius.circular(8),
-                                                  borderSide: BorderSide(color: isDark ? AppThemeData.greyDark400 : AppThemeData.grey400),
-                                                ),
-                                                focusedBorder: OutlineInputBorder(
-                                                  borderRadius: BorderRadius.circular(8),
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
                                                   borderSide: BorderSide(
-                                                      color: isDark ? AppThemeData.greyDark400 : AppThemeData.grey400, width: 1.2),
+                                                      color: isDark
+                                                          ? AppThemeData
+                                                              .primary300
+                                                          : AppThemeData
+                                                              .primary300),
+                                                ),
+                                                enabledBorder:
+                                                    OutlineInputBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                  borderSide: BorderSide(
+                                                      color: isDark
+                                                          ? AppThemeData
+                                                              .greyDark400
+                                                          : AppThemeData
+                                                              .grey400),
+                                                ),
+                                                focusedBorder:
+                                                    OutlineInputBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                  borderSide: BorderSide(
+                                                      color: isDark
+                                                          ? AppThemeData
+                                                              .greyDark400
+                                                          : AppThemeData
+                                                              .grey400,
+                                                      width: 1.2),
                                                 ),
                                                 errorBorder: OutlineInputBorder(
-                                                  borderRadius: BorderRadius.circular(8),
-                                                  borderSide: const BorderSide(color: Colors.red),
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                  borderSide: const BorderSide(
+                                                      color: Colors.red),
                                                 ),
-                                                disabledBorder: OutlineInputBorder(
-                                                  borderRadius: BorderRadius.circular(8),
-                                                  borderSide: BorderSide(color: isDark ? AppThemeData.greyDark400 : AppThemeData.grey400),
+                                                disabledBorder:
+                                                    OutlineInputBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                  borderSide: BorderSide(
+                                                      color: isDark
+                                                          ? AppThemeData
+                                                              .greyDark400
+                                                          : AppThemeData
+                                                              .grey400),
                                                 ),
                                               ),
-                                              initialValue: controller.selectedVehicleType.value.id == null
+                                              initialValue: controller
+                                                          .selectedVehicleType
+                                                          .value
+                                                          .id ==
+                                                      null
                                                   ? null
-                                                  : controller.selectedVehicleType.value,
+                                                  : controller
+                                                      .selectedVehicleType
+                                                      .value,
                                               onChanged: (value) {
-                                                controller.selectedVehicleType.value = value!;
+                                                controller.selectedVehicleType
+                                                    .value = value!;
                                                 controller.update();
                                               },
                                               style: TextStyle(
                                                   fontSize: 14,
-                                                  color: isDark ? AppThemeData.grey50 : AppThemeData.grey900,
-                                                  fontFamily: AppThemeData.medium),
-                                              items: controller.cabVehicleType.map((item) {
-                                                return DropdownMenuItem<VehicleType>(value: item, child: Text(item.name.toString()));
+                                                  color: isDark
+                                                      ? AppThemeData.grey50
+                                                      : AppThemeData.grey900,
+                                                  fontFamily:
+                                                      AppThemeData.medium),
+                                              items: controller.cabVehicleType
+                                                  .map((item) {
+                                                return DropdownMenuItem<
+                                                        VehicleType>(
+                                                    value: item,
+                                                    child: Text(
+                                                        item.name.toString()));
                                               }).toList(),
                                             ),
                                             const SizedBox(height: 10),
                                             Text(
                                               "Select Car Brand".tr,
                                               style: TextStyle(
-                                                  fontFamily: AppThemeData.semiBold,
+                                                  fontFamily:
+                                                      AppThemeData.semiBold,
                                                   fontSize: 14,
-                                                  color: isDark ? AppThemeData.grey100 : AppThemeData.grey800),
+                                                  color: isDark
+                                                      ? AppThemeData.grey100
+                                                      : AppThemeData.grey800),
                                             ),
                                             const SizedBox(height: 5),
                                             DropdownButtonFormField<CarMakes>(
@@ -336,60 +486,116 @@ class SignupScreen extends StatelessWidget {
                                                 'Car Brand'.tr,
                                                 style: TextStyle(
                                                     fontSize: 14,
-                                                    color: isDark ? AppThemeData.grey700 : AppThemeData.grey700,
-                                                    fontFamily: AppThemeData.regular),
+                                                    color: isDark
+                                                        ? AppThemeData.grey700
+                                                        : AppThemeData.grey700,
+                                                    fontFamily:
+                                                        AppThemeData.regular),
                                               ),
-                                              icon: const Icon(Icons.keyboard_arrow_down),
-                                              dropdownColor: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
+                                              icon: const Icon(
+                                                  Icons.keyboard_arrow_down),
+                                              dropdownColor: isDark
+                                                  ? AppThemeData.grey900
+                                                  : AppThemeData.grey50,
                                               decoration: InputDecoration(
-                                                errorStyle: const TextStyle(color: Colors.red),
+                                                errorStyle: const TextStyle(
+                                                    color: Colors.red),
                                                 isDense: true,
                                                 filled: true,
-                                                fillColor: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
+                                                fillColor: isDark
+                                                    ? AppThemeData.grey900
+                                                    : AppThemeData.grey50,
                                                 border: OutlineInputBorder(
-                                                  borderRadius: BorderRadius.circular(8),
-                                                  borderSide: BorderSide(color: isDark ? AppThemeData.primary300 : AppThemeData.primary300),
-                                                ),
-                                                enabledBorder: OutlineInputBorder(
-                                                  borderRadius: BorderRadius.circular(8),
-                                                  borderSide: BorderSide(color: isDark ? AppThemeData.greyDark400 : AppThemeData.grey400),
-                                                ),
-                                                focusedBorder: OutlineInputBorder(
-                                                  borderRadius: BorderRadius.circular(8),
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
                                                   borderSide: BorderSide(
-                                                      color: isDark ? AppThemeData.greyDark400 : AppThemeData.grey400, width: 1.2),
+                                                      color: isDark
+                                                          ? AppThemeData
+                                                              .primary300
+                                                          : AppThemeData
+                                                              .primary300),
+                                                ),
+                                                enabledBorder:
+                                                    OutlineInputBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                  borderSide: BorderSide(
+                                                      color: isDark
+                                                          ? AppThemeData
+                                                              .greyDark400
+                                                          : AppThemeData
+                                                              .grey400),
+                                                ),
+                                                focusedBorder:
+                                                    OutlineInputBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                  borderSide: BorderSide(
+                                                      color: isDark
+                                                          ? AppThemeData
+                                                              .greyDark400
+                                                          : AppThemeData
+                                                              .grey400,
+                                                      width: 1.2),
                                                 ),
                                                 errorBorder: OutlineInputBorder(
-                                                  borderRadius: BorderRadius.circular(8),
-                                                  borderSide: const BorderSide(color: Colors.red),
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                  borderSide: const BorderSide(
+                                                      color: Colors.red),
                                                 ),
-                                                disabledBorder: OutlineInputBorder(
-                                                  borderRadius: BorderRadius.circular(8),
-                                                  borderSide: BorderSide(color: isDark ? AppThemeData.greyDark400 : AppThemeData.grey400),
+                                                disabledBorder:
+                                                    OutlineInputBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                  borderSide: BorderSide(
+                                                      color: isDark
+                                                          ? AppThemeData
+                                                              .greyDark400
+                                                          : AppThemeData
+                                                              .grey400),
                                                 ),
                                               ),
-                                              initialValue:
-                                                  controller.selectedCarMakes.value.id == null ? null : controller.selectedCarMakes.value,
+                                              initialValue: controller
+                                                          .selectedCarMakes
+                                                          .value
+                                                          .id ==
+                                                      null
+                                                  ? null
+                                                  : controller
+                                                      .selectedCarMakes.value,
                                               onChanged: (value) {
-                                                controller.selectedCarMakes.value = value!;
+                                                controller.selectedCarMakes
+                                                    .value = value!;
                                                 controller.getCarModel();
                                                 controller.update();
                                               },
                                               style: TextStyle(
                                                   fontSize: 14,
-                                                  color: isDark ? AppThemeData.grey50 : AppThemeData.grey900,
-                                                  fontFamily: AppThemeData.medium),
-                                              items: controller.carMakesList.map((item) {
-                                                return DropdownMenuItem<CarMakes>(value: item, child: Text(item.name.toString()));
+                                                  color: isDark
+                                                      ? AppThemeData.grey50
+                                                      : AppThemeData.grey900,
+                                                  fontFamily:
+                                                      AppThemeData.medium),
+                                              items: controller.carMakesList
+                                                  .map((item) {
+                                                return DropdownMenuItem<
+                                                        CarMakes>(
+                                                    value: item,
+                                                    child: Text(
+                                                        item.name.toString()));
                                               }).toList(),
                                             ),
                                             const SizedBox(height: 10),
                                             Text(
                                               "Select car model".tr,
                                               style: TextStyle(
-                                                  fontFamily: AppThemeData.semiBold,
+                                                  fontFamily:
+                                                      AppThemeData.semiBold,
                                                   fontSize: 14,
-                                                  color: isDark ? AppThemeData.grey100 : AppThemeData.grey800),
+                                                  color: isDark
+                                                      ? AppThemeData.grey100
+                                                      : AppThemeData.grey800),
                                             ),
                                             const SizedBox(height: 5),
                                             DropdownButtonFormField<CarModel>(
@@ -397,58 +603,115 @@ class SignupScreen extends StatelessWidget {
                                                 'Car model'.tr,
                                                 style: TextStyle(
                                                     fontSize: 14,
-                                                    color: isDark ? AppThemeData.grey700 : AppThemeData.grey700,
-                                                    fontFamily: AppThemeData.regular),
+                                                    color: isDark
+                                                        ? AppThemeData.grey700
+                                                        : AppThemeData.grey700,
+                                                    fontFamily:
+                                                        AppThemeData.regular),
                                               ),
-                                              icon: const Icon(Icons.keyboard_arrow_down),
-                                              dropdownColor: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
+                                              icon: const Icon(
+                                                  Icons.keyboard_arrow_down),
+                                              dropdownColor: isDark
+                                                  ? AppThemeData.grey900
+                                                  : AppThemeData.grey50,
                                               decoration: InputDecoration(
-                                                errorStyle: const TextStyle(color: Colors.red),
+                                                errorStyle: const TextStyle(
+                                                    color: Colors.red),
                                                 isDense: true,
                                                 filled: true,
-                                                fillColor: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
+                                                fillColor: isDark
+                                                    ? AppThemeData.grey900
+                                                    : AppThemeData.grey50,
                                                 border: OutlineInputBorder(
-                                                  borderRadius: BorderRadius.circular(8),
-                                                  borderSide: BorderSide(color: isDark ? AppThemeData.primary300 : AppThemeData.primary300),
-                                                ),
-                                                enabledBorder: OutlineInputBorder(
-                                                  borderRadius: BorderRadius.circular(8),
-                                                  borderSide: BorderSide(color: isDark ? AppThemeData.greyDark400 : AppThemeData.grey400),
-                                                ),
-                                                focusedBorder: OutlineInputBorder(
-                                                  borderRadius: BorderRadius.circular(8),
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
                                                   borderSide: BorderSide(
-                                                      color: isDark ? AppThemeData.greyDark400 : AppThemeData.grey400, width: 1.2),
+                                                      color: isDark
+                                                          ? AppThemeData
+                                                              .primary300
+                                                          : AppThemeData
+                                                              .primary300),
+                                                ),
+                                                enabledBorder:
+                                                    OutlineInputBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                  borderSide: BorderSide(
+                                                      color: isDark
+                                                          ? AppThemeData
+                                                              .greyDark400
+                                                          : AppThemeData
+                                                              .grey400),
+                                                ),
+                                                focusedBorder:
+                                                    OutlineInputBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                  borderSide: BorderSide(
+                                                      color: isDark
+                                                          ? AppThemeData
+                                                              .greyDark400
+                                                          : AppThemeData
+                                                              .grey400,
+                                                      width: 1.2),
                                                 ),
                                                 errorBorder: OutlineInputBorder(
-                                                  borderRadius: BorderRadius.circular(8),
-                                                  borderSide: const BorderSide(color: Colors.red),
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                  borderSide: const BorderSide(
+                                                      color: Colors.red),
                                                 ),
-                                                disabledBorder: OutlineInputBorder(
-                                                  borderRadius: BorderRadius.circular(8),
-                                                  borderSide: BorderSide(color: isDark ? AppThemeData.greyDark400 : AppThemeData.grey400),
+                                                disabledBorder:
+                                                    OutlineInputBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                  borderSide: BorderSide(
+                                                      color: isDark
+                                                          ? AppThemeData
+                                                              .greyDark400
+                                                          : AppThemeData
+                                                              .grey400),
                                                 ),
                                               ),
-                                              initialValue:
-                                                  controller.selectedCarModel.value.id == null ? null : controller.selectedCarModel.value,
+                                              initialValue: controller
+                                                          .selectedCarModel
+                                                          .value
+                                                          .id ==
+                                                      null
+                                                  ? null
+                                                  : controller
+                                                      .selectedCarModel.value,
                                               onChanged: (value) {
-                                                controller.selectedCarModel.value = value!;
+                                                controller.selectedCarModel
+                                                    .value = value!;
                                                 controller.update();
                                               },
                                               style: TextStyle(
                                                   fontSize: 14,
-                                                  color: isDark ? AppThemeData.grey50 : AppThemeData.grey900,
-                                                  fontFamily: AppThemeData.medium),
-                                              items: controller.carModelList.map((item) {
-                                                return DropdownMenuItem<CarModel>(value: item, child: Text(item.name.toString()));
+                                                  color: isDark
+                                                      ? AppThemeData.grey50
+                                                      : AppThemeData.grey900,
+                                                  fontFamily:
+                                                      AppThemeData.medium),
+                                              items: controller.carModelList
+                                                  .map((item) {
+                                                return DropdownMenuItem<
+                                                        CarModel>(
+                                                    value: item,
+                                                    child: Text(
+                                                        item.name.toString()));
                                               }).toList(),
                                             ),
                                             const SizedBox(height: 10),
                                             TextFieldWidget(
                                               title: 'Car Plat Number'.tr,
-                                              controller: controller.carPlatNumberEditingController.value,
-                                              hintText: 'Enter Car Plat Number'.tr,
-                                              textInputAction: TextInputAction.next,
+                                              controller: controller
+                                                  .carPlatNumberEditingController
+                                                  .value,
+                                              hintText:
+                                                  'Enter Car Plat Number'.tr,
+                                              textInputAction:
+                                                  TextInputAction.next,
                                             ),
                                           ],
                                         )
@@ -461,14 +724,17 @@ class SignupScreen extends StatelessWidget {
                         Expanded(
                           child: TextFieldWidget(
                             title: 'First Name'.tr,
-                            controller: controller.firstNameEditingController.value,
+                            controller:
+                                controller.firstNameEditingController.value,
                             hintText: 'Enter First Name'.tr,
                             prefix: Padding(
                               padding: const EdgeInsets.all(12),
                               child: SvgPicture.asset(
                                 "assets/icons/ic_user.svg",
                                 colorFilter: ColorFilter.mode(
-                                  isDark ? AppThemeData.grey300 : AppThemeData.grey600,
+                                  isDark
+                                      ? AppThemeData.grey300
+                                      : AppThemeData.grey600,
                                   BlendMode.srcIn,
                                 ),
                               ),
@@ -482,14 +748,17 @@ class SignupScreen extends StatelessWidget {
                         Expanded(
                           child: TextFieldWidget(
                             title: 'Last Name'.tr,
-                            controller: controller.lastNameEditingController.value,
+                            controller:
+                                controller.lastNameEditingController.value,
                             hintText: 'Enter Last Name'.tr,
                             prefix: Padding(
                               padding: const EdgeInsets.all(12),
                               child: SvgPicture.asset(
                                 "assets/icons/ic_user.svg",
                                 colorFilter: ColorFilter.mode(
-                                  isDark ? AppThemeData.grey300 : AppThemeData.grey600,
+                                  isDark
+                                      ? AppThemeData.grey300
+                                      : AppThemeData.grey600,
                                   BlendMode.srcIn,
                                 ),
                               ),
@@ -499,55 +768,87 @@ class SignupScreen extends StatelessWidget {
                         ),
                       ],
                     ),
-                    TextFieldWidget(
-                      title: 'Email Address'.tr,
-                      textInputType: TextInputType.emailAddress,
-                      controller: controller.emailEditingController.value,
-                      hintText: 'Enter Email Address'.tr,
-                      enable: controller.type.value == "google" || controller.type.value == "apple" ? false : true,
-                      prefix: Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: SvgPicture.asset(
-                          "assets/icons/ic_mail.svg",
-                          colorFilter: ColorFilter.mode(
-                            isDark ? AppThemeData.grey300 : AppThemeData.grey600,
-                            BlendMode.srcIn,
+                    // Hide email and phone fields for mobileNumber type
+                    controller.type.value == "mobileNumber"
+                        ? const SizedBox()
+                        : TextFieldWidget(
+                            title: 'Email Address'.tr,
+                            textInputType: TextInputType.emailAddress,
+                            controller: controller.emailEditingController.value,
+                            hintText: 'Enter Email Address'.tr,
+                            enable: controller.type.value == "google" ||
+                                    controller.type.value == "apple"
+                                ? false
+                                : true,
+                            prefix: Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: SvgPicture.asset(
+                                "assets/icons/ic_mail.svg",
+                                colorFilter: ColorFilter.mode(
+                                  isDark
+                                      ? AppThemeData.grey300
+                                      : AppThemeData.grey600,
+                                  BlendMode.srcIn,
+                                ),
+                              ),
+                            ),
+                            textInputAction: TextInputAction.next,
                           ),
-                        ),
-                      ),
-                      textInputAction: TextInputAction.next,
-                    ),
-                    TextFieldWidget(
-                      title: 'Phone Number'.tr,
-                      controller: controller.phoneNUmberEditingController.value,
-                      hintText: 'Enter Phone Number'.tr,
-                      enable: controller.type.value == "mobileNumber" ? false : true,
-                      textInputType: const TextInputType.numberWithOptions(signed: true, decimal: true),
-                      textInputAction: TextInputAction.done,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(RegExp('[0-9]')),
-                      ],
-                      prefix: CountryCodePicker(
-                        enabled: controller.type.value == "mobileNumber" ? false : true,
-                        onChanged: (value) {
-                          controller.countryCodeEditingController.value.text = value.dialCode ?? Constant.defaultCountryCode;
-                        },
-                        dialogTextStyle: TextStyle(
-                            color: isDark ? AppThemeData.grey50 : AppThemeData.grey900,
-                            fontWeight: FontWeight.w500,
-                            fontFamily: AppThemeData.medium),
-                        dialogBackgroundColor: isDark ? AppThemeData.grey800 : AppThemeData.grey100,
-                        initialSelection: controller.countryCodeEditingController.value.text,
-                        comparator: (a, b) => b.name!.compareTo(a.name.toString()),
-                        textStyle: TextStyle(
-                            fontSize: 14, color: isDark ? AppThemeData.grey50 : AppThemeData.grey900, fontFamily: AppThemeData.medium),
-                        searchDecoration: InputDecoration(iconColor: isDark ? AppThemeData.grey50 : AppThemeData.grey900),
-                        searchStyle: TextStyle(
-                            color: isDark ? AppThemeData.grey50 : AppThemeData.grey900,
-                            fontWeight: FontWeight.w500,
-                            fontFamily: AppThemeData.medium),
-                      ),
-                    ),
+                    controller.type.value == "mobileNumber"
+                        ? const SizedBox()
+                        : TextFieldWidget(
+                            title: 'Phone Number'.tr,
+                            controller:
+                                controller.phoneNUmberEditingController.value,
+                            hintText: 'Enter Phone Number'.tr,
+                            enable: true,
+                            textInputType:
+                                const TextInputType.numberWithOptions(
+                                    signed: true, decimal: true),
+                            textInputAction: TextInputAction.done,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(
+                                  RegExp('[0-9]')),
+                            ],
+                            prefix: CountryCodePicker(
+                              enabled: true,
+                              onChanged: (value) {
+                                controller.countryCodeEditingController.value
+                                        .text =
+                                    value.dialCode ??
+                                        Constant.defaultCountryCode;
+                              },
+                              dialogTextStyle: TextStyle(
+                                  color: isDark
+                                      ? AppThemeData.grey50
+                                      : AppThemeData.grey900,
+                                  fontWeight: FontWeight.w500,
+                                  fontFamily: AppThemeData.medium),
+                              dialogBackgroundColor: isDark
+                                  ? AppThemeData.grey800
+                                  : AppThemeData.grey100,
+                              initialSelection: controller
+                                  .countryCodeEditingController.value.text,
+                              comparator: (a, b) =>
+                                  b.name!.compareTo(a.name.toString()),
+                              textStyle: TextStyle(
+                                  fontSize: 14,
+                                  color: isDark
+                                      ? AppThemeData.grey50
+                                      : AppThemeData.grey900,
+                                  fontFamily: AppThemeData.medium),
+                              searchDecoration: InputDecoration(
+                                  iconColor: isDark
+                                      ? AppThemeData.grey50
+                                      : AppThemeData.grey900),
+                              searchStyle: TextStyle(
+                                  color: isDark
+                                      ? AppThemeData.grey50
+                                      : AppThemeData.grey900,
+                                  fontWeight: FontWeight.w500,
+                                  fontFamily: AppThemeData.medium),
+                            ),
+                          ),
                     controller.selectedValue.value == "Company"
                         ? SizedBox()
                         : Column(
@@ -558,7 +859,9 @@ class SignupScreen extends StatelessWidget {
                                   style: TextStyle(
                                       fontFamily: AppThemeData.semiBold,
                                       fontSize: 14,
-                                      color: isDark ? AppThemeData.grey100 : AppThemeData.grey800)),
+                                      color: isDark
+                                          ? AppThemeData.grey100
+                                          : AppThemeData.grey800)),
                               const SizedBox(
                                 height: 5,
                               ),
@@ -567,45 +870,82 @@ class SignupScreen extends StatelessWidget {
                                     'Select zone'.tr,
                                     style: TextStyle(
                                       fontSize: 14,
-                                      color: isDark ? AppThemeData.grey700 : AppThemeData.grey700,
+                                      color: isDark
+                                          ? AppThemeData.grey700
+                                          : AppThemeData.grey700,
                                       fontFamily: AppThemeData.regular,
                                     ),
                                   ),
-                                  dropdownColor: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
+                                  dropdownColor: isDark
+                                      ? AppThemeData.grey900
+                                      : AppThemeData.grey50,
                                   decoration: InputDecoration(
-                                    errorStyle: const TextStyle(color: Colors.red),
+                                    errorStyle:
+                                        const TextStyle(color: Colors.red),
                                     isDense: true,
                                     filled: true,
-                                    fillColor: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
+                                    fillColor: isDark
+                                        ? AppThemeData.grey900
+                                        : AppThemeData.grey50,
                                     disabledBorder: UnderlineInputBorder(
-                                      borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                      borderSide: BorderSide(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50, width: 1),
+                                      borderRadius: const BorderRadius.all(
+                                          Radius.circular(10)),
+                                      borderSide: BorderSide(
+                                          color: isDark
+                                              ? AppThemeData.grey900
+                                              : AppThemeData.grey50,
+                                          width: 1),
                                     ),
                                     focusedBorder: OutlineInputBorder(
-                                      borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                      borderSide: BorderSide(color: isDark ? AppThemeData.primary300 : AppThemeData.primary300, width: 1),
+                                      borderRadius: const BorderRadius.all(
+                                          Radius.circular(10)),
+                                      borderSide: BorderSide(
+                                          color: isDark
+                                              ? AppThemeData.primary300
+                                              : AppThemeData.primary300,
+                                          width: 1),
                                     ),
                                     enabledBorder: OutlineInputBorder(
-                                      borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                      borderSide: BorderSide(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50, width: 1),
+                                      borderRadius: const BorderRadius.all(
+                                          Radius.circular(10)),
+                                      borderSide: BorderSide(
+                                          color: isDark
+                                              ? AppThemeData.grey900
+                                              : AppThemeData.grey50,
+                                          width: 1),
                                     ),
                                     errorBorder: OutlineInputBorder(
-                                      borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                      borderSide: BorderSide(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50, width: 1),
+                                      borderRadius: const BorderRadius.all(
+                                          Radius.circular(10)),
+                                      borderSide: BorderSide(
+                                          color: isDark
+                                              ? AppThemeData.grey900
+                                              : AppThemeData.grey50,
+                                          width: 1),
                                     ),
                                     border: OutlineInputBorder(
-                                      borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                      borderSide: BorderSide(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50, width: 1),
+                                      borderRadius: const BorderRadius.all(
+                                          Radius.circular(10)),
+                                      borderSide: BorderSide(
+                                          color: isDark
+                                              ? AppThemeData.grey900
+                                              : AppThemeData.grey50,
+                                          width: 1),
                                     ),
                                   ),
-                                  initialValue: controller.selectedZone.value.id == null ? null : controller.selectedZone.value,
+                                  initialValue:
+                                      controller.selectedZone.value.id == null
+                                          ? null
+                                          : controller.selectedZone.value,
                                   onChanged: (value) {
                                     controller.selectedZone.value = value!;
                                     controller.update();
                                   },
                                   style: TextStyle(
                                       fontSize: 14,
-                                      color: isDark ? AppThemeData.grey50 : AppThemeData.grey900,
+                                      color: isDark
+                                          ? AppThemeData.grey50
+                                          : AppThemeData.grey900,
                                       fontFamily: AppThemeData.medium),
                                   items: controller.zoneList.map((item) {
                                     return DropdownMenuItem<ZoneModel>(
@@ -618,13 +958,16 @@ class SignupScreen extends StatelessWidget {
                     const SizedBox(
                       height: 10,
                     ),
-                    controller.type.value == "google" || controller.type.value == "apple" || controller.type.value == "mobileNumber"
+                    controller.type.value == "google" ||
+                            controller.type.value == "apple" ||
+                            controller.type.value == "mobileNumber"
                         ? const SizedBox()
                         : Column(
                             children: [
                               TextFieldWidget(
                                 title: 'Password'.tr,
-                                controller: controller.passwordEditingController.value,
+                                controller:
+                                    controller.passwordEditingController.value,
                                 hintText: 'Enter Password'.tr,
                                 obscureText: controller.passwordVisible.value,
                                 prefix: Padding(
@@ -632,7 +975,9 @@ class SignupScreen extends StatelessWidget {
                                   child: SvgPicture.asset(
                                     "assets/icons/ic_lock.svg",
                                     colorFilter: ColorFilter.mode(
-                                      isDark ? AppThemeData.grey300 : AppThemeData.grey600,
+                                      isDark
+                                          ? AppThemeData.grey300
+                                          : AppThemeData.grey600,
                                       BlendMode.srcIn,
                                     ),
                                   ),
@@ -641,20 +986,25 @@ class SignupScreen extends StatelessWidget {
                                   padding: const EdgeInsets.all(12),
                                   child: InkWell(
                                       onTap: () {
-                                        controller.passwordVisible.value = !controller.passwordVisible.value;
+                                        controller.passwordVisible.value =
+                                            !controller.passwordVisible.value;
                                       },
                                       child: controller.passwordVisible.value
                                           ? SvgPicture.asset(
                                               "assets/icons/ic_password_show.svg",
                                               colorFilter: ColorFilter.mode(
-                                                isDark ? AppThemeData.grey300 : AppThemeData.grey600,
+                                                isDark
+                                                    ? AppThemeData.grey300
+                                                    : AppThemeData.grey600,
                                                 BlendMode.srcIn,
                                               ),
                                             )
                                           : SvgPicture.asset(
                                               "assets/icons/ic_password_close.svg",
                                               colorFilter: ColorFilter.mode(
-                                                isDark ? AppThemeData.grey300 : AppThemeData.grey600,
+                                                isDark
+                                                    ? AppThemeData.grey300
+                                                    : AppThemeData.grey600,
                                                 BlendMode.srcIn,
                                               ),
                                             )),
@@ -663,15 +1013,19 @@ class SignupScreen extends StatelessWidget {
                               ),
                               TextFieldWidget(
                                 title: 'Confirm Password'.tr,
-                                controller: controller.conformPasswordEditingController.value,
+                                controller: controller
+                                    .conformPasswordEditingController.value,
                                 hintText: 'Enter Confirm Password'.tr,
-                                obscureText: controller.conformPasswordVisible.value,
+                                obscureText:
+                                    controller.conformPasswordVisible.value,
                                 prefix: Padding(
                                   padding: const EdgeInsets.all(12),
                                   child: SvgPicture.asset(
                                     "assets/icons/ic_lock.svg",
                                     colorFilter: ColorFilter.mode(
-                                      isDark ? AppThemeData.grey300 : AppThemeData.grey600,
+                                      isDark
+                                          ? AppThemeData.grey300
+                                          : AppThemeData.grey600,
                                       BlendMode.srcIn,
                                     ),
                                   ),
@@ -680,20 +1034,28 @@ class SignupScreen extends StatelessWidget {
                                   padding: const EdgeInsets.all(12),
                                   child: InkWell(
                                       onTap: () {
-                                        controller.conformPasswordVisible.value = !controller.conformPasswordVisible.value;
+                                        controller
+                                                .conformPasswordVisible.value =
+                                            !controller
+                                                .conformPasswordVisible.value;
                                       },
-                                      child: controller.conformPasswordVisible.value
+                                      child: controller
+                                              .conformPasswordVisible.value
                                           ? SvgPicture.asset(
                                               "assets/icons/ic_password_show.svg",
                                               colorFilter: ColorFilter.mode(
-                                                isDark ? AppThemeData.grey300 : AppThemeData.grey600,
+                                                isDark
+                                                    ? AppThemeData.grey300
+                                                    : AppThemeData.grey600,
                                                 BlendMode.srcIn,
                                               ),
                                             )
                                           : SvgPicture.asset(
                                               "assets/icons/ic_password_close.svg",
                                               colorFilter: ColorFilter.mode(
-                                                isDark ? AppThemeData.grey300 : AppThemeData.grey600,
+                                                isDark
+                                                    ? AppThemeData.grey300
+                                                    : AppThemeData.grey600,
                                                 BlendMode.srcIn,
                                               ),
                                             )),
@@ -718,7 +1080,9 @@ class SignupScreen extends StatelessWidget {
                           TextSpan(
                               text: 'Log in with'.tr,
                               style: TextStyle(
-                                color: isDark ? AppThemeData.grey50 : AppThemeData.grey900,
+                                color: isDark
+                                    ? AppThemeData.grey50
+                                    : AppThemeData.grey900,
                                 fontFamily: AppThemeData.medium,
                                 fontWeight: FontWeight.w500,
                               )),
@@ -748,37 +1112,61 @@ class SignupScreen extends StatelessWidget {
                 ),
                 InkWell(
                   onTap: () {
-                    if (controller.type.value == "google" || controller.type.value == "apple" || controller.type.value == "mobileNumber") {
-                      if (controller.firstNameEditingController.value.text.isEmpty) {
+                    if (controller.type.value == "google" ||
+                        controller.type.value == "apple" ||
+                        controller.type.value == "mobileNumber") {
+                      if (controller
+                          .firstNameEditingController.value.text.isEmpty) {
                         ShowToastDialog.showToast("Please enter first name".tr);
-                      } else if (controller.lastNameEditingController.value.text.isEmpty) {
+                      } else if (controller
+                          .lastNameEditingController.value.text.isEmpty) {
                         ShowToastDialog.showToast("Please enter last name".tr);
-                      } else if (controller.emailEditingController.value.text.isEmpty) {
-                        ShowToastDialog.showToast("Please enter valid email".tr);
-                      } else if (controller.phoneNUmberEditingController.value.text.isEmpty) {
-                        ShowToastDialog.showToast("Please enter Phone number".tr);
+                      } else if (controller.type.value != "mobileNumber" &&
+                          controller
+                              .emailEditingController.value.text.isEmpty) {
+                        ShowToastDialog.showToast(
+                            "Please enter valid email".tr);
+                      } else if (controller.type.value != "mobileNumber" &&
+                          controller.phoneNUmberEditingController.value.text
+                              .isEmpty) {
+                        ShowToastDialog.showToast(
+                            "Please enter Phone number".tr);
                       } else if (controller.selectedZone.value.id == null) {
                         ShowToastDialog.showToast("Please select zone".tr);
                       } else {
                         controller.signUpWithEmailAndPassword();
                       }
                     } else {
-                      if (controller.firstNameEditingController.value.text.isEmpty) {
+                      if (controller
+                          .firstNameEditingController.value.text.isEmpty) {
                         ShowToastDialog.showToast("Please enter first name".tr);
-                      } else if (controller.lastNameEditingController.value.text.isEmpty) {
+                      } else if (controller
+                          .lastNameEditingController.value.text.isEmpty) {
                         ShowToastDialog.showToast("Please enter last name".tr);
-                      } else if (controller.emailEditingController.value.text.isEmpty) {
-                        ShowToastDialog.showToast("Please enter valid email".tr);
-                      } else if (controller.phoneNUmberEditingController.value.text.isEmpty) {
-                        ShowToastDialog.showToast("Please enter Phone number".tr);
-                      } else if (controller.passwordEditingController.value.text.isEmpty) {
+                      } else if (controller
+                          .emailEditingController.value.text.isEmpty) {
+                        ShowToastDialog.showToast(
+                            "Please enter valid email".tr);
+                      } else if (controller
+                          .phoneNUmberEditingController.value.text.isEmpty) {
+                        ShowToastDialog.showToast(
+                            "Please enter Phone number".tr);
+                      } else if (controller
+                          .passwordEditingController.value.text.isEmpty) {
                         ShowToastDialog.showToast("Please enter password");
-                      } else if (controller.conformPasswordEditingController.value.text.isEmpty) {
-                        ShowToastDialog.showToast("Please enter Confirm password".tr);
-                      } else if (controller.passwordEditingController.value.text !=
-                          controller.conformPasswordEditingController.value.text) {
-                        ShowToastDialog.showToast("Password and Confirm password doesn't match".tr);
-                      } else if (controller.selectedValue.value == "Individual" && controller.selectedZone.value.id == null) {
+                      } else if (controller.conformPasswordEditingController
+                          .value.text.isEmpty) {
+                        ShowToastDialog.showToast(
+                            "Please enter Confirm password".tr);
+                      } else if (controller
+                              .passwordEditingController.value.text !=
+                          controller
+                              .conformPasswordEditingController.value.text) {
+                        ShowToastDialog.showToast(
+                            "Password and Confirm password doesn't match".tr);
+                      } else if (controller.selectedValue.value ==
+                              "Individual" &&
+                          controller.selectedZone.value.id == null) {
                         ShowToastDialog.showToast("Please select zone".tr);
                       } else {
                         controller.signUpWithEmailAndPassword();
@@ -794,7 +1182,9 @@ class SignupScreen extends StatelessWidget {
                         "Sign up".tr,
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          color: isDark ? AppThemeData.grey50 : AppThemeData.grey50,
+                          color: isDark
+                              ? AppThemeData.grey50
+                              : AppThemeData.grey50,
                           fontSize: 16,
                           fontFamily: AppThemeData.medium,
                           fontWeight: FontWeight.w400,

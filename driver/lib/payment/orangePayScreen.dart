@@ -4,6 +4,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:driver/models/payment_model/orange_money.dart';
+import 'package:driver/themes/app_them_data.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
@@ -48,7 +49,12 @@ class _OrangeMoneyScreenState extends State<OrangeMoneyScreen> {
   void callTransaction() {
     timer = Timer.periodic(const Duration(seconds: 3), (Timer t) {
       if (mounted) {
-        transactionstatus(accessToken: widget.accessToken, amount: widget.amount, orderId: widget.orderId, payToken: widget.payToken).then((value) {
+        transactionstatus(
+                accessToken: widget.accessToken,
+                amount: widget.amount,
+                orderId: widget.orderId,
+                payToken: widget.payToken)
+            .then((value) {
           if (value == 'SUCCESS') {
             if (timer != null) {
               timer!.cancel();
@@ -170,7 +176,7 @@ class _OrangeMoneyScreenState extends State<OrangeMoneyScreen> {
             TextButton(
               child: Text(
                 'Continue'.tr,
-                style: const TextStyle(color: Colors.green),
+                style: TextStyle(color: AppThemeData.primary300),
               ),
               onPressed: () {
                 Get.back(result: false);

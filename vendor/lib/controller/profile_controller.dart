@@ -17,7 +17,9 @@ class ProfileController extends GetxController {
   void onInit() {
     // TODO: implement onInit
     print("ProfileController onInit");
-    print(Constant.selectedSection!.toJson());
+    if (Constant.selectedSection != null) {
+      print(Constant.selectedSection!.toJson());
+    }
     getUserProfile();
     getTheme();
     super.onInit();

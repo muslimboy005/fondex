@@ -780,7 +780,7 @@ class RentalHomeScreen extends StatelessWidget {
                 Row(
                   children: [
                     Expanded(
-                        child: Text("Enter Kilometer Reading",
+                        child: Text("Enter Kilometer Reading".tr,
                             style:
                                 AppThemeData.boldTextStyle(fontSize: 22, color: isDark ? AppThemeData.greyDark900 : AppThemeData.grey900))),
                     InkWell(
@@ -851,7 +851,7 @@ class RentalHomeScreen extends StatelessWidget {
                 Row(
                   children: [
                     Expanded(
-                        child: Text("Confirm Cash Collection",
+                        child: Text("Confirm Cash Collection".tr,
                             style:
                                 AppThemeData.boldTextStyle(fontSize: 20, color: isDark ? AppThemeData.greyDark900 : AppThemeData.grey900))),
                     InkWell(

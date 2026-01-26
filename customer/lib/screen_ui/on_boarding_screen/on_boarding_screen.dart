@@ -6,7 +6,7 @@ import '../../controllers/on_boarding_controller.dart';
 import '../../themes/app_them_data.dart';
 import '../../utils/network_image_widget.dart';
 import '../../utils/preferences.dart';
-import '../auth_screens/login_screen.dart';
+import '../auth_screens/auth_screen.dart';
 
 class OnboardingScreen extends StatelessWidget {
   const OnboardingScreen({super.key});
@@ -99,6 +99,6 @@ class OnboardingScreen extends StatelessWidget {
 
   Future<void> _finish() async {
     await Preferences.setBoolean(Preferences.isFinishOnBoardingKey, true);
-    Get.offAll(() => const LoginScreen());
+    Get.offAll(() => const AuthScreen());
   }
 }

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:developer';
 
+import 'package:driver/app/auth_screen/auth_screen.dart';
 import 'package:driver/app/auth_screen/login_screen.dart';
 import 'package:driver/app/cab_screen/cab_dashboard_screen.dart';
 import 'package:driver/app/dash_board_screen/dash_board_screen.dart';
@@ -115,41 +116,41 @@ class SplashController extends GetxController {
                       log("🚀 [SPLASH] RentalDashboardScreen ga o'tmoqda");
                       Get.offAll(() => const RentalDashboardScreen());
                     } else {
-                      log("❌ [SPLASH] Noma'lum serviceType: ${userModel.serviceType} - LoginScreen ga o'tmoqda");
+                      log("❌ [SPLASH] Noma'lum serviceType: ${userModel.serviceType} - AuthScreen ga o'tmoqda");
                       unawaited(FirebaseAuth.instance.signOut());
-                      Get.offAll(const LoginScreen());
+                      Get.offAll(const AuthScreen());
                     }
                   }
                 } else {
-                  log("❌ [SPLASH] User active emas - LoginScreen ga o'tmoqda");
+                  log("❌ [SPLASH] User active emas - AuthScreen ga o'tmoqda");
                   await FirebaseAuth.instance.signOut();
-                  Get.offAll(const LoginScreen());
+                  Get.offAll(const AuthScreen());
                 }
               } else {
-                log("❌ [SPLASH] User role noto'g'ri: ${userModel.role} - LoginScreen ga o'tmoqda");
+                log("❌ [SPLASH] User role noto'g'ri: ${userModel.role} - AuthScreen ga o'tmoqda");
                 await FirebaseAuth.instance.signOut();
-                Get.offAll(const LoginScreen());
+                Get.offAll(const AuthScreen());
               }
             } catch (e) {
               log("❌ [SPLASH] UserModel ishlatishda xatolik: $e");
               await FirebaseAuth.instance.signOut();
-              Get.offAll(const LoginScreen());
+              Get.offAll(const AuthScreen());
             }
           } else {
-            log("❌ [SPLASH] getUserProfile null qaytdi - LoginScreen ga o'tmoqda");
+            log("❌ [SPLASH] getUserProfile null qaytdi - AuthScreen ga o'tmoqda");
             await FirebaseAuth.instance.signOut();
-            Get.offAll(const LoginScreen());
+            Get.offAll(const AuthScreen());
           }
         }).catchError((error) {
           log("❌ [SPLASH] getUserProfile xatosi: $error");
           FirebaseAuth.instance.signOut().then((_) {
-            Get.offAll(const LoginScreen());
+            Get.offAll(const AuthScreen());
           });
         });
       } else {
-        log("🚀 [SPLASH] Login qilinmagan - LoginScreen ga o'tmoqda");
+        log("🚀 [SPLASH] Login qilinmagan - AuthScreen ga o'tmoqda");
         await FirebaseAuth.instance.signOut();
-        Get.offAll(const LoginScreen());
+        Get.offAll(const AuthScreen());
       }
     } catch (e, stackTrace) {
       log("❌ [SPLASH] redirectScreen umumiy xatosi: $e");
@@ -157,7 +158,7 @@ class SplashController extends GetxController {
       try {
         await FirebaseAuth.instance.signOut();
       } catch (_) {}
-      Get.offAll(const LoginScreen());
+      Get.offAll(const AuthScreen());
     }
   }
 }

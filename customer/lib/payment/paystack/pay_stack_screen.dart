@@ -93,15 +93,15 @@ class _PayStackScreenState extends State<PayStackScreen> {
       barrierDismissible: true, // user must tap button!
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Cancel Payment'),
-          content: const SingleChildScrollView(
-            child: Text("cancelPayment?"),
+          title: Text('Cancel Payment'.tr),
+          content: SingleChildScrollView(
+            child: Text("cancelPayment?".tr),
           ),
           actions: <Widget>[
             TextButton(
-              child: const Text(
-                'Cancel',
-                style: TextStyle(color: Colors.red),
+              child: Text(
+                'Cancel'.tr,
+                style: const TextStyle(color: Colors.red),
               ),
               onPressed: () {
                 Navigator.of(context).pop();
@@ -109,9 +109,9 @@ class _PayStackScreenState extends State<PayStackScreen> {
               },
             ),
             TextButton(
-              child: const Text(
-                'Continue',
-                style: TextStyle(color: Colors.green),
+              child: Text(
+                'Continue'.tr,
+                style: const TextStyle(color: Colors.green),
               ),
               onPressed: () {
                 Navigator.of(context).pop();

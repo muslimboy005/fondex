@@ -125,6 +125,26 @@ class FireStoreUtils {
     return userModel;
   }
 
+  static Future<UserModel?> getUserByPhoneNumber(String countryCode, String phoneNumber) async {
+    UserModel? userModel;
+    try {
+      await fireStore
+          .collection(CollectionName.users)
+          .where('countryCode', isEqualTo: countryCode)
+          .where('phoneNumber', isEqualTo: phoneNumber)
+          .where('role', isEqualTo: Constant.userRoleVendor)
+          .get()
+          .then((value) {
+            if (value.docs.isNotEmpty) {
+              userModel = UserModel.fromJson(value.docs.first.data());
+            }
+          });
+    } catch (e) {
+      log("Failed to get user by phone number: $e");
+    }
+    return userModel;
+  }
+
   static Future<bool?> updateUserWallet({
     required String amount,
     required String userId,
@@ -717,78 +737,47 @@ class FireStoreUtils {
 
   static Future<List<ProductModel>?> getProduct() async {
     List<ProductModel> productList = [];
+
     try {
       // Try with orderBy first (requires index)
-      await fireStore
+      final querySnapshot = await fireStore
           .collection(CollectionName.vendorProducts)
           .where('vendorID', isEqualTo: Constant.userModel!.vendorID)
           .orderBy('createdAt', descending: false)
-          .get()
-          .then((value) {
-            for (var element in value.docs) {
-              ProductModel productModel = ProductModel.fromJson(element.data());
-              productList.add(productModel);
-            }
-          })
-          .catchError((error) {
-            // If index error, try without orderBy and sort in Dart
-            if (error.toString().contains('failed-precondition') ||
-                error.toString().contains('index')) {
-              log('Firestore index not ready, fetching without orderBy...');
-              // Use then to handle async fallback
-              fireStore
-                  .collection(CollectionName.vendorProducts)
-                  .where('vendorID', isEqualTo: Constant.userModel!.vendorID)
-                  .get()
-                  .then((value) {
-                    for (var element in value.docs) {
-                      ProductModel productModel = ProductModel.fromJson(
-                        element.data(),
-                      );
-                      productList.add(productModel);
-                    }
-                    // Sort by createdAt in Dart
-                    productList.sort((a, b) {
-                      if (a.createdAt == null && b.createdAt == null) return 0;
-                      if (a.createdAt == null) return 1;
-                      if (b.createdAt == null) return -1;
-                      return a.createdAt!.compareTo(b.createdAt!);
-                    });
-                  })
-                  .catchError((fallbackError) {
-                    log(
-                      'Error fetching products without orderBy: $fallbackError',
-                    );
-                  });
-            } else {
-              log('Error fetching products: $error');
-            }
-          });
+          .get();
+
+      for (var element in querySnapshot.docs) {
+        ProductModel productModel = ProductModel.fromJson(element.data());
+        productList.add(productModel);
+      }
     } catch (e) {
       // If index error, try without orderBy and sort in Dart
       if (e.toString().contains('failed-precondition') ||
-          e.toString().contains('index')) {
+          e.toString().contains('index') ||
+          e.toString().contains('FAILED_PRECONDITION')) {
         log('Firestore index not ready, fetching without orderBy...');
         try {
-          await fireStore
+          final querySnapshot = await fireStore
               .collection(CollectionName.vendorProducts)
               .where('vendorID', isEqualTo: Constant.userModel!.vendorID)
-              .get()
-              .then((value) {
-                for (var element in value.docs) {
-                  ProductModel productModel = ProductModel.fromJson(
-                    element.data(),
-                  );
-                  productList.add(productModel);
-                }
-                // Sort by createdAt in Dart
-                productList.sort((a, b) {
-                  if (a.createdAt == null && b.createdAt == null) return 0;
-                  if (a.createdAt == null) return 1;
-                  if (b.createdAt == null) return -1;
-                  return a.createdAt!.compareTo(b.createdAt!);
-                });
-              });
+              .get();
+
+          for (var element in querySnapshot.docs) {
+            ProductModel productModel = ProductModel.fromJson(element.data());
+            productList.add(productModel);
+          }
+
+          // Sort by createdAt in Dart
+          productList.sort((a, b) {
+            if (a.createdAt == null && b.createdAt == null) return 0;
+            if (a.createdAt == null) return 1;
+            if (b.createdAt == null) return -1;
+            return a.createdAt!.compareTo(b.createdAt!);
+          });
+
+          log(
+            'Products fetched without orderBy, sorted in Dart. Count: ${productList.length}',
+          );
         } catch (fallbackError) {
           log('Error fetching products without orderBy: $fallbackError');
         }
@@ -796,6 +785,7 @@ class FireStoreUtils {
         log('Error in getProduct: $e');
       }
     }
+
     return productList;
   }
 

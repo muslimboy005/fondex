@@ -31,22 +31,22 @@ class AppThemeData {
   static const Color secondary600 = Color(0xFF06001A);
 
   // === E-Commerce (Light) ===
-  static const Color ecommerce50 = Color(0xFFE5EDFF);
-  static const Color ecommerce100 = Color(0xFFABC4FF);
-  static const Color ecommerce200 = Color(0xFF72BCFF);
-  static Color ecommerce300 = const Color(0xFF3974FF);
-  static const Color ecommerce400 = Color(0xFF2650B2);
-  static const Color ecommerce500 = Color(0xFF132C66);
-  static const Color ecommerce600 = Color(0xFF00081A);
+  static const Color ecommerce50 = Color(0xFFFFEBE5);
+  static const Color ecommerce100 = Color(0xFFFFC0AB);
+  static const Color ecommerce200 = Color(0xFFFF9472);
+  static Color ecommerce300 = const Color(0xFFFF6839);
+  static const Color ecommerce400 = Color(0xFFB24826);
+  static const Color ecommerce500 = Color(0xFF662713);
+  static const Color ecommerce600 = Color(0xFF1A0600);
 
   // === E-Commerce (Dark) ===
-  static const Color ecommerceDark50 = Color(0xFF00081A);
-  static const Color ecommerceDark100 = Color(0xFF132C66);
-  static const Color ecommerceDark200 = Color(0xFF2650B2);
-  static const Color ecommerceDark300 = Color(0xFF3974FF);
-  static const Color ecommerceDark400 = Color(0xFF729CFF);
-  static const Color ecommerceDark500 = Color(0xFFABC4FF);
-  static const Color ecommerceDark600 = Color(0xFFE5EDFF);
+  static const Color ecommerceDark50 = Color(0xFF1A0600);
+  static const Color ecommerceDark100 = Color(0xFF662713);
+  static const Color ecommerceDark200 = Color(0xFFB24826);
+  static const Color ecommerceDark300 = Color(0xFFFF6839);
+  static const Color ecommerceDark400 = Color(0xFFFF9472);
+  static const Color ecommerceDark500 = Color(0xFFFFC0AB);
+  static const Color ecommerceDark600 = Color(0xFFFFEBE5);
 
   // === Multi-Vendor ===
   static const Color multiVendor50 = Color(0xFFFFE6E6);
@@ -66,21 +66,21 @@ class AppThemeData {
   static const Color multiVendorDark600 = Color(0xFFFFE6E6);
 
   // === On-Demand ===
-  static const Color onDemand50 = Color(0xFFE6F8FF);
-  static const Color onDemand100 = Color(0xFF9DE5FF);
-  static const Color onDemand200 = Color(0xFF55D1FE);
-  static const Color onDemand300 = Color(0xFF0DBDFD);
-  static const Color onDemand400 = Color(0xFF0885B1);
-  static const Color onDemand500 = Color(0xFF044C65);
-  static const Color onDemand600 = Color(0xFF001319);
+  static const Color onDemand50 = Color(0xFFFFEBE5);
+  static const Color onDemand100 = Color(0xFFFFC0AB);
+  static const Color onDemand200 = Color(0xFFFF9472);
+  static const Color onDemand300 = Color(0xFFFF6839);
+  static const Color onDemand400 = Color(0xFFB24826);
+  static const Color onDemand500 = Color(0xFF662713);
+  static const Color onDemand600 = Color(0xFF1A0600);
 
-  static const Color onDemandDark50 = Color(0xFF001319);
-  static const Color onDemandDark100 = Color(0xFF004C65);
-  static const Color onDemandDark200 = Color(0xFF0885B1);
-  static const Color onDemandDark300 = Color(0xFF55D1FE);
-  static const Color onDemandDark400 = Color(0xFF55D1FE);
-  static const Color onDemandDark500 = Color(0xFF00A1F1);
-  static const Color onDemandDark600 = Color(0xFFE6F8FF);
+  static const Color onDemandDark50 = Color(0xFF1A0600);
+  static const Color onDemandDark100 = Color(0xFF662713);
+  static const Color onDemandDark200 = Color(0xFFB24826);
+  static const Color onDemandDark300 = Color(0xFFFF9472);
+  static const Color onDemandDark400 = Color(0xFFFF9472);
+  static const Color onDemandDark500 = Color(0xFFFF6839);
+  static const Color onDemandDark600 = Color(0xFFFFEBE5);
 
   // === Taxi-Booking ===
   static const Color taxiBooking50 = Color(0xFFFFF6E5);
@@ -157,21 +157,21 @@ class AppThemeData {
   static const Color dangerDark600 = Color(0xFFFFE5E6);
 
   // === Info ===
-  static const Color info50 = Color(0xFFE5F9FF);
-  static const Color info100 = Color(0xFFACECFF);
-  static const Color info200 = Color(0xFF72DEFF);
-  static const Color info300 = Color(0xFF38D0FF);
-  static const Color info400 = Color(0xFF2692B2);
-  static const Color info500 = Color(0xFF135366);
-  static const Color info600 = Color(0xFF00141A);
+  static const Color info50 = Color(0xFFFFEBE5);
+  static const Color info100 = Color(0xFFFFC0AB);
+  static const Color info200 = Color(0xFFFF9472);
+  static const Color info300 = Color(0xFFFF6839);
+  static const Color info400 = Color(0xFFB24826);
+  static const Color info500 = Color(0xFF662713);
+  static const Color info600 = Color(0xFF1A0600);
 
-  static const Color infoDark50 = Color(0xFF00141A);
-  static const Color infoDark100 = Color(0xFF135366);
-  static const Color infoDark200 = Color(0xFF2692B2);
-  static const Color infoDark300 = Color(0xFF38D0FF);
-  static const Color infoDark400 = Color(0xFF72DEFF);
-  static const Color infoDark500 = Color(0xFFACECFF);
-  static const Color infoDark600 = Color(0xFFE5F9FF);
+  static const Color infoDark50 = Color(0xFF1A0600);
+  static const Color infoDark100 = Color(0xFF662713);
+  static const Color infoDark200 = Color(0xFFB24826);
+  static const Color infoDark300 = Color(0xFFFF6839);
+  static const Color infoDark400 = Color(0xFFFF9472);
+  static const Color infoDark500 = Color(0xFFFFC0AB);
+  static const Color infoDark600 = Color(0xFFFFEBE5);
 
   // === Success ===
   static const Color success50 = Color(0xFFE5FFEB);
@@ -207,22 +207,13 @@ class AppThemeData {
   static const Color warningDark500 = Color(0xFFFFE9AB);
   static const Color warningDark600 = Color(0xFFFFF8E5);
 
-
-  static const Color primary50 = Color(0xFF001319);
-  static const Color primary100 = Color(0xFF004C65);
-  static const Color primary200 = Color(0xFF0885B1);
-  static Color primary300 = Color(0xFF00A1F1);
-  static const Color primary400 = Color(0xFF55D1FE);
-  static const Color primary500 = Color(0xFF00A1F1);
-  static const Color primary600 = Color(0xFFE6F8FF);
-
-  // static const Color primary50 = Color(0xFFFFEBE5);
-  // static const Color primary100 = Color(0xFFFFC0AB);
-  // static const Color primary200 = Color(0xFFFF9472);
-  // static Color primary300 = const Color(0xFFFF6839);
-  // static const Color primary400 = Color(0xFFB24826);
-  // static const Color primary500 = Color(0xFF662713);
-  // static const Color primary600 = Color(0xFF1A0600);
+  static const Color primary50 = Color(0xFFFFEBE5);
+  static const Color primary100 = Color(0xFFFFC0AB);
+  static const Color primary200 = Color(0xFFFF9472);
+  static Color primary300 = const Color(0xFFFF6839);
+  static const Color primary400 = Color(0xFFB24826);
+  static const Color primary500 = Color(0xFF662713);
+  static const Color primary600 = Color(0xFF1A0600);
 
   static const String fontFamily = 'EssentialSans';
 

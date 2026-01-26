@@ -23,17 +23,23 @@ class SplashScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Image.asset("assets/images/ic_logo.png", height: 140),
+                  Image.asset("assets/images/vendor_logo.png", height: 140),
                   const SizedBox(height: 14),
                   Text(
-                    "Welcome to eMart Store".tr,
+                    "Welcome to Fondex".tr,
                     textAlign: TextAlign.center,
-                    style: AppThemeData.semiBoldTextStyle(color: isDark ? AppThemeData.grey50 : AppThemeData.grey50, fontSize: 18),
+                    style: AppThemeData.semiBoldTextStyle(
+                      color: isDark ? AppThemeData.grey50 : AppThemeData.grey50,
+                      fontSize: 18,
+                    ),
                   ),
                   Text(
-                    "Your eMart, Your Products, Delivered Fast!".tr,
+                    "Your Fondex, Your Products, Delivered Fast!".tr,
                     textAlign: TextAlign.center,
-                    style: AppThemeData.semiBoldTextStyle(color: isDark ? AppThemeData.grey50 : AppThemeData.grey50, fontSize: 14),
+                    style: AppThemeData.semiBoldTextStyle(
+                      color: isDark ? AppThemeData.grey50 : AppThemeData.grey50,
+                      fontSize: 14,
+                    ),
                   ),
                 ],
               ),

@@ -900,7 +900,7 @@ class WalletController extends GetxController {
       "order_id": orderId,
       "amount": amount,
       "reference": 'Y-Note Test',
-      "lang": "en",
+      "lang": "uz",
       "return_url": orangeMoneyModel.value.returnUrl!.toString(),
       "cancel_url": orangeMoneyModel.value.cancelUrl!.toString(),
       "notif_url": orangeMoneyModel.value.notifUrl!.toString(),

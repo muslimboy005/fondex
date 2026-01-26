@@ -160,7 +160,7 @@ class HomeScreenMultipleOrder extends StatelessWidget {
                                                                         return const SizedBox();
                                                                       } else {
                                                                         if (snapshot.hasError) {
-                                                                          return Center(child: Text('Error: ${snapshot.error}'));
+                                                                          return Center(child: Text('${'Error:'.tr} ${snapshot.error}'));
                                                                         } else if (snapshot.data == null) {
                                                                           return const SizedBox();
                                                                         } else {
@@ -490,7 +490,7 @@ class HomeScreenMultipleOrder extends StatelessWidget {
                                                                         return const SizedBox();
                                                                       } else {
                                                                         if (snapshot.hasError) {
-                                                                          return Center(child: Text('Error: ${snapshot.error}'));
+                                                                          return Center(child: Text('${'Error:'.tr} ${snapshot.error}'));
                                                                         } else if (snapshot.data == null) {
                                                                           return const SizedBox();
                                                                         } else {
@@ -784,7 +784,7 @@ class HomeScreenMultipleOrder extends StatelessWidget {
                                                             return const SizedBox();
                                                           } else {
                                                             if (snapshot.hasError) {
-                                                              return Center(child: Text('Error: ${snapshot.error}'));
+                                                              return Center(child: Text('${'Error:'.tr} ${snapshot.error}'));
                                                             } else if (snapshot.data == null) {
                                                               return const SizedBox();
                                                             } else {

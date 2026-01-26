@@ -23,10 +23,16 @@ class OnboardingScreen extends StatelessWidget {
               : Stack(
                   fit: StackFit.expand,
                   children: [
-                    Image.asset('assets/images/onboarding_bg.png', fit: BoxFit.cover),
+                    Image.asset(
+                      'assets/images/onboarding_bg.png',
+                      fit: BoxFit.cover,
+                    ),
                     SafeArea(
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 20),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 15,
+                          vertical: 20,
+                        ),
                         child: Column(
                           children: [
                             const SizedBox(height: 20),
@@ -34,15 +40,22 @@ class OnboardingScreen extends StatelessWidget {
                               alignment: Alignment.topRight,
                               child: RichText(
                                 text: TextSpan(
-                                  style: AppThemeData.regularTextStyle(fontSize: 14),
+                                  style: AppThemeData.regularTextStyle(
+                                    fontSize: 14,
+                                  ),
                                   children: [
                                     TextSpan(
-                                      text: "${controller.currentPage.value + 1}",
-                                      style: AppThemeData.regularTextStyle(color: AppThemeData.grey800),
+                                      text:
+                                          "${controller.currentPage.value + 1}",
+                                      style: AppThemeData.regularTextStyle(
+                                        color: AppThemeData.grey800,
+                                      ),
                                     ),
                                     TextSpan(
                                       text: "/$pageCount",
-                                      style: AppThemeData.regularTextStyle(color: AppThemeData.grey400),
+                                      style: AppThemeData.regularTextStyle(
+                                        color: AppThemeData.grey400,
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -61,17 +74,26 @@ class OnboardingScreen extends StatelessWidget {
                                       children: [
                                         Text(
                                           item.title ?? '',
-                                          style: AppThemeData.boldTextStyle(color: AppThemeData.grey900),
+                                          style: AppThemeData.boldTextStyle(
+                                            color: AppThemeData.grey900,
+                                          ),
                                           textAlign: TextAlign.center,
                                         ),
                                         const SizedBox(height: 5),
                                         Text(
                                           item.description ?? '',
-                                          style: AppThemeData.boldTextStyle(color: AppThemeData.grey500, fontSize: 14),
+                                          style: AppThemeData.boldTextStyle(
+                                            color: AppThemeData.grey500,
+                                            fontSize: 14,
+                                          ),
                                           textAlign: TextAlign.center,
                                         ),
                                         const SizedBox(height: 40),
-                                        NetworkImageWidget(imageUrl: item.image ?? '', width: double.infinity, height: 500),
+                                        NetworkImageWidget(
+                                          imageUrl: item.image ?? '',
+                                          width: double.infinity,
+                                          height: 500,
+                                        ),
                                       ],
                                     ),
                                   );
@@ -90,7 +112,12 @@ class OnboardingScreen extends StatelessWidget {
                                 : Row(
                                     children: [
                                       Expanded(
-                                        child: RoundedButtonFill(title: "Skip".tr, onPress: () => _finish(), color: AppThemeData.grey50, textColor: AppThemeData.grey900),
+                                        child: RoundedButtonFill(
+                                          title: "Skip".tr,
+                                          onPress: () => _finish(),
+                                          color: AppThemeData.grey50,
+                                          textColor: AppThemeData.grey900,
+                                        ),
                                       ),
                                       const SizedBox(width: 20),
                                       Expanded(
@@ -117,6 +144,7 @@ class OnboardingScreen extends StatelessWidget {
 
   Future<void> _finish() async {
     await Preferences.setBoolean(Preferences.isFinishOnBoardingKey, true);
+    // Navigate to email login screen (for Android/iOS, go directly to LoginScreen)
     Get.offAll(() => const LoginScreen());
   }
 }

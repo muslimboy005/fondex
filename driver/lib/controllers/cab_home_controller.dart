@@ -14,21 +14,23 @@ import 'package:driver/models/wallet_transaction_model.dart';
 import 'package:driver/services/audio_player_service.dart';
 import 'package:driver/themes/app_them_data.dart';
 import 'package:driver/utils/fire_store_utils.dart';
+import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart' as location;
-import 'package:yandex_mapkit/yandex_mapkit.dart' as yandex;
+import 'package:google_maps_flutter/google_maps_flutter.dart' as google_maps;
+import 'package:location/location.dart';
 
 class CabHomeController extends GetxController {
   RxBool isLoading = true.obs;
-  yandex.YandexMapController? yandexMapController;
-  RxList<yandex.PlacemarkMapObject> yandexPlacemarks =
-      <yandex.PlacemarkMapObject>[].obs;
-  RxList<yandex.PolylineMapObject> yandexPolylines =
-      <yandex.PolylineMapObject>[].obs;
+  google_maps.GoogleMapController? mapController;
+  RxMap<String, google_maps.Marker> markers =
+      <String, google_maps.Marker>{}.obs;
+  RxMap<google_maps.PolylineId, google_maps.Polyline> polyLines =
+      <google_maps.PolylineId, google_maps.Polyline>{}.obs;
 
   StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _driverSub;
   StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _orderDocSub;
@@ -155,9 +157,9 @@ class CabHomeController extends GetxController {
 
   Future<void> clearMap() async {
     await AudioPlayerService.playSound(false);
-    // Clear Yandex Map markers and polylines
-    yandexPlacemarks.clear();
-    yandexPolylines.clear();
+    // Clear Google Maps markers and polylines
+    markers.clear();
+    polyLines.clear();
     routePoints.clear();
     update();
   }
@@ -642,9 +644,8 @@ class CabHomeController extends GetxController {
         print("🔄 [changeData] OSM polyline chizilmoqda");
         await getOSMPolyline();
       } else {
-        // Yandex yoki Google uchun
-        print(
-            "🔄 [changeData] ${Constant.selectedMapType == "yandex" ? "Yandex" : "Google"} polyline chizilmoqda");
+        // Google Maps uchun
+        print("🔄 [changeData] Google Maps polyline chizilmoqda");
         await getGooglePolyline();
       }
     } else {
@@ -666,7 +667,7 @@ class CabHomeController extends GetxController {
     }
 
     // Update markers after route is drawn
-    await updateYandexMarkers();
+    await updateGoogleMarkers();
 
     print("🔄 [changeData] changeData tugadi");
   }
@@ -747,31 +748,49 @@ class CabHomeController extends GetxController {
 
   void _updateCurrentLocationMarkers() async {
     try {
-      final loc = driverModel.value.location;
-      var latLng = _safeLatLngFromLocation(loc);
-
-      // If location is 0,0, try to get from Constant.locationDataFinal (GPS)
-      if (latLng.latitude == 0.0 && latLng.longitude == 0.0) {
-        if (Constant.locationDataFinal != null) {
-          latLng = location.LatLng(
-            Constant.locationDataFinal!.latitude ?? 0.0,
-            Constant.locationDataFinal!.longitude ?? 0.0,
-          );
-          log("📍 Using GPS location from Constant.locationDataFinal: ${latLng.latitude}, ${latLng.longitude}");
+      // ✅ Try to get fresh GPS location first
+      try {
+        final locationService = Location();
+        final freshLocation = await locationService.getLocation();
+        if (freshLocation.latitude != null && freshLocation.longitude != null) {
+          Constant.locationDataFinal = freshLocation;
+          log("📍 _updateCurrentLocationMarkers: Got fresh GPS location: ${freshLocation.latitude}, ${freshLocation.longitude}");
         }
+      } catch (e) {
+        log("📍 _updateCurrentLocationMarkers: Could not get fresh GPS location: $e");
+        // Continue with existing location
+      }
+
+      // ✅ ALWAYS prioritize current GPS location over Firestore location
+      location.LatLng latLng;
+
+      if (Constant.locationDataFinal != null &&
+          Constant.locationDataFinal!.latitude != null &&
+          Constant.locationDataFinal!.longitude != null) {
+        // Use current GPS location (most accurate and up-to-date)
+        latLng = location.LatLng(
+          Constant.locationDataFinal!.latitude!,
+          Constant.locationDataFinal!.longitude!,
+        );
+        log("📍 _updateCurrentLocationMarkers: Using current GPS location: ${latLng.latitude}, ${latLng.longitude}");
+      } else {
+        // Fallback to driverModel.location from Firestore
+        final loc = driverModel.value.location;
+        latLng = _safeLatLngFromLocation(loc);
+        log("📍 _updateCurrentLocationMarkers: Using driverModel.location (fallback): ${latLng.latitude}, ${latLng.longitude}");
       }
 
       // If still 0,0, use default location (Tashkent)
       if (latLng.latitude == 0.0 && latLng.longitude == 0.0) {
         latLng = const location.LatLng(41.3111, 69.2797);
-        log("📍 Using default location (Tashkent): ${latLng.latitude}, ${latLng.longitude}");
+        log("📍 _updateCurrentLocationMarkers: Using default location (Tashkent): ${latLng.latitude}, ${latLng.longitude}");
       }
 
       // Update reactive current location
       current.value = location.LatLng(latLng.latitude, latLng.longitude);
 
-      // --- YANDEX MAP Section ---
-      updateYandexMarkers();
+      // --- GOOGLE MAP Section ---
+      updateGoogleMarkers();
 
       // Only update if location actually changed to prevent flickering
       final previousLat = current.value.latitude;
@@ -783,7 +802,7 @@ class CabHomeController extends GetxController {
       }
 
       log('_updateCurrentLocationMarkers: lat=${latLng.latitude}, lng=${latLng.longitude}, '
-          'yandexPlacemarks=${yandexPlacemarks.length}');
+          'markers=${markers.length}');
     } catch (e) {
       log("_updateCurrentLocationMarkers error: $e");
     }
@@ -792,61 +811,85 @@ class CabHomeController extends GetxController {
   Rx<PolylinePoints> polylinePoints =
       PolylinePoints(apiKey: Constant.mapAPIKey).obs;
 
-  /// Update Yandex Map markers
-  Future<void> updateYandexMarkers() async {
-    try {
-      final placemarks = <yandex.PlacemarkMapObject>[];
+  google_maps.BitmapDescriptor? driverIcon;
+  google_maps.BitmapDescriptor? sourceIcon;
+  google_maps.BitmapDescriptor? destinationIcon;
 
-      // Driver marker
-      if (!(current.value.latitude == 0.0 && current.value.longitude == 0.0)) {
-        try {
-          final driverIcon = yandex.BitmapDescriptor.fromAssetImage(
-            'assets/images/ic_cab.png',
-          );
-          placemarks.add(
-            yandex.PlacemarkMapObject(
-              mapId: const yandex.MapObjectId('driver'),
-              point: yandex.Point(
-                latitude: current.value.latitude,
-                longitude: current.value.longitude,
-              ),
-              opacity: 1.0, // Opacity yo'q - to'liq ko'rinadi
-              icon: yandex.PlacemarkIcon.single(
-                yandex.PlacemarkIconStyle(
-                  image: driverIcon,
-                  scale: 0.8, // Kichikroq qilish
-                  rotationType: yandex.RotationType.rotate,
-                ),
-              ),
-            ),
-          );
-          log("✅ Driver marker yaratildi: ${current.value.latitude}, ${current.value.longitude}");
-        } catch (e) {
-          log("❌ Driver marker yaratishda xatolik: $e");
-        }
+  Future<void> _loadIcons() async {
+    try {
+      final Uint8List driverBytes =
+          await Constant().getBytesFromAsset('assets/images/ic_cab.png', 50);
+      final Uint8List sourceBytes = await Constant()
+          .getBytesFromAsset('assets/images/location_black3x.png', 100);
+      final Uint8List destBytes = await Constant()
+          .getBytesFromAsset('assets/images/location_orange3x.png', 100);
+
+      driverIcon = google_maps.BitmapDescriptor.fromBytes(driverBytes);
+      sourceIcon = google_maps.BitmapDescriptor.fromBytes(sourceBytes);
+      destinationIcon = google_maps.BitmapDescriptor.fromBytes(destBytes);
+    } catch (e) {
+      log("Error loading icons: $e");
+    }
+  }
+
+  /// Update Google Maps markers
+  Future<void> updateGoogleMarkers() async {
+    try {
+      if (driverIcon == null || sourceIcon == null || destinationIcon == null) {
+        await _loadIcons();
+      }
+
+      markers.clear();
+
+      // ✅ Driver marker - ALWAYS use current GPS location if available
+      google_maps.LatLng driverMarkerPosition;
+      if (Constant.locationDataFinal != null &&
+          Constant.locationDataFinal!.latitude != null &&
+          Constant.locationDataFinal!.longitude != null) {
+        // Use current GPS location (most accurate)
+        driverMarkerPosition = google_maps.LatLng(
+          Constant.locationDataFinal!.latitude!,
+          Constant.locationDataFinal!.longitude!,
+        );
+        log("📍 updateGoogleMarkers: Driver marker using GPS: ${driverMarkerPosition.latitude}, ${driverMarkerPosition.longitude}");
+      } else if (!(current.value.latitude == 0.0 &&
+          current.value.longitude == 0.0)) {
+        // Fallback to current.value
+        driverMarkerPosition = google_maps.LatLng(
+          current.value.latitude,
+          current.value.longitude,
+        );
+        log("📍 updateGoogleMarkers: Driver marker using current.value: ${driverMarkerPosition.latitude}, ${driverMarkerPosition.longitude}");
+      } else {
+        // Skip if no valid location
+        log("⚠️ updateGoogleMarkers: No valid driver location, skipping marker");
+        return;
+      }
+
+      // Create driver marker
+      try {
+        markers['driver'] = google_maps.Marker(
+          markerId: const google_maps.MarkerId('driver'),
+          position: driverMarkerPosition,
+          icon: driverIcon ?? google_maps.BitmapDescriptor.defaultMarker,
+          anchor: const Offset(0.5, 0.5),
+          flat: true,
+        );
+        log("✅ Driver marker yaratildi: ${driverMarkerPosition.latitude}, ${driverMarkerPosition.longitude}");
+      } catch (e) {
+        log("❌ Driver marker yaratishda xatolik: $e");
       }
 
       // Source marker (pickup)
       if (!(source.value.latitude == 0.0 && source.value.longitude == 0.0)) {
         try {
-          final sourceIcon = yandex.BitmapDescriptor.fromAssetImage(
-            'assets/images/location_black3x.png',
-          );
-          placemarks.add(
-            yandex.PlacemarkMapObject(
-              mapId: const yandex.MapObjectId('source'),
-              point: yandex.Point(
-                latitude: source.value.latitude,
-                longitude: source.value.longitude,
-              ),
-              opacity: 1.0, // Opacity yo'q - to'liq ko'rinadi
-              icon: yandex.PlacemarkIcon.single(
-                yandex.PlacemarkIconStyle(
-                  image: sourceIcon,
-                  scale: 1.0,
-                ),
-              ),
+          markers['source'] = google_maps.Marker(
+            markerId: const google_maps.MarkerId('source'),
+            position: google_maps.LatLng(
+              source.value.latitude,
+              source.value.longitude,
             ),
+            icon: sourceIcon ?? google_maps.BitmapDescriptor.defaultMarker,
           );
           log("✅ Source marker yaratildi: ${source.value.latitude}, ${source.value.longitude}");
         } catch (e) {
@@ -858,24 +901,13 @@ class CabHomeController extends GetxController {
       if (!(destination.value.latitude == 0.0 &&
           destination.value.longitude == 0.0)) {
         try {
-          final destIcon = yandex.BitmapDescriptor.fromAssetImage(
-            'assets/images/location_orange3x.png',
-          );
-          placemarks.add(
-            yandex.PlacemarkMapObject(
-              mapId: const yandex.MapObjectId('destination'),
-              point: yandex.Point(
-                latitude: destination.value.latitude,
-                longitude: destination.value.longitude,
-              ),
-              opacity: 1.0, // Opacity yo'q - to'liq ko'rinadi
-              icon: yandex.PlacemarkIcon.single(
-                yandex.PlacemarkIconStyle(
-                  image: destIcon,
-                  scale: 1.0,
-                ),
-              ),
+          markers['destination'] = google_maps.Marker(
+            markerId: const google_maps.MarkerId('destination'),
+            position: google_maps.LatLng(
+              destination.value.latitude,
+              destination.value.longitude,
             ),
+            icon: destinationIcon ?? google_maps.BitmapDescriptor.defaultMarker,
           );
           log("✅ Destination marker yaratildi: ${destination.value.latitude}, ${destination.value.longitude}");
         } catch (e) {
@@ -883,34 +915,25 @@ class CabHomeController extends GetxController {
         }
       }
 
-      log("📍 [updateYandexMarkers] Jami ${placemarks.length} ta marker yaratildi");
+      log("📍 [updateGoogleMarkers] Jami ${markers.length} ta marker yaratildi");
 
-      // Update markers - this will replace all existing markers
-      yandexPlacemarks.value = placemarks;
-
-      log("📍 [updateYandexMarkers] yandexPlacemarks.value = ${yandexPlacemarks.length} ta marker");
-
-      // Update Yandex map camera if controller is ready
-      if (yandexMapController != null &&
-          !(current.value.latitude == 0.0 && current.value.longitude == 0.0)) {
-        yandexMapController!.moveCamera(
-          yandex.CameraUpdate.newCameraPosition(
-            yandex.CameraPosition(
-              target: yandex.Point(
-                latitude: current.value.latitude,
-                longitude: current.value.longitude,
-              ),
+      // Update Google map camera if controller is ready
+      // ✅ Use GPS location for camera if available
+      google_maps.LatLng cameraTarget = driverMarkerPosition;
+      if (mapController != null &&
+          !(cameraTarget.latitude == 0.0 && cameraTarget.longitude == 0.0)) {
+        mapController!.animateCamera(
+          google_maps.CameraUpdate.newCameraPosition(
+            google_maps.CameraPosition(
+              target: cameraTarget,
               zoom: 16,
             ),
           ),
-          animation: const yandex.MapAnimation(
-            type: yandex.MapAnimationType.smooth,
-            duration: 1.0,
-          ),
         );
       }
+      update();
     } catch (e, stackTrace) {
-      log("❌ Yandex map markers update error: $e");
+      log("❌ Google map markers update error: $e");
       log("Stack trace: $stackTrace");
     }
   }
@@ -943,7 +966,7 @@ class CabHomeController extends GetxController {
     return location.LatLng(lat, lng);
   }
 
-  // _safeRotation() removed - not used with Yandex Map
+  // _safeRotation() removed - not used with Google Maps
   // double _safeRotation() {
   //   return double.tryParse(driverModel.value.rotation.toString()) ?? 0.0;
   // }
@@ -1054,63 +1077,34 @@ class CabHomeController extends GetxController {
       // Draw polyline
       addPolyLine(polylineCoordinates);
 
-      // --- Update Yandex Map reactive variables ---
-      if (Constant.selectedMapType == "yandex") {
-        // Update current location (driver)
-        if (addDriver) {
-          current.value = origin;
-        }
-        // Update source location (pickup)
-        if (addSource) {
-          final sourceLatLng =
-              _safeLatLngFromLocation(currentOrder.value.sourceLocation);
-          if (sourceLatLng.latitude != 0.0 || sourceLatLng.longitude != 0.0) {
-            source.value = sourceLatLng;
-          }
-        }
-        // Update destination location (dropoff)
-        if (addDestination) {
-          final destLatLng =
-              _safeLatLngFromLocation(currentOrder.value.destinationLocation);
-          if (destLatLng.latitude != 0.0 || destLatLng.longitude != 0.0) {
-            this.destination.value = destLatLng;
-          }
-        }
-        // Yandex Map uchun markerlarni yangilash
-        await updateYandexMarkers();
-      } else {
-        // Google Maps yoki OSM uchun
-        await _updateGoogleMarkers(
-          driverLatLng: addDriver ? origin : null,
-          sourceLatLng: addSource
-              ? _safeLatLngFromLocation(currentOrder.value.sourceLocation)
-              : null,
-          destinationLatLng: addDestination
-              ? _safeLatLngFromLocation(currentOrder.value.destinationLocation)
-              : null,
-        );
+      // --- Update Google Maps reactive variables ---
+      // Update current location (driver)
+      if (addDriver) {
+        current.value = origin;
       }
+      // Update source location (pickup)
+      if (addSource) {
+        final sourceLatLng =
+            _safeLatLngFromLocation(currentOrder.value.sourceLocation);
+        if (sourceLatLng.latitude != 0.0 || sourceLatLng.longitude != 0.0) {
+          source.value = sourceLatLng;
+        }
+      }
+      // Update destination location (dropoff)
+      if (addDestination) {
+        final destLatLng =
+            _safeLatLngFromLocation(currentOrder.value.destinationLocation);
+        if (destLatLng.latitude != 0.0 || destLatLng.longitude != 0.0) {
+          this.destination.value = destLatLng;
+        }
+      }
+      // Google Maps uchun markerlarni yangilash
+      await updateGoogleMarkers();
     } catch (e, s) {
       log('_drawGoogleRoute error: $e');
       debugPrintStack(stackTrace: s);
     }
   }
-
-  Future<void> _updateGoogleMarkers({
-    location.LatLng? driverLatLng,
-    location.LatLng? sourceLatLng,
-    location.LatLng? destinationLatLng,
-  }) async {
-    // Markers are now handled by Yandex Map via updateYandexMarkers()
-    // This function is kept for compatibility but does nothing
-    update();
-  }
-
-  // Google Maps functions removed - using Yandex Map instead
-  // Future<BitmapDescriptor> _bitmapDescriptorFromUrl(String url,
-  //     {int width = 100}) async { ... }
-  // Future<BitmapDescriptor> _bitmapDescriptorFromAsset(String asset,
-  //     {int width = 100}) async { ... }
 
   void addPolyLine(List<location.LatLng> polylineCoordinates) {
     if (polylineCoordinates.isEmpty) {
@@ -1119,43 +1113,39 @@ class CabHomeController extends GetxController {
       return;
     }
 
-    // Convert to Yandex Map polyline
-    final yandexPoints = polylineCoordinates
-        .map((point) => yandex.Point(
-              latitude: point.latitude,
-              longitude: point.longitude,
+    // Convert to Google Maps polyline
+    final googlePoints = polylineCoordinates
+        .map((point) => google_maps.LatLng(
+              point.latitude,
+              point.longitude,
             ))
         .toList();
 
-    yandexPolylines.value = [
-      yandex.PolylineMapObject(
-        mapId: const yandex.MapObjectId('route'),
-        polyline: yandex.Polyline(points: yandexPoints),
-        strokeColor: AppThemeData.primary300,
-        strokeWidth: 8.0,
-      ),
-    ];
+    final polylineId = const google_maps.PolylineId('route');
+    polyLines[polylineId] = google_maps.Polyline(
+      polylineId: polylineId,
+      points: googlePoints,
+      color: AppThemeData.primary300,
+      width: 8,
+      geodesic: true,
+    );
 
     update();
     // Update camera to first point
-    if (polylineCoordinates.isNotEmpty && yandexMapController != null) {
+    if (polylineCoordinates.isNotEmpty && mapController != null) {
       final firstPoint = polylineCoordinates.first;
-      yandexMapController!.moveCamera(
-        yandex.CameraUpdate.newCameraPosition(
-          yandex.CameraPosition(
-            target: yandex.Point(
-              latitude: firstPoint.latitude,
-              longitude: firstPoint.longitude,
+      mapController!.animateCamera(
+        google_maps.CameraUpdate.newCameraPosition(
+          google_maps.CameraPosition(
+            target: google_maps.LatLng(
+              firstPoint.latitude,
+              firstPoint.longitude,
             ),
             zoom: currentOrder.value.id == null ||
                     currentOrder.value.status == Constant.driverPending
                 ? 16
                 : 20,
           ),
-        ),
-        animation: const yandex.MapAnimation(
-          type: yandex.MapAnimationType.smooth,
-          duration: 1.0,
         ),
       );
     }
@@ -1171,18 +1161,14 @@ class CabHomeController extends GetxController {
       lng = double.tryParse('${loc.longitude}') ?? 0.0;
     }
     _updateCurrentLocationMarkers();
-    // Move Yandex map camera to current location
-    if (yandexMapController != null && lat != 0.0 && lng != 0.0) {
-      yandexMapController!.moveCamera(
-        yandex.CameraUpdate.newCameraPosition(
-          yandex.CameraPosition(
-            target: yandex.Point(latitude: lat, longitude: lng),
+    // Move Google map camera to current location
+    if (mapController != null && lat != 0.0 && lng != 0.0) {
+      mapController!.animateCamera(
+        google_maps.CameraUpdate.newCameraPosition(
+          google_maps.CameraPosition(
+            target: google_maps.LatLng(lat, lng),
             zoom: 16,
           ),
-        ),
-        animation: const yandex.MapAnimation(
-          type: yandex.MapAnimationType.smooth,
-          duration: 1.0,
         ),
       );
     }
@@ -1196,9 +1182,8 @@ class CabHomeController extends GetxController {
       location.LatLng(21.2000, 72.8600).obs; // Destination
 
   void setOsmMapMarker() {
-    // OSM markers are now handled by Yandex Map via updateYandexMarkers()
-    // This function is kept for compatibility but does nothing
-    updateYandexMarkers();
+    // OSM markers are now handled by Google Maps via updateGoogleMarkers()
+    updateGoogleMarkers();
   }
 
   Future<void> getOSMPolyline() async {
@@ -1226,9 +1211,8 @@ class CabHomeController extends GetxController {
           animateToSource();
           await fetchRoute(current.value, source.value);
 
-          // Yandex Map uchun polyline chizish
-          if (Constant.selectedMapType == "yandex" ||
-              Constant.mapType == "inappmap") {
+          // Google Maps uchun polyline chizish
+          if (Constant.mapType == "inappmap") {
             if (routePoints.isNotEmpty) {
               addPolyLine(routePoints.toList());
             }
@@ -1248,9 +1232,8 @@ class CabHomeController extends GetxController {
           );
           await fetchRoute(current.value, destination.value);
 
-          // Yandex Map uchun polyline chizish
-          if (Constant.selectedMapType == "yandex" ||
-              Constant.mapType == "inappmap") {
+          // Google Maps uchun polyline chizish
+          if (Constant.mapType == "inappmap") {
             if (routePoints.isNotEmpty) {
               addPolyLine(routePoints.toList());
             }
@@ -1268,9 +1251,8 @@ class CabHomeController extends GetxController {
             currentOrder.value.destinationLocation?.longitude ?? 0.0);
         await fetchRoute(current.value, destination.value);
 
-        // Yandex Map uchun polyline chizish
-        if (Constant.selectedMapType == "yandex" ||
-            Constant.mapType == "inappmap") {
+        // Google Maps uchun polyline chizish
+        if (Constant.mapType == "inappmap") {
           if (routePoints.isNotEmpty) {
             addPolyLine(routePoints.toList());
           }

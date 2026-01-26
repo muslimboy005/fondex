@@ -14,7 +14,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
 
     <application
-        android:label="driver"
+        android:label="Fondex Driver"
         android:name="felix.fondex.driver.MainApplication"
         android:icon="@mipmap/ic_launcher"
         tools:replace="android:label"
@@ -56,11 +56,6 @@
         <meta-data
             android:name="com.google.android.gms.wallet.api.enabled"
             android:value="true" />
-
-        <!-- Yandex MapKit API Key -->
-        <meta-data
-            android:name="com.yandex.mapkit.api_key"
-            android:value="9bd1fb94-3024-43a3-9d31-44ecc894e42f" />
 
 
     </application>

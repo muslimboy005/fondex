@@ -51,6 +51,8 @@ class SignUpController extends GetxController {
       if (type.value == "mobileNumber") {
         phoneNUmberEditingController.value.text = userModel.value.phoneNumber.toString();
         countryCodeEditingController.value.text = userModel.value.countryCode.toString();
+        emailEditingController.value.text = userModel.value.email ?? "";
+        // Password is not shown/asked, it's default "123456" in Firebase
       } else if (type.value == "google" || type.value == "apple") {
         emailEditingController.value.text = userModel.value.email ?? "";
         firstNameEditingController.value.text = userModel.value.firstName ?? "";

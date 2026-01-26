@@ -57,7 +57,6 @@ class Constant {
   static String rentalRadius = '0.0';
 
   static String mapAPIKey = "";
-  static String yandexMapAPIKey = "9bd1fb94-3024-43a3-9d31-44ecc894e42f";
   static String placeHolderImage = "";
   static String defaultCountryCode = "";
   static String defaultCountry = "";
@@ -405,9 +404,7 @@ class Constant {
 
   static DateTime stringToDate(String openDineTime) {
     return DateFormat('HH:mm').parse(DateFormat('HH:mm').format(
-        DateFormat("hh:mm a").parse((Intl.getCurrentLocale() == "en_US")
-            ? openDineTime
-            : openDineTime.toLowerCase())));
+        DateFormat("hh:mm a").parse(openDineTime.toLowerCase())));
   }
 
   static LanguageModel getLanguage() {

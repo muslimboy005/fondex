@@ -8,7 +8,7 @@ import 'package:customer/utils/notification_service.dart';
 import 'package:customer/utils/preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
-import '../screen_ui/auth_screens/login_screen.dart';
+import '../screen_ui/auth_screens/auth_screen.dart';
 import '../screen_ui/location_enable_screens/location_permission_screen.dart';
 import '../screen_ui/on_boarding_screen/on_boarding_screen.dart';
 import '../service/fire_store_utils.dart';
@@ -50,17 +50,17 @@ class SplashController extends GetxController {
                 }
               } else {
                 await FirebaseAuth.instance.signOut();
-                Get.offAll(const LoginScreen());
+                Get.offAll(const AuthScreen());
               }
             } else {
               await FirebaseAuth.instance.signOut();
-              Get.offAll(const LoginScreen());
+              Get.offAll(const AuthScreen());
             }
           }
         });
       } else {
         await FirebaseAuth.instance.signOut();
-        Get.offAll(const LoginScreen());
+        Get.offAll(const AuthScreen());
       }
     }
   }

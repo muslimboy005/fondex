@@ -35,7 +35,7 @@ class SignupScreen extends StatelessWidget {
                     style: TextStyle(color: isDark ? AppThemeData.grey50 : AppThemeData.grey900, fontSize: 22, fontFamily: AppThemeData.semiBold),
                   ),
                   Text(
-                    "Join eMart Store today and start managing your orders effortlessly.".tr,
+                    "Join Fondex today and start managing your orders effortlessly.".tr,
                     style: TextStyle(color: isDark ? AppThemeData.grey400 : AppThemeData.grey500, fontSize: 16, fontFamily: AppThemeData.regular),
                   ),
                   const SizedBox(height: 32),
@@ -71,7 +71,7 @@ class SignupScreen extends StatelessWidget {
                     textInputType: TextInputType.emailAddress,
                     controller: controller.emailEditingController.value,
                     hintText: 'Enter Email Address'.tr,
-                    enable: controller.type.value == "google" || controller.type.value == "apple" ? false : true,
+                    enable: controller.type.value == "google" || controller.type.value == "apple" || controller.type.value == "mobileNumber" ? false : true,
                     prefix: Padding(
                       padding: const EdgeInsets.all(12),
                       child: SvgPicture.asset("assets/icons/ic_mail.svg", colorFilter: ColorFilter.mode(isDark ? AppThemeData.grey300 : AppThemeData.grey600, BlendMode.srcIn)),
@@ -157,9 +157,9 @@ class SignupScreen extends StatelessWidget {
                           ShowToastDialog.showToast("Please enter first name".tr);
                         } else if (controller.lastNameEditingController.value.text.trim().isEmpty) {
                           ShowToastDialog.showToast("Please enter last name".tr);
-                        } else if (controller.emailEditingController.value.text.trim().isEmpty) {
+                        } else if (controller.type.value != "mobileNumber" && controller.emailEditingController.value.text.trim().isEmpty) {
                           ShowToastDialog.showToast("Please enter valid email".tr);
-                        } else if (controller.phoneNUmberEditingController.value.text.trim().isEmpty) {
+                        } else if (controller.type.value != "mobileNumber" && controller.phoneNUmberEditingController.value.text.trim().isEmpty) {
                           ShowToastDialog.showToast("Please enter phone number".tr);
                         } else {
                           controller.signUpWithEmailAndPassword();

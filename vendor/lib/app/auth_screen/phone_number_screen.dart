@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:vendor/themes/theme_controller.dart';
 import 'package:vendor/app/auth_screen/signup_screen.dart';
+import 'package:vendor/app/auth_screen/login_screen.dart';
 import 'package:vendor/constant/show_toast_dialog.dart';
 import 'package:vendor/controller/phone_number_controller.dart';
 import 'package:vendor/themes/app_them_data.dart';
@@ -97,7 +98,7 @@ class PhoneNumberScreen extends StatelessWidget {
                     color: isDark ? AppThemeData.grey700 : AppThemeData.grey200,
                     textColor: isDark ? AppThemeData.grey50 : AppThemeData.grey900,
                     onPress: () async {
-                      Get.back();
+                      Get.to(const LoginScreen());
                     },
                   ),
                 ],

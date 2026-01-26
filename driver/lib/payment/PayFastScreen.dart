@@ -3,6 +3,7 @@
 import 'dart:developer';
 
 import 'package:driver/models/payment_model/pay_fast_model.dart';
+import 'package:driver/themes/app_them_data.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -12,7 +13,8 @@ class PayFastScreen extends StatefulWidget {
   final String htmlData;
   final PayFastModel payFastSettingData;
 
-  const PayFastScreen({super.key, required this.htmlData, required this.payFastSettingData});
+  const PayFastScreen(
+      {super.key, required this.htmlData, required this.payFastSettingData});
 
   @override
   State<PayFastScreen> createState() => _PayFastScreenState();
@@ -85,8 +87,8 @@ class _PayFastScreenState extends State<PayFastScreen> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text('Cancel Payment'.tr),
-          content: const SingleChildScrollView(
-            child: Text("cancelPayment?"),
+          content: SingleChildScrollView(
+            child: Text("cancelPayment?".tr),
           ),
           actions: <Widget>[
             TextButton(
@@ -102,7 +104,7 @@ class _PayFastScreenState extends State<PayFastScreen> {
             TextButton(
               child: Text(
                 'Continue Payment'.tr,
-                style: TextStyle(color: Colors.green),
+                style: TextStyle(color: AppThemeData.primary300),
               ),
               onPressed: () {
                 Get.back();

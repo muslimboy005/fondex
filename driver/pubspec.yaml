@@ -91,7 +91,6 @@ dependencies:
 
   flutter_map: ^8.2.2
   latlong2: ^0.9.1
-  yandex_mapkit: ^4.2.1
 
   #payment dependency
   flutter_stripe: ^12.1.1

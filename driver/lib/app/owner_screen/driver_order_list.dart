@@ -45,7 +45,7 @@ class DriverOrderList extends StatelessWidget {
       case "rental-service":
         return const RentalOrderListScreen();
       default:
-        return const Center(child: Text("Service type not supported"));
+        return Center(child: Text("Service type not supported".tr));
     }
   }
 }

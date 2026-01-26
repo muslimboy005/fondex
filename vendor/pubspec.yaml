@@ -127,6 +127,7 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.11.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -150,3 +151,9 @@ flutter:
           weight: 600
         - asset: assets/fonts/essential_sans_bold.otf
           weight: 700
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/vendor_logo.png"
+  min_sdk_android: 21

@@ -25,7 +25,11 @@ class OtpVerificationScreen extends StatelessWidget {
             elevation: 0,
             automaticallyImplyLeading: false,
             leading: IconButton(
-              icon: Icon(Icons.arrow_back, size: 20, color: isDark ? AppThemeData.greyDark500 : AppThemeData.grey500),
+              icon: Icon(
+                Icons.arrow_back,
+                size: 20,
+                color: isDark ? AppThemeData.greyDark500 : AppThemeData.grey500,
+              ),
               onPressed: () {
                 Get.back();
               },
@@ -35,14 +39,33 @@ class OtpVerificationScreen extends StatelessWidget {
                 onPressed: () {
                   // Handle skip action
                 },
-                style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 12), minimumSize: const Size(0, 40), tapTargetSize: MaterialTapTargetSize.shrinkWrap),
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  minimumSize: const Size(0, 40),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text("Skip".tr, style: AppThemeData.mediumTextStyle(color: isDark ? AppThemeData.greyDark500 : AppThemeData.grey500)),
+                    Text(
+                      "Skip".tr,
+                      style: AppThemeData.mediumTextStyle(
+                        color:
+                            isDark
+                                ? AppThemeData.greyDark500
+                                : AppThemeData.grey500,
+                      ),
+                    ),
                     Padding(
                       padding: const EdgeInsets.only(top: 2, left: 4),
-                      child: Icon(Icons.arrow_forward_ios, size: 16, color: isDark ? AppThemeData.greyDark500 : AppThemeData.grey500),
+                      child: Icon(
+                        Icons.arrow_forward_ios,
+                        size: 16,
+                        color:
+                            isDark
+                                ? AppThemeData.greyDark500
+                                : AppThemeData.grey500,
+                      ),
                     ),
                   ],
                 ),
@@ -62,7 +85,13 @@ class OtpVerificationScreen extends StatelessWidget {
                         children: [
                           Text(
                             "${"Enter the OTP sent to your mobile".tr} ${controller.countryCode} ${controller.maskPhoneNumber(controller.phoneNumber.value)}",
-                            style: AppThemeData.boldTextStyle(fontSize: 24, color: isDark ? AppThemeData.greyDark900 : AppThemeData.grey900),
+                            style: AppThemeData.boldTextStyle(
+                              fontSize: 24,
+                              color:
+                                  isDark
+                                      ? AppThemeData.greyDark900
+                                      : AppThemeData.grey900,
+                            ),
                           ),
 
                           const SizedBox(height: 30),
@@ -73,20 +102,41 @@ class OtpVerificationScreen extends StatelessWidget {
                             length: 6,
                             controller: controller.otpController.value,
                             keyboardType: TextInputType.number,
-                            cursorColor: isDark ? AppThemeData.greyDark500 : AppThemeData.grey500,
+                            cursorColor:
+                                isDark
+                                    ? AppThemeData.greyDark500
+                                    : AppThemeData.grey500,
                             enablePinAutofill: true,
                             hintCharacter: "-",
-                            textStyle: AppThemeData.semiBoldTextStyle(fontSize: 18, color: isDark ? AppThemeData.greyDark800 : AppThemeData.grey800),
+                            textStyle: AppThemeData.semiBoldTextStyle(
+                              fontSize: 18,
+                              color:
+                                  isDark
+                                      ? AppThemeData.greyDark800
+                                      : AppThemeData.grey800,
+                            ),
                             pinTheme: PinTheme(
                               shape: PinCodeFieldShape.box,
                               borderRadius: BorderRadius.circular(12),
                               fieldHeight: 54,
                               fieldWidth: 51,
-                              inactiveColor: isDark ? AppThemeData.greyDark200 : AppThemeData.grey200,
+                              inactiveColor:
+                                  isDark
+                                      ? AppThemeData.greyDark200
+                                      : AppThemeData.grey200,
                               inactiveFillColor: Colors.transparent,
-                              selectedColor: isDark ? AppThemeData.greyDark400 : AppThemeData.grey400,
-                              selectedFillColor: isDark ? AppThemeData.surfaceDark : AppThemeData.grey50,
-                              activeColor: isDark ? AppThemeData.greyDark200 : AppThemeData.grey200,
+                              selectedColor:
+                                  isDark
+                                      ? AppThemeData.greyDark400
+                                      : AppThemeData.grey400,
+                              selectedFillColor:
+                                  isDark
+                                      ? AppThemeData.surfaceDark
+                                      : AppThemeData.grey50,
+                              activeColor:
+                                  isDark
+                                      ? AppThemeData.greyDark200
+                                      : AppThemeData.grey200,
                               activeFillColor: Colors.transparent,
                               errorBorderColor: AppThemeData.danger300,
                               disabledColor: Colors.transparent,
@@ -97,19 +147,53 @@ class OtpVerificationScreen extends StatelessWidget {
                             onChanged: (value) {},
                           ),
 
-                          /// Resend OTP
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Image.asset(AppAssets.icArrowsClockwise, height: 20, width: 20),
-                              TextButton(
-                                onPressed: () {
-                                  controller.otpController.value.clear();
-                                  controller.sendOTP();
-                                },
-                                child: Text("Resend OTP".tr, style: AppThemeData.semiBoldTextStyle(color: AppThemeData.info400, fontSize: 16)),
-                              ),
-                            ],
+                          /// Resend OTP with Timer
+                          Obx(
+                            () => Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                if (!controller.canResend.value) ...[
+                                  Icon(
+                                    Icons.timer_outlined,
+                                    size: 20,
+                                    color:
+                                        isDark
+                                            ? AppThemeData.greyDark500
+                                            : AppThemeData.grey500,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    "${"Resend OTP in".tr} ${controller.formattedTime}",
+                                    style: AppThemeData.mediumTextStyle(
+                                      color:
+                                          isDark
+                                              ? AppThemeData.greyDark500
+                                              : AppThemeData.grey500,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ] else ...[
+                                  Image.asset(
+                                    AppAssets.icArrowsClockwise,
+                                    height: 20,
+                                    width: 20,
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      controller.otpController.value.clear();
+                                      controller.sendOTP();
+                                    },
+                                    child: Text(
+                                      "Resend OTP".tr,
+                                      style: AppThemeData.semiBoldTextStyle(
+                                        color: AppThemeData.info400,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
                           ),
 
                           const SizedBox(height: 10),
@@ -118,8 +202,14 @@ class OtpVerificationScreen extends StatelessWidget {
                           RoundedButtonFill(
                             title: "Verify".tr,
                             onPress: controller.verifyOtp,
-                            color: isDark ? AppThemeData.greyDark900 : AppThemeData.grey900,
-                            textColor: isDark ? AppThemeData.surfaceDark : Colors.white,
+                            color:
+                                isDark
+                                    ? AppThemeData.greyDark900
+                                    : AppThemeData.grey900,
+                            textColor:
+                                isDark
+                                    ? AppThemeData.surfaceDark
+                                    : Colors.white,
                           ),
                         ],
                       ),
@@ -131,12 +221,25 @@ class OtpVerificationScreen extends StatelessWidget {
                       child: Text.rich(
                         TextSpan(
                           text: "Didn't have an account?".tr,
-                          style: AppThemeData.mediumTextStyle(color: isDark ? AppThemeData.greyDark800 : AppThemeData.grey800),
+                          style: AppThemeData.mediumTextStyle(
+                            color:
+                                isDark
+                                    ? AppThemeData.greyDark800
+                                    : AppThemeData.grey800,
+                          ),
                           children: [
                             TextSpan(
                               text: "Sign up".tr,
-                              style: AppThemeData.mediumTextStyle(color: AppThemeData.ecommerce300, decoration: TextDecoration.underline),
-                              recognizer: TapGestureRecognizer()..onTap = () => Get.offAll(() => const SignUpScreen()),
+                              style: AppThemeData.mediumTextStyle(
+                                color: AppThemeData.ecommerce300,
+                                decoration: TextDecoration.underline,
+                              ),
+                              recognizer:
+                                  TapGestureRecognizer()
+                                    ..onTap =
+                                        () => Get.offAll(
+                                          () => const SignUpScreen(),
+                                        ),
                             ),
                           ],
                         ),

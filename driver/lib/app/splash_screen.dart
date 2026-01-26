@@ -17,26 +17,40 @@ class SplashScreen extends StatelessWidget {
         return Scaffold(
           backgroundColor: AppThemeData.primary300,
           body: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Image.asset(
-                  "assets/images/ic_logo.png",
-                  height: 150,
-                ),
-                const SizedBox(
-                  height: 12,
-                ),
-                Text(
-                  "Welcome to eMart Driver".tr,
-                  style: TextStyle(color: isDark ? AppThemeData.grey50 : AppThemeData.grey50, fontSize: 24, fontFamily: AppThemeData.bold),
-                ),
-                Text(
-                  "Your Favorite Ride, Parcel, Rental & Item Delivered Fast!".tr,
-                  style: TextStyle(color: isDark ? AppThemeData.grey50 : AppThemeData.grey50),
-                ),
-              ],
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Image.asset(
+                      "assets/images/fondex_driver.png",
+                      height: 150,
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 12,
+                  ),
+                  Text(
+                    "Welcome to Fondex Driver".tr,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        color:
+                            isDark ? AppThemeData.grey50 : AppThemeData.grey50,
+                        fontSize: 24,
+                        fontFamily: AppThemeData.bold),
+                  ),
+                  Text(
+                    "Your Favorite Ride, Parcel, Rental & Item Delivered Fast!"
+                        .tr,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        color:
+                            isDark ? AppThemeData.grey50 : AppThemeData.grey50),
+                  ),
+                ],
+              ),
             ),
           ),
         );

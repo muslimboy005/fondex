@@ -121,7 +121,7 @@ class RentalOrderDetailsScreen extends StatelessWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text("Your Preference",
+                                Text("Your Preference".tr,
                                     style: AppThemeData.boldTextStyle(
                                         fontSize: 14, color: isDark ? AppThemeData.greyDark500 : AppThemeData.grey500)),
                                 SizedBox(height: 10),
@@ -298,7 +298,7 @@ class RentalOrderDetailsScreen extends StatelessWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text("Vehicle Type",
+                                Text("Vehicle Type".tr,
                                     style: AppThemeData.boldTextStyle(
                                         fontSize: 14, color: isDark ? AppThemeData.greyDark500 : AppThemeData.grey500)),
                                 SizedBox(height: 10),

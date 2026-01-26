@@ -1,5 +1,6 @@
 // Flutter Packages
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 /// A [Widget] to show when there is no data to display.
 class EmptyScreen extends StatelessWidget {
@@ -8,6 +9,6 @@ class EmptyScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(child: Text('Nothing found here...'));
+    return Center(child: Text('Nothing found here...'.tr));
   }
 }

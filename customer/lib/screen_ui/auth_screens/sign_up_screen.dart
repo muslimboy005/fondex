@@ -216,9 +216,9 @@ class SignUpScreen extends StatelessWidget {
                             ShowToastDialog.showToast("Please enter first name".tr);
                           } else if (controller.lastNameEditingController.value.text.trim().isEmpty) {
                             ShowToastDialog.showToast("Please enter last name".tr);
-                          } else if (controller.emailEditingController.value.text.trim().isEmpty) {
+                          } else if (controller.type.value != "mobileNumber" && controller.emailEditingController.value.text.trim().isEmpty) {
                             ShowToastDialog.showToast("Please enter valid email".tr);
-                          } else if (controller.phoneNUmberEditingController.value.text.trim().isEmpty) {
+                          } else if (controller.type.value != "mobileNumber" && controller.phoneNUmberEditingController.value.text.trim().isEmpty) {
                             ShowToastDialog.showToast("Please enter Phone number".tr);
                           } else {
                             controller.signUpWithEmailAndPassword();

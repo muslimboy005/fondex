@@ -5,22 +5,22 @@ class AppThemeData {
   static const Color surfaceDark = Color(0xFF010309);
 
   // === Car-Rent (Light) ===
-  static const Color carRent50 = Color(0xFFEBFAF2);
-  static const Color carRent100 = Color(0xFFB7EBCE);
-  static const Color carRent200 = Color(0xFF83DDAB);
-  static const Color carRent300 = Color(0xFF47CF88);
-  static const Color carRent400 = Color(0xFF37905E);
-  static const Color carRent500 = Color(0xFF1E5235);
-  static const Color carRent600 = Color(0xFF05140C);
+  static const Color carRent50 = Color(0xFFFFF5F0);
+  static const Color carRent100 = Color(0xFFFFE0D0);
+  static const Color carRent200 = Color(0xFFFFC4A0);
+  static const Color carRent300 = Color(0xFFFF6839);
+  static const Color carRent400 = Color(0xFFCC5330);
+  static const Color carRent500 = Color(0xFF993E24);
+  static const Color carRent600 = Color(0xFF662918);
 
   // === Car-Rent (Dark) ===
-  static const Color carRentDark50 = Color(0xFF05140C);
-  static const Color carRentDark100 = Color(0xFF1E5235);
-  static const Color carRentDark200 = Color(0xFF37905E);
-  static const Color carRentDark300 = Color(0xFF4FCF88);
-  static const Color carRentDark400 = Color(0xFF83DDAB);
-  static const Color carRentDark500 = Color(0xFFB7EBCE);
-  static const Color carRentDark600 = Color(0xFFEBFAF2);
+  static const Color carRentDark50 = Color(0xFF662918);
+  static const Color carRentDark100 = Color(0xFF993E24);
+  static const Color carRentDark200 = Color(0xFFCC5330);
+  static const Color carRentDark300 = Color(0xFFFF6839);
+  static const Color carRentDark400 = Color(0xFFFFC4A0);
+  static const Color carRentDark500 = Color(0xFFFFE0D0);
+  static const Color carRentDark600 = Color(0xFFFFF5F0);
 
   static const Color secondary50 = Color(0xFFEBE5FF);
   static const Color secondary100 = Color(0xFFC0ABFF);
@@ -48,13 +48,13 @@ class AppThemeData {
   static const Color ecommerceDark500 = Color(0xFFABC4FF);
   static const Color ecommerceDark600 = Color(0xFFE5EDFF);
 
-  static const Color driverApp50 = Color(0xFFEFF9EB);
-  static const Color driverApp100 = Color(0xFFBDE6AE);
-  static const Color driverApp200 = Color(0xFF8CD472);
-  static Color driverApp300 = const Color(0xFF5BC236);
-  static const Color driverApp400 = Color(0xFF3F8826);
-  static const Color driverApp500 = Color(0xFF244E16);
-  static const Color driverApp600 = Color(0xFF091406);
+  static const Color driverApp50 = Color(0xFFFFF5F0);
+  static const Color driverApp100 = Color(0xFFFFE0D0);
+  static const Color driverApp200 = Color(0xFFFFC4A0);
+  static Color driverApp300 = const Color(0xFFFF6839);
+  static const Color driverApp400 = Color(0xFFCC5330);
+  static const Color driverApp500 = Color(0xFF993E24);
+  static const Color driverApp600 = Color(0xFF662918);
 
   // === Multi-Vendor ===
   static const Color multiVendor50 = Color(0xFFFFE6E6);
@@ -108,21 +108,21 @@ class AppThemeData {
   static const Color taxiBookingDark600 = Color(0xFFFFF6E5);
 
   // === Parcel-Service ===
-  static const Color parcelService50 = Color(0xFFEAFBF3);
-  static const Color parcelService100 = Color(0xFFAAEFCF);
-  static const Color parcelService200 = Color(0xFF6AE2AB);
-  static const Color parcelService300 = Color(0xFF2AD587);
-  static const Color parcelService400 = Color(0xFF1E955E);
-  static const Color parcelService500 = Color(0xFF115536);
-  static const Color parcelService600 = Color(0xFF04150E);
+  static const Color parcelService50 = Color(0xFFFFF5F0);
+  static const Color parcelService100 = Color(0xFFFFE0D0);
+  static const Color parcelService200 = Color(0xFFFFC4A0);
+  static const Color parcelService300 = Color(0xFFFF6839);
+  static const Color parcelService400 = Color(0xFFCC5330);
+  static const Color parcelService500 = Color(0xFF993E24);
+  static const Color parcelService600 = Color(0xFF662918);
 
-  static const Color parcelServiceDark50 = Color(0xFF04150E);
-  static const Color parcelServiceDark100 = Color(0xFFAAEFCF);
-  static const Color parcelServiceDark200 = Color(0xFF1E955E);
-  static const Color parcelServiceDark300 = Color(0xFF2AD587);
-  static const Color parcelServiceDark400 = Color(0xFF6AE2AB);
-  static const Color parcelServiceDark500 = Color(0xFFAAEFCF);
-  static const Color parcelServiceDark600 = Color(0xFFEAFBF3);
+  static const Color parcelServiceDark50 = Color(0xFF662918);
+  static const Color parcelServiceDark100 = Color(0xFFFFE0D0);
+  static const Color parcelServiceDark200 = Color(0xFFCC5330);
+  static const Color parcelServiceDark300 = Color(0xFFFF6839);
+  static const Color parcelServiceDark400 = Color(0xFFFFC4A0);
+  static const Color parcelServiceDark500 = Color(0xFFFFE0D0);
+  static const Color parcelServiceDark600 = Color(0xFFFFF5F0);
 
   // === Grey ===
   static const Color grey50 = Color(0xFFF9FAFB);
@@ -182,21 +182,21 @@ class AppThemeData {
   static const Color infoDark600 = Color(0xFFE5F9FF);
 
   // === Success ===
-  static const Color success50 = Color(0xFFE5FFEB);
-  static const Color success100 = Color(0xFFACFFBF);
-  static const Color success200 = Color(0xFF72FF93);
-  static const Color success300 = Color(0xFF38FF67);
-  static const Color success400 = Color(0xFF26B246);
-  static const Color success500 = Color(0xFF136626);
-  static const Color success600 = Color(0xFF001A06);
+  static const Color success50 = Color(0xFFFFF5F0);
+  static const Color success100 = Color(0xFFFFE0D0);
+  static const Color success200 = Color(0xFFFFC4A0);
+  static const Color success300 = Color(0xFFFF6839);
+  static const Color success400 = Color(0xFFCC5330);
+  static const Color success500 = Color(0xFF993E24);
+  static const Color success600 = Color(0xFF662918);
 
-  static const Color successDark50 = Color(0xFF001A06);
-  static const Color successDark100 = Color(0xFF136626);
-  static const Color successDark200 = Color(0xFF26B246);
-  static const Color successDark300 = Color(0xFF38FF67);
-  static const Color successDark400 = Color(0xFF72FF93);
-  static const Color successDark500 = Color(0xFFACFFBF);
-  static const Color successDark600 = Color(0xFFE5FFEB);
+  static const Color successDark50 = Color(0xFF662918);
+  static const Color successDark100 = Color(0xFF993E24);
+  static const Color successDark200 = Color(0xFFCC5330);
+  static const Color successDark300 = Color(0xFFFF6839);
+  static const Color successDark400 = Color(0xFFFFC4A0);
+  static const Color successDark500 = Color(0xFFFFE0D0);
+  static const Color successDark600 = Color(0xFFFFF5F0);
 
   // === Warning ===
   static const Color warning50 = Color(0xFFFFF8E5);
@@ -215,15 +215,13 @@ class AppThemeData {
   static const Color warningDark500 = Color(0xFFFFE9AB);
   static const Color warningDark600 = Color(0xFFFFF8E5);
 
-
-  static const Color primary50 = Color(0xFFEAFBF3);
-  static const Color primary100 = Color(0xFFAAEFCF);
-  static const Color primary200 = Color(0xFF6AE2AB);
-  static Color primary300 = Color(0xFF1E955E);
-  static const Color primary400 = Color(0xFF1E955E);
-  static const Color primary500 = Color(0xFF115536);
-  static const Color primary600 = Color(0xFF04150E);
-
+  static const Color primary50 = Color(0xFFFFF5F0);
+  static const Color primary100 = Color(0xFFFFE0D0);
+  static const Color primary200 = Color(0xFFFFC4A0);
+  static Color primary300 = const Color(0xFFFF6839);
+  static const Color primary400 = Color(0xFFCC5330);
+  static const Color primary500 = Color(0xFF993E24);
+  static const Color primary600 = Color(0xFF662918);
 
   static const String fontFamily = 'EssentialSans';
 
@@ -237,8 +235,8 @@ class AppThemeData {
   static const String semiBold = 'EssentialSans';
   static const String thin = 'EssentialSans';
 
-  static List<dynamic> get homePageGradiant => [Color(0xFFF5F7FF), Color(0xFFFFF5F5), Color(0xFFF1FEF7)];
-
+  static List<dynamic> get homePageGradiant =>
+      [Color(0xFFF5F7FF), Color(0xFFFFF5F5), Color(0xFFFFF5F0)];
 
   static TextStyle regularTextStyle({
     double? fontSize,

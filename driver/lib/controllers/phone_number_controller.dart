@@ -7,14 +7,17 @@ import 'package:get/get.dart';
 import '../constant/constant.dart';
 
 class PhoneNumberController extends GetxController {
-  Rx<TextEditingController> phoneNUmberEditingController = TextEditingController().obs;
-  Rx<TextEditingController> countryCodeEditingController = TextEditingController(text:Constant.defaultCountryCode).obs;
+  Rx<TextEditingController> phoneNUmberEditingController =
+      TextEditingController().obs;
+  Rx<TextEditingController> countryCodeEditingController =
+      TextEditingController(text: Constant.defaultCountryCode).obs;
 
   Future<void> sendCode() async {
     ShowToastDialog.showLoader("Please wait".tr);
     await FirebaseAuth.instance
         .verifyPhoneNumber(
-            phoneNumber: countryCodeEditingController.value.text + phoneNUmberEditingController.value.text,
+            phoneNumber: countryCodeEditingController.value.text +
+                phoneNUmberEditingController.value.text,
             verificationCompleted: (PhoneAuthCredential credential) {},
             verificationFailed: (FirebaseAuthException e) {
               debugPrint("FirebaseAuthException--->${e.message}");

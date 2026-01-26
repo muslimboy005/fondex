@@ -49,23 +49,24 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'YOUR_ANDROID_API_KEY',
-    appId: 'YOUR_ANDROID_APP_ID',
-    messagingSenderId: 'YOUR_ANDROID_MESSAGING_SENDER_ID',
-    projectId: 'YOUR_ANDROID_PROJECT_ID',
-    databaseURL: 'YOUR_ANDROID_DATABASE_URL',
-    storageBucket: 'YOUR_ANDROID_STORAGE_BUCKET',
+    apiKey: 'AIzaSyALZhdy7Rw3jffipxsDvvz7_C_b4teVg1k',
+    appId: '1:893074789710:android:f2f082867ee43b93c4ba1f',
+    messagingSenderId: '893074789710',
+    projectId: 'fondexuzb',
+    databaseURL: 'https://fondexuzb-default-rtdb.firebaseio.com',
+    storageBucket: 'fondexuzb.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'YOUR_IOS_API_KEY',
-    appId: 'YOUR_IOS_APP_ID',
-    messagingSenderId: 'YOUR_IOS_MESSAGING_SENDER_ID',
-    projectId: 'YOUR_IOS_PROJECT_ID',
-    databaseURL: 'YOUR_IOS_DATABASE_URL',
-    storageBucket: 'YOUR_IOS_STORAGE_BUCKET',
-    androidClientId: 'YOUR_ANDROID_CLIENT_ID',
-    iosClientId: 'YOUR_IOS_CLIENT_ID',
-    iosBundleId: 'YOUR_IOS_BUNDLE_ID',
+    apiKey: 'AIzaSyD6Khoz4y93GCj3mOPi2FoluDipplH1av0',
+    appId: '1:893074789710:ios:f88016cd893844cbc4ba1f',
+    messagingSenderId: '893074789710',
+    projectId: 'fondexuzb',
+    databaseURL: 'https://fondexuzb-default-rtdb.firebaseio.com',
+    storageBucket: 'fondexuzb.firebasestorage.app',
+    androidClientId: '893074789710-0l3vbjo032et95r50si36cd0339lstpq.apps.googleusercontent.com',
+    iosClientId: '893074789710-jtni69tk433f52jrd7j1d9mipjo8tsee.apps.googleusercontent.com',
+    iosBundleId: 'felix.fondex.store',
   );
+
 }

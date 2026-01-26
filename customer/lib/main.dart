@@ -51,6 +51,7 @@ class MyApp extends StatelessWidget {
     Get.put(ThemeController());
     return Obx(
       () => GetMaterialApp(
+        title: 'Fondex'.tr,
         debugShowCheckedModeBanner: false,
         builder: (context, child) {
           return SafeArea(
@@ -61,7 +62,7 @@ class MyApp extends StatelessWidget {
         },
         translations: LocalizationService(),
         locale: LocalizationService.locale,
-        fallbackLocale: const Locale('ru', 'RU'),
+        fallbackLocale: const Locale('uz', 'UZ'),
         supportedLocales: LocalizationService.locales,
         localizationsDelegates: [
           GlobalMaterialLocalizations.delegate,

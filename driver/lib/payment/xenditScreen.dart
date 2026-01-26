@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:driver/payment/xenditModel.dart';
+import 'package:driver/themes/app_them_data.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
@@ -13,7 +14,11 @@ class XenditScreen extends StatefulWidget {
   final String transId;
   final String apiKey;
 
-  const XenditScreen({super.key, required this.initialURl, required this.transId, required this.apiKey});
+  const XenditScreen(
+      {super.key,
+      required this.initialURl,
+      required this.transId,
+      required this.apiKey});
 
   @override
   State<XenditScreen> createState() => _XenditScreenState();
@@ -102,9 +107,12 @@ class _XenditScreenState extends State<XenditScreen> {
                     color: Colors.white,
                   ),
                 )),
-            body: Stack(
-                alignment: Alignment.center,
-                children: [WebViewWidget(controller: controller), Visibility(visible: isLoading, child: const Center(child: CircularProgressIndicator()))])));
+            body: Stack(alignment: Alignment.center, children: [
+              WebViewWidget(controller: controller),
+              Visibility(
+                  visible: isLoading,
+                  child: const Center(child: CircularProgressIndicator()))
+            ])));
   }
 
   Future<void> _showMyDialog() async {
@@ -131,7 +139,7 @@ class _XenditScreenState extends State<XenditScreen> {
             TextButton(
               child: Text(
                 'Continue'.tr,
-                style: const TextStyle(color: Colors.green),
+                style: TextStyle(color: AppThemeData.primary300),
               ),
               onPressed: () {
                 Navigator.of(context).pop(false);

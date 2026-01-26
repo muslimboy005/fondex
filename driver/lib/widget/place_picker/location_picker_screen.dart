@@ -91,7 +91,7 @@ class LocationPickerScreen extends StatelessWidget {
                             context: context,
                             apiKey: Constant.mapAPIKey,
                             mode: Mode.overlay,
-                            language: "en",
+                            language: "uz",
                           );
                           if (p != null) {
                             final detail = await _places.getDetailsByPlaceId(p.placeId!);
@@ -112,11 +112,11 @@ class LocationPickerScreen extends StatelessWidget {
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(60),
                           ),
-                          child: const Row(
+                          child: Row(
                             children: [
-                              Icon(Icons.search),
-                              SizedBox(width: 8),
-                              Text("Search place..."),
+                              const Icon(Icons.search),
+                              const SizedBox(width: 8),
+                              Text("Search place...".tr),
                             ],
                           ),
                         ),

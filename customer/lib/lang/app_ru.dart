@@ -87,7 +87,7 @@ const Map<String, String> ruRU = {
   'Verifying OTP...': 'Проверка OTP...',
   'This user is disabled': 'Этот пользователь отключен',
   'Invalid OTP or Verification Failed': 'Неверный OTP или ошибка проверки',
-  'eMart': 'eMart',
+  'eMart': 'Fondex',
   'All Your Needs in One App!': 'Все ваши потребности в одном приложении!',
   'Explore Our Services': 'Изучите наши услуги',
   'Alert!': 'Внимание!',

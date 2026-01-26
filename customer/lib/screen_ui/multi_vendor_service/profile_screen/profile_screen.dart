@@ -9,7 +9,7 @@ import 'package:in_app_review/in_app_review.dart';
 import '../../../controllers/theme_controller.dart';
 import '../../../service/fire_store_utils.dart';
 import '../../../themes/show_toast_dialog.dart';
-import '../../auth_screens/login_screen.dart';
+import '../../auth_screens/auth_screen.dart';
 import '../cashback_screen/cashback_offers_list.dart';
 import '../change langauge/change_language_screen.dart';
 import '../chat_screens/driver_inbox_screen.dart';
@@ -43,7 +43,9 @@ class ProfileScreen extends StatelessWidget {
             return controller.isLoading.value
                 ? Constant.loader()
                 : Padding(
-                  padding: EdgeInsets.only(top: MediaQuery.of(context).viewPadding.top),
+                  padding: EdgeInsets.only(
+                    top: MediaQuery.of(context).viewPadding.top,
+                  ),
                   child: SingleChildScrollView(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -52,41 +54,106 @@ class ProfileScreen extends StatelessWidget {
                         children: [
                           Text(
                             "My Profile".tr,
-                            style: TextStyle(fontSize: 24, color: isDark ? AppThemeData.grey50 : AppThemeData.grey900, fontFamily: AppThemeData.semiBold, fontWeight: FontWeight.w500),
+                            style: TextStyle(
+                              fontSize: 24,
+                              color:
+                                  isDark
+                                      ? AppThemeData.grey50
+                                      : AppThemeData.grey900,
+                              fontFamily: AppThemeData.semiBold,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
                           Text(
-                            "Manage your personal information, preferences, and settings all in one place.".tr,
-                            style: TextStyle(fontSize: 16, color: isDark ? AppThemeData.grey50 : AppThemeData.grey900, fontFamily: AppThemeData.regular, fontWeight: FontWeight.w400),
+                            "Manage your personal information, preferences, and settings all in one place."
+                                .tr,
+                            style: TextStyle(
+                              fontSize: 16,
+                              color:
+                                  isDark
+                                      ? AppThemeData.grey50
+                                      : AppThemeData.grey900,
+                              fontFamily: AppThemeData.regular,
+                              fontWeight: FontWeight.w400,
+                            ),
                           ),
                           const SizedBox(height: 20),
                           Text(
                             "General Information".tr,
-                            style: TextStyle(fontSize: 12, color: isDark ? AppThemeData.grey400 : AppThemeData.grey500, fontFamily: AppThemeData.semiBold, fontWeight: FontWeight.w500),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color:
+                                  isDark
+                                      ? AppThemeData.grey400
+                                      : AppThemeData.grey500,
+                              fontFamily: AppThemeData.semiBold,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
                           const SizedBox(height: 10),
                           Container(
                             width: Responsive.width(100, context),
-                            decoration: ShapeDecoration(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                            decoration: ShapeDecoration(
+                              color:
+                                  isDark
+                                      ? AppThemeData.grey900
+                                      : AppThemeData.grey50,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 8,
+                              ),
                               child: Column(
                                 children: [
                                   Constant.userModel == null
                                       ? const SizedBox()
-                                      : cardDecoration(isDark, controller, "assets/images/ic_profile.svg", "Profile Information".tr, () {
-                                        Get.to(const EditProfileScreen());
-                                      }),
-                                  if (Constant.sectionConstantModel!.dineInActive == true)
-                                    cardDecoration(isDark, controller, "assets/images/ic_dinin.svg", "Dine-In".tr, () {
-                                      Get.to(const DineInScreen());
-                                    }),
-                                  cardDecoration(isDark, controller, "assets/images/ic_gift.svg", "Gift Card".tr, () {
-                                    Get.to(const GiftCardScreen());
-                                  }),
+                                      : cardDecoration(
+                                        isDark,
+                                        controller,
+                                        "assets/images/ic_profile.svg",
+                                        "Profile Information".tr,
+                                        () {
+                                          Get.to(const EditProfileScreen());
+                                        },
+                                      ),
+                                  if (Constant
+                                          .sectionConstantModel!
+                                          .dineInActive ==
+                                      true)
+                                    cardDecoration(
+                                      isDark,
+                                      controller,
+                                      "assets/images/ic_dinin.svg",
+                                      "Dine-In".tr,
+                                      () {
+                                        Get.to(const DineInScreen());
+                                      },
+                                    ),
+                                  cardDecoration(
+                                    isDark,
+                                    controller,
+                                    "assets/images/ic_gift.svg",
+                                    "Gift Card".tr,
+                                    () {
+                                      Get.to(const GiftCardScreen());
+                                    },
+                                  ),
                                   if (Constant.isCashbackActive == true)
-                                    cardDecoration(isDark, controller, "assets/icons/ic_cashback_Offer.svg", "Cashback Offers".tr, () {
-                                      Get.to(const CashbackOffersListScreen());
-                                    }),
+                                    cardDecoration(
+                                      isDark,
+                                      controller,
+                                      "assets/icons/ic_cashback_Offer.svg",
+                                      "Cashback Offers".tr,
+                                      () {
+                                        Get.to(
+                                          const CashbackOffersListScreen(),
+                                        );
+                                      },
+                                    ),
                                 ],
                               ),
                             ),
@@ -98,19 +165,46 @@ class ProfileScreen extends StatelessWidget {
                                 children: [
                                   Text(
                                     "Bookings Information".tr,
-                                    style: TextStyle(fontSize: 12, color: isDark ? AppThemeData.grey400 : AppThemeData.grey500, fontFamily: AppThemeData.semiBold, fontWeight: FontWeight.w500),
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color:
+                                          isDark
+                                              ? AppThemeData.grey400
+                                              : AppThemeData.grey500,
+                                      fontFamily: AppThemeData.semiBold,
+                                      fontWeight: FontWeight.w500,
+                                    ),
                                   ),
                                   const SizedBox(height: 10),
                                   Container(
                                     width: Responsive.width(100, context),
-                                    decoration: ShapeDecoration(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                                    decoration: ShapeDecoration(
+                                      color:
+                                          isDark
+                                              ? AppThemeData.grey900
+                                              : AppThemeData.grey50,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                    ),
                                     child: Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                        vertical: 5,
+                                      ),
                                       child: Column(
                                         children: [
-                                          cardDecoration(isDark, controller, "assets/icons/ic_dinin_order.svg", "Dine-In Booking".tr, () {
-                                            Get.to(const DineInBookingScreen());
-                                          }),
+                                          cardDecoration(
+                                            isDark,
+                                            controller,
+                                            "assets/icons/ic_dinin_order.svg",
+                                            "Dine-In Booking".tr,
+                                            () {
+                                              Get.to(
+                                                const DineInBookingScreen(),
+                                              );
+                                            },
+                                          ),
                                         ],
                                       ),
                                     ),
@@ -121,20 +215,51 @@ class ProfileScreen extends StatelessWidget {
                           const SizedBox(height: 10),
                           Text(
                             "Preferences".tr,
-                            style: TextStyle(fontSize: 12, color: isDark ? AppThemeData.grey400 : AppThemeData.grey500, fontFamily: AppThemeData.semiBold, fontWeight: FontWeight.w500),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color:
+                                  isDark
+                                      ? AppThemeData.grey400
+                                      : AppThemeData.grey500,
+                              fontFamily: AppThemeData.semiBold,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
                           const SizedBox(height: 10),
                           Container(
                             width: Responsive.width(100, context),
-                            decoration: ShapeDecoration(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                            decoration: ShapeDecoration(
+                              color:
+                                  isDark
+                                      ? AppThemeData.grey900
+                                      : AppThemeData.grey50,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 8,
+                              ),
                               child: Column(
                                 children: [
-                                  cardDecoration(isDark, controller, "assets/icons/ic_change_language.svg", "Change Language".tr, () {
-                                    Get.to(const ChangeLanguageScreen());
-                                  }),
-                                  cardDecoration(isDark, controller, "assets/icons/ic_light_dark.svg", "Dark Mode".tr, () {}),
+                                  cardDecoration(
+                                    isDark,
+                                    controller,
+                                    "assets/icons/ic_change_language.svg",
+                                    "Change Language".tr,
+                                    () {
+                                      Get.to(const ChangeLanguageScreen());
+                                    },
+                                  ),
+                                  cardDecoration(
+                                    isDark,
+                                    controller,
+                                    "assets/icons/ic_light_dark.svg",
+                                    "Dark Mode".tr,
+                                    () {},
+                                  ),
                                 ],
                               ),
                             ),
@@ -142,31 +267,69 @@ class ProfileScreen extends StatelessWidget {
                           const SizedBox(height: 10),
                           Text(
                             "Social".tr,
-                            style: TextStyle(fontSize: 12, color: isDark ? AppThemeData.grey400 : AppThemeData.grey500, fontFamily: AppThemeData.semiBold, fontWeight: FontWeight.w500),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color:
+                                  isDark
+                                      ? AppThemeData.grey400
+                                      : AppThemeData.grey500,
+                              fontFamily: AppThemeData.semiBold,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
                           const SizedBox(height: 10),
                           Container(
                             width: Responsive.width(100, context),
-                            decoration: ShapeDecoration(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                            decoration: ShapeDecoration(
+                              color:
+                                  isDark
+                                      ? AppThemeData.grey900
+                                      : AppThemeData.grey50,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 8,
+                              ),
                               child: Column(
                                 children: [
                                   Constant.userModel == null
                                       ? const SizedBox()
-                                      : cardDecoration(isDark, controller, "assets/icons/ic_refer.svg", "Refer a Friend".tr, () {
-                                        Get.to(const ReferFriendScreen());
-                                      }),
-                                  cardDecoration(isDark, controller, "assets/icons/ic_share.svg", "Share app".tr, () {
-                                    Share.share(
-                                      '${'Check out Foodie, your ultimate food delivery application!'.tr} \n\n${'Google Play:'.tr} ${Constant.googlePlayLink} \n\n${'App Store:'.tr} ${Constant.appStoreLink}',
-                                      subject: 'Look what I made!'.tr,
-                                    );
-                                  }),
-                                  cardDecoration(isDark, controller, "assets/icons/ic_rate.svg", "Rate the app".tr, () {
-                                    final InAppReview inAppReview = InAppReview.instance;
-                                    inAppReview.requestReview();
-                                  }),
+                                      : cardDecoration(
+                                        isDark,
+                                        controller,
+                                        "assets/icons/ic_refer.svg",
+                                        "Refer a Friend".tr,
+                                        () {
+                                          Get.to(const ReferFriendScreen());
+                                        },
+                                      ),
+                                  cardDecoration(
+                                    isDark,
+                                    controller,
+                                    "assets/icons/ic_share.svg",
+                                    "Share app".tr,
+                                    () {
+                                      Share.share(
+                                        '${'Check out Foodie, your ultimate food delivery application!'.tr} \n\n${'Google Play:'.tr} ${Constant.googlePlayLink} \n\n${'App Store:'.tr} ${Constant.appStoreLink}',
+                                        subject: 'Look what I made!'.tr,
+                                      );
+                                    },
+                                  ),
+                                  cardDecoration(
+                                    isDark,
+                                    controller,
+                                    "assets/icons/ic_rate.svg",
+                                    "Rate the app".tr,
+                                    () {
+                                      final InAppReview inAppReview =
+                                          InAppReview.instance;
+                                      inAppReview.requestReview();
+                                    },
+                                  ),
                                 ],
                               ),
                             ),
@@ -179,28 +342,75 @@ class ProfileScreen extends StatelessWidget {
                                 children: [
                                   Text(
                                     "Communication".tr,
-                                    style: TextStyle(fontSize: 12, color: isDark ? AppThemeData.grey400 : AppThemeData.grey500, fontFamily: AppThemeData.semiBold, fontWeight: FontWeight.w500),
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color:
+                                          isDark
+                                              ? AppThemeData.grey400
+                                              : AppThemeData.grey500,
+                                      fontFamily: AppThemeData.semiBold,
+                                      fontWeight: FontWeight.w500,
+                                    ),
                                   ),
                                   const SizedBox(height: 10),
                                   Container(
                                     width: Responsive.width(100, context),
-                                    decoration: ShapeDecoration(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                                    decoration: ShapeDecoration(
+                                      color:
+                                          isDark
+                                              ? AppThemeData.grey900
+                                              : AppThemeData.grey50,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                    ),
                                     child: Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                        vertical: 8,
+                                      ),
                                       child: Column(
                                         children: [
-                                          cardDecoration(isDark, controller, "assets/icons/ic_restaurant_chat.svg", "Store Inbox".tr, () {
-                                            Get.to(const RestaurantInboxScreen());
-                                          }),
-                                          cardDecoration(isDark, controller, "assets/icons/ic_restaurant_driver.svg", "Driver Inbox".tr, () {
-                                            Get.to(const DriverInboxScreen());
-                                          }),
-                                          cardDecoration(isDark, controller, "assets/icons/ic_restaurant_chat.svg", "Provider Inbox".tr, () {
-                                            Get.to(const ProviderInboxScreen());
-                                          }),
-                                          cardDecoration(isDark, controller, "assets/icons/ic_restaurant_driver.svg", "Worker Inbox".tr, () {
-                                            Get.to(const WorkerInboxScreen());
-                                          }),
+                                          cardDecoration(
+                                            isDark,
+                                            controller,
+                                            "assets/icons/ic_restaurant_chat.svg",
+                                            "Store Inbox".tr,
+                                            () {
+                                              Get.to(
+                                                const RestaurantInboxScreen(),
+                                              );
+                                            },
+                                          ),
+                                          cardDecoration(
+                                            isDark,
+                                            controller,
+                                            "assets/icons/ic_restaurant_driver.svg",
+                                            "Driver Inbox".tr,
+                                            () {
+                                              Get.to(const DriverInboxScreen());
+                                            },
+                                          ),
+                                          cardDecoration(
+                                            isDark,
+                                            controller,
+                                            "assets/icons/ic_restaurant_chat.svg",
+                                            "Provider Inbox".tr,
+                                            () {
+                                              Get.to(
+                                                const ProviderInboxScreen(),
+                                              );
+                                            },
+                                          ),
+                                          cardDecoration(
+                                            isDark,
+                                            controller,
+                                            "assets/icons/ic_restaurant_driver.svg",
+                                            "Worker Inbox".tr,
+                                            () {
+                                              Get.to(const WorkerInboxScreen());
+                                            },
+                                          ),
                                         ],
                                       ),
                                     ),
@@ -208,21 +418,63 @@ class ProfileScreen extends StatelessWidget {
                                   const SizedBox(height: 10),
                                 ],
                               ),
-                          Text("Legal".tr, style: TextStyle(fontSize: 12, color: isDark ? AppThemeData.grey400 : AppThemeData.grey500, fontFamily: AppThemeData.semiBold, fontWeight: FontWeight.w500)),
+                          Text(
+                            "Legal".tr,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color:
+                                  isDark
+                                      ? AppThemeData.grey400
+                                      : AppThemeData.grey500,
+                              fontFamily: AppThemeData.semiBold,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
                           const SizedBox(height: 10),
                           Container(
                             width: Responsive.width(100, context),
-                            decoration: ShapeDecoration(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                            decoration: ShapeDecoration(
+                              color:
+                                  isDark
+                                      ? AppThemeData.grey900
+                                      : AppThemeData.grey50,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 8,
+                              ),
                               child: Column(
                                 children: [
-                                  cardDecoration(isDark, controller, "assets/icons/ic_privacy_policy.svg", "Privacy Policy".tr, () {
-                                    Get.to(const TermsAndConditionScreen(type: "privacy"));
-                                  }),
-                                  cardDecoration(isDark, controller, "assets/icons/ic_tearm_condition.svg", "Terms and Conditions".tr, () {
-                                    Get.to(const TermsAndConditionScreen(type: "termAndCondition"));
-                                  }),
+                                  cardDecoration(
+                                    isDark,
+                                    controller,
+                                    "assets/icons/ic_privacy_policy.svg",
+                                    "Privacy Policy".tr,
+                                    () {
+                                      Get.to(
+                                        const TermsAndConditionScreen(
+                                          type: "privacy",
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                  cardDecoration(
+                                    isDark,
+                                    controller,
+                                    "assets/icons/ic_tearm_condition.svg",
+                                    "Terms and Conditions".tr,
+                                    () {
+                                      Get.to(
+                                        const TermsAndConditionScreen(
+                                          type: "termAndCondition",
+                                        ),
+                                      );
+                                    },
+                                  ),
                                 ],
                               ),
                             ),
@@ -231,39 +483,74 @@ class ProfileScreen extends StatelessWidget {
                           const SizedBox(height: 10),
                           Container(
                             width: Responsive.width(100, context),
-                            decoration: ShapeDecoration(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                            decoration: ShapeDecoration(
+                              color:
+                                  isDark
+                                      ? AppThemeData.grey900
+                                      : AppThemeData.grey50,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 6,
+                              ),
                               child: Column(
                                 children: [
                                   Constant.userModel == null
-                                      ? cardDecoration(isDark, controller, "assets/icons/ic_logout.svg", "Log In".tr, () {
-                                        Get.offAll(const LoginScreen());
-                                      })
-                                      : cardDecoration(isDark, controller, "assets/icons/ic_logout.svg", "Log out".tr, () {
-                                        showDialog(
-                                          context: context,
-                                          builder: (BuildContext context) {
-                                            return CustomDialogBox(
-                                              title: "Log out".tr,
-                                              descriptions: "Are you sure you want to log out? You will need to enter your credentials to log back in.".tr,
-                                              positiveString: "Log out".tr,
-                                              negativeString: "Cancel".tr,
-                                              positiveClick: () async {
-                                                Constant.userModel!.fcmToken = "";
-                                                await FireStoreUtils.updateUser(Constant.userModel!);
-                                                Constant.userModel = null;
-                                                await FirebaseAuth.instance.signOut();
-                                                Get.offAll(const LoginScreen());
-                                              },
-                                              negativeClick: () {
-                                                Get.back();
-                                              },
-                                              img: Image.asset('assets/images/ic_logout.gif', height: 50, width: 50),
-                                            );
-                                          },
-                                        );
-                                      }),
+                                      ? cardDecoration(
+                                        isDark,
+                                        controller,
+                                        "assets/icons/ic_logout.svg",
+                                        "Log In".tr,
+                                        () {
+                                          Get.offAll(const AuthScreen());
+                                        },
+                                      )
+                                      : cardDecoration(
+                                        isDark,
+                                        controller,
+                                        "assets/icons/ic_logout.svg",
+                                        "Log out".tr,
+                                        () {
+                                          showDialog(
+                                            context: context,
+                                            builder: (BuildContext context) {
+                                              return CustomDialogBox(
+                                                title: "Log out".tr,
+                                                descriptions:
+                                                    "Are you sure you want to log out? You will need to enter your credentials to log back in."
+                                                        .tr,
+                                                positiveString: "Log out".tr,
+                                                negativeString: "Cancel".tr,
+                                                positiveClick: () async {
+                                                  Constant.userModel!.fcmToken =
+                                                      "";
+                                                  await FireStoreUtils.updateUser(
+                                                    Constant.userModel!,
+                                                  );
+                                                  Constant.userModel = null;
+                                                  await FirebaseAuth.instance
+                                                      .signOut();
+                                                  Get.offAll(
+                                                    const AuthScreen(),
+                                                  );
+                                                },
+                                                negativeClick: () {
+                                                  Get.back();
+                                                },
+                                                img: Image.asset(
+                                                  'assets/images/ic_logout.gif',
+                                                  height: 50,
+                                                  width: 50,
+                                                ),
+                                              );
+                                            },
+                                          );
+                                        },
+                                      ),
                                 ],
                               ),
                             ),
@@ -272,7 +559,9 @@ class ProfileScreen extends StatelessWidget {
                           Constant.userModel == null
                               ? const SizedBox()
                               : Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 20),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 20,
+                                ),
                                 child: InkWell(
                                   onTap: () {
                                     showDialog(
@@ -280,40 +569,66 @@ class ProfileScreen extends StatelessWidget {
                                       builder: (BuildContext context) {
                                         return CustomDialogBox(
                                           title: "Delete Account".tr,
-                                          descriptions: "Are you sure you want to delete your account? This action is irreversible and will permanently remove all your data.".tr,
+                                          descriptions:
+                                              "Are you sure you want to delete your account? This action is irreversible and will permanently remove all your data."
+                                                  .tr,
                                           positiveString: "Delete".tr,
                                           negativeString: "Cancel".tr,
                                           positiveClick: () async {
-                                            ShowToastDialog.showLoader("Please wait...".tr);
-                                            await controller.deleteUserFromServer();
-                                            await FireStoreUtils.deleteUser().then((value) {
+                                            ShowToastDialog.showLoader(
+                                              "Please wait...".tr,
+                                            );
+                                            await controller
+                                                .deleteUserFromServer();
+                                            await FireStoreUtils.deleteUser().then((
+                                              value,
+                                            ) {
                                               ShowToastDialog.closeLoader();
                                               if (value == true) {
-                                                ShowToastDialog.showToast("Account deleted successfully".tr);
-                                                Get.offAll(const LoginScreen());
+                                                ShowToastDialog.showToast(
+                                                  "Account deleted successfully"
+                                                      .tr,
+                                                );
+                                                Get.offAll(const AuthScreen());
                                               } else {
-                                                ShowToastDialog.showToast("Contact Administrator".tr);
+                                                ShowToastDialog.showToast(
+                                                  "Contact Administrator".tr,
+                                                );
                                               }
                                             });
                                           },
                                           negativeClick: () {
                                             Get.back();
                                           },
-                                          img: Image.asset('assets/icons/delete_dialog.gif', height: 50, width: 50),
+                                          img: Image.asset(
+                                            'assets/icons/delete_dialog.gif',
+                                            height: 50,
+                                            width: 50,
+                                          ),
                                         );
                                       },
                                     );
                                   },
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
                                     children: [
-                                      SvgPicture.asset("assets/icons/ic_delete.svg"),
+                                      SvgPicture.asset(
+                                        "assets/icons/ic_delete.svg",
+                                      ),
                                       const SizedBox(width: 10),
                                       Text(
                                         "Delete Account".tr,
                                         textAlign: TextAlign.start,
-                                        style: TextStyle(fontFamily: AppThemeData.medium, fontSize: 16, color: isDark ? AppThemeData.danger300 : AppThemeData.danger300),
+                                        style: TextStyle(
+                                          fontFamily: AppThemeData.medium,
+                                          fontSize: 16,
+                                          color:
+                                              isDark
+                                                  ? AppThemeData.danger300
+                                                  : AppThemeData.danger300,
+                                        ),
                                       ),
                                     ],
                                   ),
@@ -323,7 +638,14 @@ class ProfileScreen extends StatelessWidget {
                             child: Text(
                               "V : ${Constant.appVersion}",
                               textAlign: TextAlign.center,
-                              style: TextStyle(fontFamily: AppThemeData.medium, fontSize: 14, color: isDark ? AppThemeData.grey50 : AppThemeData.grey900),
+                              style: TextStyle(
+                                fontFamily: AppThemeData.medium,
+                                fontSize: 14,
+                                color:
+                                    isDark
+                                        ? AppThemeData.grey50
+                                        : AppThemeData.grey900,
+                              ),
                             ),
                           ),
                         ],
@@ -337,7 +659,13 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Padding cardDecoration(bool isDark, MyProfileController controller, String image, String title, Function()? onPress) {
+  Padding cardDecoration(
+    bool isDark,
+    MyProfileController controller,
+    String image,
+    String title,
+    Function()? onPress,
+  ) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: InkWell(
@@ -347,7 +675,18 @@ class ProfileScreen extends StatelessWidget {
         },
         child: Row(
           children: [
-            SvgPicture.asset(image, colorFilter: title == "Log In".tr || title == "Cashbacks".tr ? const ColorFilter.mode(AppThemeData.success500, BlendMode.srcIn) : null, height: 24, width: 24),
+            SvgPicture.asset(
+              image,
+              colorFilter:
+                  title == "Log In".tr || title == "Cashbacks".tr
+                      ? const ColorFilter.mode(
+                        AppThemeData.success500,
+                        BlendMode.srcIn,
+                      )
+                      : null,
+              height: 24,
+              width: 24,
+            ),
             const SizedBox(width: 10),
             Expanded(
               child: Text(
@@ -361,16 +700,28 @@ class ProfileScreen extends StatelessWidget {
                           ? AppThemeData.danger300
                           : title == "Log In".tr
                           ? AppThemeData.success500
-                          : (isDark ? AppThemeData.grey100 : AppThemeData.grey800),
+                          : (isDark
+                              ? AppThemeData.grey100
+                              : AppThemeData.grey800),
                 ),
               ),
             ),
             title == "Dark Mode".tr
                 ? Transform.scale(
                   scale: 0.8,
-                  child: Obx(() => CupertinoSwitch(value: controller.isDarkModeSwitch.value, activeTrackColor: AppThemeData.primary300, onChanged: controller.toggleDarkMode)),
+                  child: Obx(
+                    () => CupertinoSwitch(
+                      value: controller.isDarkModeSwitch.value,
+                      activeTrackColor: AppThemeData.primary300,
+                      onChanged: controller.toggleDarkMode,
+                    ),
+                  ),
                 )
-                : Icon(Icons.keyboard_arrow_right, color: isDark ? AppThemeData.greyDark700 : AppThemeData.grey700),
+                : Icon(
+                  Icons.keyboard_arrow_right,
+                  color:
+                      isDark ? AppThemeData.greyDark700 : AppThemeData.grey700,
+                ),
           ],
         ),
       ),

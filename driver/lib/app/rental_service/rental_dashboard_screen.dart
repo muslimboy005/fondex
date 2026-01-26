@@ -1,4 +1,4 @@
-import 'package:driver/app/auth_screen/login_screen.dart';
+import 'package:driver/app/auth_screen/auth_screen.dart';
 import 'package:driver/app/change%20langauge/change_language_screen.dart';
 import 'package:driver/app/chat_screens/driver_inbox_screen.dart';
 import 'package:driver/app/edit_profile_screen/edit_profile_screen.dart';
@@ -602,7 +602,7 @@ class DrawerView extends StatelessWidget {
                                   Constant.userModel!.fcmToken = "";
                                   await FireStoreUtils.updateUser(Constant.userModel!);
                                   await FirebaseAuth.instance.signOut();
-                                  Get.offAll(const LoginScreen());
+                                  Get.offAll(const AuthScreen());
                                 },
                                 negativeClick: () {
                                   Get.back();
@@ -635,7 +635,7 @@ class DrawerView extends StatelessWidget {
                                     ShowToastDialog.closeLoader();
                                     if (value == true) {
                                       ShowToastDialog.showToast("Account deleted successfully".tr);
-                                      Get.offAll(const LoginScreen());
+                                      Get.offAll(const AuthScreen());
                                     } else {
                                       ShowToastDialog.showToast("Contact Administrator".tr);
                                     }

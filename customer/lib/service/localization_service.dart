@@ -14,7 +14,9 @@ class LocalizationService extends Translations {
         // Try to parse language code from saved data
         if (langData.contains('"slug"')) {
           // Extract slug from JSON string
-          final slugMatch = RegExp(r'"slug"\s*:\s*"([^"]+)"').firstMatch(langData);
+          final slugMatch = RegExp(
+            r'"slug"\s*:\s*"([^"]+)"',
+          ).firstMatch(langData);
           if (slugMatch != null) {
             final slug = slugMatch.group(1);
             if (slug == 'ru') return const Locale('ru', 'RU');
@@ -22,28 +24,24 @@ class LocalizationService extends Translations {
           }
         } else {
           // Direct language code
-          if (langData == 'ru' || langData.contains('ru')) return const Locale('ru', 'RU');
-          if (langData == 'uz' || langData.contains('uz')) return const Locale('uz', 'UZ');
+          if (langData == 'ru' || langData.contains('ru'))
+            return const Locale('ru', 'RU');
+          if (langData == 'uz' || langData.contains('uz'))
+            return const Locale('uz', 'UZ');
         }
       } catch (e) {
         // If parsing fails, return default
       }
     }
-    return const Locale('ru', 'RU'); // Default to Russian
+    return const Locale('uz', 'UZ'); // Default to Uzbek
   }
 
-  static final locales = [
-    const Locale('ru', 'RU'),
-    const Locale('uz', 'UZ'),
-  ];
+  static final locales = [const Locale('ru', 'RU'), const Locale('uz', 'UZ')];
 
   // Keys and their translations
   // Translations are separated maps in `lang` file
   @override
-  Map<String, Map<String, String>> get keys => {
-    'ru_RU': ruRU,
-    'uz_UZ': uzUZ,
-  };
+  Map<String, Map<String, String>> get keys => {'ru_RU': ruRU, 'uz_UZ': uzUZ};
 
   // Gets locale from language, and updates the locale
   void changeLocale(String lang) {
@@ -53,7 +51,7 @@ class LocalizationService extends Translations {
     } else if (lang == 'uz') {
       newLocale = const Locale('uz', 'UZ');
     } else {
-      newLocale = const Locale('ru', 'RU'); // Default to Russian if unknown
+      newLocale = const Locale('uz', 'UZ'); // Default to Uzbek if unknown
     }
     Get.updateLocale(newLocale);
   }

@@ -78,9 +78,21 @@ class AddRestaurantController extends GetxController {
         sectionsList.value = value.where((element) => element.serviceTypeFlag == "ecommerce-service" || element.serviceTypeFlag == "delivery-service").toList();
       });
 
-      if (userModel.value.sectionId != null || userModel.value.sectionId!.isNotEmpty) {
-        selectedSectionModel.value = sectionsList.firstWhere((element) => element.id == userModel.value.sectionId);
-        vendorCategoryList.value = await FireStoreUtils.getVendorCategoryById(selectedSectionModel.value.id.toString());
+      if (userModel.value.sectionId != null && userModel.value.sectionId!.isNotEmpty) {
+        try {
+          selectedSectionModel.value = sectionsList.firstWhere(
+            (element) => element.id == userModel.value.sectionId,
+            orElse: () => sectionsList.isNotEmpty ? sectionsList.first : SectionModel(),
+          );
+          if (selectedSectionModel.value.id != null) {
+            vendorCategoryList.value = await FireStoreUtils.getVendorCategoryById(selectedSectionModel.value.id.toString());
+          }
+        } catch (e) {
+          if (sectionsList.isNotEmpty) {
+            selectedSectionModel.value = sectionsList.first;
+            vendorCategoryList.value = await FireStoreUtils.getVendorCategoryById(selectedSectionModel.value.id.toString());
+          }
+        }
         if (vendorCategoryList.isEmpty) {
           ShowToastDialog.showToast("No category for this section".tr);
         }
@@ -105,9 +117,13 @@ class AddRestaurantController extends GetxController {
             if (addressController.value.text.isNotEmpty) {
               isAddressEnable.value = true;
             }
-            selectedLocation = LatLng(vendorModel.value.latitude!, vendorModel.value.longitude!);
-            for (var element in vendorModel.value.photos!) {
-              images.add(element);
+            if (vendorModel.value.latitude != null && vendorModel.value.longitude != null) {
+              selectedLocation = LatLng(vendorModel.value.latitude!, vendorModel.value.longitude!);
+            }
+            if (vendorModel.value.photos != null) {
+              for (var element in vendorModel.value.photos!) {
+                images.add(element);
+              }
             }
 
             for (var element in zoneList) {
@@ -116,15 +132,17 @@ class AddRestaurantController extends GetxController {
               }
             }
 
-            if (vendorModel.value.categoryID!.isNotEmpty) {
+            if (vendorModel.value.categoryID != null && vendorModel.value.categoryID!.isNotEmpty) {
               selectedCategories.value = vendorCategoryList.where((category) => vendorModel.value.categoryID!.contains(category.id)).toList();
             }
 
-            vendorModel.value.filters!.toJson().forEach((key, value) {
-              if (value.contains("Yes")) {
-                selectedService.add(key);
-              }
-            });
+            if (vendorModel.value.filters != null) {
+              vendorModel.value.filters!.toJson().forEach((key, value) {
+                if (value.contains("Yes")) {
+                  selectedService.add(key);
+                }
+              });
+            }
           }
         });
       }
@@ -166,6 +184,10 @@ class AddRestaurantController extends GetxController {
       ShowToastDialog.showToast("Please select zone".tr);
     } else if (selectedCategories.isEmpty) {
       ShowToastDialog.showToast("Please select category".tr);
+    } else if (selectedLocation == null) {
+      ShowToastDialog.showToast("Please select location".tr);
+    } else if (selectedZone.value.area == null) {
+      ShowToastDialog.showToast("Please select zone".tr);
     } else {
       if (Constant.isPointInPolygon(selectedLocation!, selectedZone.value.area!)) {
         ShowToastDialog.showLoader("Please wait...".tr);
@@ -190,24 +212,32 @@ class AddRestaurantController extends GetxController {
         }
 
         vendorModel.value.id = Constant.userModel?.vendorID;
-        vendorModel.value.author = Constant.userModel!.id;
-        vendorModel.value.authorName = Constant.userModel!.firstName;
-        vendorModel.value.authorProfilePic = Constant.userModel!.profilePictureURL;
+        if (Constant.userModel != null) {
+          vendorModel.value.author = Constant.userModel!.id;
+          vendorModel.value.authorName = Constant.userModel!.firstName;
+          vendorModel.value.authorProfilePic = Constant.userModel!.profilePictureURL;
+        }
 
         vendorModel.value.categoryID = selectedCategories.map((e) => e.id ?? '').toList();
         vendorModel.value.categoryTitle = selectedCategories.map((e) => e.title ?? '').toList();
-        vendorModel.value.g = G(
-          geohash: Geoflutterfire().point(latitude: selectedLocation!.latitude, longitude: selectedLocation!.longitude).hash,
-          geopoint: GeoPoint(selectedLocation!.latitude, selectedLocation!.longitude),
-        );
+        if (selectedLocation != null) {
+          vendorModel.value.g = G(
+            geohash: Geoflutterfire().point(latitude: selectedLocation!.latitude, longitude: selectedLocation!.longitude).hash,
+            geopoint: GeoPoint(selectedLocation!.latitude, selectedLocation!.longitude),
+          );
+        }
         vendorModel.value.description = restaurantDescriptionController.value.text;
         vendorModel.value.phonenumber = mobileNumberController.value.text;
         vendorModel.value.filters = Filters.fromJson(filters);
         vendorModel.value.location = addressController.value.text;
-        vendorModel.value.latitude = selectedLocation!.latitude;
-        vendorModel.value.longitude = selectedLocation!.longitude;
+        if (selectedLocation != null) {
+          vendorModel.value.latitude = selectedLocation!.latitude;
+          vendorModel.value.longitude = selectedLocation!.longitude;
+        }
         vendorModel.value.photos = images;
-        vendorModel.value.sectionId = selectedSectionModel.value.id;
+        if (selectedSectionModel.value.id != null) {
+          vendorModel.value.sectionId = selectedSectionModel.value.id;
+        }
         if (images.isNotEmpty) {
           vendorModel.value.photo = images.first;
         } else {
@@ -219,7 +249,7 @@ class AddRestaurantController extends GetxController {
         vendorModel.value.zoneId = selectedZone.value.id;
         vendorModel.value.isSelfDelivery = isSelfDelivery.value;
 
-        if (selectedSectionModel.value.adminCommision!.isEnabled == true || Constant.isSubscriptionModelApplied == true) {
+        if ((selectedSectionModel.value.adminCommision?.isEnabled == true) || Constant.isSubscriptionModelApplied == true) {
           vendorModel.value.subscriptionPlanId = userModel.value.subscriptionPlanId;
           vendorModel.value.subscriptionPlan = userModel.value.subscriptionPlan;
           vendorModel.value.subscriptionExpiryDate = userModel.value.subscriptionExpiryDate;
@@ -232,7 +262,9 @@ class AddRestaurantController extends GetxController {
             ShowToastDialog.showToast("Store details save successfully".tr);
           });
         } else {
-          vendorModel.value.adminCommission = selectedSectionModel.value.adminCommision!;
+          if (selectedSectionModel.value.adminCommision != null) {
+            vendorModel.value.adminCommission = selectedSectionModel.value.adminCommision!;
+          }
           vendorModel.value.workingHours = [
             WorkingHours(
               day: 'Monday',

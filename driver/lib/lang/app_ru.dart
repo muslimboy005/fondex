@@ -1,7 +1,7 @@
 const Map<String, String> ruRU = {
   'Log In to Your Account': 'Log In to Your Account',
-  'Sign in to access your eMart account and manage your deliveries seamlessly.':
-  'Sign in to access your eMart account and manage your deliveries seamlessly.',
+  'Sign in to access your Fondex account and manage your deliveries seamlessly.':
+      'Sign in to access your Fondex account and manage your deliveries seamlessly.',
   'Didn’t Have an account?': 'Didn’t Have an account?',
   'Sign up': 'Sign up',
   'Email Address': 'Email Address',
@@ -17,28 +17,29 @@ const Map<String, String> ruRU = {
   'Log in': 'Log in',
   'Verify Your Mobile Number': 'Verify Your Mobile Number',
   'Enter the OTP sent to your mobile number to verify and secure your account.':
-  'Enter the OTP sent to your mobile number to verify and secure your account.',
+      'Enter the OTP sent to your mobile number to verify and secure your account.',
   'Did’t receive any code? ': 'Did’t receive any code? ',
   'Send Again': 'Send Again',
   'Already Have an account?': 'Already Have an account?',
   'Verify otp': 'Verify otp',
-  'This user is disable please contact to administrator': 'This user is disable please contact to administrator',
+  'This user is disable please contact to administrator':
+      'This user is disable please contact to administrator',
   'Account already created in other application. You are not able login this application.':
-  'Account already created in other application. You are not able login this application.',
+      'Account already created in other application. You are not able login this application.',
   'Invalid Code': 'Invalid Code',
   'Enter Valid otp': 'Enter Valid otp',
   'Send Code': 'Send Code',
   'Log In Using Your Mobile Number': 'Log In Using Your Mobile Number',
   'Enter your mobile number to quickly access your account and start managing your deliveries.':
-  'Enter your mobile number to quickly access your account and start managing your deliveries.',
+      'Enter your mobile number to quickly access your account and start managing your deliveries.',
   'Phone Number': 'Phone Number',
   'Enter Phone Number': 'Enter Phone Number',
   'Log in with': 'Log in with',
   'E-mail': 'E-mail',
   'Please enter mobile number': 'Please enter mobile number',
   'Create an Account': 'Create an Account',
-  'Sign up now to start your journey as a eMart driver and begin earning with every delivery.':
-  'Sign up now to start your journey as a eMart driver and begin earning with every delivery.',
+  'Sign up now to start your journey as a Fondex driver and begin earning with every delivery.':
+      'Sign up now to start your journey as a Fondex driver and begin earning with every delivery.',
   'Service': 'Service',
   'Service Type': 'Service Type',
   'Continue as a.': 'Continue as a.',
@@ -69,7 +70,8 @@ const Map<String, String> ruRU = {
   'Please select zone': 'Please select zone',
   'Please enter password': 'Please enter password',
   'Please enter Confirm password': 'Please enter Confirm password',
-  "Password and Confirm password doesn't match": "Password and Confirm password doesn't match",
+  "Password and Confirm password doesn't match":
+      "Password and Confirm password doesn't match",
   "Welcome Back 👋": "Welcome Back 👋",
   "Available Status": "Available Status",
   "About App": "About App",
@@ -89,32 +91,34 @@ const Map<String, String> ruRU = {
   "Legal": "Legal",
   "Terms and Conditions": "Terms and Conditions",
   "Privacy Policy": "Privacy Policy",
-  "Check out eMart, your ultimate food delivery application!": "Check out eMart, your ultimate food delivery application!",
+  "Check out Fondex, your ultimate food delivery application!":
+      "Check out Fondex, your ultimate food delivery application!",
   "Google Play:": "Google Play:",
   "App Store:": "App Store:",
   "Look what I made!": "Look what I made!",
   "Document verification is pending. Please proceed to set up your document verification.":
-  "Document verification is pending. Please proceed to set up your document verification.",
+      "Document verification is pending. Please proceed to set up your document verification.",
   "Are you sure you want to log out? You will need to enter your credentials to log back in.":
-  "Are you sure you want to log out? You will need to enter your credentials to log back in.",
+      "Are you sure you want to log out? You will need to enter your credentials to log back in.",
   "Log out": "Log out",
   "Cancel": "Cancel",
   "Delete Account": "Delete Account",
   "Are you sure you want to delete your account? This action is irreversible and will permanently remove all your data.":
-  "Are you sure you want to delete your account? This action is irreversible and will permanently remove all your data.",
+      "Are you sure you want to delete your account? This action is irreversible and will permanently remove all your data.",
   "Please wait": "Please wait",
   "Account deleted successfully": "Account deleted successfully",
   "Contact Administrator": "Contact Administrator",
   "Document Verification in Pending": "Document Verification in Pending",
   "Your documents are being reviewed. We will notify you once the verification is complete.":
-  "Your documents are being reviewed. We will notify you once the verification is complete.",
+      "Your documents are being reviewed. We will notify you once the verification is complete.",
   "View Status": "View Status",
   "You must have at least": "You must have at least",
   "in your wallet to receive orders": "in your wallet to receive orders",
   "Your owner doesn't have the minimum wallet amount to receive orders. Please contact your owner.":
-  "Your owner doesn't have the minimum wallet amount to receive orders. Please contact your owner.",
+      "Your owner doesn't have the minimum wallet amount to receive orders. Please contact your owner.",
   "Navigate with": "Navigate with",
-  "Easily find your destination with a single tap redirect to": "Easily find your destination with a single tap redirect to",
+  "Easily find your destination with a single tap redirect to":
+      "Easily find your destination with a single tap redirect to",
   "for seamless navigation.": "for seamless navigation.",
   "Redirect": "Redirect",
   "Destination": "Destination",
@@ -124,8 +128,9 @@ const Map<String, String> ruRU = {
   "Reject": "Reject",
   "Accept": "Accept",
   "Your owner has to maintain minimum {amount} wallet balance to accept the cab booking. Please contact your owner":
-  "Your owner has to maintain minimum {amount} wallet balance to accept the cab booking. Please contact your owner",
-  "You don't have sufficient balance in your wallet.": "You don't have sufficient balance in your wallet.",
+      "Your owner has to maintain minimum {amount} wallet balance to accept the cab booking. Please contact your owner",
+  "You don't have sufficient balance in your wallet.":
+      "You don't have sufficient balance in your wallet.",
   "Payment Type": "Payment Type",
   "Cash on delivery": "Cash on delivery",
   "Online": "Online",
@@ -134,11 +139,13 @@ const Map<String, String> ruRU = {
   "Pickup Customer": "Pickup Customer",
   "Complete Ride": "Complete Ride",
   "Verify Passenger": "Verify Passenger",
-  "Enter the OTP shared by the customer to begin the trip": "Enter the OTP shared by the customer to begin the trip",
+  "Enter the OTP shared by the customer to begin the trip":
+      "Enter the OTP shared by the customer to begin the trip",
   "Start Ride": "Start Ride",
   "Please enter valid OTP": "Please enter valid OTP",
   "Confirm Cash Payment": "Confirm Cash Payment",
-  "Are you sure you received the cash from the passenger?": "Are you sure you received the cash from the passenger?",
+  "Are you sure you received the cash from the passenger?":
+      "Are you sure you received the cash from the passenger?",
   "Ride Details": "Ride Details",
   "Order Id:": "Order Id:",
   "Booking Date:": "Booking Date:",
@@ -150,7 +157,7 @@ const Map<String, String> ruRU = {
   "Discount": "Discount",
   "Order Total": "Order Total",
   "Note : Admin commission will be debited from your wallet balance. \n \nAdmin commission will apply on your booking Amount minus Discount(if applicable).":
-  "Note : Admin commission will be debited from your wallet balance. \n \nAdmin commission will apply on your booking Amount minus Discount(if applicable).",
+      "Note : Admin commission will be debited from your wallet balance. \n \nAdmin commission will apply on your booking Amount minus Discount(if applicable).",
   "No orders found": "No orders found",
   "No Conversion found": "No conversation found",
   "Type message here....": "Type message here...",
@@ -161,7 +168,8 @@ const Map<String, String> ruRU = {
   "please select": "please select",
   "camera": "camera",
   "gallery": "gallery",
-  "No worries!! We’ll send you reset instructions": "No worries!! We’ll send you reset instructions",
+  "No worries!! We’ll send you reset instructions":
+      "No worries!! We’ll send you reset instructions",
   "Deliver to the": "Deliver to the",
   "Variants": "Variants",
   "Addons": "Addons",
@@ -179,10 +187,12 @@ const Map<String, String> ruRU = {
   "VandexNavi Map": "VandexNavi Map",
   "Vandex Map": "Vandex Map",
   "document_verification_pending": "Document Verification in Pending",
-  "document_review_notification": "Your documents are being reviewed. We will notify you once the verification is complete.",
+  "document_review_notification":
+      "Your documents are being reviewed. We will notify you once the verification is complete.",
   "view_status": "View Status",
   "New": "New",
-  "wallet_minimum_required": "You must have a minimum {amount} in your wallet to receive orders",
+  "wallet_minimum_required":
+      "You must have a minimum {amount} in your wallet to receive orders",
   "Active": "Active",
   "New Order not found.": "New Order not found.",
   "deliver_to_the": "Deliver to the",
@@ -195,14 +205,14 @@ const Map<String, String> ruRU = {
   "Active order not found.": "Active order not found.",
   "Order Ready to pickup": "Order Ready to pickup",
   "Your order has been ready pickup the order and deliver to the customer’s locations.":
-  "Your order has been ready pickup the order and deliver to the customer’s locations.",
+      "Your order has been ready pickup the order and deliver to the customer’s locations.",
   "Item and Deliver to the": "Item and Deliver to the",
   "Confirm Pickup": "Confirm Pickup",
   "Conform pickup order": "Conform pickup order",
   "Picked Order": "Picked Order",
   "We'll be back soon!": "We'll be back soon!",
   "Sorry for the inconvenience but we're performing some maintenance at the moment. We'll be back online shortly!":
-  "Sorry for the inconvenience but we're performing some maintenance at the moment. We'll be back online shortly!",
+      "Sorry for the inconvenience but we're performing some maintenance at the moment. We'll be back online shortly!",
   "Order Details": "Order Details",
   "Item totals": "Item totals",
   "Delivery Fee": "Delivery Fee",
@@ -223,9 +233,11 @@ const Map<String, String> ruRU = {
   "Please enter email address": "Please enter email address",
   "Please enter valid email address": "Please enter valid email address",
   "Please enter phone number": "Please enter phone number",
-  "Password must be at least 6 characters": "Password must be at least 6 characters",
+  "Password must be at least 6 characters":
+      "Password must be at least 6 characters",
   "Please enter confirm password": "Please enter confirm password",
-  "Password and confirm password do not match": "Password and confirm password do not match",
+  "Password and confirm password do not match":
+      "Password and confirm password do not match",
   "Please select vehicle type": "Please select vehicle type",
   "Please select car brand": "Please select car brand",
   "Please select car model": "Please select car model",
@@ -247,7 +259,8 @@ const Map<String, String> ruRU = {
   "Service type not supported": "Service type not supported",
   "Package info :": "Package info :",
   "No drivers found": "No drivers found",
-  "No parcel requests available in your selected zone.": "No parcel requests available in your selected zone.",
+  "No parcel requests available in your selected zone.":
+      "No parcel requests available in your selected zone.",
   "Try changing the location or date.": "Try changing the location or date.",
   "Search Parcel": "Search Parcel",
   "Pickup Parcel": "Pickup Parcel",
@@ -266,9 +279,9 @@ const Map<String, String> ruRU = {
   "Select Date": "Select Date",
   "Parcel Booking not found": "Parcel Booking not found",
   "Your owner has to maintain minimum {amount} wallet balance to accept the parcel booking. Please contact your owner":
-  "Your owner has to maintain minimum {amount} wallet balance to accept the parcel booking. Please contact your owner",
+      "Your owner has to maintain minimum {amount} wallet balance to accept the parcel booking. Please contact your owner",
   "You have to maintain minimum {amount} wallet balance to accept the parcel booking.":
-  "You have to maintain minimum {amount} wallet balance to accept the parcel booking.",
+      "You have to maintain minimum {amount} wallet balance to accept the parcel booking.",
   "No Rental booking available": "No Rental booking available",
   "Package Details:": "Package Details:",
   "Including Distance:": "Including Distance:",
@@ -278,16 +291,17 @@ const Map<String, String> ruRU = {
   "Accepting booking...": "Accepting booking...",
   "Booking accepted successfully": "Booking accepted successfully",
   "Your owner has to maintain minimum {{amount}} wallet balance to accept the rental booking. Please contact your owner":
-  "Your owner has to maintain minimum {{amount}} wallet balance to accept the rental booking. Please contact your owner",
+      "Your owner has to maintain minimum {{amount}} wallet balance to accept the rental booking. Please contact your owner",
   "You have to maintain minimum {{amount}} wallet balance to accept the rental booking.":
-  "You have to maintain minimum {{amount}} wallet balance to accept the rental booking.",
+      "You have to maintain minimum {{amount}} wallet balance to accept the rental booking.",
   "Search new ride": "Search new ride",
   "Reached Location": "Reached Location",
   "Set Final kilometers": "Set Final kilometers",
   "Complete Booking": "Complete Booking",
   "Confirm cash payment": "Confirm cash payment",
   "Payment Pending": "Payment Pending",
-  "Please collect the payment from the customer through the app.": "Please collect the payment from the customer through the app.",
+  "Please collect the payment from the customer through the app.":
+      "Please collect the payment from the customer through the app.",
   "Booking ID copied to clipboard": "Booking ID copied to clipboard",
   "Your Preference": "Your Preference",
   "Rental Details": "Rental Details",
@@ -301,7 +315,8 @@ const Map<String, String> ruRU = {
   "Update Review": "Update Review",
   "Add Review": "Add Review",
   "How was your customer?": "How was your customer?",
-  "Share your feedback about the customer.": "Share your feedback about the customer.",
+  "Share your feedback about the customer.":
+      "Share your feedback about the customer.",
   "Rate the Customer": "Rate the Customer",
   "Type comment....": "Type comment....",
   "Select Section": "Select Section",
@@ -309,7 +324,8 @@ const Map<String, String> ruRU = {
   "Upload": "Upload",
   "for Verification": "for Verification",
   "Please upload a valid": "Please upload a valid",
-  "to verify your identity complete the registration process.": "to verify your identity to complete the registration process.",
+  "to verify your identity complete the registration process.":
+      "to verify your identity to complete the registration process.",
   "Front Side of": "Front Side of",
   "Back side of": "Back side of",
   "Choose a image and upload here": "Choose an image and upload here",
@@ -319,7 +335,7 @@ const Map<String, String> ruRU = {
   "Camera": "Camera",
   "Gallery": "Gallery",
   "Upload your ID Proof to complete the verification process and ensure compliance.":
-  "Upload your ID Proof to complete the verification process and ensure compliance.",
+      "Upload your ID Proof to complete the verification process and ensure compliance.",
   "Photo": "Photo",
   "Verified": "Verified",
   "Rejected": "Rejected",
@@ -335,7 +351,8 @@ const Map<String, String> ruRU = {
   "Please enter amount greater than 0": "Please enter amount greater than 0",
   "Please enter minimum amount of": "Please enter minimum amount of",
   "Please select payment method": "Please select payment method",
-  "Something went wrong, please contact admin.": "Something went wrong, please contact admin.",
+  "Something went wrong, please contact admin.":
+      "Something went wrong, please contact admin.",
   "My Wallet": "My Wallet",
   "Withdraw": "Withdraw",
   "Top up": "Top up",
@@ -353,7 +370,8 @@ const Map<String, String> ruRU = {
   "PayPal": "PayPal",
   "RazorPay": "RazorPay",
   "Stripe": "Stripe",
-  "Withdraw amount must be greater or equal to": "Withdraw amount must be greater or equal to",
+  "Withdraw amount must be greater or equal to":
+      "Withdraw amount must be greater or equal to",
   "Success": "Success",
   "Failed": "Failed",
   "bank": "Bank Transfer",
@@ -392,14 +410,17 @@ const Map<String, String> ruRU = {
   "Paypal Email": "Paypal Email",
   "Please enter Paypal email": "Please enter Paypal email",
   "Razorpay account Id": "Razorpay account Id",
-  "Add your Account ID. For example, acc_GLGeLkU2JUeyDZ": "Add your Account ID. For example, acc_GLGeLkU2JUeyDZ",
+  "Add your Account ID. For example, acc_GLGeLkU2JUeyDZ":
+      "Add your Account ID. For example, acc_GLGeLkU2JUeyDZ",
   "Please enter RazorPay account Id": "Please enter RazorPay account Id",
   "Stripe Account Id": "Stripe Account Id",
   "Go to your Stripe account settings > Account details > Copy your account ID on the right-hand side. For example, acc_GLGeLkU2JUeyDZ":
-  "Go to your Stripe account settings > Account details > Copy your account ID on the right-hand side. For example, acc_GLGeLkU2JUeyDZ",
+      "Go to your Stripe account settings > Account details > Copy your account ID on the right-hand side. For example, acc_GLGeLkU2JUeyDZ",
   "Please enter stripe account Id": "Please enter stripe account Id",
   "Skip": "Skip",
   "Next": "Next",
-  "Welcome to eMart Driver": "Welcome to eMart Driver",
-  "Your Favorite Ride, Parcel, Rental & Item Delivered Fast!": "Your Favorite Ride, Parcel, Rental & Item Delivered Fast!",
+  "Welcome to Fondex Driver": "Welcome to Fondex Driver",
+  "Your Favorite Ride, Parcel, Rental & Item Delivered Fast!":
+      "Your Favorite Ride, Parcel, Rental & Item Delivered Fast!",
+  "Fondex Driver": "Fondex Driver",
 };

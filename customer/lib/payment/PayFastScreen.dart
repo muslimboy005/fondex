@@ -83,8 +83,8 @@ class _PayFastScreenState extends State<PayFastScreen> {
       barrierDismissible: true, // user must tap button!
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Cancel Payment'),
-          content: SingleChildScrollView(child: Text("Cancel Payment?".tr)),
+          title: Text('Cancel Payment'.tr),
+          content: SingleChildScrollView(child: Text("cancelPayment?".tr)),
           actions: <Widget>[
             TextButton(
               child: Text('Exit'.tr, style: TextStyle(color: Colors.red)),

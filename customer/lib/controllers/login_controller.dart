@@ -7,7 +7,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import '../constant/constant.dart';
 import '../models/user_model.dart';
-import '../screen_ui/auth_screens/login_screen.dart';
+import '../screen_ui/auth_screens/auth_screen.dart';
 import '../screen_ui/auth_screens/sign_up_screen.dart';
 import '../screen_ui/service_home_screen/service_list_screen.dart';
 import '../service/fire_store_utils.dart';
@@ -45,16 +45,22 @@ class LoginController extends GetxController {
       isLoading.value = true;
       ShowToastDialog.showLoader("Logging in...".tr);
 
-      final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(email: email, password: password);
+      final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
 
-      final userModel = await FireStoreUtils.getUserProfile(credential.user!.uid);
+      final userModel = await FireStoreUtils.getUserProfile(
+        credential.user!.uid,
+      );
 
       if (userModel != null && userModel.role == Constant.userRoleCustomer) {
         if (userModel.active == true) {
           userModel.fcmToken = await NotificationService.getToken();
           await FireStoreUtils.updateUser(userModel);
 
-          if (userModel.shippingAddress != null && userModel.shippingAddress!.isNotEmpty) {
+          if (userModel.shippingAddress != null &&
+              userModel.shippingAddress!.isNotEmpty) {
             final defaultAddress = userModel.shippingAddress!.firstWhere(
               (e) => e.isDefault == true,
               orElse: () => userModel.shippingAddress!.first,
@@ -68,13 +74,17 @@ class LoginController extends GetxController {
           }
         } else {
           await FirebaseAuth.instance.signOut();
-          ShowToastDialog.showToast("This user is disabled. Please contact admin.".tr);
-          Get.offAll(() => const LoginScreen());
+          ShowToastDialog.showToast(
+            "This user is disabled. Please contact admin.".tr,
+          );
+          Get.offAll(() => const AuthScreen());
         }
       } else {
         await FirebaseAuth.instance.signOut();
-        ShowToastDialog.showToast("This user does not exist in the customer app.".tr);
-        Get.offAll(() => const LoginScreen());
+        ShowToastDialog.showToast(
+          "This user does not exist in the customer app.".tr,
+        );
+        Get.offAll(() => const AuthScreen());
       }
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') {
@@ -84,7 +94,9 @@ class LoginController extends GetxController {
       } else if (e.code == 'invalid-email') {
         ShowToastDialog.showToast("Invalid email.".tr);
       } else {
-        ShowToastDialog.showToast(e.message?.tr ?? "Login failed. Please try again.".tr);
+        ShowToastDialog.showToast(
+          e.message?.tr ?? "Login failed. Please try again.".tr,
+        );
       }
     } finally {
       isLoading.value = false;
@@ -106,22 +118,32 @@ class LoginController extends GetxController {
           userModel.provider = 'google';
 
           ShowToastDialog.closeLoader();
-          Get.off(const SignUpScreen(), arguments: {"userModel": userModel, "type": "google"});
+          Get.off(
+            const SignUpScreen(),
+            arguments: {"userModel": userModel, "type": "google"},
+          );
         } else {
-          await FireStoreUtils.userExistOrNot(value.user!.uid).then((userExit) async {
+          await FireStoreUtils.userExistOrNot(value.user!.uid).then((
+            userExit,
+          ) async {
             ShowToastDialog.closeLoader();
             if (userExit == true) {
-              UserModel? userModel = await FireStoreUtils.getUserProfile(value.user!.uid);
-              if (userModel != null && userModel.role == Constant.userRoleCustomer) {
+              UserModel? userModel = await FireStoreUtils.getUserProfile(
+                value.user!.uid,
+              );
+              if (userModel != null &&
+                  userModel.role == Constant.userRoleCustomer) {
                 if (userModel.active == true) {
                   userModel.fcmToken = await NotificationService.getToken();
                   await FireStoreUtils.updateUser(userModel);
 
-                  if (userModel.shippingAddress != null && userModel.shippingAddress!.isNotEmpty) {
-                    final defaultAddress = userModel.shippingAddress!.firstWhere(
-                      (e) => e.isDefault == true,
-                      orElse: () => userModel.shippingAddress!.first,
-                    );
+                  if (userModel.shippingAddress != null &&
+                      userModel.shippingAddress!.isNotEmpty) {
+                    final defaultAddress = userModel.shippingAddress!
+                        .firstWhere(
+                          (e) => e.isDefault == true,
+                          orElse: () => userModel.shippingAddress!.first,
+                        );
 
                     Constant.selectedLocation = defaultAddress;
 
@@ -131,13 +153,17 @@ class LoginController extends GetxController {
                   }
                 } else {
                   await FirebaseAuth.instance.signOut();
-                  ShowToastDialog.showToast("This user is disabled. Please contact admin.".tr);
-                  Get.offAll(() => const LoginScreen());
+                  ShowToastDialog.showToast(
+                    "This user is disabled. Please contact admin.".tr,
+                  );
+                  Get.offAll(() => const AuthScreen());
                 }
               } else {
                 await FirebaseAuth.instance.signOut();
-                ShowToastDialog.showToast("This user does not exist in the customer app.".tr);
-                Get.offAll(() => const LoginScreen());
+                ShowToastDialog.showToast(
+                  "This user does not exist in the customer app.".tr,
+                );
+                Get.offAll(() => const AuthScreen());
               }
             } else {
               UserModel userModel = UserModel();
@@ -147,7 +173,10 @@ class LoginController extends GetxController {
               userModel.lastName = value.user!.displayName?.split(' ').last;
               userModel.provider = 'google';
 
-              Get.off(const SignUpScreen(), arguments: {"userModel": userModel, "type": "google"});
+              Get.off(
+                const SignUpScreen(),
+                arguments: {"userModel": userModel, "type": "google"},
+              );
             }
           });
         }
@@ -175,22 +204,32 @@ class LoginController extends GetxController {
           userModel.lastName = appleCredential.familyName ?? "";
           userModel.provider = 'apple';
 
-          Get.off(const SignUpScreen(), arguments: {"userModel": userModel, "type": "apple"});
+          Get.off(
+            const SignUpScreen(),
+            arguments: {"userModel": userModel, "type": "apple"},
+          );
         } else {
           // Existing user
-          await FireStoreUtils.userExistOrNot(userCredential.user!.uid).then((userExit) async {
+          await FireStoreUtils.userExistOrNot(userCredential.user!.uid).then((
+            userExit,
+          ) async {
             if (userExit == true) {
-              UserModel? userModel = await FireStoreUtils.getUserProfile(userCredential.user!.uid);
-              if (userModel != null && userModel.role == Constant.userRoleCustomer) {
+              UserModel? userModel = await FireStoreUtils.getUserProfile(
+                userCredential.user!.uid,
+              );
+              if (userModel != null &&
+                  userModel.role == Constant.userRoleCustomer) {
                 if (userModel.active == true) {
                   userModel.fcmToken = await NotificationService.getToken();
                   await FireStoreUtils.updateUser(userModel);
 
-                  if (userModel.shippingAddress != null && userModel.shippingAddress!.isNotEmpty) {
-                    final defaultAddress = userModel.shippingAddress!.firstWhere(
-                      (e) => e.isDefault == true,
-                      orElse: () => userModel.shippingAddress!.first,
-                    );
+                  if (userModel.shippingAddress != null &&
+                      userModel.shippingAddress!.isNotEmpty) {
+                    final defaultAddress = userModel.shippingAddress!
+                        .firstWhere(
+                          (e) => e.isDefault == true,
+                          orElse: () => userModel.shippingAddress!.first,
+                        );
 
                     Constant.selectedLocation = defaultAddress;
                     Get.offAll(() => const ServiceListScreen());
@@ -199,24 +238,32 @@ class LoginController extends GetxController {
                   }
                 } else {
                   await FirebaseAuth.instance.signOut();
-                  ShowToastDialog.showToast("This user is disabled. Please contact admin.".tr);
-                  Get.offAll(() => const LoginScreen());
+                  ShowToastDialog.showToast(
+                    "This user is disabled. Please contact admin.".tr,
+                  );
+                  Get.offAll(() => const AuthScreen());
                 }
               } else {
                 await FirebaseAuth.instance.signOut();
-                ShowToastDialog.showToast("This user does not exist in the customer app.".tr);
-                Get.offAll(() => const LoginScreen());
+                ShowToastDialog.showToast(
+                  "This user does not exist in the customer app.".tr,
+                );
+                Get.offAll(() => const AuthScreen());
               }
             } else {
               // User not in DB → go to signup
               UserModel userModel = UserModel();
               userModel.id = userCredential.user!.uid;
-              userModel.email = appleCredential.email ?? userCredential.user!.email;
+              userModel.email =
+                  appleCredential.email ?? userCredential.user!.email;
               userModel.firstName = appleCredential.givenName ?? "";
               userModel.lastName = appleCredential.familyName ?? "";
               userModel.provider = 'apple';
 
-              Get.off(const SignUpScreen(), arguments: {"userModel": userModel, "type": "apple"});
+              Get.off(
+                const SignUpScreen(),
+                arguments: {"userModel": userModel, "type": "apple"},
+              );
             }
           });
         }
@@ -235,8 +282,12 @@ class LoginController extends GetxController {
 
       final GoogleSignInAuthentication googleAuth = googleUser.authentication;
 
-      final credential = GoogleAuthProvider.credential(idToken: googleAuth.idToken);
-      final userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
+      final credential = GoogleAuthProvider.credential(
+        idToken: googleAuth.idToken,
+      );
+      final userCredential = await FirebaseAuth.instance.signInWithCredential(
+        credential,
+      );
 
       return userCredential;
     } catch (e) {
@@ -256,17 +307,27 @@ class LoginController extends GetxController {
       final rawNonce = generateNonce();
       final nonce = sha256ofString(rawNonce);
 
-      AuthorizationCredentialAppleID appleCredential = await SignInWithApple.getAppleIDCredential(
-        scopes: [AppleIDAuthorizationScopes.email, AppleIDAuthorizationScopes.fullName],
-        nonce: nonce,
+      AuthorizationCredentialAppleID appleCredential =
+          await SignInWithApple.getAppleIDCredential(
+            scopes: [
+              AppleIDAuthorizationScopes.email,
+              AppleIDAuthorizationScopes.fullName,
+            ],
+            nonce: nonce,
+          );
+
+      final oauthCredential = OAuthProvider("apple.com").credential(
+        idToken: appleCredential.identityToken,
+        rawNonce: rawNonce,
+        accessToken: appleCredential.authorizationCode,
       );
 
-      final oauthCredential = OAuthProvider(
-        "apple.com",
-      ).credential(idToken: appleCredential.identityToken, rawNonce: rawNonce, accessToken: appleCredential.authorizationCode);
-
-      UserCredential userCredential = await FirebaseAuth.instance.signInWithCredential(oauthCredential);
-      return {"appleCredential": appleCredential, "userCredential": userCredential};
+      UserCredential userCredential = await FirebaseAuth.instance
+          .signInWithCredential(oauthCredential);
+      return {
+        "appleCredential": appleCredential,
+        "userCredential": userCredential,
+      };
     } catch (e) {
       debugPrint(e.toString());
     }

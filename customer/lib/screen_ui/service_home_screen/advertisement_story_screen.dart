@@ -3,6 +3,7 @@ import 'package:customer/widget/story_view/controller/story_controller.dart';
 import 'package:customer/widget/story_view/utils.dart';
 import 'package:customer/widget/story_view/widgets/story_view.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class AdvertisementStoryScreen extends StatefulWidget {
   final List<AdvertisementModel> advertisementList;
@@ -79,7 +80,7 @@ class _AdvertisementStoryScreenState extends State<AdvertisementStoryScreen> {
     if (widget.advertisementList.isEmpty) {
       return Scaffold(
         body: Center(
-          child: Text('No advertisements available'),
+          child: Text('No advertisements available'.tr),
         ),
       );
     }

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:driver/themes/app_them_data.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -46,7 +47,8 @@ class _MidtransScreenState extends State<MidtransScreen> {
                 Get.back(result: false);
               }
             } else {
-              String? orderId = Uri.parse(navigation.url).queryParameters['merchant_order_id'];
+              String? orderId = Uri.parse(navigation.url)
+                  .queryParameters['merchant_order_id'];
               if (orderId != null) {
                 Get.back(result: true);
               } else {
@@ -81,9 +83,12 @@ class _MidtransScreenState extends State<MidtransScreen> {
                     color: Colors.white,
                   ),
                 )),
-            body: Stack(
-                alignment: Alignment.center,
-                children: [WebViewWidget(controller: controller), Visibility(visible: isLoading, child: const Center(child: CircularProgressIndicator()))])));
+            body: Stack(alignment: Alignment.center, children: [
+              WebViewWidget(controller: controller),
+              Visibility(
+                  visible: isLoading,
+                  child: const Center(child: CircularProgressIndicator()))
+            ])));
   }
 
   Future<void> _showMyDialog() async {
@@ -110,7 +115,7 @@ class _MidtransScreenState extends State<MidtransScreen> {
             TextButton(
               child: Text(
                 'Continue'.tr,
-                style: const TextStyle(color: Colors.green),
+                style: TextStyle(color: AppThemeData.primary300),
               ),
               onPressed: () {
                 Get.back(result: false);

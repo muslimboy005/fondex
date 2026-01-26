@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
-import 'package:vendor/app/auth_screen/login_screen.dart';
+import 'package:vendor/app/auth_screen/auth_screen.dart';
 import 'package:vendor/app/dash_board_screens/app_not_access_screen.dart';
 import 'package:vendor/app/dash_board_screens/dash_board_screen.dart';
 import 'package:vendor/app/maintenance_mode_screen/maintenance_mode_screen.dart';
@@ -30,23 +30,30 @@ class SplashController extends GetxController {
     } else {
       bool isLogin = await FireStoreUtils.isLogin();
       if (isLogin == true) {
-        await FireStoreUtils.getUserProfile(FireStoreUtils.getCurrentUid()).then((value) async {
+        await FireStoreUtils.getUserProfile(
+          FireStoreUtils.getCurrentUid(),
+        ).then((value) async {
           if (value != null) {
             Constant.userModel = value;
             if (Constant.userModel?.role == Constant.userRoleVendor) {
               if (Constant.userModel?.active == true) {
-                Constant.userModel?.fcmToken = await NotificationService.getToken();
+                Constant.userModel?.fcmToken =
+                    await NotificationService.getToken();
                 await FireStoreUtils.updateUser(Constant.userModel!);
                 bool isPlanExpire = false;
                 if (Constant.userModel?.subscriptionPlan?.id != null) {
                   if (Constant.userModel?.subscriptionExpiryDate == null) {
-                    if (Constant.userModel?.subscriptionPlan?.expiryDay == '-1') {
+                    if (Constant.userModel?.subscriptionPlan?.expiryDay ==
+                        '-1') {
                       isPlanExpire = false;
                     } else {
                       isPlanExpire = true;
                     }
                   } else {
-                    DateTime expiryDate = Constant.userModel!.subscriptionExpiryDate!.toDate();
+                    DateTime expiryDate = Constant
+                        .userModel!
+                        .subscriptionExpiryDate!
+                        .toDate();
                     isPlanExpire = expiryDate.isBefore(DateTime.now());
                   }
                 } else {
@@ -54,37 +61,46 @@ class SplashController extends GetxController {
                 }
 
                 if (value.sectionId != null || value.sectionId!.isNotEmpty) {
-                  await FireStoreUtils.getSectionById(value.sectionId.toString()).then((value) {
+                  await FireStoreUtils.getSectionById(
+                    value.sectionId.toString(),
+                  ).then((value) {
                     if (value != null) {
                       Constant.selectedSection = value;
                     }
                   });
                 }
 
-                if (Constant.userModel?.subscriptionPlanId == null || isPlanExpire == true) {
-                  if (Constant.userModel!.sectionId!.isEmpty && Constant.isSubscriptionModelApplied == false) {
+                if (Constant.userModel?.subscriptionPlanId == null ||
+                    isPlanExpire == true) {
+                  if (Constant.userModel!.sectionId!.isEmpty &&
+                      Constant.isSubscriptionModelApplied == false) {
                     Get.offAll(const DashBoardScreen());
                   } else {
                     Get.offAll(const SubscriptionPlanScreen());
                   }
-                } else if (Constant.userModel!.subscriptionPlan?.features?.ownerMobileApp == true) {
+                } else if (Constant
+                        .userModel!
+                        .subscriptionPlan
+                        ?.features
+                        ?.ownerMobileApp ==
+                    true) {
                   Get.offAll(const DashBoardScreen());
                 } else {
                   Get.offAll(const AppNotAccessScreen());
                 }
               } else {
                 await FirebaseAuth.instance.signOut();
-                Get.offAll(const LoginScreen());
+                Get.offAll(const AuthScreen());
               }
             } else {
               await FirebaseAuth.instance.signOut();
-              Get.offAll(const LoginScreen());
+              Get.offAll(const AuthScreen());
             }
           }
         });
       } else {
         await FirebaseAuth.instance.signOut();
-        Get.offAll(const LoginScreen());
+        Get.offAll(const AuthScreen());
       }
     }
   }

@@ -45,28 +45,52 @@ class _AddProductScreenState extends State<AddProductScreen> {
                 appBar: AppBar(
                   backgroundColor: AppThemeData.primary300,
                   centerTitle: false,
-                  iconTheme: IconThemeData(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50),
+                  iconTheme: IconThemeData(
+                    color: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
+                  ),
                   title: Text(
-                    controller.productModel.value.id == null ? "Add Product".tr : "Edit product".tr,
-                    style: TextStyle(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50, fontSize: 18, fontFamily: AppThemeData.medium),
+                    controller.productModel.value.id == null
+                        ? "Add Product".tr
+                        : "Edit product".tr,
+                    style: TextStyle(
+                      color: isDark
+                          ? AppThemeData.grey900
+                          : AppThemeData.grey50,
+                      fontSize: 18,
+                      fontFamily: AppThemeData.medium,
+                    ),
                   ),
                 ),
                 body: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
                   child: SingleChildScrollView(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Container(
                           decoration: ShapeDecoration(
-                            color: isDark ? AppThemeData.danger600 : AppThemeData.danger50,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            color: isDark
+                                ? AppThemeData.danger600
+                                : AppThemeData.danger50,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                           ),
                           child: Padding(
                             padding: const EdgeInsets.all(8.0),
                             child: Text(
-                              "Product prices include a 15% admin commission. For instance, a \$100 product will cost \$115 for the customer. 15% will be applied automatically.".tr,
-                              style: TextStyle(color: isDark ? AppThemeData.danger200 : AppThemeData.danger400, fontSize: 14, fontFamily: AppThemeData.medium),
+                              "Product prices include a 15% admin commission. For instance, a \$100 product will cost \$115 for the customer. 15% will be applied automatically."
+                                  .tr,
+                              style: TextStyle(
+                                color: isDark
+                                    ? AppThemeData.danger200
+                                    : AppThemeData.danger400,
+                                fontSize: 14,
+                                fontFamily: AppThemeData.medium,
+                              ),
                             ),
                           ),
                         ),
@@ -74,7 +98,14 @@ class _AddProductScreenState extends State<AddProductScreen> {
                         DottedBorder(
                           options: RectDottedBorderOptions(),
                           child: Container(
-                            decoration: BoxDecoration(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50, borderRadius: const BorderRadius.all(Radius.circular(12))),
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? AppThemeData.grey900
+                                  : AppThemeData.grey50,
+                              borderRadius: const BorderRadius.all(
+                                Radius.circular(12),
+                              ),
+                            ),
                             child: SizedBox(
                               height: Responsive.height(20, context),
                               width: Responsive.width(90, context),
@@ -82,16 +113,30 @@ class _AddProductScreenState extends State<AddProductScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  SvgPicture.asset('assets/icons/ic_folder.svg'),
+                                  SvgPicture.asset(
+                                    'assets/icons/ic_folder.svg',
+                                  ),
                                   const SizedBox(height: 10),
                                   Text(
                                     "Choose a image and upload here".tr,
-                                    style: TextStyle(color: isDark ? AppThemeData.grey100 : AppThemeData.grey800, fontFamily: AppThemeData.medium, fontSize: 16),
+                                    style: TextStyle(
+                                      color: isDark
+                                          ? AppThemeData.grey100
+                                          : AppThemeData.grey800,
+                                      fontFamily: AppThemeData.medium,
+                                      fontSize: 16,
+                                    ),
                                   ),
                                   const SizedBox(height: 5),
                                   Text(
                                     "JPEG, PNG".tr,
-                                    style: TextStyle(fontSize: 12, color: isDark ? AppThemeData.grey200 : AppThemeData.grey700, fontFamily: AppThemeData.regular),
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: isDark
+                                          ? AppThemeData.grey200
+                                          : AppThemeData.grey700,
+                                      fontFamily: AppThemeData.regular,
+                                    ),
                                   ),
                                   const SizedBox(height: 10),
                                   RoundedButtonFill(
@@ -121,14 +166,38 @@ class _AddProductScreenState extends State<AddProductScreen> {
                                   physics: const NeverScrollableScrollPhysics(),
                                   itemBuilder: (context, index) {
                                     return Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 5),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 5,
+                                      ),
                                       child: Stack(
                                         children: [
                                           ClipRRect(
-                                            borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                            child: controller.images[index].runtimeType == XFile
-                                                ? Image.file(File(controller.images[index].path), fit: BoxFit.cover, width: 80, height: 80)
-                                                : NetworkImageWidget(imageUrl: controller.images[index], fit: BoxFit.cover, width: 80, height: 80),
+                                            borderRadius:
+                                                const BorderRadius.all(
+                                                  Radius.circular(10),
+                                                ),
+                                            child:
+                                                controller
+                                                        .images[index]
+                                                        .runtimeType ==
+                                                    XFile
+                                                ? Image.file(
+                                                    File(
+                                                      controller
+                                                          .images[index]
+                                                          .path,
+                                                    ),
+                                                    fit: BoxFit.cover,
+                                                    width: 80,
+                                                    height: 80,
+                                                  )
+                                                : NetworkImageWidget(
+                                                    imageUrl: controller
+                                                        .images[index],
+                                                    fit: BoxFit.cover,
+                                                    width: 80,
+                                                    height: 80,
+                                                  ),
                                           ),
                                           Positioned(
                                             bottom: 0,
@@ -137,9 +206,15 @@ class _AddProductScreenState extends State<AddProductScreen> {
                                             right: 0,
                                             child: InkWell(
                                               onTap: () {
-                                                controller.images.removeAt(index);
+                                                controller.images.removeAt(
+                                                  index,
+                                                );
                                               },
-                                              child: const Icon(Icons.remove_circle, size: 28, color: AppThemeData.danger300),
+                                              child: const Icon(
+                                                Icons.remove_circle,
+                                                size: 28,
+                                                color: AppThemeData.danger300,
+                                              ),
                                             ),
                                           ),
                                         ],
@@ -149,175 +224,387 @@ class _AddProductScreenState extends State<AddProductScreen> {
                                 ),
                               ),
                         const SizedBox(height: 10),
-                        TextFieldWidget(title: 'Product Title'.tr, controller: controller.productTitleController.value, hintText: 'Enter product title'.tr),
+                        TextFieldWidget(
+                          title: 'Product Title'.tr,
+                          controller: controller.productTitleController.value,
+                          hintText: 'Enter product title'.tr,
+                        ),
                         Column(
                           mainAxisAlignment: MainAxisAlignment.start,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               "Product Categories".tr,
-                              style: TextStyle(fontFamily: AppThemeData.semiBold, fontSize: 14, color: isDark ? AppThemeData.grey100 : AppThemeData.grey800),
+                              style: TextStyle(
+                                fontFamily: AppThemeData.semiBold,
+                                fontSize: 14,
+                                color: isDark
+                                    ? AppThemeData.grey100
+                                    : AppThemeData.grey800,
+                              ),
                             ),
                             const SizedBox(height: 5),
                             DropdownButtonFormField<VendorCategoryModel>(
                               hint: Text(
                                 'Select Product Categories'.tr,
-                                style: TextStyle(fontSize: 14, color: isDark ? AppThemeData.grey700 : AppThemeData.grey700, fontFamily: AppThemeData.regular),
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: isDark
+                                      ? AppThemeData.grey700
+                                      : AppThemeData.grey700,
+                                  fontFamily: AppThemeData.regular,
+                                ),
                               ),
-                              dropdownColor: isDark ? AppThemeData.greyDark50 : AppThemeData.grey50,
+                              dropdownColor: isDark
+                                  ? AppThemeData.greyDark50
+                                  : AppThemeData.grey50,
 
                               icon: const Icon(Icons.keyboard_arrow_down),
                               decoration: InputDecoration(
                                 errorStyle: const TextStyle(color: Colors.red),
                                 isDense: true,
                                 filled: true,
-                                fillColor: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
+                                fillColor: isDark
+                                    ? AppThemeData.grey900
+                                    : AppThemeData.grey50,
                                 disabledBorder: UnderlineInputBorder(
-                                  borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                  borderSide: BorderSide(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50, width: 1),
+                                  borderRadius: const BorderRadius.all(
+                                    Radius.circular(10),
+                                  ),
+                                  borderSide: BorderSide(
+                                    color: isDark
+                                        ? AppThemeData.grey900
+                                        : AppThemeData.grey50,
+                                    width: 1,
+                                  ),
                                 ),
                                 focusedBorder: OutlineInputBorder(
-                                  borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                  borderSide: BorderSide(color: isDark ? AppThemeData.primary300 : AppThemeData.primary300, width: 1),
+                                  borderRadius: const BorderRadius.all(
+                                    Radius.circular(10),
+                                  ),
+                                  borderSide: BorderSide(
+                                    color: isDark
+                                        ? AppThemeData.primary300
+                                        : AppThemeData.primary300,
+                                    width: 1,
+                                  ),
                                 ),
                                 enabledBorder: OutlineInputBorder(
-                                  borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                  borderSide: BorderSide(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50, width: 1),
+                                  borderRadius: const BorderRadius.all(
+                                    Radius.circular(10),
+                                  ),
+                                  borderSide: BorderSide(
+                                    color: isDark
+                                        ? AppThemeData.grey900
+                                        : AppThemeData.grey50,
+                                    width: 1,
+                                  ),
                                 ),
                                 errorBorder: OutlineInputBorder(
-                                  borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                  borderSide: BorderSide(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50, width: 1),
+                                  borderRadius: const BorderRadius.all(
+                                    Radius.circular(10),
+                                  ),
+                                  borderSide: BorderSide(
+                                    color: isDark
+                                        ? AppThemeData.grey900
+                                        : AppThemeData.grey50,
+                                    width: 1,
+                                  ),
                                 ),
                                 border: OutlineInputBorder(
-                                  borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                  borderSide: BorderSide(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50, width: 1),
+                                  borderRadius: const BorderRadius.all(
+                                    Radius.circular(10),
+                                  ),
+                                  borderSide: BorderSide(
+                                    color: isDark
+                                        ? AppThemeData.grey900
+                                        : AppThemeData.grey50,
+                                    width: 1,
+                                  ),
                                 ),
                               ),
-                              initialValue: controller.selectedProductCategory.value.id == null ? null : controller.selectedProductCategory.value,
+                              initialValue:
+                                  controller.selectedProductCategory.value.id ==
+                                      null
+                                  ? null
+                                  : controller.selectedProductCategory.value,
                               onChanged: (value) {
-                                controller.selectedProductCategory.value = value!;
+                                controller.selectedProductCategory.value =
+                                    value!;
                                 controller.update();
                               },
-                              style: TextStyle(fontSize: 14, color: isDark ? AppThemeData.grey50 : AppThemeData.grey900, fontFamily: AppThemeData.medium),
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: isDark
+                                    ? AppThemeData.grey50
+                                    : AppThemeData.grey900,
+                                fontFamily: AppThemeData.medium,
+                              ),
                               items: controller.vendorCategoryList.map((item) {
-                                return DropdownMenuItem<VendorCategoryModel>(value: item, child: Text(item.title.toString()));
+                                return DropdownMenuItem<VendorCategoryModel>(
+                                  value: item,
+                                  child: Text(item.title.toString()),
+                                );
                               }).toList(),
                             ),
                             const SizedBox(height: 10),
                           ],
                         ),
                         Visibility(
-                          visible: Constant.selectedSection != null && Constant.selectedSection!.serviceTypeFlag == "ecommerce-service",
+                          visible:
+                              Constant.selectedSection != null &&
+                              Constant.selectedSection!.serviceTypeFlag ==
+                                  "ecommerce-service",
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.start,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 "Brand".tr,
-                                style: TextStyle(fontFamily: AppThemeData.semiBold, fontSize: 14, color: isDark ? AppThemeData.grey100 : AppThemeData.grey800),
+                                style: TextStyle(
+                                  fontFamily: AppThemeData.semiBold,
+                                  fontSize: 14,
+                                  color: isDark
+                                      ? AppThemeData.grey100
+                                      : AppThemeData.grey800,
+                                ),
                               ),
                               const SizedBox(height: 5),
                               DropdownButtonFormField<BrandsModel>(
                                 hint: Text(
                                   'Select brand'.tr,
-                                  style: TextStyle(fontSize: 14, color: isDark ? AppThemeData.grey700 : AppThemeData.grey700, fontFamily: AppThemeData.regular),
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: isDark
+                                        ? AppThemeData.grey700
+                                        : AppThemeData.grey700,
+                                    fontFamily: AppThemeData.regular,
+                                  ),
                                 ),
-                                dropdownColor: isDark ? AppThemeData.greyDark50 : AppThemeData.grey50,
+                                dropdownColor: isDark
+                                    ? AppThemeData.greyDark50
+                                    : AppThemeData.grey50,
 
                                 icon: const Icon(Icons.keyboard_arrow_down),
                                 decoration: InputDecoration(
-                                  errorStyle: const TextStyle(color: Colors.red),
+                                  errorStyle: const TextStyle(
+                                    color: Colors.red,
+                                  ),
                                   isDense: true,
                                   filled: true,
-                                  fillColor: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
+                                  fillColor: isDark
+                                      ? AppThemeData.grey900
+                                      : AppThemeData.grey50,
                                   disabledBorder: UnderlineInputBorder(
-                                    borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                    borderSide: BorderSide(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50, width: 1),
+                                    borderRadius: const BorderRadius.all(
+                                      Radius.circular(10),
+                                    ),
+                                    borderSide: BorderSide(
+                                      color: isDark
+                                          ? AppThemeData.grey900
+                                          : AppThemeData.grey50,
+                                      width: 1,
+                                    ),
                                   ),
                                   focusedBorder: OutlineInputBorder(
-                                    borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                    borderSide: BorderSide(color: isDark ? AppThemeData.primary300 : AppThemeData.primary300, width: 1),
+                                    borderRadius: const BorderRadius.all(
+                                      Radius.circular(10),
+                                    ),
+                                    borderSide: BorderSide(
+                                      color: isDark
+                                          ? AppThemeData.primary300
+                                          : AppThemeData.primary300,
+                                      width: 1,
+                                    ),
                                   ),
                                   enabledBorder: OutlineInputBorder(
-                                    borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                    borderSide: BorderSide(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50, width: 1),
+                                    borderRadius: const BorderRadius.all(
+                                      Radius.circular(10),
+                                    ),
+                                    borderSide: BorderSide(
+                                      color: isDark
+                                          ? AppThemeData.grey900
+                                          : AppThemeData.grey50,
+                                      width: 1,
+                                    ),
                                   ),
                                   errorBorder: OutlineInputBorder(
-                                    borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                    borderSide: BorderSide(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50, width: 1),
+                                    borderRadius: const BorderRadius.all(
+                                      Radius.circular(10),
+                                    ),
+                                    borderSide: BorderSide(
+                                      color: isDark
+                                          ? AppThemeData.grey900
+                                          : AppThemeData.grey50,
+                                      width: 1,
+                                    ),
                                   ),
                                   border: OutlineInputBorder(
-                                    borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                    borderSide: BorderSide(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50, width: 1),
+                                    borderRadius: const BorderRadius.all(
+                                      Radius.circular(10),
+                                    ),
+                                    borderSide: BorderSide(
+                                      color: isDark
+                                          ? AppThemeData.grey900
+                                          : AppThemeData.grey50,
+                                      width: 1,
+                                    ),
                                   ),
                                 ),
-                                initialValue: controller.selectedBrands.value.id == null ? null : controller.selectedBrands.value,
+                                initialValue:
+                                    controller.selectedBrands.value.id == null
+                                    ? null
+                                    : controller.selectedBrands.value,
                                 onChanged: (value) {
                                   controller.selectedBrands.value = value!;
                                   controller.update();
                                 },
-                                style: TextStyle(fontSize: 14, color: isDark ? AppThemeData.grey50 : AppThemeData.grey900, fontFamily: AppThemeData.medium),
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: isDark
+                                      ? AppThemeData.grey50
+                                      : AppThemeData.grey900,
+                                  fontFamily: AppThemeData.medium,
+                                ),
                                 items: controller.brandsList.map((item) {
-                                  return DropdownMenuItem<BrandsModel>(value: item, child: Text(item.title.toString()));
+                                  return DropdownMenuItem<BrandsModel>(
+                                    value: item,
+                                    child: Text(item.title.toString()),
+                                  );
                                 }).toList(),
                               ),
                               const SizedBox(height: 10),
                             ],
                           ),
                         ),
-                        TextFieldWidget(title: 'Product Description'.tr, controller: controller.productDescriptionController.value, hintText: 'Enter short description here....'.tr, maxLine: 5),
-                        Constant.selectedSection != null && Constant.selectedSection!.serviceTypeFlag == "ecommerce-service"
+                        TextFieldWidget(
+                          title: 'Product Description'.tr,
+                          controller:
+                              controller.productDescriptionController.value,
+                          hintText: 'Enter short description here....'.tr,
+                          maxLine: 5,
+                        ),
+                        Constant.selectedSection != null &&
+                                Constant.selectedSection!.serviceTypeFlag ==
+                                    "ecommerce-service"
                             ? Column(
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
                                     "This is digital product".tr,
-                                    style: TextStyle(fontFamily: AppThemeData.semiBold, fontSize: 14, color: isDark ? AppThemeData.grey100 : AppThemeData.grey800),
+                                    style: TextStyle(
+                                      fontFamily: AppThemeData.semiBold,
+                                      fontSize: 14,
+                                      color: isDark
+                                          ? AppThemeData.grey100
+                                          : AppThemeData.grey800,
+                                    ),
                                   ),
                                   const SizedBox(height: 5),
                                   DropdownButtonFormField<String>(
                                     hint: Text(
                                       'Select Product Categories'.tr,
-                                      style: TextStyle(fontSize: 14, color: isDark ? AppThemeData.grey700 : AppThemeData.grey700, fontFamily: AppThemeData.regular),
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: isDark
+                                            ? AppThemeData.grey700
+                                            : AppThemeData.grey700,
+                                        fontFamily: AppThemeData.regular,
+                                      ),
                                     ),
-                                    dropdownColor: isDark ? AppThemeData.greyDark50 : AppThemeData.grey50,
+                                    dropdownColor: isDark
+                                        ? AppThemeData.greyDark50
+                                        : AppThemeData.grey50,
 
                                     icon: const Icon(Icons.keyboard_arrow_down),
                                     decoration: InputDecoration(
-                                      errorStyle: const TextStyle(color: Colors.red),
+                                      errorStyle: const TextStyle(
+                                        color: Colors.red,
+                                      ),
                                       isDense: true,
                                       filled: true,
-                                      fillColor: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
+                                      fillColor: isDark
+                                          ? AppThemeData.grey900
+                                          : AppThemeData.grey50,
                                       disabledBorder: UnderlineInputBorder(
-                                        borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                        borderSide: BorderSide(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50, width: 1),
+                                        borderRadius: const BorderRadius.all(
+                                          Radius.circular(10),
+                                        ),
+                                        borderSide: BorderSide(
+                                          color: isDark
+                                              ? AppThemeData.grey900
+                                              : AppThemeData.grey50,
+                                          width: 1,
+                                        ),
                                       ),
                                       focusedBorder: OutlineInputBorder(
-                                        borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                        borderSide: BorderSide(color: isDark ? AppThemeData.primary300 : AppThemeData.primary300, width: 1),
+                                        borderRadius: const BorderRadius.all(
+                                          Radius.circular(10),
+                                        ),
+                                        borderSide: BorderSide(
+                                          color: isDark
+                                              ? AppThemeData.primary300
+                                              : AppThemeData.primary300,
+                                          width: 1,
+                                        ),
                                       ),
                                       enabledBorder: OutlineInputBorder(
-                                        borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                        borderSide: BorderSide(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50, width: 1),
+                                        borderRadius: const BorderRadius.all(
+                                          Radius.circular(10),
+                                        ),
+                                        borderSide: BorderSide(
+                                          color: isDark
+                                              ? AppThemeData.grey900
+                                              : AppThemeData.grey50,
+                                          width: 1,
+                                        ),
                                       ),
                                       errorBorder: OutlineInputBorder(
-                                        borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                        borderSide: BorderSide(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50, width: 1),
+                                        borderRadius: const BorderRadius.all(
+                                          Radius.circular(10),
+                                        ),
+                                        borderSide: BorderSide(
+                                          color: isDark
+                                              ? AppThemeData.grey900
+                                              : AppThemeData.grey50,
+                                          width: 1,
+                                        ),
                                       ),
                                       border: OutlineInputBorder(
-                                        borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                        borderSide: BorderSide(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50, width: 1),
+                                        borderRadius: const BorderRadius.all(
+                                          Radius.circular(10),
+                                        ),
+                                        borderSide: BorderSide(
+                                          color: isDark
+                                              ? AppThemeData.grey900
+                                              : AppThemeData.grey50,
+                                          width: 1,
+                                        ),
                                       ),
                                     ),
-                                    initialValue: controller.selectedDigital.value.isEmpty ? null : controller.selectedDigital.value,
+                                    initialValue:
+                                        controller.selectedDigital.value.isEmpty
+                                        ? null
+                                        : controller.selectedDigital.value,
                                     onChanged: (value) {
                                       controller.selectedDigital.value = value!;
                                       controller.update();
                                     },
-                                    style: TextStyle(fontSize: 14, color: isDark ? AppThemeData.grey50 : AppThemeData.grey900, fontFamily: AppThemeData.medium),
-                                    items: controller.digitalProduct.map((item) {
-                                      return DropdownMenuItem<String>(value: item, child: Text(item.toString()));
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: isDark
+                                          ? AppThemeData.grey50
+                                          : AppThemeData.grey900,
+                                      fontFamily: AppThemeData.medium,
+                                    ),
+                                    items: controller.digitalProduct.map((
+                                      item,
+                                    ) {
+                                      return DropdownMenuItem<String>(
+                                        value: item,
+                                        child: Text(item.toString()),
+                                      );
                                     }).toList(),
                                   ),
                                   const SizedBox(height: 10),
@@ -326,41 +613,111 @@ class _AddProductScreenState extends State<AddProductScreen> {
                                           children: [
                                             Expanded(
                                               child: Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
                                                 children: [
                                                   Row(
                                                     children: [
-                                                      Text("File type : ".tr, style: TextStyle(color: Colors.black)),
-                                                      Text("jpg, jpeg, png, gif, zip, pdf".tr, style: TextStyle(color: Colors.red)),
+                                                      Text(
+                                                        "File type : ".tr,
+                                                        style: TextStyle(
+                                                          color: Colors.black,
+                                                        ),
+                                                      ),
+                                                      Text(
+                                                        "jpg, jpeg, png, gif, zip, pdf"
+                                                            .tr,
+                                                        style: TextStyle(
+                                                          color: Colors.red,
+                                                        ),
+                                                      ),
                                                     ],
                                                   ),
                                                   SizedBox(height: 5),
-                                                  Text("${"File Name : ".tr}${controller.digitalProductFileName.value} ", style: TextStyle(color: Colors.black)),
+                                                  Text(
+                                                    "${"File Name : ".tr}${controller.digitalProductFileName.value} ",
+                                                    style: TextStyle(
+                                                      color: Colors.black,
+                                                    ),
+                                                  ),
                                                 ],
                                               ),
                                             ),
                                             InkWell(
                                               onTap: () async {
-                                                FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: ['jpg', 'jpeg', 'zip', 'png', 'gif', 'pdf']);
+                                                FilePickerResult? result =
+                                                    await FilePicker.platform
+                                                        .pickFiles(
+                                                          type: FileType.custom,
+                                                          allowedExtensions: [
+                                                            'jpg',
+                                                            'jpeg',
+                                                            'zip',
+                                                            'png',
+                                                            'gif',
+                                                            'pdf',
+                                                          ],
+                                                        );
 
                                                 if (result != null) {
-                                                  double sizeInMb = result.files.single.size / (1024 * 1024);
-                                                  if (sizeInMb <= double.parse(Constant.digitalProductFileSize)) {
-                                                    controller.digitalFile = File(result.files.single.path.toString());
-                                                    controller.digitalProductFileName.value = controller.digitalFile != null ? controller.digitalFile!.path.split('/').last : "";
+                                                  double sizeInMb =
+                                                      result.files.single.size /
+                                                      (1024 * 1024);
+                                                  if (sizeInMb <=
+                                                      double.parse(
+                                                        Constant
+                                                            .digitalProductFileSize,
+                                                      )) {
+                                                    controller.digitalFile =
+                                                        File(
+                                                          result
+                                                              .files
+                                                              .single
+                                                              .path
+                                                              .toString(),
+                                                        );
+                                                    controller
+                                                            .digitalProductFileName
+                                                            .value =
+                                                        controller
+                                                                .digitalFile !=
+                                                            null
+                                                        ? controller
+                                                              .digitalFile!
+                                                              .path
+                                                              .split('/')
+                                                              .last
+                                                        : "";
                                                   } else {
-                                                    ShowToastDialog.showToast("${'Please select less than'.tr} ${Constant.digitalProductFileSize.toString()} ${"mb file.".tr}");
+                                                    ShowToastDialog.showToast(
+                                                      "${'Please select less than'.tr} ${Constant.digitalProductFileSize.toString()} ${"mb file.".tr}",
+                                                    );
                                                   }
                                                 } else {
-                                                  ShowToastDialog.showToast("Please select zip file!".tr); // User canceled the picker
+                                                  ShowToastDialog.showToast(
+                                                    "Please select zip file!"
+                                                        .tr,
+                                                  ); // User canceled the picker
                                                 }
                                               },
                                               child: Container(
                                                 decoration: BoxDecoration(
-                                                  border: Border.all(color: AppThemeData.primary300, width: 2),
-                                                  borderRadius: BorderRadius.all(Radius.circular(8)),
+                                                  border: Border.all(
+                                                    color:
+                                                        AppThemeData.primary300,
+                                                    width: 2,
+                                                  ),
+                                                  borderRadius:
+                                                      BorderRadius.all(
+                                                        Radius.circular(8),
+                                                      ),
                                                 ),
-                                                child: Padding(padding: const EdgeInsets.all(8.0), child: Text("Upload Zip".tr)),
+                                                child: Padding(
+                                                  padding: const EdgeInsets.all(
+                                                    8.0,
+                                                  ),
+                                                  child: Text("Upload Zip".tr),
+                                                ),
                                               ),
                                             ),
                                           ],
@@ -373,7 +730,13 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
                         Text(
                           "Attributes and Prices".tr,
-                          style: TextStyle(color: isDark ? AppThemeData.grey50 : AppThemeData.grey900, fontFamily: AppThemeData.medium, fontSize: 18),
+                          style: TextStyle(
+                            color: isDark
+                                ? AppThemeData.grey50
+                                : AppThemeData.grey900,
+                            fontFamily: AppThemeData.medium,
+                            fontSize: 18,
+                          ),
                         ),
                         const SizedBox(height: 10),
                         Column(
@@ -381,7 +744,13 @@ class _AddProductScreenState extends State<AddProductScreen> {
                           children: [
                             Text(
                               "Attributes".tr,
-                              style: TextStyle(fontFamily: AppThemeData.semiBold, fontSize: 14, color: isDark ? AppThemeData.grey100 : AppThemeData.grey800),
+                              style: TextStyle(
+                                fontFamily: AppThemeData.semiBold,
+                                fontSize: 14,
+                                color: isDark
+                                    ? AppThemeData.grey100
+                                    : AppThemeData.grey800,
+                              ),
                             ),
                             const SizedBox(height: 5),
                             DropdownSearch<AttributesModel>.multiSelection(
@@ -390,34 +759,83 @@ class _AddProductScreenState extends State<AddProductScreen> {
                               dropdownButtonProps: DropdownButtonProps(
                                 focusColor: AppThemeData.primary300,
                                 color: AppThemeData.primary300,
-                                icon: const Icon(Icons.keyboard_arrow_down, color: AppThemeData.grey800),
+                                icon: const Icon(
+                                  Icons.keyboard_arrow_down,
+                                  color: AppThemeData.grey800,
+                                ),
                               ),
                               dropdownDecoratorProps: DropDownDecoratorProps(
                                 dropdownSearchDecoration: InputDecoration(
-                                  contentPadding: const EdgeInsets.only(left: 8, right: 8),
+                                  contentPadding: const EdgeInsets.only(
+                                    left: 8,
+                                    right: 8,
+                                  ),
                                   disabledBorder: UnderlineInputBorder(
-                                    borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                    borderSide: BorderSide(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50, width: 1),
+                                    borderRadius: const BorderRadius.all(
+                                      Radius.circular(10),
+                                    ),
+                                    borderSide: BorderSide(
+                                      color: isDark
+                                          ? AppThemeData.grey900
+                                          : AppThemeData.grey50,
+                                      width: 1,
+                                    ),
                                   ),
                                   focusedBorder: OutlineInputBorder(
-                                    borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                    borderSide: BorderSide(color: isDark ? AppThemeData.primary300 : AppThemeData.primary300, width: 1),
+                                    borderRadius: const BorderRadius.all(
+                                      Radius.circular(10),
+                                    ),
+                                    borderSide: BorderSide(
+                                      color: isDark
+                                          ? AppThemeData.primary300
+                                          : AppThemeData.primary300,
+                                      width: 1,
+                                    ),
                                   ),
                                   enabledBorder: OutlineInputBorder(
-                                    borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                    borderSide: BorderSide(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50, width: 1),
+                                    borderRadius: const BorderRadius.all(
+                                      Radius.circular(10),
+                                    ),
+                                    borderSide: BorderSide(
+                                      color: isDark
+                                          ? AppThemeData.grey900
+                                          : AppThemeData.grey50,
+                                      width: 1,
+                                    ),
                                   ),
                                   errorBorder: OutlineInputBorder(
-                                    borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                    borderSide: BorderSide(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50, width: 1),
+                                    borderRadius: const BorderRadius.all(
+                                      Radius.circular(10),
+                                    ),
+                                    borderSide: BorderSide(
+                                      color: isDark
+                                          ? AppThemeData.grey900
+                                          : AppThemeData.grey50,
+                                      width: 1,
+                                    ),
                                   ),
                                   border: OutlineInputBorder(
-                                    borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                    borderSide: BorderSide(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50, width: 1),
+                                    borderRadius: const BorderRadius.all(
+                                      Radius.circular(10),
+                                    ),
+                                    borderSide: BorderSide(
+                                      color: isDark
+                                          ? AppThemeData.grey900
+                                          : AppThemeData.grey50,
+                                      width: 1,
+                                    ),
                                   ),
                                   filled: true,
-                                  hintStyle: TextStyle(fontSize: 14, color: isDark ? AppThemeData.grey50 : AppThemeData.grey900, fontFamily: AppThemeData.medium),
-                                  fillColor: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
+                                  hintStyle: TextStyle(
+                                    fontSize: 14,
+                                    color: isDark
+                                        ? AppThemeData.grey50
+                                        : AppThemeData.grey900,
+                                    fontFamily: AppThemeData.medium,
+                                  ),
+                                  fillColor: isDark
+                                      ? AppThemeData.grey900
+                                      : AppThemeData.grey50,
                                   hintText: 'Select Attributes'.tr,
                                 ),
                               ),
@@ -425,142 +843,341 @@ class _AddProductScreenState extends State<AddProductScreen> {
                               popupProps: PopupPropsMultiSelection.menu(
                                 fit: FlexFit.tight,
                                 showSelectedItems: true,
-                                menuProps: MenuProps(backgroundColor: isDark ? AppThemeData.greyDark50 : AppThemeData.grey50, elevation: 4, borderRadius: BorderRadius.circular(12)),
+                                menuProps: MenuProps(
+                                  backgroundColor: isDark
+                                      ? AppThemeData.greyDark50
+                                      : AppThemeData.grey50,
+                                  elevation: 4,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
                                 itemBuilder: (context, item, isSelected) {
                                   return ListTile(
                                     selectedColor: AppThemeData.primary300,
                                     selected: isSelected,
                                     title: Text(
                                       item.title.toString(),
-                                      style: TextStyle(color: isDark ? AppThemeData.grey50 : AppThemeData.grey900, fontFamily: AppThemeData.medium, fontSize: 18),
+                                      style: TextStyle(
+                                        color: isDark
+                                            ? AppThemeData.grey50
+                                            : AppThemeData.grey900,
+                                        fontFamily: AppThemeData.medium,
+                                        fontSize: 18,
+                                      ),
                                     ),
                                     onTap: () {
-                                      controller.myKey1.currentState?.popupValidate([item]);
+                                      controller.myKey1.currentState
+                                          ?.popupValidate([item]);
                                     },
                                   );
                                 },
                               ),
-                              itemAsString: (AttributesModel u) => u.title.toString(),
+                              itemAsString: (AttributesModel u) =>
+                                  u.title.toString(),
                               selectedItems: controller.selectedAttributesList,
                               onSaved: (data) {},
                               onChanged: (data) {
-                                if (controller.itemAttributes.value!.attributes != null) {
+                                if (controller
+                                        .itemAttributes
+                                        .value!
+                                        .attributes !=
+                                    null) {
                                   controller.selectedAttributesList.clear();
-                                  controller.itemAttributes.value!.attributes!.clear();
-                                  controller.itemAttributes.value!.variants!.clear();
+                                  controller.itemAttributes.value!.attributes!
+                                      .clear();
+                                  controller.itemAttributes.value!.variants!
+                                      .clear();
                                 } else {
-                                  controller.itemAttributes.value = ItemAttribute(attributes: [], variants: []);
+                                  controller.itemAttributes.value =
+                                      ItemAttribute(
+                                        attributes: [],
+                                        variants: [],
+                                      );
                                 }
                                 controller.selectedAttributesList.addAll(data);
 
-                                for (var element in controller.selectedAttributesList) {
-                                  controller.addAttribute(element.id.toString());
+                                for (var element
+                                    in controller.selectedAttributesList) {
+                                  controller.addAttribute(
+                                    element.id.toString(),
+                                  );
                                 }
                                 setState(() {});
                               },
                             ),
                             const SizedBox(height: 10),
-                            controller.itemAttributes.value!.attributes == null || controller.itemAttributes.value!.attributes!.isEmpty
+                            controller.itemAttributes.value!.attributes ==
+                                        null ||
+                                    controller
+                                        .itemAttributes
+                                        .value!
+                                        .attributes!
+                                        .isEmpty
                                 ? Container()
                                 : Container(
                                     decoration: ShapeDecoration(
-                                      color: isDark ? AppThemeData.greyDark50 : AppThemeData.grey50,
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                      color: isDark
+                                          ? AppThemeData.greyDark50
+                                          : AppThemeData.grey50,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
                                     ),
                                     child: Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                        vertical: 10,
+                                      ),
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Text(
                                             "Attributes Value".tr,
-                                            style: TextStyle(color: isDark ? AppThemeData.grey50 : AppThemeData.grey900, fontFamily: AppThemeData.semiBold, fontSize: 16),
+                                            style: TextStyle(
+                                              color: isDark
+                                                  ? AppThemeData.grey50
+                                                  : AppThemeData.grey900,
+                                              fontFamily: AppThemeData.semiBold,
+                                              fontSize: 16,
+                                            ),
                                           ),
                                           const SizedBox(height: 5),
                                           ListView.builder(
-                                            itemCount: controller.itemAttributes.value!.attributes!.length,
+                                            itemCount: controller
+                                                .itemAttributes
+                                                .value!
+                                                .attributes!
+                                                .length,
                                             shrinkWrap: true,
                                             padding: EdgeInsets.zero,
-                                            physics: const NeverScrollableScrollPhysics(),
+                                            physics:
+                                                const NeverScrollableScrollPhysics(),
                                             itemBuilder: (context, index) {
                                               String title = "";
-                                              for (var element in controller.attributesList) {
-                                                if (controller.itemAttributes.value!.attributes![index].attributeId == element.id) {
-                                                  title = element.title.toString();
+                                              for (var element
+                                                  in controller
+                                                      .attributesList) {
+                                                if (controller
+                                                        .itemAttributes
+                                                        .value!
+                                                        .attributes![index]
+                                                        .attributeId ==
+                                                    element.id) {
+                                                  title = element.title
+                                                      .toString();
                                                 }
                                               }
                                               return Padding(
-                                                padding: const EdgeInsets.all(8.0),
+                                                padding: const EdgeInsets.all(
+                                                  8.0,
+                                                ),
                                                 child: Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
                                                   children: [
                                                     Row(
                                                       children: [
                                                         Expanded(
                                                           child: Text(
                                                             title,
-                                                            style: TextStyle(color: isDark ? AppThemeData.grey200 : AppThemeData.grey700, fontFamily: AppThemeData.medium, fontSize: 16),
+                                                            style: TextStyle(
+                                                              color: isDark
+                                                                  ? AppThemeData
+                                                                        .grey200
+                                                                  : AppThemeData
+                                                                        .grey700,
+                                                              fontFamily:
+                                                                  AppThemeData
+                                                                      .medium,
+                                                              fontSize: 16,
+                                                            ),
                                                           ),
                                                         ),
                                                         InkWell(
                                                           onTap: () {
                                                             showDialog(
                                                               context: context,
-                                                              builder: (BuildContext context) {
-                                                                return addAttributeValueDialog(controller, isDark, index, controller.itemAttributes.value!.attributes![index].attributeId.toString());
-                                                              },
+                                                              builder:
+                                                                  (
+                                                                    BuildContext
+                                                                    context,
+                                                                  ) {
+                                                                    return addAttributeValueDialog(
+                                                                      controller,
+                                                                      isDark,
+                                                                      index,
+                                                                      controller
+                                                                          .itemAttributes
+                                                                          .value!
+                                                                          .attributes![index]
+                                                                          .attributeId
+                                                                          .toString(),
+                                                                    );
+                                                                  },
                                                             );
                                                           },
-                                                          child: Icon(Icons.add, color: AppThemeData.primary300),
+                                                          child: Icon(
+                                                            Icons.add,
+                                                            color: AppThemeData
+                                                                .primary300,
+                                                          ),
                                                         ),
                                                       ],
                                                     ),
                                                     Wrap(
                                                       spacing: 4.0,
                                                       runSpacing: 4.0,
-                                                      children: List.generate(controller.itemAttributes.value!.attributes![index].attributeOptions!.length, (i) {
-                                                        return InkWell(
-                                                          onTap: () {
-                                                            controller.itemAttributes.value!.attributes![index].attributeOptions!.removeAt(i);
+                                                      children: List.generate(
+                                                        controller
+                                                            .itemAttributes
+                                                            .value!
+                                                            .attributes![index]
+                                                            .attributeOptions!
+                                                            .length,
+                                                        (i) {
+                                                          return InkWell(
+                                                            onTap: () {
+                                                              controller
+                                                                  .itemAttributes
+                                                                  .value!
+                                                                  .attributes![index]
+                                                                  .attributeOptions!
+                                                                  .removeAt(i);
 
-                                                            List<List<dynamic>> listArary = [];
-                                                            for (int i = 0; i < controller.itemAttributes.value!.attributes!.length; i++) {
-                                                              if (controller.itemAttributes.value!.attributes![i].attributeOptions!.isNotEmpty) {
-                                                                listArary.add(controller.itemAttributes.value!.attributes![i].attributeOptions!);
-                                                              }
-                                                            }
-
-                                                            if (listArary.isNotEmpty) {
-                                                              List<Variants>? variantsTemp = [];
-                                                              List<dynamic> list = getCombination(listArary);
-                                                              for (var element in list) {
-                                                                bool productIsInList = controller.itemAttributes.value!.variants!.any((product) => product.variantSku == element);
-                                                                if (productIsInList) {
-                                                                  Variants variant = controller.itemAttributes.value!.variants!.firstWhere((product) => product.variantSku == element);
-                                                                  Variants variantsModel = Variants(
-                                                                    variantSku: variant.variantSku,
-                                                                    variantId: variant.variantId,
-                                                                    variantImage: variant.variantImage,
-                                                                    variantPrice: variant.variantPrice,
-                                                                    variantQuantity: variant.variantQuantity,
+                                                              List<
+                                                                List<dynamic>
+                                                              >
+                                                              listArary = [];
+                                                              for (
+                                                                int i = 0;
+                                                                i <
+                                                                    controller
+                                                                        .itemAttributes
+                                                                        .value!
+                                                                        .attributes!
+                                                                        .length;
+                                                                i++
+                                                              ) {
+                                                                if (controller
+                                                                    .itemAttributes
+                                                                    .value!
+                                                                    .attributes![i]
+                                                                    .attributeOptions!
+                                                                    .isNotEmpty) {
+                                                                  listArary.add(
+                                                                    controller
+                                                                        .itemAttributes
+                                                                        .value!
+                                                                        .attributes![i]
+                                                                        .attributeOptions!,
                                                                   );
-                                                                  variantsTemp.add(variantsModel);
                                                                 }
                                                               }
-                                                              controller.itemAttributes.value!.variants!.clear();
-                                                              controller.itemAttributes.value!.variants!.addAll(variantsTemp);
-                                                            } else {
-                                                              controller.itemAttributes.value!.variants!.clear();
-                                                            }
-                                                            controller.update();
-                                                            setState(() {});
-                                                          },
-                                                          child: Padding(
-                                                            padding: const EdgeInsets.symmetric(vertical: 10),
-                                                            child: _buildChip(isDark, controller.itemAttributes.value!.attributes![index].attributeOptions![i], index, i),
-                                                          ),
-                                                        );
-                                                      }).toList(),
+
+                                                              if (listArary
+                                                                  .isNotEmpty) {
+                                                                List<Variants>?
+                                                                variantsTemp =
+                                                                    [];
+                                                                List<dynamic>
+                                                                list =
+                                                                    getCombination(
+                                                                      listArary,
+                                                                    );
+                                                                for (var element
+                                                                    in list) {
+                                                                  bool
+                                                                  productIsInList = controller
+                                                                      .itemAttributes
+                                                                      .value!
+                                                                      .variants!
+                                                                      .any(
+                                                                        (
+                                                                          product,
+                                                                        ) =>
+                                                                            product.variantSku ==
+                                                                            element,
+                                                                      );
+                                                                  if (productIsInList) {
+                                                                    Variants
+                                                                    variant = controller
+                                                                        .itemAttributes
+                                                                        .value!
+                                                                        .variants!
+                                                                        .firstWhere(
+                                                                          (
+                                                                            product,
+                                                                          ) =>
+                                                                              product.variantSku ==
+                                                                              element,
+                                                                        );
+                                                                    Variants
+                                                                    variantsModel = Variants(
+                                                                      variantSku:
+                                                                          variant
+                                                                              .variantSku,
+                                                                      variantId:
+                                                                          variant
+                                                                              .variantId,
+                                                                      variantImage:
+                                                                          variant
+                                                                              .variantImage,
+                                                                      variantPrice:
+                                                                          variant
+                                                                              .variantPrice,
+                                                                      variantQuantity:
+                                                                          variant
+                                                                              .variantQuantity,
+                                                                    );
+                                                                    variantsTemp
+                                                                        .add(
+                                                                          variantsModel,
+                                                                        );
+                                                                  }
+                                                                }
+                                                                controller
+                                                                    .itemAttributes
+                                                                    .value!
+                                                                    .variants!
+                                                                    .clear();
+                                                                controller
+                                                                    .itemAttributes
+                                                                    .value!
+                                                                    .variants!
+                                                                    .addAll(
+                                                                      variantsTemp,
+                                                                    );
+                                                              } else {
+                                                                controller
+                                                                    .itemAttributes
+                                                                    .value!
+                                                                    .variants!
+                                                                    .clear();
+                                                              }
+                                                              controller
+                                                                  .update();
+                                                              setState(() {});
+                                                            },
+                                                            child: Padding(
+                                                              padding:
+                                                                  const EdgeInsets.symmetric(
+                                                                    vertical:
+                                                                        10,
+                                                                  ),
+                                                              child: _buildChip(
+                                                                isDark,
+                                                                controller
+                                                                    .itemAttributes
+                                                                    .value!
+                                                                    .attributes![index]
+                                                                    .attributeOptions![i],
+                                                                index,
+                                                                i,
+                                                              ),
+                                                            ),
+                                                          );
+                                                        },
+                                                      ).toList(),
                                                     ),
                                                   ],
                                                 ),
@@ -569,176 +1186,524 @@ class _AddProductScreenState extends State<AddProductScreen> {
                                           ),
                                           SingleChildScrollView(
                                             scrollDirection: Axis.horizontal,
-                                            child: controller.itemAttributes.value!.variants!.isEmpty
+                                            child:
+                                                controller
+                                                    .itemAttributes
+                                                    .value!
+                                                    .variants!
+                                                    .isEmpty
                                                 ? const SizedBox()
                                                 : ClipRRect(
-                                                    borderRadius: const BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12)),
+                                                    borderRadius:
+                                                        const BorderRadius.only(
+                                                          topLeft:
+                                                              Radius.circular(
+                                                                12,
+                                                              ),
+                                                          topRight:
+                                                              Radius.circular(
+                                                                12,
+                                                              ),
+                                                        ),
                                                     child: DataTable(
                                                       horizontalMargin: 20,
                                                       columnSpacing: 30,
                                                       dataRowMaxHeight: 70,
-                                                      border: TableBorder.all(color: isDark ? AppThemeData.grey700 : AppThemeData.grey200, borderRadius: BorderRadius.circular(12)),
-                                                      headingRowColor: WidgetStateColor.resolveWith((states) => isDark ? AppThemeData.surfaceDark : AppThemeData.surface),
+                                                      border: TableBorder.all(
+                                                        color: isDark
+                                                            ? AppThemeData
+                                                                  .grey700
+                                                            : AppThemeData
+                                                                  .grey200,
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              12,
+                                                            ),
+                                                      ),
+                                                      headingRowColor:
+                                                          WidgetStateColor.resolveWith(
+                                                            (states) => isDark
+                                                                ? AppThemeData
+                                                                      .surfaceDark
+                                                                : AppThemeData
+                                                                      .surface,
+                                                          ),
                                                       columns: [
                                                         DataColumn(
                                                           label: SizedBox(
-                                                            width: Responsive.width(20, context),
+                                                            width:
+                                                                Responsive.width(
+                                                                  20,
+                                                                  context,
+                                                                ),
                                                             child: Text(
                                                               "Variant".tr,
-                                                              style: TextStyle(fontFamily: AppThemeData.medium, fontSize: 14, color: isDark ? AppThemeData.grey300 : AppThemeData.grey600),
+                                                              style: TextStyle(
+                                                                fontFamily:
+                                                                    AppThemeData
+                                                                        .medium,
+                                                                fontSize: 14,
+                                                                color: isDark
+                                                                    ? AppThemeData
+                                                                          .grey300
+                                                                    : AppThemeData
+                                                                          .grey600,
+                                                              ),
                                                             ),
                                                           ),
                                                         ),
                                                         DataColumn(
                                                           label: SizedBox(
-                                                            width: Responsive.width(20, context),
+                                                            width:
+                                                                Responsive.width(
+                                                                  20,
+                                                                  context,
+                                                                ),
                                                             child: Text(
                                                               "Price".tr,
-                                                              style: TextStyle(fontFamily: AppThemeData.medium, fontSize: 14, color: isDark ? AppThemeData.grey300 : AppThemeData.grey600),
+                                                              style: TextStyle(
+                                                                fontFamily:
+                                                                    AppThemeData
+                                                                        .medium,
+                                                                fontSize: 14,
+                                                                color: isDark
+                                                                    ? AppThemeData
+                                                                          .grey300
+                                                                    : AppThemeData
+                                                                          .grey600,
+                                                              ),
                                                             ),
                                                           ),
                                                         ),
                                                         DataColumn(
                                                           label: SizedBox(
-                                                            width: Responsive.width(20, context),
+                                                            width:
+                                                                Responsive.width(
+                                                                  20,
+                                                                  context,
+                                                                ),
                                                             child: Text(
                                                               "Quantity".tr,
-                                                              style: TextStyle(fontFamily: AppThemeData.medium, fontSize: 14, color: isDark ? AppThemeData.grey300 : AppThemeData.grey600),
+                                                              style: TextStyle(
+                                                                fontFamily:
+                                                                    AppThemeData
+                                                                        .medium,
+                                                                fontSize: 14,
+                                                                color: isDark
+                                                                    ? AppThemeData
+                                                                          .grey300
+                                                                    : AppThemeData
+                                                                          .grey600,
+                                                              ),
                                                             ),
                                                           ),
                                                         ),
                                                         DataColumn(
                                                           label: SizedBox(
-                                                            width: Responsive.width(20, context),
+                                                            width:
+                                                                Responsive.width(
+                                                                  20,
+                                                                  context,
+                                                                ),
                                                             child: Text(
                                                               "Image".tr,
-                                                              style: TextStyle(fontFamily: AppThemeData.medium, fontSize: 14, color: isDark ? AppThemeData.grey300 : AppThemeData.grey600),
+                                                              style: TextStyle(
+                                                                fontFamily:
+                                                                    AppThemeData
+                                                                        .medium,
+                                                                fontSize: 14,
+                                                                color: isDark
+                                                                    ? AppThemeData
+                                                                          .grey300
+                                                                    : AppThemeData
+                                                                          .grey600,
+                                                              ),
                                                             ),
                                                           ),
                                                         ),
                                                       ],
-                                                      rows: controller.itemAttributes.value!.variants!
+                                                      rows: controller
+                                                          .itemAttributes
+                                                          .value!
+                                                          .variants!
                                                           .map(
                                                             (e) => DataRow(
                                                               cells: [
                                                                 DataCell(
                                                                   Text(
-                                                                    e.variantSku.toString(),
-                                                                    style: TextStyle(fontFamily: AppThemeData.semiBold, color: isDark ? AppThemeData.grey100 : AppThemeData.grey800),
+                                                                    e.variantSku
+                                                                        .toString(),
+                                                                    style: TextStyle(
+                                                                      fontFamily:
+                                                                          AppThemeData
+                                                                              .semiBold,
+                                                                      color:
+                                                                          isDark
+                                                                          ? AppThemeData.grey100
+                                                                          : AppThemeData.grey800,
+                                                                    ),
                                                                   ),
                                                                 ),
                                                                 DataCell(
                                                                   TextFormField(
-                                                                    initialValue: e.variantPrice,
-                                                                    textCapitalization: TextCapitalization.sentences,
-                                                                    textInputAction: TextInputAction.done,
-                                                                    inputFormatters: [FilteringTextInputFormatter.allow(RegExp('[0-9-.]'))],
-                                                                    keyboardType: TextInputType.text,
+                                                                    initialValue:
+                                                                        e.variantPrice,
+                                                                    textCapitalization:
+                                                                        TextCapitalization
+                                                                            .sentences,
+                                                                    textInputAction:
+                                                                        TextInputAction
+                                                                            .done,
+                                                                    inputFormatters: [
+                                                                      FilteringTextInputFormatter.allow(
+                                                                        RegExp(
+                                                                          '[0-9-.]',
+                                                                        ),
+                                                                      ),
+                                                                    ],
+                                                                    keyboardType:
+                                                                        TextInputType
+                                                                            .text,
                                                                     onChanged: (value) {
-                                                                      e.variantPrice = value;
+                                                                      e.variantPrice =
+                                                                          value;
                                                                     },
-                                                                    style: TextStyle(fontSize: 14, color: isDark ? AppThemeData.grey50 : AppThemeData.grey900, fontFamily: AppThemeData.medium),
+                                                                    style: TextStyle(
+                                                                      fontSize:
+                                                                          14,
+                                                                      color:
+                                                                          isDark
+                                                                          ? AppThemeData.grey50
+                                                                          : AppThemeData.grey900,
+                                                                      fontFamily:
+                                                                          AppThemeData
+                                                                              .medium,
+                                                                    ),
                                                                     decoration: InputDecoration(
-                                                                      errorStyle: const TextStyle(color: Colors.red),
-                                                                      filled: true,
-                                                                      enabled: true,
-                                                                      contentPadding: const EdgeInsets.symmetric(horizontal: 10),
-                                                                      fillColor: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
+                                                                      errorStyle: const TextStyle(
+                                                                        color: Colors
+                                                                            .red,
+                                                                      ),
+                                                                      filled:
+                                                                          true,
+                                                                      enabled:
+                                                                          true,
+                                                                      contentPadding: const EdgeInsets.symmetric(
+                                                                        horizontal:
+                                                                            10,
+                                                                      ),
+                                                                      fillColor:
+                                                                          isDark
+                                                                          ? AppThemeData.grey900
+                                                                          : AppThemeData.grey50,
                                                                       disabledBorder: UnderlineInputBorder(
-                                                                        borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                                                        borderSide: BorderSide(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50, width: 1),
+                                                                        borderRadius: const BorderRadius.all(
+                                                                          Radius.circular(
+                                                                            10,
+                                                                          ),
+                                                                        ),
+                                                                        borderSide: BorderSide(
+                                                                          color:
+                                                                              isDark
+                                                                              ? AppThemeData.grey900
+                                                                              : AppThemeData.grey50,
+                                                                          width:
+                                                                              1,
+                                                                        ),
                                                                       ),
                                                                       focusedBorder: OutlineInputBorder(
-                                                                        borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                                                        borderSide: BorderSide(color: isDark ? AppThemeData.primary300 : AppThemeData.primary300, width: 1),
+                                                                        borderRadius: const BorderRadius.all(
+                                                                          Radius.circular(
+                                                                            10,
+                                                                          ),
+                                                                        ),
+                                                                        borderSide: BorderSide(
+                                                                          color:
+                                                                              isDark
+                                                                              ? AppThemeData.primary300
+                                                                              : AppThemeData.primary300,
+                                                                          width:
+                                                                              1,
+                                                                        ),
                                                                       ),
                                                                       enabledBorder: OutlineInputBorder(
-                                                                        borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                                                        borderSide: BorderSide(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50, width: 1),
+                                                                        borderRadius: const BorderRadius.all(
+                                                                          Radius.circular(
+                                                                            10,
+                                                                          ),
+                                                                        ),
+                                                                        borderSide: BorderSide(
+                                                                          color:
+                                                                              isDark
+                                                                              ? AppThemeData.grey900
+                                                                              : AppThemeData.grey50,
+                                                                          width:
+                                                                              1,
+                                                                        ),
                                                                       ),
                                                                       errorBorder: OutlineInputBorder(
-                                                                        borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                                                        borderSide: BorderSide(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50, width: 1),
+                                                                        borderRadius: const BorderRadius.all(
+                                                                          Radius.circular(
+                                                                            10,
+                                                                          ),
+                                                                        ),
+                                                                        borderSide: BorderSide(
+                                                                          color:
+                                                                              isDark
+                                                                              ? AppThemeData.grey900
+                                                                              : AppThemeData.grey50,
+                                                                          width:
+                                                                              1,
+                                                                        ),
                                                                       ),
                                                                       border: OutlineInputBorder(
-                                                                        borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                                                        borderSide: BorderSide(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50, width: 1),
+                                                                        borderRadius: const BorderRadius.all(
+                                                                          Radius.circular(
+                                                                            10,
+                                                                          ),
+                                                                        ),
+                                                                        borderSide: BorderSide(
+                                                                          color:
+                                                                              isDark
+                                                                              ? AppThemeData.grey900
+                                                                              : AppThemeData.grey50,
+                                                                          width:
+                                                                              1,
+                                                                        ),
                                                                       ),
-                                                                      hintText: "Price".tr,
+                                                                      hintText:
+                                                                          "Price"
+                                                                              .tr,
                                                                       prefix: Padding(
-                                                                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                                                                        padding: const EdgeInsets.symmetric(
+                                                                          horizontal:
+                                                                              5,
+                                                                          vertical:
+                                                                              2,
+                                                                        ),
                                                                         child: Text(
-                                                                          "${Constant.currencyModel!.symbol}".tr,
+                                                                          "${Constant.currencyModel!.symbol}"
+                                                                              .tr,
                                                                           style: TextStyle(
-                                                                            color: isDark ? AppThemeData.grey600 : AppThemeData.grey400,
-                                                                            fontFamily: AppThemeData.semiBold,
-                                                                            fontSize: 18,
+                                                                            color:
+                                                                                isDark
+                                                                                ? AppThemeData.grey600
+                                                                                : AppThemeData.grey400,
+                                                                            fontFamily:
+                                                                                AppThemeData.semiBold,
+                                                                            fontSize:
+                                                                                18,
                                                                           ),
                                                                         ),
                                                                       ),
-                                                                      hintStyle: TextStyle(fontSize: 14, color: isDark ? AppThemeData.grey600 : AppThemeData.grey400, fontFamily: AppThemeData.regular),
+                                                                      hintStyle: TextStyle(
+                                                                        fontSize:
+                                                                            14,
+                                                                        color:
+                                                                            isDark
+                                                                            ? AppThemeData.grey600
+                                                                            : AppThemeData.grey400,
+                                                                        fontFamily:
+                                                                            AppThemeData.regular,
+                                                                      ),
                                                                     ),
                                                                   ),
                                                                 ),
                                                                 DataCell(
                                                                   TextFormField(
-                                                                    initialValue: e.variantQuantity,
-                                                                    textInputAction: TextInputAction.done,
-                                                                    inputFormatters: [FilteringTextInputFormatter.allow(RegExp('[0-9-.]'))],
-                                                                    keyboardType: TextInputType.text,
+                                                                    initialValue:
+                                                                        e.variantQuantity,
+                                                                    textInputAction:
+                                                                        TextInputAction
+                                                                            .done,
+                                                                    inputFormatters: [
+                                                                      FilteringTextInputFormatter.allow(
+                                                                        RegExp(
+                                                                          '[0-9-.]',
+                                                                        ),
+                                                                      ),
+                                                                    ],
+                                                                    keyboardType:
+                                                                        TextInputType
+                                                                            .text,
                                                                     onChanged: (value) {
-                                                                      e.variantQuantity = value;
+                                                                      e.variantQuantity =
+                                                                          value;
                                                                     },
-                                                                    style: TextStyle(fontSize: 14, color: isDark ? AppThemeData.grey50 : AppThemeData.grey900, fontFamily: AppThemeData.medium),
+                                                                    style: TextStyle(
+                                                                      fontSize:
+                                                                          14,
+                                                                      color:
+                                                                          isDark
+                                                                          ? AppThemeData.grey50
+                                                                          : AppThemeData.grey900,
+                                                                      fontFamily:
+                                                                          AppThemeData
+                                                                              .medium,
+                                                                    ),
                                                                     decoration: InputDecoration(
-                                                                      errorStyle: const TextStyle(color: Colors.red),
-                                                                      filled: true,
-                                                                      enabled: true,
-                                                                      contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
-                                                                      fillColor: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
+                                                                      errorStyle: const TextStyle(
+                                                                        color: Colors
+                                                                            .red,
+                                                                      ),
+                                                                      filled:
+                                                                          true,
+                                                                      enabled:
+                                                                          true,
+                                                                      contentPadding: const EdgeInsets.symmetric(
+                                                                        vertical:
+                                                                            8,
+                                                                        horizontal:
+                                                                            10,
+                                                                      ),
+                                                                      fillColor:
+                                                                          isDark
+                                                                          ? AppThemeData.grey900
+                                                                          : AppThemeData.grey50,
                                                                       disabledBorder: UnderlineInputBorder(
-                                                                        borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                                                        borderSide: BorderSide(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50, width: 1),
+                                                                        borderRadius: const BorderRadius.all(
+                                                                          Radius.circular(
+                                                                            10,
+                                                                          ),
+                                                                        ),
+                                                                        borderSide: BorderSide(
+                                                                          color:
+                                                                              isDark
+                                                                              ? AppThemeData.grey900
+                                                                              : AppThemeData.grey50,
+                                                                          width:
+                                                                              1,
+                                                                        ),
                                                                       ),
                                                                       focusedBorder: OutlineInputBorder(
-                                                                        borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                                                        borderSide: BorderSide(color: isDark ? AppThemeData.primary300 : AppThemeData.primary300, width: 1),
+                                                                        borderRadius: const BorderRadius.all(
+                                                                          Radius.circular(
+                                                                            10,
+                                                                          ),
+                                                                        ),
+                                                                        borderSide: BorderSide(
+                                                                          color:
+                                                                              isDark
+                                                                              ? AppThemeData.primary300
+                                                                              : AppThemeData.primary300,
+                                                                          width:
+                                                                              1,
+                                                                        ),
                                                                       ),
                                                                       enabledBorder: OutlineInputBorder(
-                                                                        borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                                                        borderSide: BorderSide(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50, width: 1),
+                                                                        borderRadius: const BorderRadius.all(
+                                                                          Radius.circular(
+                                                                            10,
+                                                                          ),
+                                                                        ),
+                                                                        borderSide: BorderSide(
+                                                                          color:
+                                                                              isDark
+                                                                              ? AppThemeData.grey900
+                                                                              : AppThemeData.grey50,
+                                                                          width:
+                                                                              1,
+                                                                        ),
                                                                       ),
                                                                       errorBorder: OutlineInputBorder(
-                                                                        borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                                                        borderSide: BorderSide(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50, width: 1),
+                                                                        borderRadius: const BorderRadius.all(
+                                                                          Radius.circular(
+                                                                            10,
+                                                                          ),
+                                                                        ),
+                                                                        borderSide: BorderSide(
+                                                                          color:
+                                                                              isDark
+                                                                              ? AppThemeData.grey900
+                                                                              : AppThemeData.grey50,
+                                                                          width:
+                                                                              1,
+                                                                        ),
                                                                       ),
                                                                       border: OutlineInputBorder(
-                                                                        borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                                                        borderSide: BorderSide(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50, width: 1),
+                                                                        borderRadius: const BorderRadius.all(
+                                                                          Radius.circular(
+                                                                            10,
+                                                                          ),
+                                                                        ),
+                                                                        borderSide: BorderSide(
+                                                                          color:
+                                                                              isDark
+                                                                              ? AppThemeData.grey900
+                                                                              : AppThemeData.grey50,
+                                                                          width:
+                                                                              1,
+                                                                        ),
                                                                       ),
-                                                                      hintText: "Quantity".tr,
-                                                                      hintStyle: TextStyle(fontSize: 14, color: isDark ? AppThemeData.grey600 : AppThemeData.grey400, fontFamily: AppThemeData.regular),
+                                                                      hintText:
+                                                                          "Quantity"
+                                                                              .tr,
+                                                                      hintStyle: TextStyle(
+                                                                        fontSize:
+                                                                            14,
+                                                                        color:
+                                                                            isDark
+                                                                            ? AppThemeData.grey600
+                                                                            : AppThemeData.grey400,
+                                                                        fontFamily:
+                                                                            AppThemeData.regular,
+                                                                      ),
                                                                     ),
                                                                   ),
                                                                 ),
                                                                 DataCell(
-                                                                  e.variantImage != null && e.variantImage!.isNotEmpty
+                                                                  e.variantImage !=
+                                                                              null &&
+                                                                          e.variantImage!.isNotEmpty
                                                                       ? InkWell(
                                                                           onTap: () {
-                                                                            int index = controller.itemAttributes.value!.variants!.indexWhere((element) => element.variantId == e.variantId);
-                                                                            onCameraClick(context, index, controller);
+                                                                            int
+                                                                            index = controller.itemAttributes.value!.variants!.indexWhere(
+                                                                              (
+                                                                                element,
+                                                                              ) =>
+                                                                                  element.variantId ==
+                                                                                  e.variantId,
+                                                                            );
+                                                                            onCameraClick(
+                                                                              context,
+                                                                              index,
+                                                                              controller,
+                                                                            );
                                                                           },
                                                                           child: ClipRRect(
-                                                                            borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                                                            child: NetworkImageWidget(height: 50, width: 60, fit: BoxFit.cover, imageUrl: e.variantImage.toString()),
+                                                                            borderRadius: const BorderRadius.all(
+                                                                              Radius.circular(
+                                                                                10,
+                                                                              ),
+                                                                            ),
+                                                                            child: NetworkImageWidget(
+                                                                              height: 50,
+                                                                              width: 60,
+                                                                              fit: BoxFit.cover,
+                                                                              imageUrl: e.variantImage.toString(),
+                                                                            ),
                                                                           ),
                                                                         )
                                                                       : InkWell(
                                                                           onTap: () {
-                                                                            int index = controller.itemAttributes.value!.variants!.indexWhere((element) => element.variantId == e.variantId);
-                                                                            onCameraClick(context, index, controller);
+                                                                            int
+                                                                            index = controller.itemAttributes.value!.variants!.indexWhere(
+                                                                              (
+                                                                                element,
+                                                                              ) =>
+                                                                                  element.variantId ==
+                                                                                  e.variantId,
+                                                                            );
+                                                                            onCameraClick(
+                                                                              context,
+                                                                              index,
+                                                                              controller,
+                                                                            );
                                                                           },
-                                                                          child: SvgPicture.asset("assets/icons/ic_folder_upload.svg"),
+                                                                          child: SvgPicture.asset(
+                                                                            "assets/icons/ic_folder_upload.svg",
+                                                                          ),
                                                                         ),
                                                                 ),
                                                               ],
@@ -760,16 +1725,34 @@ class _AddProductScreenState extends State<AddProductScreen> {
                             Expanded(
                               child: TextFieldWidget(
                                 title: 'Regular Price'.tr,
-                                controller: controller.regularPriceController.value,
+                                controller:
+                                    controller.regularPriceController.value,
                                 hintText: 'Enter Regular Price'.tr,
                                 textInputAction: TextInputAction.done,
-                                inputFormatters: [FilteringTextInputFormatter.allow(RegExp('[0-9]'))],
-                                textInputType: const TextInputType.numberWithOptions(signed: true, decimal: true),
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.allow(
+                                    RegExp('[0-9]'),
+                                  ),
+                                ],
+                                textInputType:
+                                    const TextInputType.numberWithOptions(
+                                      signed: true,
+                                      decimal: true,
+                                    ),
                                 prefix: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 14,
+                                  ),
                                   child: Text(
                                     "${Constant.currencyModel!.symbol}".tr,
-                                    style: TextStyle(color: isDark ? AppThemeData.grey50 : AppThemeData.grey900, fontFamily: AppThemeData.semiBold, fontSize: 18),
+                                    style: TextStyle(
+                                      color: isDark
+                                          ? AppThemeData.grey50
+                                          : AppThemeData.grey900,
+                                      fontFamily: AppThemeData.semiBold,
+                                      fontSize: 18,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -778,16 +1761,34 @@ class _AddProductScreenState extends State<AddProductScreen> {
                             Expanded(
                               child: TextFieldWidget(
                                 title: 'Discounted Price'.tr,
-                                controller: controller.discountedPriceController.value,
+                                controller:
+                                    controller.discountedPriceController.value,
                                 hintText: 'Enter Discounted Price'.tr,
                                 textInputAction: TextInputAction.done,
-                                inputFormatters: [FilteringTextInputFormatter.allow(RegExp('[0-9]'))],
-                                textInputType: const TextInputType.numberWithOptions(signed: true, decimal: true),
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.allow(
+                                    RegExp('[0-9]'),
+                                  ),
+                                ],
+                                textInputType:
+                                    const TextInputType.numberWithOptions(
+                                      signed: true,
+                                      decimal: true,
+                                    ),
                                 prefix: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 14,
+                                  ),
                                   child: Text(
                                     "${Constant.currencyModel!.symbol}".tr,
-                                    style: TextStyle(color: isDark ? AppThemeData.grey50 : AppThemeData.grey900, fontFamily: AppThemeData.semiBold, fontSize: 18),
+                                    style: TextStyle(
+                                      color: isDark
+                                          ? AppThemeData.grey50
+                                          : AppThemeData.grey900,
+                                      fontFamily: AppThemeData.semiBold,
+                                      fontSize: 18,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -796,20 +1797,54 @@ class _AddProductScreenState extends State<AddProductScreen> {
                         ),
                         Row(
                           children: [
-                            Text(
-                              "Your item Price will be display like this. ".tr,
-                              style: TextStyle(color: isDark ? AppThemeData.grey100 : AppThemeData.grey800, fontFamily: AppThemeData.medium, fontSize: 12),
+                            Expanded(
+                              child: Text(
+                                "Your item Price will be display like this. "
+                                    .tr,
+                                style: TextStyle(
+                                  color: isDark
+                                      ? AppThemeData.grey100
+                                      : AppThemeData.grey800,
+                                  fontFamily: AppThemeData.medium,
+                                  fontSize: 12,
+                                ),
+                              ),
                             ),
-                            Row(
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
                                 Text(
-                                  (controller.discountPrice.value == 0.0 ? Constant.amountShow(amount: "0.0") : Constant.amountShow(amount: controller.discountPrice.value.toString())).tr,
-                                  style: TextStyle(color: isDark ? AppThemeData.primary300 : AppThemeData.primary300, fontFamily: AppThemeData.medium, fontSize: 12),
+                                  (controller.discountPrice.value == 0.0
+                                          ? Constant.amountShow(amount: "0.0")
+                                          : Constant.amountShow(
+                                              amount: controller
+                                                  .discountPrice
+                                                  .value
+                                                  .toString(),
+                                            ))
+                                      .tr,
+                                  style: TextStyle(
+                                    color: isDark
+                                        ? AppThemeData.primary300
+                                        : AppThemeData.primary300,
+                                    fontFamily: AppThemeData.medium,
+                                    fontSize: 12,
+                                  ),
                                 ),
-                                const SizedBox(width: 5),
+                                const SizedBox(height: 2),
                                 Text(
-                                  Constant.amountShow(amount: controller.regularPrice.value.toString()),
-                                  style: TextStyle(color: isDark ? AppThemeData.grey500 : AppThemeData.grey400, fontFamily: AppThemeData.medium, decoration: TextDecoration.lineThrough),
+                                  Constant.amountShow(
+                                    amount: controller.regularPrice.value
+                                        .toString(),
+                                  ),
+                                  style: TextStyle(
+                                    color: isDark
+                                        ? AppThemeData.grey500
+                                        : AppThemeData.grey400,
+                                    fontFamily: AppThemeData.medium,
+                                    fontSize: 12,
+                                    decoration: TextDecoration.lineThrough,
+                                  ),
                                 ),
                               ],
                             ),
@@ -818,15 +1853,26 @@ class _AddProductScreenState extends State<AddProductScreen> {
                         const SizedBox(height: 20),
                         TextFieldWidget(
                           title: 'Quantity'.tr,
-                          controller: controller.productQuantityController.value,
+                          controller:
+                              controller.productQuantityController.value,
                           hintText: 'Enter Quantity'.tr,
                           textInputAction: TextInputAction.done,
-                          inputFormatters: [FilteringTextInputFormatter.allow(RegExp('[0-9-.]'))],
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(
+                              RegExp('[0-9-.]'),
+                            ),
+                          ],
                           textInputType: TextInputType.text,
                         ),
                         Text(
                           "-1 to your product quantity is unlimited".tr,
-                          style: TextStyle(color: isDark ? AppThemeData.danger300 : AppThemeData.danger300, fontFamily: AppThemeData.medium, fontSize: 14),
+                          style: TextStyle(
+                            color: isDark
+                                ? AppThemeData.danger300
+                                : AppThemeData.danger300,
+                            fontFamily: AppThemeData.medium,
+                            fontSize: 14,
+                          ),
                         ),
                         const SizedBox(height: 20),
 
@@ -836,7 +1882,13 @@ class _AddProductScreenState extends State<AddProductScreen> {
                                 children: [
                                   Text(
                                     "About Cal., Grams, prot.& Fats".tr,
-                                    style: TextStyle(color: isDark ? AppThemeData.grey50 : AppThemeData.grey900, fontFamily: AppThemeData.medium, fontSize: 18),
+                                    style: TextStyle(
+                                      color: isDark
+                                          ? AppThemeData.grey50
+                                          : AppThemeData.grey900,
+                                      fontFamily: AppThemeData.medium,
+                                      fontSize: 18,
+                                    ),
                                   ),
                                   const SizedBox(height: 10),
                                   Row(
@@ -844,22 +1896,41 @@ class _AddProductScreenState extends State<AddProductScreen> {
                                       Expanded(
                                         child: TextFieldWidget(
                                           title: 'Calories'.tr,
-                                          controller: controller.caloriesController.value,
+                                          controller: controller
+                                              .caloriesController
+                                              .value,
                                           hintText: 'Enter Calories'.tr,
                                           textInputAction: TextInputAction.done,
-                                          inputFormatters: [FilteringTextInputFormatter.allow(RegExp('[0-9]'))],
-                                          textInputType: const TextInputType.numberWithOptions(signed: true, decimal: true),
+                                          inputFormatters: [
+                                            FilteringTextInputFormatter.allow(
+                                              RegExp('[0-9]'),
+                                            ),
+                                          ],
+                                          textInputType:
+                                              const TextInputType.numberWithOptions(
+                                                signed: true,
+                                                decimal: true,
+                                              ),
                                         ),
                                       ),
                                       const SizedBox(width: 10),
                                       Expanded(
                                         child: TextFieldWidget(
                                           title: 'Grams'.tr,
-                                          controller: controller.gramsController.value,
+                                          controller:
+                                              controller.gramsController.value,
                                           hintText: 'Enter Grams'.tr,
                                           textInputAction: TextInputAction.done,
-                                          inputFormatters: [FilteringTextInputFormatter.allow(RegExp('[0-9]'))],
-                                          textInputType: const TextInputType.numberWithOptions(signed: true, decimal: true),
+                                          inputFormatters: [
+                                            FilteringTextInputFormatter.allow(
+                                              RegExp('[0-9]'),
+                                            ),
+                                          ],
+                                          textInputType:
+                                              const TextInputType.numberWithOptions(
+                                                signed: true,
+                                                decimal: true,
+                                              ),
                                         ),
                                       ),
                                     ],
@@ -870,22 +1941,41 @@ class _AddProductScreenState extends State<AddProductScreen> {
                                       Expanded(
                                         child: TextFieldWidget(
                                           title: 'Protein'.tr,
-                                          controller: controller.proteinController.value,
+                                          controller: controller
+                                              .proteinController
+                                              .value,
                                           hintText: 'Enter Protein'.tr,
                                           textInputAction: TextInputAction.done,
-                                          inputFormatters: [FilteringTextInputFormatter.allow(RegExp('[0-9]'))],
-                                          textInputType: const TextInputType.numberWithOptions(signed: true, decimal: true),
+                                          inputFormatters: [
+                                            FilteringTextInputFormatter.allow(
+                                              RegExp('[0-9]'),
+                                            ),
+                                          ],
+                                          textInputType:
+                                              const TextInputType.numberWithOptions(
+                                                signed: true,
+                                                decimal: true,
+                                              ),
                                         ),
                                       ),
                                       const SizedBox(width: 10),
                                       Expanded(
                                         child: TextFieldWidget(
                                           title: 'Fats'.tr,
-                                          controller: controller.fatsController.value,
+                                          controller:
+                                              controller.fatsController.value,
                                           hintText: 'Enter Fats'.tr,
                                           textInputAction: TextInputAction.done,
-                                          inputFormatters: [FilteringTextInputFormatter.allow(RegExp('[0-9]'))],
-                                          textInputType: const TextInputType.numberWithOptions(signed: true, decimal: true),
+                                          inputFormatters: [
+                                            FilteringTextInputFormatter.allow(
+                                              RegExp('[0-9]'),
+                                            ),
+                                          ],
+                                          textInputType:
+                                              const TextInputType.numberWithOptions(
+                                                signed: true,
+                                                decimal: true,
+                                              ),
                                         ),
                                       ),
                                     ],
@@ -893,7 +1983,13 @@ class _AddProductScreenState extends State<AddProductScreen> {
                                   const SizedBox(height: 20),
                                   Text(
                                     "Product Type and Takeaway options".tr,
-                                    style: TextStyle(color: isDark ? AppThemeData.grey50 : AppThemeData.grey900, fontFamily: AppThemeData.medium, fontSize: 18),
+                                    style: TextStyle(
+                                      color: isDark
+                                          ? AppThemeData.grey50
+                                          : AppThemeData.grey900,
+                                      fontFamily: AppThemeData.medium,
+                                      fontSize: 18,
+                                    ),
                                   ),
                                   const SizedBox(height: 10),
                                   Row(
@@ -904,19 +2000,35 @@ class _AddProductScreenState extends State<AddProductScreen> {
                                             Expanded(
                                               child: Text(
                                                 "Pure veg.".tr,
-                                                style: TextStyle(color: isDark ? AppThemeData.grey50 : AppThemeData.grey900, fontFamily: AppThemeData.medium, fontSize: 18),
+                                                style: TextStyle(
+                                                  color: isDark
+                                                      ? AppThemeData.grey50
+                                                      : AppThemeData.grey900,
+                                                  fontFamily:
+                                                      AppThemeData.medium,
+                                                  fontSize: 18,
+                                                ),
                                               ),
                                             ),
                                             Transform.scale(
                                               scale: 0.8,
                                               child: CupertinoSwitch(
-                                                value: controller.isPureVeg.value,
+                                                value:
+                                                    controller.isPureVeg.value,
                                                 onChanged: (value) {
-                                                  if (controller.isNonVeg.value == true) {
-                                                    controller.isPureVeg.value = value;
+                                                  if (controller
+                                                          .isNonVeg
+                                                          .value ==
+                                                      true) {
+                                                    controller.isPureVeg.value =
+                                                        value;
                                                   }
-                                                  if (controller.isPureVeg.value == true) {
-                                                    controller.isNonVeg.value = false;
+                                                  if (controller
+                                                          .isPureVeg
+                                                          .value ==
+                                                      true) {
+                                                    controller.isNonVeg.value =
+                                                        false;
                                                   }
                                                 },
                                               ),
@@ -931,20 +2043,36 @@ class _AddProductScreenState extends State<AddProductScreen> {
                                             Expanded(
                                               child: Text(
                                                 "Non veg.".tr,
-                                                style: TextStyle(color: isDark ? AppThemeData.grey50 : AppThemeData.grey900, fontFamily: AppThemeData.medium, fontSize: 18),
+                                                style: TextStyle(
+                                                  color: isDark
+                                                      ? AppThemeData.grey50
+                                                      : AppThemeData.grey900,
+                                                  fontFamily:
+                                                      AppThemeData.medium,
+                                                  fontSize: 18,
+                                                ),
                                               ),
                                             ),
                                             Transform.scale(
                                               scale: 0.8,
                                               child: CupertinoSwitch(
-                                                value: controller.isNonVeg.value,
+                                                value:
+                                                    controller.isNonVeg.value,
                                                 onChanged: (value) {
-                                                  if (controller.isPureVeg.value == true) {
-                                                    controller.isNonVeg.value = value;
+                                                  if (controller
+                                                          .isPureVeg
+                                                          .value ==
+                                                      true) {
+                                                    controller.isNonVeg.value =
+                                                        value;
                                                   }
 
-                                                  if (controller.isNonVeg.value == true) {
-                                                    controller.isPureVeg.value = false;
+                                                  if (controller
+                                                          .isNonVeg
+                                                          .value ==
+                                                      true) {
+                                                    controller.isPureVeg.value =
+                                                        false;
                                                   }
                                                 },
                                               ),
@@ -957,14 +2085,22 @@ class _AddProductScreenState extends State<AddProductScreen> {
                                 ],
                               ),
                         const SizedBox(height: 10),
-                        Constant.selectedSection != null && Constant.selectedSection!.serviceTypeFlag == "ecommerce-service"
+                        Constant.selectedSection != null &&
+                                Constant.selectedSection!.serviceTypeFlag ==
+                                    "ecommerce-service"
                             ? Container()
                             : Row(
                                 children: [
                                   Expanded(
                                     child: Text(
                                       "Enable Takeaway option".tr,
-                                      style: TextStyle(color: isDark ? AppThemeData.grey50 : AppThemeData.grey900, fontFamily: AppThemeData.medium, fontSize: 18),
+                                      style: TextStyle(
+                                        color: isDark
+                                            ? AppThemeData.grey50
+                                            : AppThemeData.grey900,
+                                        fontFamily: AppThemeData.medium,
+                                        fontSize: 18,
+                                      ),
                                     ),
                                   ),
                                   Transform.scale(
@@ -981,7 +2117,13 @@ class _AddProductScreenState extends State<AddProductScreen> {
                         const SizedBox(height: 20),
                         Text(
                           "Specifications and Addons".tr,
-                          style: TextStyle(color: isDark ? AppThemeData.grey50 : AppThemeData.grey900, fontFamily: AppThemeData.medium, fontSize: 18),
+                          style: TextStyle(
+                            color: isDark
+                                ? AppThemeData.grey50
+                                : AppThemeData.grey900,
+                            fontFamily: AppThemeData.medium,
+                            fontSize: 18,
+                          ),
                         ),
                         const SizedBox(height: 20),
                         Row(
@@ -989,14 +2131,27 @@ class _AddProductScreenState extends State<AddProductScreen> {
                             Expanded(
                               child: Text(
                                 "Specifications".tr,
-                                style: TextStyle(color: isDark ? AppThemeData.grey50 : AppThemeData.grey900, fontFamily: AppThemeData.medium, fontSize: 16),
+                                style: TextStyle(
+                                  color: isDark
+                                      ? AppThemeData.grey50
+                                      : AppThemeData.grey900,
+                                  fontFamily: AppThemeData.medium,
+                                  fontSize: 16,
+                                ),
                               ),
                             ),
                             InkWell(
                               onTap: () {
-                                controller.specificationList.add(ProductSpecificationModel(lable: '', value: ''));
+                                controller.specificationList.add(
+                                  ProductSpecificationModel(
+                                    lable: '',
+                                    value: '',
+                                  ),
+                                );
                               },
-                              child: SvgPicture.asset("assets/icons/ic_add_one.svg"),
+                              child: SvgPicture.asset(
+                                "assets/icons/ic_add_one.svg",
+                              ),
                             ),
                           ],
                         ),
@@ -1014,11 +2169,16 @@ class _AddProductScreenState extends State<AddProductScreen> {
                                   Expanded(
                                     child: TextFieldWidget(
                                       controller: null,
-                                      initialValue: controller.specificationList[index].lable,
+                                      initialValue: controller
+                                          .specificationList[index]
+                                          .lable,
                                       title: 'Title'.tr,
                                       hintText: 'Enter Title'.tr,
                                       onchange: (value) {
-                                        controller.specificationList[index].lable = value;
+                                        controller
+                                                .specificationList[index]
+                                                .lable =
+                                            value;
                                       },
                                     ),
                                   ),
@@ -1026,11 +2186,16 @@ class _AddProductScreenState extends State<AddProductScreen> {
                                   Expanded(
                                     child: TextFieldWidget(
                                       controller: null,
-                                      initialValue: controller.specificationList[index].value,
+                                      initialValue: controller
+                                          .specificationList[index]
+                                          .value,
                                       title: 'Value'.tr,
                                       hintText: 'Enter Value'.tr,
                                       onchange: (value) {
-                                        controller.specificationList[index].value = value;
+                                        controller
+                                                .specificationList[index]
+                                                .value =
+                                            value;
                                       },
                                     ),
                                   ),
@@ -1044,14 +2209,27 @@ class _AddProductScreenState extends State<AddProductScreen> {
                             Expanded(
                               child: Text(
                                 "Addons".tr,
-                                style: TextStyle(color: isDark ? AppThemeData.grey50 : AppThemeData.grey900, fontFamily: AppThemeData.medium, fontSize: 16),
+                                style: TextStyle(
+                                  color: isDark
+                                      ? AppThemeData.grey50
+                                      : AppThemeData.grey900,
+                                  fontFamily: AppThemeData.medium,
+                                  fontSize: 16,
+                                ),
                               ),
                             ),
                             InkWell(
                               onTap: () {
-                                controller.addonsList.add(ProductSpecificationModel(lable: '', value: ''));
+                                controller.addonsList.add(
+                                  ProductSpecificationModel(
+                                    lable: '',
+                                    value: '',
+                                  ),
+                                );
                               },
-                              child: SvgPicture.asset("assets/icons/ic_add_one.svg"),
+                              child: SvgPicture.asset(
+                                "assets/icons/ic_add_one.svg",
+                              ),
                             ),
                           ],
                         ),
@@ -1071,9 +2249,11 @@ class _AddProductScreenState extends State<AddProductScreen> {
                                       controller: null,
                                       title: 'Title'.tr,
                                       hintText: 'Enter Title'.tr,
-                                      initialValue: controller.addonsList[index].lable,
+                                      initialValue:
+                                          controller.addonsList[index].lable,
                                       onchange: (value) {
-                                        controller.addonsList[index].lable = value;
+                                        controller.addonsList[index].lable =
+                                            value;
                                       },
                                     ),
                                   ),
@@ -1083,19 +2263,39 @@ class _AddProductScreenState extends State<AddProductScreen> {
                                       controller: null,
                                       title: 'Price'.tr,
                                       hintText: 'Enter Price'.tr,
-                                      initialValue: controller.addonsList[index].value,
+                                      initialValue:
+                                          controller.addonsList[index].value,
                                       prefix: Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 16,
+                                          vertical: 14,
+                                        ),
                                         child: Text(
-                                          "${Constant.currencyModel!.symbol}".tr,
-                                          style: TextStyle(color: isDark ? AppThemeData.grey50 : AppThemeData.grey900, fontFamily: AppThemeData.semiBold, fontSize: 18),
+                                          "${Constant.currencyModel!.symbol}"
+                                              .tr,
+                                          style: TextStyle(
+                                            color: isDark
+                                                ? AppThemeData.grey50
+                                                : AppThemeData.grey900,
+                                            fontFamily: AppThemeData.semiBold,
+                                            fontSize: 18,
+                                          ),
                                         ),
                                       ),
                                       textInputAction: TextInputAction.done,
-                                      inputFormatters: [FilteringTextInputFormatter.allow(RegExp('[0-9]'))],
-                                      textInputType: const TextInputType.numberWithOptions(signed: true, decimal: true),
+                                      inputFormatters: [
+                                        FilteringTextInputFormatter.allow(
+                                          RegExp('[0-9]'),
+                                        ),
+                                      ],
+                                      textInputType:
+                                          const TextInputType.numberWithOptions(
+                                            signed: true,
+                                            decimal: true,
+                                          ),
                                       onchange: (value) {
-                                        controller.addonsList[index].value = value;
+                                        controller.addonsList[index].value =
+                                            value;
                                       },
                                     ),
                                   ),
@@ -1111,17 +2311,26 @@ class _AddProductScreenState extends State<AddProductScreen> {
                 ),
                 bottomNavigationBar: Container(
                   color: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 20,
+                  ),
                   child: Padding(
                     padding: const EdgeInsets.only(bottom: 20),
                     child: RoundedButtonFill(
                       title: "Save Details".tr,
                       height: 5.5,
-                      color: isDark ? AppThemeData.primary300 : AppThemeData.primary300,
-                      textColor: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
+                      color: isDark
+                          ? AppThemeData.primary300
+                          : AppThemeData.primary300,
+                      textColor: isDark
+                          ? AppThemeData.grey900
+                          : AppThemeData.grey50,
                       fontSizes: 16,
                       onPress: () async {
-                        print("========${Constant.userModel?.subscriptionPlan?.itemLimit.runtimeType}");
+                        print(
+                          "========${Constant.userModel?.subscriptionPlan?.itemLimit.runtimeType}",
+                        );
 
                         // if ((Constant.isSubscriptionModelApplied == true || Constant.adminCommission?.isEnabled == true) &&
                         //     Constant.userModel?.subscriptionPlan?.itemLimit != '-1' &&
@@ -1135,8 +2344,18 @@ class _AddProductScreenState extends State<AddProductScreen> {
                         // }
 
                         if (controller.itemAttributes.value != null) {
-                          if (controller.itemAttributes.value!.attributes != null && controller.itemAttributes.value!.attributes!.isNotEmpty) {
-                            for (var element in controller.itemAttributes.value!.attributes!) {
+                          if (controller.itemAttributes.value!.attributes !=
+                                  null &&
+                              controller
+                                  .itemAttributes
+                                  .value!
+                                  .attributes!
+                                  .isNotEmpty) {
+                            for (var element
+                                in controller
+                                    .itemAttributes
+                                    .value!
+                                    .attributes!) {
                               if (element.attributeOptions!.isEmpty) {
                                 ShowToastDialog.showToast(
                                   "${"Please add a attribute".tr} (${controller.selectedAttributesList.where((p0) => p0.id == element.attributeId).first.title}) ${"value".tr}",
@@ -1146,17 +2365,31 @@ class _AddProductScreenState extends State<AddProductScreen> {
                             }
                           }
 
-                          if (controller.itemAttributes.value!.variants != null && controller.itemAttributes.value!.variants!.isNotEmpty) {
-                            for (var element in controller.itemAttributes.value!.variants!) {
-                              if (double.parse(element.variantPrice!.toString()) == 0) {
-                                ShowToastDialog.showToast("Please enter a valid variant price".tr);
+                          if (controller.itemAttributes.value!.variants !=
+                                  null &&
+                              controller
+                                  .itemAttributes
+                                  .value!
+                                  .variants!
+                                  .isNotEmpty) {
+                            for (var element
+                                in controller.itemAttributes.value!.variants!) {
+                              if (double.parse(
+                                    element.variantPrice!.toString(),
+                                  ) ==
+                                  0) {
+                                ShowToastDialog.showToast(
+                                  "Please enter a valid variant price".tr,
+                                );
                                 return;
                               }
                             }
                           }
                         }
 
-                        print("==> ${controller.itemAttributes.value!.toJson()}");
+                        print(
+                          "==> ${controller.itemAttributes.value!.toJson()}",
+                        );
 
                         controller.saveDetails();
                         // if (controller.itemAttributes.value != null && controller.itemAttributes.value!.variants!.isNotEmpty) {
@@ -1183,7 +2416,12 @@ class _AddProductScreenState extends State<AddProductScreen> {
     );
   }
 
-  Dialog addAttributeValueDialog(AddProductController controller, isDark, int index, String attributeId) {
+  Dialog addAttributeValueDialog(
+    AddProductController controller,
+    isDark,
+    int index,
+    String attributeId,
+  ) {
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       insetPadding: const EdgeInsets.all(10),
@@ -1197,38 +2435,90 @@ class _AddProductScreenState extends State<AddProductScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              TextFieldWidget(title: 'Add Attribute Value'.tr, controller: controller.attributesValueController.value, hintText: 'Add Attribute Value'.tr),
+              TextFieldWidget(
+                title: 'Add Attribute Value'.tr,
+                controller: controller.attributesValueController.value,
+                hintText: 'Add Attribute Value'.tr,
+              ),
               RoundedButtonFill(
                 title: "Add".tr,
                 color: AppThemeData.primary300,
                 textColor: AppThemeData.grey50,
                 onPress: () async {
                   if (controller.attributesValueController.value.text.isEmpty) {
-                    ShowToastDialog.showToast("Please enter attribute value".tr);
+                    ShowToastDialog.showToast(
+                      "Please enter attribute value".tr,
+                    );
                   } else {
                     Get.back();
-                    controller.itemAttributes.value!.attributes![index].attributeOptions!.add(controller.attributesValueController.value.text);
+                    controller
+                        .itemAttributes
+                        .value!
+                        .attributes![index]
+                        .attributeOptions!
+                        .add(controller.attributesValueController.value.text);
 
                     List<List<dynamic>> listArary = [];
-                    for (int i = 0; i < controller.itemAttributes.value!.attributes!.length; i++) {
-                      if (controller.itemAttributes.value!.attributes![i].attributeOptions!.isNotEmpty) {
-                        listArary.add(controller.itemAttributes.value!.attributes![i].attributeOptions!);
+                    for (
+                      int i = 0;
+                      i < controller.itemAttributes.value!.attributes!.length;
+                      i++
+                    ) {
+                      if (controller
+                          .itemAttributes
+                          .value!
+                          .attributes![i]
+                          .attributeOptions!
+                          .isNotEmpty) {
+                        listArary.add(
+                          controller
+                              .itemAttributes
+                              .value!
+                              .attributes![i]
+                              .attributeOptions!,
+                        );
                       }
                     }
 
                     List<dynamic> list = getCombination(listArary);
 
                     for (var element in list) {
-                      bool productIsInList = controller.itemAttributes.value!.variants!.any((product) => product.variantSku == element);
+                      bool productIsInList = controller
+                          .itemAttributes
+                          .value!
+                          .variants!
+                          .any((product) => product.variantSku == element);
                       if (productIsInList) {
                       } else {
-                        if (controller.itemAttributes.value!.attributes![index].attributeOptions!.length == 1) {
+                        if (controller
+                                .itemAttributes
+                                .value!
+                                .attributes![index]
+                                .attributeOptions!
+                                .length ==
+                            1) {
                           controller.itemAttributes.value!.variants!.clear();
-                          Variants variantsModel = Variants(variantSku: element, variantId: Constant.getUuid(), variantImage: "", variantPrice: "0", variantQuantity: "-1");
-                          controller.itemAttributes.value!.variants!.add(variantsModel);
+                          Variants variantsModel = Variants(
+                            variantSku: element,
+                            variantId: Constant.getUuid(),
+                            variantImage: "",
+                            variantPrice: "0",
+                            variantQuantity: "-1",
+                          );
+                          controller.itemAttributes.value!.variants!.add(
+                            variantsModel,
+                          );
                         } else {
-                          Variants variantsModel = Variants(variantSku: element, variantId: Constant.getUuid(), variantImage: "", variantPrice: "0", variantQuantity: "-1");
-                          controller.itemAttributes.value!.variants!.add(variantsModel);
+                          Variants variantsModel = Variants(
+                            variantSku: element,
+                            variantId: Constant.getUuid(),
+                            variantImage: "",
+                            variantPrice: "0",
+                            variantQuantity: "-1",
+                          );
+                          controller.itemAttributes.value!.variants!.add(
+                            variantsModel,
+                          );
                         }
                       }
                     }
@@ -1244,7 +2534,10 @@ class _AddProductScreenState extends State<AddProductScreen> {
     );
   }
 
-  Future buildBottomSheet(BuildContext context, AddProductController controller) {
+  Future buildBottomSheet(
+    BuildContext context,
+    AddProductController controller,
+  ) {
     return showModalBottomSheet(
       context: context,
       builder: (context) {
@@ -1261,7 +2554,13 @@ class _AddProductScreenState extends State<AddProductScreen> {
                     padding: const EdgeInsets.only(top: 15),
                     child: Text(
                       "Please Select".tr,
-                      style: TextStyle(color: isDark ? AppThemeData.grey50 : AppThemeData.grey900, fontFamily: AppThemeData.bold, fontSize: 16),
+                      style: TextStyle(
+                        color: isDark
+                            ? AppThemeData.grey50
+                            : AppThemeData.grey900,
+                        fontFamily: AppThemeData.bold,
+                        fontSize: 16,
+                      ),
                     ),
                   ),
                   Row(
@@ -1274,10 +2573,15 @@ class _AddProductScreenState extends State<AddProductScreen> {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             IconButton(
-                              onPressed: () => controller.pickFile(source: ImageSource.camera),
+                              onPressed: () => controller.pickFile(
+                                source: ImageSource.camera,
+                              ),
                               icon: const Icon(Icons.camera_alt, size: 32),
                             ),
-                            Padding(padding: const EdgeInsets.only(top: 3), child: Text("Camera".tr)),
+                            Padding(
+                              padding: const EdgeInsets.only(top: 3),
+                              child: Text("Camera".tr),
+                            ),
                           ],
                         ),
                       ),
@@ -1288,10 +2592,18 @@ class _AddProductScreenState extends State<AddProductScreen> {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             IconButton(
-                              onPressed: () => controller.pickFile(source: ImageSource.gallery),
-                              icon: const Icon(Icons.photo_library_sharp, size: 32),
+                              onPressed: () => controller.pickFile(
+                                source: ImageSource.gallery,
+                              ),
+                              icon: const Icon(
+                                Icons.photo_library_sharp,
+                                size: 32,
+                              ),
                             ),
-                            Padding(padding: const EdgeInsets.only(top: 3), child: Text("Gallery".tr)),
+                            Padding(
+                              padding: const EdgeInsets.only(top: 3),
+                              child: Text("Gallery".tr),
+                            ),
                           ],
                         ),
                       ),
@@ -1306,12 +2618,20 @@ class _AddProductScreenState extends State<AddProductScreen> {
     );
   }
 
-  Widget _buildChip(isDark, String label, int attributesIndex, int attributesOptionIndex) {
+  Widget _buildChip(
+    isDark,
+    String label,
+    int attributesIndex,
+    int attributesOptionIndex,
+  ) {
     return Container(
       decoration: ShapeDecoration(
         color: isDark ? AppThemeData.surfaceDark : AppThemeData.surface,
         shape: RoundedRectangleBorder(
-          side: BorderSide(width: 1, color: isDark ? AppThemeData.grey800 : AppThemeData.grey100),
+          side: BorderSide(
+            width: 1,
+            color: isDark ? AppThemeData.grey800 : AppThemeData.grey100,
+          ),
           borderRadius: BorderRadius.circular(120),
         ),
       ),
@@ -1322,10 +2642,18 @@ class _AddProductScreenState extends State<AddProductScreen> {
           children: [
             Text(
               label,
-              style: TextStyle(color: isDark ? AppThemeData.grey200 : AppThemeData.grey700, fontFamily: AppThemeData.semiBold, fontSize: 14),
+              style: TextStyle(
+                color: isDark ? AppThemeData.grey200 : AppThemeData.grey700,
+                fontFamily: AppThemeData.semiBold,
+                fontSize: 14,
+              ),
             ),
             const SizedBox(width: 10),
-            Icon(Icons.clear, color: isDark ? AppThemeData.grey200 : AppThemeData.grey700, size: 16),
+            Icon(
+              Icons.clear,
+              color: isDark ? AppThemeData.grey200 : AppThemeData.grey700,
+              size: 16,
+            ),
           ],
         ),
       ),
@@ -1347,7 +2675,11 @@ class _AddProductScreenState extends State<AddProductScreen> {
     }
   }
 
-  void onCameraClick(BuildContext context, int index, AddProductController controller) {
+  void onCameraClick(
+    BuildContext context,
+    int index,
+    AddProductController controller,
+  ) {
     final action = CupertinoActionSheet(
       message: Text('Upload image'.tr, style: TextStyle(fontSize: 15.0)),
       actions: <Widget>[
@@ -1355,13 +2687,20 @@ class _AddProductScreenState extends State<AddProductScreen> {
           isDefaultAction: false,
           onPressed: () async {
             Get.back();
-            XFile? singleImage = await ImagePicker().pickImage(source: ImageSource.gallery);
+            XFile? singleImage = await ImagePicker().pickImage(
+              source: ImageSource.gallery,
+            );
             if (singleImage != null) {
               ShowToastDialog.showLoader("Image Upload...".tr);
 
-              String image = await FireStoreUtils.uploadUserImageToFireStorage(File(singleImage.path), controller.itemAttributes.value!.variants![index].variantId.toString());
+              String image = await FireStoreUtils.uploadUserImageToFireStorage(
+                File(singleImage.path),
+                controller.itemAttributes.value!.variants![index].variantId
+                    .toString(),
+              );
               ShowToastDialog.closeLoader();
-              controller.itemAttributes.value!.variants![index].variantImage = image;
+              controller.itemAttributes.value!.variants![index].variantImage =
+                  image;
               setState(() {});
             }
           },
@@ -1371,13 +2710,20 @@ class _AddProductScreenState extends State<AddProductScreen> {
           isDestructiveAction: false,
           onPressed: () async {
             Get.back();
-            final XFile? singleImage = await ImagePicker().pickImage(source: ImageSource.camera);
+            final XFile? singleImage = await ImagePicker().pickImage(
+              source: ImageSource.camera,
+            );
             if (singleImage != null) {
               ShowToastDialog.showLoader("Image Upload...".tr);
 
-              String image = await FireStoreUtils.uploadUserImageToFireStorage(File(singleImage.path), controller.itemAttributes.value!.variants![index].variantId.toString());
+              String image = await FireStoreUtils.uploadUserImageToFireStorage(
+                File(singleImage.path),
+                controller.itemAttributes.value!.variants![index].variantId
+                    .toString(),
+              );
               ShowToastDialog.closeLoader();
-              controller.itemAttributes.value!.variants![index].variantImage = image;
+              controller.itemAttributes.value!.variants![index].variantImage =
+                  image;
               setState(() {});
             }
           },

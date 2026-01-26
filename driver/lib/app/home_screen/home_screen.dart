@@ -23,7 +23,6 @@ import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart' as google_maps;
 import 'package:latlong2/latlong.dart' as location;
 import 'package:timelines_plus/timelines_plus.dart';
-import 'package:yandex_mapkit/yandex_mapkit.dart' as yandex;
 
 class HomeScreen extends StatelessWidget {
   final bool? isAppBarShow;
@@ -181,82 +180,7 @@ class HomeScreen extends StatelessWidget {
                             child: Constant.mapType == "inappmap"
                                 ? Stack(
                                     children: [
-                                      Constant.selectedMapType == "yandex"
-                                          ? Obx(() {
-                                              // Get current location or use default (Tashkent)
-                                              final currentLocation =
-                                                  controller.current.value;
-                                              final hasValidLocation =
-                                                  !(currentLocation.latitude ==
-                                                          0.0 &&
-                                                      currentLocation
-                                                              .longitude ==
-                                                          0.0);
-
-                                              // Get placemarks and polylines reactively
-                                              final placemarks = controller
-                                                  .yandexPlacemarks
-                                                  .toList();
-                                              final polylines = controller
-                                                  .yandexPolylines
-                                                  .toList();
-
-                                              return yandex.YandexMap(
-                                                mapType: yandex.MapType.map,
-                                                onMapCreated:
-                                                    (yandex.YandexMapController
-                                                        yandexController) {
-                                                  // Store controller reference
-                                                  controller
-                                                          .yandexMapController =
-                                                      yandexController;
-
-                                                  // Move to current location
-                                                  if (hasValidLocation) {
-                                                    yandexController.moveCamera(
-                                                      yandex.CameraUpdate
-                                                          .newCameraPosition(
-                                                        yandex.CameraPosition(
-                                                          target: yandex.Point(
-                                                            latitude:
-                                                                currentLocation
-                                                                    .latitude,
-                                                            longitude:
-                                                                currentLocation
-                                                                    .longitude,
-                                                          ),
-                                                          zoom: 16,
-                                                        ),
-                                                      ),
-                                                      animation: const yandex
-                                                          .MapAnimation(
-                                                        type: yandex
-                                                            .MapAnimationType
-                                                            .smooth,
-                                                        duration: 1.0,
-                                                      ),
-                                                    );
-                                                  }
-
-                                                  // Update markers after map is created
-                                                  controller
-                                                      .updateYandexMarkers();
-                                                },
-                                                onCameraPositionChanged: (yandex
-                                                        .CameraPosition
-                                                        position,
-                                                    yandex.CameraUpdateReason
-                                                        reason,
-                                                    bool finished) {
-                                                  // Handle camera position changes if needed
-                                                },
-                                                mapObjects: [
-                                                  ...placemarks,
-                                                  ...polylines,
-                                                ],
-                                              );
-                                            })
-                                          : Constant.selectedMapType == "osm"
+                                      Constant.selectedMapType == "osm"
                                               ? Obx(() {
                                                   // Get current location or use default (Tashkent)
                                                   final currentLocation =
@@ -331,12 +255,22 @@ class HomeScreen extends StatelessWidget {
                                                     ],
                                                   );
                                                 })
-                                              : Obx(() => google_maps.GoogleMap(
+                                              : Obx(() {
+                                                  final isDark = themeController.isDark.value;
+                                                  return google_maps.GoogleMap(
+                                                    key: ValueKey('google_map_${isDark ? 'dark' : 'light'}'),
                                                     onMapCreated: (google_maps
                                                         .GoogleMapController
                                                         mapController) {
                                                       controller.mapController =
                                                           mapController;
+                                                      
+                                                      // Apply dark mode style if needed
+                                                      if (isDark) {
+                                                        mapController.setMapStyle(
+                                                            Utils.getGoogleMapDarkStyle());
+                                                      }
+                                                      
                                                       // Use driver location or fallback to Constant.locationDataFinal or default location
                                                       final driverLat =
                                                           controller
@@ -475,7 +409,8 @@ class HomeScreen extends StatelessWidget {
                                                                     : 72.8400,
                                                       ),
                                                     ),
-                                                  )),
+                                                  );
+                                                }),
                                       if (Constant.mapType == "inappmap" &&
                                           Constant.selectedMapType == "osm")
                                         Positioned(

@@ -47,7 +47,7 @@ class AddRestaurantScreen extends StatelessWidget {
               style: TextStyle(color: isDark ? AppThemeData.grey800 : AppThemeData.grey100, fontSize: 18, fontFamily: AppThemeData.medium),
             ),
             actions: [
-              Constant.selectedSection!.serviceTypeFlag == "ecommerce-service"
+              (Constant.selectedSection?.serviceTypeFlag == "ecommerce-service")
                   ? SizedBox()
                   : Obx(
                       () => controller.canShowQRCodeButton.value
@@ -462,7 +462,7 @@ class AddRestaurantScreen extends StatelessWidget {
                           ],
                         ),
                         const SizedBox(height: 10),
-                        Constant.selectedSection!.isProductDetails == true
+                        (Constant.selectedSection?.isProductDetails == true)
                             ? Column(
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -521,7 +521,7 @@ class AddRestaurantScreen extends StatelessWidget {
                               )
                             : SizedBox(),
                         const SizedBox(height: 10),
-                        Constant.selectedSection!.serviceTypeFlag == "ecommerce-service"
+                        (Constant.selectedSection?.serviceTypeFlag == "ecommerce-service")
                             ? SizedBox()
                             : Column(
                                 children: [
@@ -572,7 +572,7 @@ class AddRestaurantScreen extends StatelessWidget {
                                     prefix: Padding(
                                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                                       child: Text(
-                                        "${Constant.currencyModel!.symbol}".tr,
+                                        "${Constant.currencyModel?.symbol ?? ''}".tr,
                                         style: TextStyle(color: isDark ? AppThemeData.grey50 : AppThemeData.grey900, fontFamily: AppThemeData.semiBold, fontSize: 18),
                                       ),
                                     ),
@@ -588,7 +588,7 @@ class AddRestaurantScreen extends StatelessWidget {
                                     prefix: Padding(
                                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                                       child: Text(
-                                        "${Constant.currencyModel!.symbol}".tr,
+                                        "${Constant.currencyModel?.symbol ?? ''}".tr,
                                         style: TextStyle(color: isDark ? AppThemeData.grey50 : AppThemeData.grey900, fontFamily: AppThemeData.semiBold, fontSize: 18),
                                       ),
                                     ),

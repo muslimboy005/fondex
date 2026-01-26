@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:driver/constant/constant.dart';
+import 'package:driver/themes/app_them_data.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -37,10 +38,14 @@ class _MercadoPagoScreenState extends State<MercadoPagoScreen> {
           onWebResourceError: (WebResourceError error) {},
           onNavigationRequest: (NavigationRequest navigation) async {
             debugPrint("--->2 ${navigation.url}");
-            if (navigation.url.contains("${Constant.globalUrl}payment/success")) {
+            if (navigation.url
+                .contains("${Constant.globalUrl}payment/success")) {
               Get.back(result: true);
             }
-            if (navigation.url.contains("${Constant.globalUrl}payment/failure") || navigation.url.contains("${Constant.globalUrl}payment/pending")) {
+            if (navigation.url
+                    .contains("${Constant.globalUrl}payment/failure") ||
+                navigation.url
+                    .contains("${Constant.globalUrl}payment/pending")) {
               Get.back(result: false);
             }
             return NavigationDecision.navigate;
@@ -98,7 +103,7 @@ class _MercadoPagoScreenState extends State<MercadoPagoScreen> {
             TextButton(
               child: Text(
                 'Continue'.tr,
-                style: const TextStyle(color: Colors.green),
+                style: TextStyle(color: AppThemeData.primary300),
               ),
               onPressed: () {
                 Navigator.of(context).pop();

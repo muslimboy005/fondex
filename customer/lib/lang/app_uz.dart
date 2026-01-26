@@ -89,7 +89,7 @@ const Map<String, String> uzUZ = {
   'This user is disabled': 'Bu foydalanuvchi o\'chirilgan',
   'Invalid OTP or Verification Failed':
       'Noto\'g\'ri OTP yoki tekshiruv muvaffaqiyatsiz',
-  'eMart': 'eMart',
+  'eMart': 'Fondex',
   'All Your Needs in One App!': 'Barcha ehtiyojlaringiz bitta ilovada!',
   'Explore Our Services': 'Xizmatlarimizni o\'rganing',
   'Alert!': 'Ogohlantirish!',
@@ -894,4 +894,14 @@ const Map<String, String> uzUZ = {
   'Add to Cart': 'Savatga qo\'shish',
   'Ko\'proq o\'qish': 'Ko\'proq o\'qish',
   'Qisqartirish': 'Qisqartirish',
+  'Fondex': 'Fondex',
+  'cancelPayment?': 'To\'lovni bekor qilishni xohlaysizmi?',
+  'Error:': 'Xatolik:',
+  'No advertisements available': 'Reklamalar mavjud emas',
+  'Enter your phone number to register and get started.':
+      'Ro\'yxatdan o\'tish va boshlash uchun telefon raqamingizni kiriting.',
+  'Phone Number*': 'Telefon raqami*',
+  'Enter phone number': 'Telefon raqamini kiriting',
+  'Register': 'Ro\'yxatdan o\'tish',
+  'Sign in': 'Kirish',
 };

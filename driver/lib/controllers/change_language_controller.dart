@@ -25,15 +25,43 @@ class ChangeLanguageController extends GetxController {
         List languageListTemp = event.data()!["list"];
         for (var element in languageListTemp) {
           LanguageModel languageModel = LanguageModel.fromJson(element);
-          languageList.add(languageModel);
+          // Filter only Russian and Uzbek languages
+          if (languageModel.slug == 'ru' || languageModel.slug == 'uz') {
+            languageList.add(languageModel);
+          }
         }
 
         if (Preferences.getString(Preferences.languageCodeKey).toString().isNotEmpty) {
           LanguageModel pref = Constant.getLanguage();
-          for (var element in languageList) {
-            if (element.slug == pref.slug) {
-              selectedLanguage.value = element;
+          // If saved language is not Russian or Uzbek, default to Uzbek
+          if (pref.slug != 'ru' && pref.slug != 'uz') {
+            // Find Uzbek language or default to first available
+            for (var element in languageList) {
+              if (element.slug == 'uz') {
+                selectedLanguage.value = element;
+                break;
+              }
             }
+            if (selectedLanguage.value.slug == null && languageList.isNotEmpty) {
+              selectedLanguage.value = languageList.first;
+            }
+          } else {
+            for (var element in languageList) {
+              if (element.slug == pref.slug) {
+                selectedLanguage.value = element;
+              }
+            }
+          }
+        } else {
+          // Default to Uzbek if no language is saved
+          for (var element in languageList) {
+            if (element.slug == 'uz') {
+              selectedLanguage.value = element;
+              break;
+            }
+          }
+          if (selectedLanguage.value.slug == null && languageList.isNotEmpty) {
+            selectedLanguage.value = languageList.first;
           }
         }
       }

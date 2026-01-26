@@ -20,24 +20,51 @@ class ChangeLanguageController extends GetxController {
   }
 
   Future<void> getLanguage() async {
-    await FireStoreUtils.fireStore.collection(CollectionName.settings).doc("languages").get().then((event) {
-      if (event.exists) {
-        List languageListTemp = event.data()!["list"];
-        for (var element in languageListTemp) {
-          LanguageModel languageModel = LanguageModel.fromJson(element);
-          languageList.add(languageModel);
-        }
+    await FireStoreUtils.fireStore
+        .collection(CollectionName.settings)
+        .doc("languages")
+        .get()
+        .then((event) {
+          if (event.exists) {
+            List languageListTemp = event.data()!["list"];
+            for (var element in languageListTemp) {
+              LanguageModel languageModel = LanguageModel.fromJson(element);
+              // Filter for only Russian and Uzbek
+              if (languageModel.slug == 'ru' || languageModel.slug == 'uz') {
+                languageList.add(languageModel);
+              }
+            }
 
-        if (Preferences.getString(Preferences.languageCodeKey).toString().isNotEmpty) {
-          LanguageModel pref = Constant.getLanguage();
-          for (var element in languageList) {
-            if (element.slug == pref.slug) {
-              selectedLanguage.value = element;
+            if (Preferences.getString(
+              Preferences.languageCodeKey,
+            ).toString().isNotEmpty) {
+              LanguageModel pref = Constant.getLanguage();
+              // If saved language is not ru or uz, default to ru
+              if (pref.slug != 'ru' && pref.slug != 'uz') {
+                for (var element in languageList) {
+                  if (element.slug == 'ru') {
+                    selectedLanguage.value = element;
+                    break;
+                  }
+                }
+              } else {
+                for (var element in languageList) {
+                  if (element.slug == pref.slug) {
+                    selectedLanguage.value = element;
+                  }
+                }
+              }
+            } else {
+              // Default to Russian if no language is saved
+              for (var element in languageList) {
+                if (element.slug == 'ru') {
+                  selectedLanguage.value = element;
+                  break;
+                }
+              }
             }
           }
-        }
-      }
-    });
+        });
 
     isLoading.value = false;
   }

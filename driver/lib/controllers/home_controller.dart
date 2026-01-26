@@ -20,7 +20,6 @@ import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart' as location;
-import 'package:yandex_mapkit/yandex_mapkit.dart' as yandex;
 import 'package:geolocator/geolocator.dart';
 import 'package:location/location.dart';
 
@@ -29,12 +28,7 @@ import '../models/order_model.dart';
 class HomeController extends GetxController {
   RxBool isLoading = true.obs;
   flutterMap.MapController osmMapController = flutterMap.MapController();
-  yandex.YandexMapController? yandexMapController;
   RxList<flutterMap.Marker> osmMarkers = <flutterMap.Marker>[].obs;
-  RxList<yandex.PlacemarkMapObject> yandexPlacemarks =
-      <yandex.PlacemarkMapObject>[].obs;
-  RxList<yandex.PolylineMapObject> yandexPolylines =
-      <yandex.PolylineMapObject>[].obs;
 
   // Track order subscription to cancel previous ones
   StreamSubscription? _orderSubscription;
@@ -383,16 +377,18 @@ class HomeController extends GetxController {
         if (event.exists) {
           driverModel.value = UserModel.fromJson(event.data()!);
 
-          // If driver location is null or 0,0, try to use GPS location from Constant
-          if ((driverModel.value.location == null ||
-                  driverModel.value.location!.latitude == null ||
-                  driverModel.value.location!.latitude == 0.0) &&
-              Constant.locationDataFinal != null) {
-            // Update driver model with GPS location temporarily for display
+          // ✅ Always prioritize current GPS location if available
+          // This ensures driver marker shows current location, not stale Firestore data
+          if (Constant.locationDataFinal != null &&
+              Constant.locationDataFinal!.latitude != null &&
+              Constant.locationDataFinal!.longitude != null) {
+            // Update driver model with current GPS location for accurate marker display
             driverModel.value.location = UserLocation(
-              latitude: Constant.locationDataFinal!.latitude ?? 0.0,
-              longitude: Constant.locationDataFinal!.longitude ?? 0.0,
+              latitude: Constant.locationDataFinal!.latitude!,
+              longitude: Constant.locationDataFinal!.longitude!,
             );
+            debugPrint(
+                "📍 getDriver: Updated driverModel.location with GPS: ${driverModel.value.location?.latitude}, ${driverModel.value.location?.longitude}");
           }
 
           _updateCurrentLocationMarkers();
@@ -425,7 +421,7 @@ class HomeController extends GetxController {
       final Uint8List destination = await Constant()
           .getBytesFromAsset('assets/images/location_orange3x.png', 100);
       final Uint8List driver = await Constant()
-          .getBytesFromAsset('assets/images/food_delivery.png', 120);
+          .getBytesFromAsset('assets/images/food_delivery.png', 50);
 
       departureIcon = BitmapDescriptor.fromBytes(departure);
       destinationIcon = BitmapDescriptor.fromBytes(destination);
@@ -443,7 +439,39 @@ class HomeController extends GetxController {
       return;
     }
 
-    final driverLoc = driver.location;
+    // ✅ Try to get fresh GPS location first
+    try {
+      final locationService = Location();
+      final freshLocation = await locationService.getLocation();
+      if (freshLocation.latitude != null && freshLocation.longitude != null) {
+        Constant.locationDataFinal = freshLocation;
+        debugPrint(
+            "📍 getDirections: Got fresh GPS location: ${freshLocation.latitude}, ${freshLocation.longitude}");
+      }
+    } catch (e) {
+      debugPrint("📍 getDirections: Could not get fresh GPS location: $e");
+      // Continue with existing location
+    }
+
+    // ✅ Use current GPS location if available, otherwise fallback to driver.location
+    UserLocation? driverLoc;
+    if (Constant.locationDataFinal != null &&
+        Constant.locationDataFinal!.latitude != null &&
+        Constant.locationDataFinal!.longitude != null) {
+      // Use current GPS location (most accurate)
+      driverLoc = UserLocation(
+        latitude: Constant.locationDataFinal!.latitude!,
+        longitude: Constant.locationDataFinal!.longitude!,
+      );
+      debugPrint(
+          "📍 getDirections: Using current GPS location: ${driverLoc.latitude}, ${driverLoc.longitude}");
+    } else {
+      // Fallback to driver.location from Firestore
+      driverLoc = driver.location;
+      debugPrint(
+          "📍 getDirections: Using driver.location from Firestore: ${driverLoc?.latitude}, ${driverLoc?.longitude}");
+    }
+
     if (driverLoc == null) {
       debugPrint("⚠️ getDirections: Driver location is null");
       return;
@@ -531,15 +559,35 @@ class HomeController extends GetxController {
       );
     }
 
+    // ✅ Create driver marker with current GPS location
+    // Double-check that we're using the most current GPS location
+    LatLng driverMarkerPosition;
+    if (Constant.locationDataFinal != null &&
+        Constant.locationDataFinal!.latitude != null &&
+        Constant.locationDataFinal!.longitude != null) {
+      driverMarkerPosition = LatLng(
+        Constant.locationDataFinal!.latitude!,
+        Constant.locationDataFinal!.longitude!,
+      );
+      debugPrint(
+          "📍 getDirections: Driver marker using GPS: ${driverMarkerPosition.latitude}, ${driverMarkerPosition.longitude}");
+    } else {
+      driverMarkerPosition = LatLng(
+        driverLoc.latitude ?? 0.0,
+        driverLoc.longitude ?? 0.0,
+      );
+      debugPrint(
+          "📍 getDirections: Driver marker using driverLoc (fallback): ${driverMarkerPosition.latitude}, ${driverMarkerPosition.longitude}");
+    }
+
     markers['Driver'] = Marker(
       markerId: const MarkerId('Driver'),
       infoWindow: const InfoWindow(title: "Driver"),
-      position: LatLng(
-        driverLoc.latitude ?? 0.0, // ✅ safe fallback
-        driverLoc.longitude ?? 0.0, // ✅ safe fallback
-      ),
+      position: driverMarkerPosition,
       icon: taxiIcon!,
       rotation: double.tryParse(driver.rotation.toString()) ?? 0,
+      anchor: const Offset(0.5, 0.5),
+      flat: true,
     );
 
     // 5️⃣ Draw polyline
@@ -584,7 +632,30 @@ class HomeController extends GetxController {
     );
     polyLines[id] = polyline;
     update();
-    updateCameraLocation(polylineCoordinates.first, mapController);
+    
+    // ✅ Use current GPS location for camera if available, otherwise use polyline start
+    LatLng cameraTarget;
+    if (Constant.locationDataFinal != null &&
+        Constant.locationDataFinal!.latitude != null &&
+        Constant.locationDataFinal!.longitude != null) {
+      cameraTarget = LatLng(
+        Constant.locationDataFinal!.latitude!,
+        Constant.locationDataFinal!.longitude!,
+      );
+      debugPrint(
+          "📍 addPolyLine: Camera using current GPS location: ${cameraTarget.latitude}, ${cameraTarget.longitude}");
+    } else if (polylineCoordinates.isNotEmpty) {
+      cameraTarget = polylineCoordinates.first;
+      debugPrint(
+          "📍 addPolyLine: Camera using polyline start: ${cameraTarget.latitude}, ${cameraTarget.longitude}");
+    } else {
+      // Fallback to current.value if available
+      cameraTarget = LatLng(current.value.latitude, current.value.longitude);
+      debugPrint(
+          "📍 addPolyLine: Camera using current.value: ${cameraTarget.latitude}, ${cameraTarget.longitude}");
+    }
+    
+    updateCameraLocation(cameraTarget, mapController);
   }
 
   Future<void> updateCameraLocation(
@@ -609,17 +680,31 @@ class HomeController extends GetxController {
   void animateToSource() {
     double lat = 0.0;
     double lng = 0.0;
-    final loc = driverModel.value.location;
-    if (loc != null) {
-      // Use string parsing to avoid nullable-toDouble issues and handle numbers/strings.
-      lat = double.tryParse('${loc.latitude}') ?? 0.0;
-      lng = double.tryParse('${loc.longitude}') ?? 0.0;
+    
+    // ✅ ALWAYS prioritize current GPS location over Firestore location
+    if (Constant.locationDataFinal != null &&
+        Constant.locationDataFinal!.latitude != null &&
+        Constant.locationDataFinal!.longitude != null) {
+      // Use current GPS location (most accurate)
+      lat = Constant.locationDataFinal!.latitude!;
+      lng = Constant.locationDataFinal!.longitude!;
+      debugPrint(
+          "📍 animateToSource: Using current GPS location: $lat, $lng");
+    } else {
+      // Fallback to driverModel.location from Firestore
+      final loc = driverModel.value.location;
+      if (loc != null) {
+        // Use string parsing to avoid nullable-toDouble issues and handle numbers/strings.
+        lat = double.tryParse('${loc.latitude}') ?? 0.0;
+        lng = double.tryParse('${loc.longitude}') ?? 0.0;
+      }
     }
 
     // If location is invalid (0,0), use default location (Tashkent)
     if (lat == 0.0 && lng == 0.0) {
       lat = 41.3111;
       lng = 69.2797;
+      debugPrint("📍 animateToSource: Using default location (Tashkent): $lat, $lng");
     }
 
     _updateCurrentLocationMarkers();
@@ -632,24 +717,25 @@ class HomeController extends GetxController {
 
   void _updateCurrentLocationMarkers() async {
     try {
-      final loc = driverModel.value.location;
-      var latLng = _safeLatLngFromLocation(loc);
-
-      debugPrint(
-          "📍 _updateCurrentLocationMarkers: driverModel.location = ${loc?.latitude}, ${loc?.longitude}");
-      debugPrint(
-          "📍 Constant.locationDataFinal = ${Constant.locationDataFinal?.latitude}, ${Constant.locationDataFinal?.longitude}");
-
-      // If location is 0,0, try to get from Constant.locationDataFinal (GPS)
-      if (latLng.latitude == 0.0 && latLng.longitude == 0.0) {
-        if (Constant.locationDataFinal != null) {
-          latLng = LatLng(
-            Constant.locationDataFinal!.latitude ?? 0.0,
-            Constant.locationDataFinal!.longitude ?? 0.0,
-          );
-          debugPrint(
-              "📍 Using GPS location from Constant.locationDataFinal: ${latLng.latitude}, ${latLng.longitude}");
-        }
+      // ✅ ALWAYS prioritize current GPS location over Firestore location
+      LatLng latLng;
+      
+      if (Constant.locationDataFinal != null &&
+          Constant.locationDataFinal!.latitude != null &&
+          Constant.locationDataFinal!.longitude != null) {
+        // Use current GPS location (most accurate and up-to-date)
+        latLng = LatLng(
+          Constant.locationDataFinal!.latitude!,
+          Constant.locationDataFinal!.longitude!,
+        );
+        debugPrint(
+            "📍 _updateCurrentLocationMarkers: Using current GPS location: ${latLng.latitude}, ${latLng.longitude}");
+      } else {
+        // Fallback to driverModel.location from Firestore
+        final loc = driverModel.value.location;
+        latLng = _safeLatLngFromLocation(loc);
+        debugPrint(
+            "📍 _updateCurrentLocationMarkers: Using driverModel.location (fallback): ${latLng.latitude}, ${latLng.longitude}");
       }
 
       // If still 0,0, use default location (Tashkent)
@@ -714,10 +800,8 @@ class HomeController extends GetxController {
         print("Google map update ignored (controller not ready): $e");
       }
 
-      // --- YANDEX MAP Section ---
-      if (Constant.selectedMapType == "yandex") {
-        updateYandexMarkers();
-      }
+      // --- GOOGLE MAP Section ---
+      // Google Maps markers are updated via getDirections() method
 
       update();
     } catch (e) {
@@ -742,124 +826,8 @@ class HomeController extends GetxController {
   Rx<location.LatLng> destination =
       location.LatLng(21.2000, 72.8600).obs; // Destination
 
-  /// Update Yandex Map markers
-  Future<void> updateYandexMarkers() async {
-    try {
-      final placemarks = <yandex.PlacemarkMapObject>[];
-
-      // Driver marker
-      if (!(current.value.latitude == 0.0 && current.value.longitude == 0.0)) {
-        try {
-          final driverIcon = yandex.BitmapDescriptor.fromAssetImage(
-            'assets/images/food_delivery.png',
-          );
-          placemarks.add(
-            yandex.PlacemarkMapObject(
-              mapId: const yandex.MapObjectId('driver'),
-              point: yandex.Point(
-                latitude: current.value.latitude,
-                longitude: current.value.longitude,
-              ),
-              opacity: 1.0, // Opacity yo'q - to'liq ko'rinadi
-              icon: yandex.PlacemarkIcon.single(
-                yandex.PlacemarkIconStyle(
-                  image: driverIcon,
-                  scale: 1.5,
-                  rotationType: yandex.RotationType.rotate,
-                ),
-              ),
-            ),
-          );
-          log("✅ Driver marker yaratildi: ${current.value.latitude}, ${current.value.longitude}");
-        } catch (e) {
-          log("❌ Driver marker yaratishda xatolik: $e");
-        }
-      }
-
-      // Source marker (pickup)
-      if (!(source.value.latitude == 0.0 && source.value.longitude == 0.0)) {
-        try {
-          final sourceIcon = yandex.BitmapDescriptor.fromAssetImage(
-            'assets/images/location_black3x.png',
-          );
-          placemarks.add(
-            yandex.PlacemarkMapObject(
-              mapId: const yandex.MapObjectId('source'),
-              point: yandex.Point(
-                latitude: source.value.latitude,
-                longitude: source.value.longitude,
-              ),
-              opacity: 1.0, // Opacity yo'q - to'liq ko'rinadi
-              icon: yandex.PlacemarkIcon.single(
-                yandex.PlacemarkIconStyle(
-                  image: sourceIcon,
-                  scale: 1.0,
-                ),
-              ),
-            ),
-          );
-          log("✅ Source marker yaratildi: ${source.value.latitude}, ${source.value.longitude}");
-        } catch (e) {
-          log("❌ Source marker yaratishda xatolik: $e");
-        }
-      }
-
-      // Destination marker (dropoff)
-      if (!(destination.value.latitude == 0.0 &&
-          destination.value.longitude == 0.0)) {
-        try {
-          final destIcon = yandex.BitmapDescriptor.fromAssetImage(
-            'assets/images/location_orange3x.png',
-          );
-          placemarks.add(
-            yandex.PlacemarkMapObject(
-              mapId: const yandex.MapObjectId('destination'),
-              point: yandex.Point(
-                latitude: destination.value.latitude,
-                longitude: destination.value.longitude,
-              ),
-              opacity: 1.0, // Opacity yo'q - to'liq ko'rinadi
-              icon: yandex.PlacemarkIcon.single(
-                yandex.PlacemarkIconStyle(
-                  image: destIcon,
-                  scale: 1.0,
-                ),
-              ),
-            ),
-          );
-          log("✅ Destination marker yaratildi: ${destination.value.latitude}, ${destination.value.longitude}");
-        } catch (e) {
-          log("❌ Destination marker yaratishda xatolik: $e");
-        }
-      }
-
-      log("📍 [updateYandexMarkers] Jami ${placemarks.length} ta marker yaratildi");
-      yandexPlacemarks.value = placemarks;
-      log("📍 [updateYandexMarkers] yandexPlacemarks.value = ${yandexPlacemarks.length} ta marker");
-
-      // Update Yandex map camera if controller is ready
-      if (yandexMapController != null &&
-          !(current.value.latitude == 0.0 && current.value.longitude == 0.0)) {
-        yandexMapController!.moveCamera(
-          yandex.CameraUpdate.newCameraPosition(
-            yandex.CameraPosition(
-              target: yandex.Point(
-                latitude: current.value.latitude,
-                longitude: current.value.longitude,
-              ),
-              zoom: 16,
-            ),
-          ),
-          animation: const yandex.MapAnimation(
-            type: yandex.MapAnimationType.smooth,
-            duration: 1.0,
-          ),
-        );
-      }
-    } catch (e) {
-      debugPrint("Yandex map markers update error: $e");
-    }
-  }
+  // Yandex Maps removed - using Google Maps instead
+  // Google Maps markers are handled via getDirections() method
 
   void setOsmMapMarker() {
     final markers = <flutterMap.Marker>[];
@@ -933,7 +901,25 @@ class HomeController extends GetxController {
     try {
       if (currentOrder.value.id != null) {
         final order = currentOrder.value;
-        final driverLoc = driverModel.value.location;
+        
+        // ✅ Use current GPS location if available, otherwise fallback to driver.location
+        UserLocation? driverLoc;
+        if (Constant.locationDataFinal != null &&
+            Constant.locationDataFinal!.latitude != null &&
+            Constant.locationDataFinal!.longitude != null) {
+          // Use current GPS location (most accurate)
+          driverLoc = UserLocation(
+            latitude: Constant.locationDataFinal!.latitude!,
+            longitude: Constant.locationDataFinal!.longitude!,
+          );
+          print(
+              "📍 getOSMPolyline: Using current GPS location: ${driverLoc.latitude}, ${driverLoc.longitude}");
+        } else {
+          // Fallback to driver.location from Firestore
+          driverLoc = driverModel.value.location;
+          print(
+              "📍 getOSMPolyline: Using driver.location from Firestore: ${driverLoc?.latitude}, ${driverLoc?.longitude}");
+        }
 
         if (driverLoc == null) {
           print("⚠️ getOSMPolyline: Driver location is null");
