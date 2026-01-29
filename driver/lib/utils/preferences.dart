@@ -18,6 +18,7 @@ class Preferences {
   static const midTransSettings = "midTransSettings";
   static const orangeMoneySettings = "orangeMoneySettings";
   static const xenditSettings = "xenditSettings";
+  static const paymeSettings = "paymeSettings";
   static const codSettings = "CODSettings";
   static const orderRingtone = "audioSound";
 

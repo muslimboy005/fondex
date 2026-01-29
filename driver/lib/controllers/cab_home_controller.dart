@@ -23,6 +23,7 @@ import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart' as location;
 import 'package:google_maps_flutter/google_maps_flutter.dart' as google_maps;
 import 'package:location/location.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class CabHomeController extends GetxController {
   RxBool isLoading = true.obs;
@@ -1316,6 +1317,93 @@ class CabHomeController extends GetxController {
     } catch (e) {
       log("fetchRoute error: $e");
       routePoints.clear();
+    }
+  }
+
+  /// Open Yandex Maps directly with directions
+  Future<void> showMapSelectionDialog() async {
+    final order = currentOrder.value;
+
+    // Get origin (driver current location or source)
+    double originLat = 0.0;
+    double originLng = 0.0;
+
+    if (Constant.locationDataFinal != null &&
+        Constant.locationDataFinal!.latitude != null &&
+        Constant.locationDataFinal!.longitude != null) {
+      originLat = Constant.locationDataFinal!.latitude!;
+      originLng = Constant.locationDataFinal!.longitude!;
+    } else if (driverModel.value.location != null) {
+      originLat =
+          (driverModel.value.location!.latitude as num?)?.toDouble() ?? 0.0;
+      originLng =
+          (driverModel.value.location!.longitude as num?)?.toDouble() ?? 0.0;
+    }
+
+    // Get destination based on order status
+    double destLat = 0.0;
+    double destLng = 0.0;
+
+    if (order.status == Constant.driverAccepted ||
+        order.status == Constant.orderShipped) {
+      // Going to pickup (source)
+      destLat = (order.sourceLocation?.latitude as num?)?.toDouble() ?? 0.0;
+      destLng = (order.sourceLocation?.longitude as num?)?.toDouble() ?? 0.0;
+    } else if (order.status == Constant.orderInTransit) {
+      // Going to dropoff (destination)
+      destLat =
+          (order.destinationLocation?.latitude as num?)?.toDouble() ?? 0.0;
+      destLng =
+          (order.destinationLocation?.longitude as num?)?.toDouble() ?? 0.0;
+    }
+
+    if (originLat == 0.0 ||
+        originLng == 0.0 ||
+        destLat == 0.0 ||
+        destLng == 0.0) {
+      ShowToastDialog.showToast("Location information is not available".tr);
+      return;
+    }
+
+    // Open Yandex Maps directly
+    _openYandexMaps(originLat, originLng, destLat, destLng);
+  }
+
+  /// Open Google Maps with directions
+  Future<void> _openGoogleMaps(double originLat, double originLng,
+      double destLat, double destLng) async {
+    final url = Uri.parse(
+      'https://www.google.com/maps/dir/?api=1&origin=$originLat,$originLng&destination=$destLat,$destLng&travelmode=driving',
+    );
+
+    try {
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url, mode: LaunchMode.externalApplication);
+      } else {
+        ShowToastDialog.showToast("Could not open Google Maps".tr);
+      }
+    } catch (e) {
+      log("Error opening Google Maps: $e");
+      ShowToastDialog.showToast("Error opening Google Maps".tr);
+    }
+  }
+
+  /// Open Yandex Maps with directions
+  Future<void> _openYandexMaps(double originLat, double originLng,
+      double destLat, double destLng) async {
+    final url = Uri.parse(
+      'https://yandex.com/maps/?rtext=$originLat,$originLng~$destLat,$destLng&rtt=auto',
+    );
+
+    try {
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url, mode: LaunchMode.externalApplication);
+      } else {
+        ShowToastDialog.showToast("Could not open Yandex Maps".tr);
+      }
+    } catch (e) {
+      log("Error opening Yandex Maps: $e");
+      ShowToastDialog.showToast("Error opening Yandex Maps".tr);
     }
   }
 }

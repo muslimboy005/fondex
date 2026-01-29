@@ -5,8 +5,13 @@ class PopularDestination {
   double? latitude;
   double? longitude;
 
-  PopularDestination(
-      {this.image, this.id, this.title, this.latitude, this.longitude});
+  PopularDestination({
+    this.image,
+    this.id,
+    this.title,
+    this.latitude,
+    this.longitude,
+  });
 
   PopularDestination.fromJson(Map<String, dynamic> json) {
     image = json['image'];

@@ -30,6 +30,7 @@ import 'package:driver/models/payment_model/orange_money.dart';
 import 'package:driver/models/payment_model/pay_fast_model.dart';
 import 'package:driver/models/payment_model/pay_stack_model.dart';
 import 'package:driver/models/payment_model/paypal_model.dart';
+import 'package:driver/models/payment_model/payme_model.dart';
 import 'package:driver/models/payment_model/paytm_model.dart';
 import 'package:driver/models/payment_model/razorpay_model.dart';
 import 'package:driver/models/payment_model/stripe_model.dart';
@@ -689,6 +690,33 @@ class FireStoreUtils {
         await Preferences.setString(
             Preferences.xenditSettings, jsonEncode(xendit.toJson()));
       }
+    });
+
+    // Payme
+    log('🔵 [FireStoreUtils.getPaymentSettingsData] Payme settings o\'qilmoqda...');
+    await fireStore
+        .collection(CollectionName.settings)
+        .doc("paymeSettings")
+        .get()
+        .then((value) async {
+      log('🔵 [FireStoreUtils.getPaymentSettingsData] Payme: exists=${value.exists}');
+      if (value.exists) {
+        try {
+          PaymeModel paymeModel = PaymeModel.fromJson(value.data()!);
+          log('🔵 [FireStoreUtils.getPaymentSettingsData] Payme: isEnabled=${paymeModel.isEnabled ?? paymeModel.enable}');
+          log('🔵 [FireStoreUtils.getPaymentSettingsData] Payme: merchant_id=${paymeModel.merchantId}');
+          await Preferences.setString(
+              Preferences.paymeSettings, jsonEncode(paymeModel.toJson()));
+          log('✅ [FireStoreUtils.getPaymentSettingsData] Payme Preferences ga saqlandi');
+        } catch (e) {
+          log('❌ [FireStoreUtils.getPaymentSettingsData] Payme model o\'qish xatosi: $e');
+          log('🔵 [FireStoreUtils.getPaymentSettingsData] Payme: raw data=${value.data()}');
+        }
+      } else {
+        log('⚠️ [FireStoreUtils.getPaymentSettingsData] Payme: Document mavjud emas');
+      }
+    }).catchError((e) {
+      log('❌ [FireStoreUtils.getPaymentSettingsData] Payme xatosi: $e');
     });
   }
 

@@ -22,6 +22,7 @@ import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart' as location;
 import 'package:geolocator/geolocator.dart';
 import 'package:location/location.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../models/order_model.dart';
 
@@ -692,11 +693,11 @@ class HomeController extends GetxController {
           "📍 animateToSource: Using current GPS location: $lat, $lng");
     } else {
       // Fallback to driverModel.location from Firestore
-      final loc = driverModel.value.location;
-      if (loc != null) {
-        // Use string parsing to avoid nullable-toDouble issues and handle numbers/strings.
-        lat = double.tryParse('${loc.latitude}') ?? 0.0;
-        lng = double.tryParse('${loc.longitude}') ?? 0.0;
+    final loc = driverModel.value.location;
+    if (loc != null) {
+      // Use string parsing to avoid nullable-toDouble issues and handle numbers/strings.
+      lat = double.tryParse('${loc.latitude}') ?? 0.0;
+      lng = double.tryParse('${loc.longitude}') ?? 0.0;
       }
     }
 
@@ -724,11 +725,11 @@ class HomeController extends GetxController {
           Constant.locationDataFinal!.latitude != null &&
           Constant.locationDataFinal!.longitude != null) {
         // Use current GPS location (most accurate and up-to-date)
-        latLng = LatLng(
+          latLng = LatLng(
           Constant.locationDataFinal!.latitude!,
           Constant.locationDataFinal!.longitude!,
-        );
-        debugPrint(
+          );
+          debugPrint(
             "📍 _updateCurrentLocationMarkers: Using current GPS location: ${latLng.latitude}, ${latLng.longitude}");
       } else {
         // Fallback to driverModel.location from Firestore
@@ -1006,6 +1007,85 @@ class HomeController extends GetxController {
       }
     } else {
       print("Failed to get route: ${response.body}");
+    }
+  }
+
+  /// Open Yandex Maps directly with directions
+  Future<void> showMapSelectionDialog() async {
+    final order = currentOrder.value;
+    
+    // Get origin (driver current location)
+    double originLat = 0.0;
+    double originLng = 0.0;
+    
+    if (Constant.locationDataFinal != null &&
+        Constant.locationDataFinal!.latitude != null &&
+        Constant.locationDataFinal!.longitude != null) {
+      originLat = Constant.locationDataFinal!.latitude!;
+      originLng = Constant.locationDataFinal!.longitude!;
+    } else if (driverModel.value.location != null) {
+      originLat = (driverModel.value.location!.latitude as num?)?.toDouble() ?? 0.0;
+      originLng = (driverModel.value.location!.longitude as num?)?.toDouble() ?? 0.0;
+    }
+    
+    // Get destination based on order status
+    double destLat = 0.0;
+    double destLng = 0.0;
+    
+    if (order.status == Constant.driverAccepted || order.status == Constant.orderShipped) {
+      // Going to restaurant (vendor)
+      destLat = (order.vendor?.latitude as num?)?.toDouble() ?? 0.0;
+      destLng = (order.vendor?.longitude as num?)?.toDouble() ?? 0.0;
+    } else if (order.status == Constant.orderInTransit) {
+      // Going to customer (address)
+      destLat = (order.address?.location?.latitude as num?)?.toDouble() ?? 0.0;
+      destLng = (order.address?.location?.longitude as num?)?.toDouble() ?? 0.0;
+    }
+    
+    if (originLat == 0.0 || originLng == 0.0 || destLat == 0.0 || destLng == 0.0) {
+      ShowToastDialog.showToast("Location information is not available".tr);
+      return;
+    }
+    
+    // Open Yandex Maps directly
+    _openYandexMaps(originLat, originLng, destLat, destLng);
+  }
+
+  /// Open Google Maps with directions
+  Future<void> _openGoogleMaps(
+      double originLat, double originLng, double destLat, double destLng) async {
+    final url = Uri.parse(
+      'https://www.google.com/maps/dir/?api=1&origin=$originLat,$originLng&destination=$destLat,$destLng&travelmode=driving',
+    );
+    
+    try {
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url, mode: LaunchMode.externalApplication);
+      } else {
+        ShowToastDialog.showToast("Could not open Google Maps".tr);
+      }
+    } catch (e) {
+      debugPrint("Error opening Google Maps: $e");
+      ShowToastDialog.showToast("Error opening Google Maps".tr);
+    }
+  }
+
+  /// Open Yandex Maps with directions
+  Future<void> _openYandexMaps(
+      double originLat, double originLng, double destLat, double destLng) async {
+    final url = Uri.parse(
+      'https://yandex.com/maps/?rtext=$originLat,$originLng~$destLat,$destLng&rtt=auto',
+    );
+    
+    try {
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url, mode: LaunchMode.externalApplication);
+      } else {
+        ShowToastDialog.showToast("Could not open Yandex Maps".tr);
+      }
+    } catch (e) {
+      debugPrint("Error opening Yandex Maps: $e");
+      ShowToastDialog.showToast("Error opening Yandex Maps".tr);
     }
   }
 }

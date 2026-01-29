@@ -1680,11 +1680,31 @@ class CartScreen extends StatelessWidget {
                                             isDark,
                                             "assets/images/xendit.png",
                                           )
-                                          : cardDecoration(
+                                          : controller
+                                                  .selectedPaymentMethod
+                                                  .value ==
+                                              PaymentGateway.payme.name
+                                          ? cardDecoration(
+                                            controller,
+                                            PaymentGateway.payme,
+                                            isDark,
+                                            "assets/images/payme.png",
+                                          )
+                                          : controller
+                                                  .selectedPaymentMethod
+                                                  .value ==
+                                              PaymentGateway.razorpay.name
+                                          ? cardDecoration(
                                             controller,
                                             PaymentGateway.razorpay,
                                             isDark,
                                             "assets/images/razorpay.png",
+                                          )
+                                          : cardDecoration(
+                                            controller,
+                                            PaymentGateway.wallet,
+                                            isDark,
+                                            "",
                                           ),
                                       const SizedBox(width: 10),
                                       Column(
@@ -1885,6 +1905,16 @@ class CartScreen extends StatelessWidget {
                                           context,
                                           controller.totalAmount.value
                                               .toString(),
+                                        );
+                                      } else if (controller
+                                              .selectedPaymentMethod
+                                              .value ==
+                                          PaymentGateway.payme.name) {
+                                        controller.paymeMakePayment(
+                                          context: context,
+                                          amount:
+                                              controller.totalAmount.value
+                                                  .toString(),
                                         );
                                       } else if (controller
                                               .selectedPaymentMethod

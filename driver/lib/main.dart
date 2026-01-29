@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:ui';
-
 import 'package:country_code_picker/country_code_picker.dart';
 import 'package:driver/app/splash_screen.dart';
 import 'package:driver/constant/constant.dart';

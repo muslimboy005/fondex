@@ -163,6 +163,10 @@ class SelectPaymentScreen extends StatelessWidget {
                             visible: controller.xenditModel.value.enable == true,
                             child: cardDecoration(controller, PaymentGateway.xendit, isDark, "assets/images/xendit.png"),
                           ),
+                          Visibility(
+                            visible: controller.paymeModel.value.isEnabled == true || controller.paymeModel.value.enable == true,
+                            child: cardDecoration(controller, PaymentGateway.payme, isDark, "assets/images/payme.png"),
+                          ),
                         ],
                       ),
                     ),

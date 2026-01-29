@@ -266,4 +266,4 @@ class WalletScreen extends StatelessWidget {
   }
 }
 
-enum PaymentGateway { payFast, mercadoPago, paypal, stripe, flutterWave, payStack, razorpay, cod, wallet, midTrans, orangeMoney, xendit }
+enum PaymentGateway { payFast, mercadoPago, paypal, stripe, flutterWave, payStack, razorpay, cod, wallet, midTrans, orangeMoney, xendit, payme }

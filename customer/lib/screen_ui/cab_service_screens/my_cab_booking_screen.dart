@@ -352,6 +352,10 @@ class MyCabBookingScreen extends StatelessWidget {
                               child: cardDecoration(controller, PaymentGateway.orangeMoney, isDark, "assets/images/orange_money.png"),
                             ),
                             Visibility(visible: controller.xenditModel.value.enable == true, child: cardDecoration(controller, PaymentGateway.xendit, isDark, "assets/images/xendit.png")),
+                            Visibility(
+                              visible: controller.paymeModel.value.isEnabled == true || controller.paymeModel.value.enable == true,
+                              child: cardDecoration(controller, PaymentGateway.payme, isDark, "assets/images/payme.png"),
+                            ),
                           ],
                         ),
                       ),
@@ -404,6 +408,8 @@ class MyCabBookingScreen extends StatelessWidget {
                           controller.openCheckout(amount: controller.totalAmount.value.toString(), orderId: result.id);
                         }
                       });
+                    } else if (controller.selectedPaymentMethod.value == PaymentGateway.payme.name) {
+                      controller.paymeMakePayment(context: context, amount: controller.totalAmount.value.toString());
                     } else {
                       ShowToastDialog.showToast("Please select payment method".tr);
                     }

@@ -17,6 +17,7 @@ import 'package:driver/models/payment_model/orange_money.dart';
 import 'package:driver/models/payment_model/pay_fast_model.dart';
 import 'package:driver/models/payment_model/pay_stack_model.dart';
 import 'package:driver/models/payment_model/paypal_model.dart';
+import 'package:driver/models/payment_model/payme_model.dart';
 import 'package:driver/models/payment_model/razorpay_model.dart';
 import 'package:driver/models/payment_model/stripe_model.dart';
 import 'package:driver/models/payment_model/xendit.dart';
@@ -27,6 +28,7 @@ import 'package:driver/models/withdraw_method_model.dart';
 import 'package:driver/models/withdrawal_model.dart';
 import 'package:driver/payment/MercadoPagoScreen.dart';
 import 'package:driver/payment/PayFastScreen.dart';
+import 'package:driver/payment/PaymeScreen.dart';
 import 'package:driver/payment/midtrans_screen.dart';
 import 'package:driver/payment/orangePayScreen.dart';
 import 'package:driver/payment/paystack/pay_stack_screen.dart';
@@ -97,6 +99,7 @@ class WalletController extends GetxController {
   Rx<StripeModel> stripeModel = StripeModel().obs;
   Rx<FlutterWaveModel> flutterWaveModel = FlutterWaveModel().obs;
   Rx<PayStackModel> payStackModel = PayStackModel().obs;
+  Rx<PaymeModel> paymeModel = PaymeModel().obs;
   Rx<RazorPayModel> razorPayModel = RazorPayModel().obs;
 
   Rx<MidTrans> midTransModel = MidTrans().obs;
@@ -117,6 +120,21 @@ class WalletController extends GetxController {
         midTransModel.value = MidTrans.fromJson(jsonDecode(Preferences.getString(Preferences.midTransSettings)));
         orangeMoneyModel.value = OrangeMoney.fromJson(jsonDecode(Preferences.getString(Preferences.orangeMoneySettings)));
         xenditModel.value = Xendit.fromJson(jsonDecode(Preferences.getString(Preferences.xenditSettings)));
+        
+        // Payme
+        try {
+          String paymeSettingsJson = Preferences.getString(Preferences.paymeSettings);
+          log('🔵 [WalletController.getPaymentSettings] Payme settings JSON: $paymeSettingsJson');
+          if (paymeSettingsJson.isNotEmpty) {
+            paymeModel.value = PaymeModel.fromJson(jsonDecode(paymeSettingsJson));
+            log('🔵 [WalletController.getPaymentSettings] Payme loaded: isEnabled=${paymeModel.value.isEnabled}, enable=${paymeModel.value.enable}');
+          } else {
+            log('⚠️ [WalletController.getPaymentSettings] Payme settings bo\'sh');
+          }
+        } catch (e) {
+          log('❌ [WalletController.getPaymentSettings] Payme settings parse error: $e');
+          debugPrint('Payme settings parse error: $e');
+        }
 
         flutterStipe.Stripe.publishableKey = stripeModel.value.clientpublishableKey.toString();
         flutterStipe.Stripe.merchantIdentifier = 'eMart Driver';
@@ -388,6 +406,11 @@ class WalletController extends GetxController {
   }
 
   Future<void> walletTopUp() async {
+    log('🔵 [WalletController.walletTopUp] ========== walletTopUp boshlandi ==========');
+    log('🔵 [WalletController.walletTopUp] Amount: ${topUpAmountController.value.text}');
+    log('🔵 [WalletController.walletTopUp] Payment method: ${selectedPaymentMethod.value}');
+    log('🔵 [WalletController.walletTopUp] User ID: ${FireStoreUtils.getCurrentUid()}');
+    
     WalletTransactionModel transactionModel = WalletTransactionModel(
         id: Constant.getUuid(),
         amount: double.parse(topUpAmountController.value.text),
@@ -399,17 +422,28 @@ class WalletController extends GetxController {
         note: "Wallet Top-up",
         paymentStatus: "success");
 
+    log('🔵 [WalletController.walletTopUp] Transaction model yaratildi: ${transactionModel.id}');
+    
     await FireStoreUtils.setWalletTransaction(transactionModel).then((value) async {
+      log('🔵 [WalletController.walletTopUp] setWalletTransaction result: $value');
       if (value == true) {
+        log('🔵 [WalletController.walletTopUp] Wallet transaction saqlandi, endi wallet yangilanmoqda...');
         await FireStoreUtils.updateUserWallet(amount: topUpAmountController.value.text, userId: FireStoreUtils.getCurrentUid())
             .then((value) {
+          log('🔵 [WalletController.walletTopUp] Wallet yangilandi, result: $value');
+          log('🔵 [WalletController.walletTopUp] getWalletTransaction chaqirilmoqda...');
           getWalletTransaction();
+          log('🔵 [WalletController.walletTopUp] Get.back() chaqirilmoqda...');
           Get.back();
         });
+      } else {
+        log('❌ [WalletController.walletTopUp] Wallet transaction saqlanmadi!');
       }
     });
 
+    log('✅ [WalletController.walletTopUp] Toast ko\'rsatilmoqda...');
     ShowToastDialog.showToast("Amount Top-up successfully".tr);
+    log('🔵 [WalletController.walletTopUp] ========== walletTopUp tugadi ==========');
   }
 
   // final _flutterPaypalNativePlugin = FlutterPaypalNative.instance;
@@ -984,5 +1018,112 @@ class WalletController extends GetxController {
     } catch (e) {
       return XenditModel();
     }
+  }
+
+  //PaymePayment
+  Future<void> paymeMakePayment({required BuildContext context, required String amount}) async {
+    log('🔵 [PaymePayment] ========== paymeMakePayment boshlandi ==========');
+    log('🔵 [PaymePayment] Amount: $amount');
+    log('🔵 [PaymePayment] User phone: ${userModel.value.phoneNumber}');
+    log('🔵 [PaymePayment] PaymeModel enabled: ${paymeModel.value.isEnabled ?? paymeModel.value.enable}');
+    
+    try {
+      if (userModel.value.phoneNumber == null || userModel.value.phoneNumber!.isEmpty) {
+        log('❌ [PaymePayment] Telefon raqam topilmadi!');
+        ShowToastDialog.showToast("Phone number is required".tr);
+        return;
+      }
+      
+      ShowToastDialog.showLoader("Processing...".tr);
+      log('🔵 [PaymePayment] Loader ko\'rsatildi');
+      
+      final url = Uri.parse('https://emart-web.felix-its.uz/wallet-payme-link/');
+      final phoneNumber = '+998${userModel.value.phoneNumber}';
+      final amountInt = double.parse(amount).ceil().toInt();
+      
+      final headers = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+      };
+      final body = jsonEncode({
+        'phone': phoneNumber,
+        'amount': amountInt,
+      });
+
+      log('🔵 [PaymePayment] Request URL: $url');
+      log('🔵 [PaymePayment] Request Headers: $headers');
+      log('🔵 [PaymePayment] Request Body: $body');
+      log('🔵 [PaymePayment] Phone: $phoneNumber, Amount: $amountInt');
+
+      log('🔵 [PaymePayment] HTTP request yuborilmoqda...');
+      final response = await http.post(url, headers: headers, body: body);
+      log('🔵 [PaymePayment] HTTP request tugadi');
+
+      log('🔵 [PaymePayment] Response Status: ${response.statusCode}');
+      log('🔵 [PaymePayment] Response Headers: ${response.headers}');
+      String responseBodyPreview = response.body.length > 500 
+          ? '${response.body.substring(0, 500)}... (${response.body.length} characters)'
+          : response.body;
+      log('🔵 [PaymePayment] Response Body: $responseBodyPreview');
+
+      ShowToastDialog.closeLoader();
+      log('🔵 [PaymePayment] Loader yopildi');
+
+      // Check if response is HTML (redirect to login)
+      if (response.body.trim().startsWith('<!DOCTYPE html>') || 
+          response.body.trim().startsWith('<html>') ||
+          response.body.contains('Redirecting to')) {
+        ShowToastDialog.showToast("Server authentication error. Please try again.".tr);
+        log('❌ [PaymePayment] HTML response received (likely redirect to login)');
+        return;
+      }
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        log('✅ [PaymePayment] Response muvaffaqiyatli (200/201)');
+        try {
+          final data = jsonDecode(response.body);
+          log('🔵 [PaymePayment] Parsed data: $data');
+          log('🔵 [PaymePayment] data[status]: ${data['status']}, data[link]: ${data['link']}');
+          
+          if (data['status'] == true && data['link'] != null) {
+            String paymentLink = data['link'];
+            log('✅ [PaymePayment] Payment link olingan: $paymentLink');
+            log('🔵 [PaymePayment] PaymeScreen ochilmoqda...');
+            
+            Get.to(() => PaymeScreen(initialURl: paymentLink))!.then((value) {
+              log('🔵 [PaymePayment] PaymeScreen yopildi, result: $value');
+              if (value == true) {
+                log('✅ [PaymePayment] To\'lov muvaffaqiyatli! walletTopUp chaqirilmoqda...');
+                ShowToastDialog.showToast("Payment Successful!!".tr);
+                walletTopUp();
+              } else {
+                log('❌ [PaymePayment] To\'lov muvaffaqiyatsiz');
+                ShowToastDialog.showToast("Payment Unsuccessful!!".tr);
+              }
+            });
+          } else {
+            log('❌ [PaymePayment] Invalid response data: status=${data['status']}, link=${data['link']}');
+            ShowToastDialog.showToast("Failed to get payment link".tr);
+          }
+        } catch (e, stackTrace) {
+          log('❌ [PaymePayment] JSON parse error: $e');
+          log('❌ [PaymePayment] Stack trace: $stackTrace');
+          log('❌ [PaymePayment] Response body: ${response.body}');
+          ShowToastDialog.showToast("Failed to parse server response".tr);
+        }
+      } else {
+        log('❌ [PaymePayment] Error status code: ${response.statusCode}');
+        log('❌ [PaymePayment] Error body: ${response.body}');
+        ShowToastDialog.showToast("Something went wrong, please contact admin.".tr);
+      }
+    } catch (e, stackTrace) {
+      log('❌ [PaymePayment] ========== Exception ==========');
+      log('❌ [PaymePayment] Error: $e');
+      log('❌ [PaymePayment] Stack trace: $stackTrace');
+      ShowToastDialog.closeLoader();
+      ShowToastDialog.showToast("Payment error: ${e.toString()}".tr);
+    }
+    log('🔵 [PaymePayment] ========== paymeMakePayment tugadi ==========');
   }
 }

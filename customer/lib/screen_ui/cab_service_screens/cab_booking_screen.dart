@@ -196,11 +196,7 @@ class CabBookingScreen extends StatelessWidget {
                         ),
                       ),
                       controller.bottomSheetType.value == "location"
-                          ? searchLocationBottomSheet(
-                            context,
-                            controller,
-                            isDark,
-                          )
+                          ? vehicleSelection(context, controller, isDark)
                           : controller.bottomSheetType.value ==
                               "vehicleSelection"
                           ? vehicleSelection(context, controller, isDark)
@@ -1220,6 +1216,97 @@ class CabBookingScreen extends StatelessWidget {
                   'Karta',
                   Icons.credit_card,
                 ),
+              if (controller.payPalModel.value.isEnabled == true)
+                _buildPaymentOption(
+                  context,
+                  controller,
+                  isDark,
+                  'paypal',
+                  'PayPal',
+                  Icons.payment,
+                ),
+              if (controller.payStackModel.value.isEnable == true)
+                _buildPaymentOption(
+                  context,
+                  controller,
+                  isDark,
+                  'payStack',
+                  'PayStack',
+                  Icons.payment,
+                ),
+              if (controller.mercadoPagoModel.value.isEnabled == true)
+                _buildPaymentOption(
+                  context,
+                  controller,
+                  isDark,
+                  'mercadoPago',
+                  'MercadoPago',
+                  Icons.payment,
+                ),
+              if (controller.flutterWaveModel.value.isEnable == true)
+                _buildPaymentOption(
+                  context,
+                  controller,
+                  isDark,
+                  'flutterWave',
+                  'FlutterWave',
+                  Icons.payment,
+                ),
+              if (controller.payFastModel.value.isEnable == true)
+                _buildPaymentOption(
+                  context,
+                  controller,
+                  isDark,
+                  'payFast',
+                  'PayFast',
+                  Icons.payment,
+                ),
+              if (controller.razorPayModel.value.isEnabled == true)
+                _buildPaymentOption(
+                  context,
+                  controller,
+                  isDark,
+                  'razorpay',
+                  'RazorPay',
+                  Icons.payment,
+                ),
+              if (controller.midTransModel.value.enable == true)
+                _buildPaymentOption(
+                  context,
+                  controller,
+                  isDark,
+                  'midTrans',
+                  'MidTrans',
+                  Icons.payment,
+                ),
+              if (controller.orangeMoneyModel.value.enable == true)
+                _buildPaymentOption(
+                  context,
+                  controller,
+                  isDark,
+                  'orangeMoney',
+                  'OrangeMoney',
+                  Icons.payment,
+                ),
+              if (controller.xenditModel.value.enable == true)
+                _buildPaymentOption(
+                  context,
+                  controller,
+                  isDark,
+                  'xendit',
+                  'Xendit',
+                  Icons.payment,
+                ),
+              if (controller.paymeModel.value.isEnabled == true ||
+                  controller.paymeModel.value.enable == true)
+                _buildPaymentOption(
+                  context,
+                  controller,
+                  isDark,
+                  'payme',
+                  'Payme',
+                  Icons.payment,
+                ),
               const SizedBox(height: 10),
             ],
           ),
@@ -1543,6 +1630,18 @@ class CabBookingScreen extends StatelessWidget {
                                   PaymentGateway.xendit,
                                   isDark,
                                   "assets/images/xendit.png",
+                                ),
+                              ),
+                              Visibility(
+                                visible:
+                                    controller.paymeModel.value.isEnabled ==
+                                        true ||
+                                    controller.paymeModel.value.enable == true,
+                                child: cardDecoration(
+                                  controller,
+                                  PaymentGateway.payme,
+                                  isDark,
+                                  "assets/images/payme.png",
                                 ),
                               ),
                             ],
@@ -3540,6 +3639,12 @@ class CabBookingScreen extends StatelessWidget {
                                     );
                                   }
                                 });
+                          } else if (controller.selectedPaymentMethod.value ==
+                              PaymentGateway.payme.name) {
+                            controller.paymeMakePayment(
+                              context: context,
+                              amount: controller.totalAmount.value.toString(),
+                            );
                           } else {
                             ShowToastDialog.showToast(
                               "Please select payment method".tr,
@@ -3614,8 +3719,9 @@ class CabBookingScreen extends StatelessWidget {
                   if (updatedUser != null) {
                     controller.userModel.value = updatedUser;
                   }
-                  
-                  num walletAmount = controller.userModel.value.walletAmount ?? 0;
+
+                  num walletAmount =
+                      controller.userModel.value.walletAmount ?? 0;
                   num orderTotal = controller.totalAmount.value;
 
                   if (walletAmount < orderTotal || walletAmount <= 0) {
@@ -3633,7 +3739,7 @@ class CabBookingScreen extends StatelessWidget {
                     return; // Wallet tanlanmaydi
                   }
                 }
-                
+
                 controller.selectedPaymentMethod.value = value.name;
               },
               child: Row(

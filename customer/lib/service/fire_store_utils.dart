@@ -52,6 +52,7 @@ import '../models/payment_model/orange_money.dart';
 import '../models/payment_model/pay_fast_model.dart';
 import '../models/payment_model/pay_stack_model.dart';
 import '../models/payment_model/paypal_model.dart';
+import '../models/payment_model/payme_model.dart';
 import '../models/payment_model/paytm_model.dart';
 import '../models/payment_model/razorpay_model.dart';
 import '../models/payment_model/stripe_model.dart';
@@ -89,7 +90,9 @@ class FireStoreUtils {
   static Future<bool> isLogin() async {
     bool isLogin = false;
     if (auth.FirebaseAuth.instance.currentUser != null) {
-      isLogin = await userExistOrNot(auth.FirebaseAuth.instance.currentUser!.uid);
+      isLogin = await userExistOrNot(
+        auth.FirebaseAuth.instance.currentUser!.uid,
+      );
     } else {
       isLogin = false;
     }
@@ -160,7 +163,9 @@ class FireStoreUtils {
         .get()
         .then((value) {
           for (var element in value.docs) {
-            OnBoardingModel documentModel = OnBoardingModel.fromJson(element.data());
+            OnBoardingModel documentModel = OnBoardingModel.fromJson(
+              element.data(),
+            );
             onBoardingModel.add(documentModel);
           }
         })
@@ -190,7 +195,10 @@ class FireStoreUtils {
 
   static Future<String?> referralAdd(ReferralModel ratingModel) async {
     try {
-      await fireStore.collection(CollectionName.referral).doc(ratingModel.id).set(ratingModel.toJson());
+      await fireStore
+          .collection(CollectionName.referral)
+          .doc(ratingModel.id)
+          .set(ratingModel.toJson());
     } catch (e, s) {
       print('FireStoreUtils.referralAdd $e $s');
       return "Couldn't review".tr;
@@ -198,14 +206,20 @@ class FireStoreUtils {
     return null;
   }
 
-  static Future<ReferralModel?> getReferralUserByCode(String referralCode) async {
+  static Future<ReferralModel?> getReferralUserByCode(
+    String referralCode,
+  ) async {
     ReferralModel? referralModel;
     try {
-      await fireStore.collection(CollectionName.referral).where("referralCode", isEqualTo: referralCode).get().then((value) {
-        if (value.docs.isNotEmpty) {
-          referralModel = ReferralModel.fromJson(value.docs.first.data());
-        }
-      });
+      await fireStore
+          .collection(CollectionName.referral)
+          .where("referralCode", isEqualTo: referralCode)
+          .get()
+          .then((value) {
+            if (value.docs.isNotEmpty) {
+              referralModel = ReferralModel.fromJson(value.docs.first.data());
+            }
+          });
     } catch (e, s) {
       print('FireStoreUtils.firebaseCreateNewUser $e $s');
       return null;
@@ -215,9 +229,15 @@ class FireStoreUtils {
 
   static Future<List<SectionModel>> getSections() async {
     List<SectionModel> sections = [];
-    QuerySnapshot<Map<String, dynamic>> productsQuery = await fireStore.collection(CollectionName.sections).where("isActive", isEqualTo: true).get();
+    QuerySnapshot<Map<String, dynamic>> productsQuery =
+        await fireStore
+            .collection(CollectionName.sections)
+            .where("isActive", isEqualTo: true)
+            .get();
 
-    await Future.forEach(productsQuery.docs, (QueryDocumentSnapshot<Map<String, dynamic>> document) {
+    await Future.forEach(productsQuery.docs, (
+      QueryDocumentSnapshot<Map<String, dynamic>> document,
+    ) {
       try {
         sections.add(SectionModel.fromJson(document.data()));
       } catch (e) {
@@ -229,21 +249,29 @@ class FireStoreUtils {
 
   static Future<List<dynamic>> getSectionBannerList() async {
     List<dynamic> sections = [];
-    await fireStore.collection(CollectionName.settings).doc("AppHomeBanners").get().then((value) {
-      if (value.exists) {
-        sections = value.data()!['banners'] ?? [];
-      }
-    });
+    await fireStore
+        .collection(CollectionName.settings)
+        .doc("AppHomeBanners")
+        .get()
+        .then((value) {
+          if (value.exists) {
+            sections = value.data()!['banners'] ?? [];
+          }
+        });
     return sections;
   }
 
   static Future<CurrencyModel?> getCurrency() async {
     CurrencyModel? currency;
-    await fireStore.collection(CollectionName.currency).where("isActive", isEqualTo: true).get().then((value) {
-      if (value.docs.isNotEmpty) {
-        currency = CurrencyModel.fromJson(value.docs.first.data());
-      }
-    });
+    await fireStore
+        .collection(CollectionName.currency)
+        .where("isActive", isEqualTo: true)
+        .get()
+        .then((value) {
+          if (value.docs.isNotEmpty) {
+            currency = CurrencyModel.fromJson(value.docs.first.data());
+          }
+        });
     return currency;
   }
 
@@ -259,8 +287,11 @@ class FireStoreUtils {
         .get()
         .then((value) {
           for (var element in value.docs) {
-            AdvertisementModel advertisementModel = AdvertisementModel.fromJson(element.data());
-            if (advertisementModel.isPaused == null || advertisementModel.isPaused == false) {
+            AdvertisementModel advertisementModel = AdvertisementModel.fromJson(
+              element.data(),
+            );
+            if (advertisementModel.isPaused == null ||
+                advertisementModel.isPaused == false) {
               advertisementList.add(advertisementModel);
             }
           }
@@ -270,25 +301,38 @@ class FireStoreUtils {
 
   static Future<List<FavouriteModel>> getFavouriteRestaurant() async {
     List<FavouriteModel> favouriteList = [];
-    await fireStore.collection(CollectionName.favoriteVendor).where('user_id', isEqualTo: getCurrentUid()).where("section_id", isEqualTo: Constant.sectionConstantModel!.id).get().then((value) {
-      for (var element in value.docs) {
-        FavouriteModel favouriteModel = FavouriteModel.fromJson(element.data());
-        favouriteList.add(favouriteModel);
-      }
-    });
+    await fireStore
+        .collection(CollectionName.favoriteVendor)
+        .where('user_id', isEqualTo: getCurrentUid())
+        .where("section_id", isEqualTo: Constant.sectionConstantModel!.id)
+        .get()
+        .then((value) {
+          for (var element in value.docs) {
+            FavouriteModel favouriteModel = FavouriteModel.fromJson(
+              element.data(),
+            );
+            favouriteList.add(favouriteModel);
+          }
+        });
     log("CollectionName.favoriteRestaurant :: ${favouriteList.length}");
     return favouriteList;
   }
 
   static Future<EmailTemplateModel?> getEmailTemplates(String type) async {
     EmailTemplateModel? emailTemplateModel;
-    await fireStore.collection(CollectionName.emailTemplates).where('type', isEqualTo: type).get().then((value) {
-      print("------>");
-      if (value.docs.isNotEmpty) {
-        print(value.docs.first.data());
-        emailTemplateModel = EmailTemplateModel.fromJson(value.docs.first.data());
-      }
-    });
+    await fireStore
+        .collection(CollectionName.emailTemplates)
+        .where('type', isEqualTo: type)
+        .get()
+        .then((value) {
+          print("------>");
+          if (value.docs.isNotEmpty) {
+            print(value.docs.first.data());
+            emailTemplateModel = EmailTemplateModel.fromJson(
+              value.docs.first.data(),
+            );
+          }
+        });
     return emailTemplateModel;
   }
 
@@ -304,71 +348,123 @@ class FireStoreUtils {
           .then((event) {
             if (event.docs.isNotEmpty) {
               for (var element in event.docs) {
-                CashbackModel cashbackModel = CashbackModel.fromJson(element.data());
-                if (cashbackModel.customerIds == null || cashbackModel.customerIds?.contains(FireStoreUtils.getCurrentUid()) == true) {
+                CashbackModel cashbackModel = CashbackModel.fromJson(
+                  element.data(),
+                );
+                if (cashbackModel.customerIds == null ||
+                    cashbackModel.customerIds?.contains(
+                          FireStoreUtils.getCurrentUid(),
+                        ) ==
+                        true) {
                   cashbackList.add(cashbackModel);
                 }
               }
             }
           });
     } catch (error, stackTrace) {
-      log('Error fetching redeemed cashback data: $error', stackTrace: stackTrace);
+      log(
+        'Error fetching redeemed cashback data: $error',
+        stackTrace: stackTrace,
+      );
     }
 
     return cashbackList;
   }
 
   static Future addDriverInbox(InboxModel inboxModel) async {
-    return await fireStore.collection("chat_driver").doc(inboxModel.orderId).set(inboxModel.toJson()).then((document) {
-      return inboxModel;
-    });
+    return await fireStore
+        .collection("chat_driver")
+        .doc(inboxModel.orderId)
+        .set(inboxModel.toJson())
+        .then((document) {
+          return inboxModel;
+        });
   }
 
   static Future addDriverChat(ConversationModel conversationModel) async {
-    return await fireStore.collection("chat_driver").doc(conversationModel.orderId).collection("thread").doc(conversationModel.id).set(conversationModel.toJson()).then((document) {
-      return conversationModel;
-    });
+    return await fireStore
+        .collection("chat_driver")
+        .doc(conversationModel.orderId)
+        .collection("thread")
+        .doc(conversationModel.id)
+        .set(conversationModel.toJson())
+        .then((document) {
+          return conversationModel;
+        });
   }
 
   static Future addRestaurantInbox(InboxModel inboxModel) async {
-    return await fireStore.collection("chat_store").doc(inboxModel.orderId).set(inboxModel.toJson()).then((document) {
-      return inboxModel;
-    });
+    return await fireStore
+        .collection("chat_store")
+        .doc(inboxModel.orderId)
+        .set(inboxModel.toJson())
+        .then((document) {
+          return inboxModel;
+        });
   }
 
   static Future addRestaurantChat(ConversationModel conversationModel) async {
-    return await fireStore.collection("chat_store").doc(conversationModel.orderId).collection("thread").doc(conversationModel.id).set(conversationModel.toJson()).then((document) {
-      return conversationModel;
-    });
+    return await fireStore
+        .collection("chat_store")
+        .doc(conversationModel.orderId)
+        .collection("thread")
+        .doc(conversationModel.id)
+        .set(conversationModel.toJson())
+        .then((document) {
+          return conversationModel;
+        });
   }
 
   static Future addWorkerInbox(InboxModel inboxModel) async {
-    return await fireStore.collection("chat_worker").doc(inboxModel.orderId).set(inboxModel.toJson()).then((document) {
-      return inboxModel;
-    });
+    return await fireStore
+        .collection("chat_worker")
+        .doc(inboxModel.orderId)
+        .set(inboxModel.toJson())
+        .then((document) {
+          return inboxModel;
+        });
   }
 
   static Future addWorkerChat(ConversationModel conversationModel) async {
-    return await fireStore.collection("chat_worker").doc(conversationModel.orderId).collection("thread").doc(conversationModel.id).set(conversationModel.toJson()).then((document) {
-      return conversationModel;
-    });
+    return await fireStore
+        .collection("chat_worker")
+        .doc(conversationModel.orderId)
+        .collection("thread")
+        .doc(conversationModel.id)
+        .set(conversationModel.toJson())
+        .then((document) {
+          return conversationModel;
+        });
   }
 
   static Future addProviderInbox(InboxModel inboxModel) async {
-    return await fireStore.collection("chat_provider").doc(inboxModel.orderId).set(inboxModel.toJson()).then((document) {
-      return inboxModel;
-    });
+    return await fireStore
+        .collection("chat_provider")
+        .doc(inboxModel.orderId)
+        .set(inboxModel.toJson())
+        .then((document) {
+          return inboxModel;
+        });
   }
 
   static Future addProviderChat(ConversationModel conversationModel) async {
-    return await fireStore.collection("chat_provider").doc(conversationModel.orderId).collection("thread").doc(conversationModel.id).set(conversationModel.toJson()).then((document) {
-      return conversationModel;
-    });
+    return await fireStore
+        .collection("chat_provider")
+        .doc(conversationModel.orderId)
+        .collection("thread")
+        .doc(conversationModel.id)
+        .set(conversationModel.toJson())
+        .then((document) {
+          return conversationModel;
+        });
   }
 
   static Future<List<TaxModel>?> getTaxList(String? sectionId) async {
     List<TaxModel> taxList = [];
-    List<Placemark> placeMarks = await placemarkFromCoordinates(Constant.selectedLocation.location!.latitude ?? 0.0, Constant.selectedLocation.location!.longitude ?? 0.0);
+    List<Placemark> placeMarks = await placemarkFromCoordinates(
+      Constant.selectedLocation.location!.latitude ?? 0.0,
+      Constant.selectedLocation.location!.longitude ?? 0.0,
+    );
     await fireStore
         .collection(CollectionName.tax)
         .where('sectionId', isEqualTo: sectionId)
@@ -388,7 +484,9 @@ class FireStoreUtils {
     return taxList;
   }
 
-  static Future<List<DineInBookingModel>> getDineInBooking(bool isUpcoming) async {
+  static Future<List<DineInBookingModel>> getDineInBooking(
+    bool isUpcoming,
+  ) async {
     List<DineInBookingModel> list = [];
 
     if (isUpcoming) {
@@ -401,7 +499,9 @@ class FireStoreUtils {
           .get()
           .then((value) {
             for (var element in value.docs) {
-              DineInBookingModel taxModel = DineInBookingModel.fromJson(element.data());
+              DineInBookingModel taxModel = DineInBookingModel.fromJson(
+                element.data(),
+              );
               list.add(taxModel);
             }
           })
@@ -418,7 +518,9 @@ class FireStoreUtils {
           .get()
           .then((value) {
             for (var element in value.docs) {
-              DineInBookingModel taxModel = DineInBookingModel.fromJson(element.data());
+              DineInBookingModel taxModel = DineInBookingModel.fromJson(
+                element.data(),
+              );
               list.add(taxModel);
             }
           })
@@ -440,7 +542,8 @@ class FireStoreUtils {
         .get()
         .then((value) {
           for (var element in value.docs) {
-            VendorCategoryModel walletTransactionModel = VendorCategoryModel.fromJson(element.data());
+            VendorCategoryModel walletTransactionModel =
+                VendorCategoryModel.fromJson(element.data());
             list.add(walletTransactionModel);
           }
         })
@@ -450,7 +553,9 @@ class FireStoreUtils {
     return list;
   }
 
-  static Future<List<ProductModel>> getProductListByBrandId(String brandId) async {
+  static Future<List<ProductModel>> getProductListByBrandId(
+    String brandId,
+  ) async {
     List<ProductModel> list = [];
     await fireStore
         .collection(CollectionName.vendorProducts)
@@ -459,7 +564,9 @@ class FireStoreUtils {
         .get()
         .then((value) {
           for (var element in value.docs) {
-            ProductModel walletTransactionModel = ProductModel.fromJson(element.data());
+            ProductModel walletTransactionModel = ProductModel.fromJson(
+              element.data(),
+            );
             list.add(walletTransactionModel);
           }
         })
@@ -489,12 +596,16 @@ class FireStoreUtils {
 
   static Future<List<BrandsModel>> getBrandList() async {
     List<BrandsModel> brandList = [];
-    await fireStore.collection(CollectionName.brands).where("is_publish", isEqualTo: true).get().then((value) {
-      for (var element in value.docs) {
-        BrandsModel bannerHome = BrandsModel.fromJson(element.data());
-        brandList.add(bannerHome);
-      }
-    });
+    await fireStore
+        .collection(CollectionName.brands)
+        .where("is_publish", isEqualTo: true)
+        .get()
+        .then((value) {
+          for (var element in value.docs) {
+            BrandsModel bannerHome = BrandsModel.fromJson(element.data());
+            brandList.add(bannerHome);
+          }
+        });
     return brandList;
   }
 
@@ -517,16 +628,33 @@ class FireStoreUtils {
   static Future<List> getVendorCuisines(String id) async {
     List tagList = [];
     List prodTagList = [];
-    QuerySnapshot<Map<String, dynamic>> productsQuery = await fireStore.collection(CollectionName.vendorProducts).where('vendorID', isEqualTo: id).get();
-    await Future.forEach(productsQuery.docs, (QueryDocumentSnapshot<Map<String, dynamic>> document) {
-      if (document.data().containsKey("categoryID") && document.data()['categoryID'].toString().isNotEmpty) {
+    QuerySnapshot<Map<String, dynamic>> productsQuery =
+        await fireStore
+            .collection(CollectionName.vendorProducts)
+            .where('vendorID', isEqualTo: id)
+            .get();
+    await Future.forEach(productsQuery.docs, (
+      QueryDocumentSnapshot<Map<String, dynamic>> document,
+    ) {
+      if (document.data().containsKey("categoryID") &&
+          document.data()['categoryID'].toString().isNotEmpty) {
         prodTagList.add(document.data()['categoryID']);
       }
     });
-    QuerySnapshot<Map<String, dynamic>> catQuery = await fireStore.collection(CollectionName.vendorCategories).where('publish', isEqualTo: true).get();
-    await Future.forEach(catQuery.docs, (QueryDocumentSnapshot<Map<String, dynamic>> document) {
+    QuerySnapshot<Map<String, dynamic>> catQuery =
+        await fireStore
+            .collection(CollectionName.vendorCategories)
+            .where('publish', isEqualTo: true)
+            .get();
+    await Future.forEach(catQuery.docs, (
+      QueryDocumentSnapshot<Map<String, dynamic>> document,
+    ) {
       Map<String, dynamic> catDoc = document.data();
-      if (catDoc.containsKey("id") && catDoc['id'].toString().isNotEmpty && catDoc.containsKey("title") && catDoc['title'].toString().isNotEmpty && prodTagList.contains(catDoc['id'])) {
+      if (catDoc.containsKey("id") &&
+          catDoc['id'].toString().isNotEmpty &&
+          catDoc.containsKey("title") &&
+          catDoc['title'].toString().isNotEmpty &&
+          prodTagList.contains(catDoc['id'])) {
         tagList.add(catDoc['title']);
       }
     });
@@ -535,23 +663,34 @@ class FireStoreUtils {
 
   static Future<List<FavouriteItemModel>> getFavouriteItem() async {
     List<FavouriteItemModel> favouriteList = [];
-    await fireStore.collection(CollectionName.favoriteItem).where('user_id', isEqualTo: getCurrentUid()).where("section_id", isEqualTo: Constant.sectionConstantModel!.id).get().then((value) {
-      for (var element in value.docs) {
-        FavouriteItemModel favouriteModel = FavouriteItemModel.fromJson(element.data());
-        favouriteList.add(favouriteModel);
-      }
-    });
+    await fireStore
+        .collection(CollectionName.favoriteItem)
+        .where('user_id', isEqualTo: getCurrentUid())
+        .where("section_id", isEqualTo: Constant.sectionConstantModel!.id)
+        .get()
+        .then((value) {
+          for (var element in value.docs) {
+            FavouriteItemModel favouriteModel = FavouriteItemModel.fromJson(
+              element.data(),
+            );
+            favouriteList.add(favouriteModel);
+          }
+        });
     return favouriteList;
   }
 
   static Future<VendorModel?> getVendorById(String vendorId) async {
     VendorModel? vendorModel;
     try {
-      await fireStore.collection(CollectionName.vendors).doc(vendorId).get().then((value) {
-        if (value.exists) {
-          vendorModel = VendorModel.fromJson(value.data()!);
-        }
-      });
+      await fireStore
+          .collection(CollectionName.vendors)
+          .doc(vendorId)
+          .get()
+          .then((value) {
+            if (value.exists) {
+              vendorModel = VendorModel.fromJson(value.data()!);
+            }
+          });
     } catch (e, s) {
       log('FireStoreUtils.firebaseCreateNewUser $e $s');
       return null;
@@ -562,11 +701,15 @@ class FireStoreUtils {
   static Future<ProductModel?> getProductById(String productId) async {
     ProductModel? vendorCategoryModel;
     try {
-      await fireStore.collection(CollectionName.vendorProducts).doc(productId).get().then((value) {
-        if (value.exists) {
-          vendorCategoryModel = ProductModel.fromJson(value.data()!);
-        }
-      });
+      await fireStore
+          .collection(CollectionName.vendorProducts)
+          .doc(productId)
+          .get()
+          .then((value) {
+            if (value.exists) {
+              vendorCategoryModel = ProductModel.fromJson(value.data()!);
+            }
+          });
     } catch (e, s) {
       log('FireStoreUtils.firebaseCreateNewUser $e $s');
       return null;
@@ -576,8 +719,14 @@ class FireStoreUtils {
 
   static Future<List<GiftCardsModel>> getGiftCard() async {
     List<GiftCardsModel> giftCardModelList = [];
-    QuerySnapshot<Map<String, dynamic>> currencyQuery = await fireStore.collection(CollectionName.giftCards).where("isEnable", isEqualTo: true).get();
-    await Future.forEach(currencyQuery.docs, (QueryDocumentSnapshot<Map<String, dynamic>> document) {
+    QuerySnapshot<Map<String, dynamic>> currencyQuery =
+        await fireStore
+            .collection(CollectionName.giftCards)
+            .where("isEnable", isEqualTo: true)
+            .get();
+    await Future.forEach(currencyQuery.docs, (
+      QueryDocumentSnapshot<Map<String, dynamic>> document,
+    ) {
       try {
         log(document.data().toString());
         giftCardModelList.add(GiftCardsModel.fromJson(document.data()));
@@ -588,7 +737,9 @@ class FireStoreUtils {
     return giftCardModelList;
   }
 
-  static Future<bool?> setWalletTransaction(WalletTransactionModel walletTransactionModel) async {
+  static Future<bool?> setWalletTransaction(
+    WalletTransactionModel walletTransactionModel,
+  ) async {
     bool isAdded = false;
     await fireStore
         .collection(CollectionName.wallet)
@@ -606,61 +757,103 @@ class FireStoreUtils {
 
   static Future<void> getSettings() async {
     try {
-      final restaurantSnap = await FirebaseFirestore.instance.collection(CollectionName.settings).doc('vendor').get();
+      final restaurantSnap =
+          await FirebaseFirestore.instance
+              .collection(CollectionName.settings)
+              .doc('vendor')
+              .get();
 
       if (restaurantSnap.exists && restaurantSnap.data() != null) {
-        Constant.isSubscriptionModelApplied = restaurantSnap.data()?['subscription_model'] ?? false;
+        Constant.isSubscriptionModelApplied =
+            restaurantSnap.data()?['subscription_model'] ?? false;
       } else {
         Constant.isSubscriptionModelApplied = false;
       }
 
-      fireStore.collection(CollectionName.settings).doc("DriverNearBy").snapshots().listen((event) {
-        if (event.exists && event.data() != null) {
-          Constant.distanceType = event.data()?["distanceType"] ?? "km";
-          Constant.isEnableOTPTripStart = event.data()?["enableOTPTripStart"] ?? false;
-          Constant.isEnableOTPTripStartForRental = event.data()?["enableOTPTripStartForRental"] ?? false;
-        }
-      });
+      fireStore
+          .collection(CollectionName.settings)
+          .doc("DriverNearBy")
+          .snapshots()
+          .listen((event) {
+            if (event.exists && event.data() != null) {
+              Constant.distanceType = event.data()?["distanceType"] ?? "km";
+              Constant.isEnableOTPTripStart =
+                  event.data()?["enableOTPTripStart"] ?? false;
+              Constant.isEnableOTPTripStartForRental =
+                  event.data()?["enableOTPTripStartForRental"] ?? false;
+            }
+          });
 
-      fireStore.collection(CollectionName.settings).doc("maintenance_settings").snapshots().listen((event) {
-        if (event.exists && event.data() != null) {
-          Constant.isMaintenanceModeForCustomer = event.data()?["isMaintenanceModeForCustomer"] ?? false;
-        }
-      });
+      fireStore
+          .collection(CollectionName.settings)
+          .doc("maintenance_settings")
+          .snapshots()
+          .listen((event) {
+            if (event.exists && event.data() != null) {
+              Constant.isMaintenanceModeForCustomer =
+                  event.data()?["isMaintenanceModeForCustomer"] ?? false;
+            }
+          });
 
-      final globalSettingsSnap = await FirebaseFirestore.instance.collection(CollectionName.settings).doc("globalSettings").get();
+      final globalSettingsSnap =
+          await FirebaseFirestore.instance
+              .collection(CollectionName.settings)
+              .doc("globalSettings")
+              .get();
 
       if (globalSettingsSnap.exists && globalSettingsSnap.data() != null) {
-        Constant.isEnableAdsFeature = globalSettingsSnap.data()?['isEnableAdsFeature'] ?? false;
-        Constant.isSelfDeliveryFeature = globalSettingsSnap.data()?['isSelfDelivery'] ?? false;
-        Constant.defaultCountryCode = globalSettingsSnap.data()?['defaultCountryCode'] ?? '';
-        Constant.defaultCountry = globalSettingsSnap.data()?['defaultCountry'] ?? '';
+        Constant.isEnableAdsFeature =
+            globalSettingsSnap.data()?['isEnableAdsFeature'] ?? false;
+        Constant.isSelfDeliveryFeature =
+            globalSettingsSnap.data()?['isSelfDelivery'] ?? false;
+        Constant.defaultCountryCode =
+            globalSettingsSnap.data()?['defaultCountryCode'] ?? '';
+        Constant.defaultCountry =
+            globalSettingsSnap.data()?['defaultCountry'] ?? '';
 
         String? colorStr = globalSettingsSnap.data()?['app_customer_color'];
         if (colorStr != null && colorStr.isNotEmpty) {
-          AppThemeData.primary300 = Color(int.parse(colorStr.replaceFirst("#", "0xff")));
+          AppThemeData.primary300 = Color(
+            int.parse(colorStr.replaceFirst("#", "0xff")),
+          );
         }
       }
 
-      fireStore.collection(CollectionName.settings).doc("googleMapKey").snapshots().listen((event) {
-        if (event.exists && event.data() != null) {
-          Constant.mapAPIKey = event.data()?["key"] ?? "";
-        }
-      });
-      fireStore.collection(CollectionName.settings).doc("placeHolderImage").snapshots().listen((event) {
-        if (event.exists && event.data() != null) {
-          Constant.placeHolderImage = event.data()?["image"] ?? "";
-        }
-      });
+      fireStore
+          .collection(CollectionName.settings)
+          .doc("googleMapKey")
+          .snapshots()
+          .listen((event) {
+            if (event.exists && event.data() != null) {
+              Constant.mapAPIKey = event.data()?["key"] ?? "";
+            }
+          });
+      fireStore
+          .collection(CollectionName.settings)
+          .doc("placeHolderImage")
+          .snapshots()
+          .listen((event) {
+            if (event.exists && event.data() != null) {
+              Constant.placeHolderImage = event.data()?["image"] ?? "";
+            }
+          });
 
-      fireStore.collection(CollectionName.settings).doc("notification_setting").snapshots().listen((event) {
-        if (event.exists) {
-          Constant.senderId = event.data()?["senderId"];
-          Constant.jsonNotificationFileURL = event.data()?["serviceJson"];
-        }
-      });
+      fireStore
+          .collection(CollectionName.settings)
+          .doc("notification_setting")
+          .snapshots()
+          .listen((event) {
+            if (event.exists) {
+              Constant.senderId = event.data()?["senderId"];
+              Constant.jsonNotificationFileURL = event.data()?["serviceJson"];
+            }
+          });
 
-      final cashbackSnap = await fireStore.collection(CollectionName.settings).doc("cashbackOffer").get();
+      final cashbackSnap =
+          await fireStore
+              .collection(CollectionName.settings)
+              .doc("cashbackOffer")
+              .get();
 
       if (cashbackSnap.exists && cashbackSnap.data() != null) {
         Constant.isCashbackActive = cashbackSnap.data()?["isEnable"] ?? false;
@@ -668,41 +861,67 @@ class FireStoreUtils {
         Constant.isCashbackActive = false;
       }
 
-      final driverNearBySnap = await fireStore.collection(CollectionName.settings).doc("DriverNearBy").get();
+      final driverNearBySnap =
+          await fireStore
+              .collection(CollectionName.settings)
+              .doc("DriverNearBy")
+              .get();
 
       if (driverNearBySnap.exists && driverNearBySnap.data() != null) {
-        Constant.selectedMapType = driverNearBySnap.data()?["selectedMapType"] ?? "";
+        Constant.selectedMapType =
+            driverNearBySnap.data()?["selectedMapType"] ?? "";
         Constant.mapType = driverNearBySnap.data()?["mapType"] ?? "";
       }
 
-      fireStore.collection(CollectionName.settings).doc("privacyPolicy").snapshots().listen((event) {
-        if (event.exists && event.data() != null) {
-          Constant.privacyPolicy = event.data()?["privacy_policy"] ?? "";
-        }
-      });
+      fireStore
+          .collection(CollectionName.settings)
+          .doc("privacyPolicy")
+          .snapshots()
+          .listen((event) {
+            if (event.exists && event.data() != null) {
+              Constant.privacyPolicy = event.data()?["privacy_policy"] ?? "";
+            }
+          });
 
-      fireStore.collection(CollectionName.settings).doc("termsAndConditions").snapshots().listen((event) {
-        if (event.exists && event.data() != null) {
-          Constant.termsAndConditions = event.data()?["termsAndConditions"] ?? "";
-        }
-      });
+      fireStore
+          .collection(CollectionName.settings)
+          .doc("termsAndConditions")
+          .snapshots()
+          .listen((event) {
+            if (event.exists && event.data() != null) {
+              Constant.termsAndConditions =
+                  event.data()?["termsAndConditions"] ?? "";
+            }
+          });
 
-      fireStore.collection(CollectionName.settings).doc("walletSettings").snapshots().listen((event) {
-        if (event.exists && event.data() != null) {
-          Constant.walletSetting = event.data()?["isEnabled"] ?? false;
-        }
-      });
+      fireStore
+          .collection(CollectionName.settings)
+          .doc("walletSettings")
+          .snapshots()
+          .listen((event) {
+            if (event.exists && event.data() != null) {
+              Constant.walletSetting = event.data()?["isEnabled"] ?? false;
+            }
+          });
 
-      fireStore.collection(CollectionName.settings).doc("Version").snapshots().listen((event) {
-        if (event.exists && event.data() != null) {
-          Constant.googlePlayLink = event.data()?["googlePlayLink"] ?? '';
-          Constant.appStoreLink = event.data()?["appStoreLink"] ?? '';
-          Constant.appVersion = event.data()?["app_version"] ?? '';
-          Constant.websiteUrl = event.data()?["websiteUrl"] ?? '';
-        }
-      });
+      fireStore
+          .collection(CollectionName.settings)
+          .doc("Version")
+          .snapshots()
+          .listen((event) {
+            if (event.exists && event.data() != null) {
+              Constant.googlePlayLink = event.data()?["googlePlayLink"] ?? '';
+              Constant.appStoreLink = event.data()?["appStoreLink"] ?? '';
+              Constant.appVersion = event.data()?["app_version"] ?? '';
+              Constant.websiteUrl = event.data()?["websiteUrl"] ?? '';
+            }
+          });
 
-      final storySnap = await fireStore.collection(CollectionName.settings).doc('story').get();
+      final storySnap =
+          await fireStore
+              .collection(CollectionName.settings)
+              .doc('story')
+              .get();
 
       if (storySnap.exists && storySnap.data() != null) {
         Constant.storyEnable = storySnap.data()?['isEnabled'] ?? false;
@@ -710,16 +929,25 @@ class FireStoreUtils {
         Constant.storyEnable = false;
       }
 
-      final emailSnap = await fireStore.collection(CollectionName.settings).doc("emailSetting").get();
+      final emailSnap =
+          await fireStore
+              .collection(CollectionName.settings)
+              .doc("emailSetting")
+              .get();
 
       if (emailSnap.exists && emailSnap.data() != null) {
         Constant.mailSettings = MailSettings.fromJson(emailSnap.data()!);
       }
 
-      final specialDiscountSnap = await fireStore.collection(CollectionName.settings).doc("specialDiscountOffer").get();
+      final specialDiscountSnap =
+          await fireStore
+              .collection(CollectionName.settings)
+              .doc("specialDiscountOffer")
+              .get();
 
       if (specialDiscountSnap.exists && specialDiscountSnap.data() != null) {
-        Constant.specialDiscountOffer = specialDiscountSnap.data()?["isEnable"] ?? false;
+        Constant.specialDiscountOffer =
+            specialDiscountSnap.data()?["isEnable"] ?? false;
       } else {
         Constant.specialDiscountOffer = false;
       }
@@ -730,12 +958,17 @@ class FireStoreUtils {
 
   static Future<List<GiftCardsOrderModel>> getGiftHistory() async {
     List<GiftCardsOrderModel> giftCardsOrderList = [];
-    await fireStore.collection(CollectionName.giftPurchases).where("userid", isEqualTo: FireStoreUtils.getCurrentUid()).get().then((value) {
-      for (var element in value.docs) {
-        GiftCardsOrderModel giftCardsOrderModel = GiftCardsOrderModel.fromJson(element.data());
-        giftCardsOrderList.add(giftCardsOrderModel);
-      }
-    });
+    await fireStore
+        .collection(CollectionName.giftPurchases)
+        .where("userid", isEqualTo: FireStoreUtils.getCurrentUid())
+        .get()
+        .then((value) {
+          for (var element in value.docs) {
+            GiftCardsOrderModel giftCardsOrderModel =
+                GiftCardsOrderModel.fromJson(element.data());
+            giftCardsOrderList.add(giftCardsOrderModel);
+          }
+        });
     return giftCardsOrderList;
   }
 
@@ -770,7 +1003,10 @@ class FireStoreUtils {
     return list;
   }
 
-  static Future<RatingModel?> getOrderReviewsByID(String orderId, String productID) async {
+  static Future<RatingModel?> getOrderReviewsByID(
+    String orderId,
+    String productID,
+  ) async {
     RatingModel? ratingModel;
 
     await fireStore
@@ -789,14 +1025,20 @@ class FireStoreUtils {
     return ratingModel;
   }
 
-  static Future<VendorCategoryModel?> getVendorCategoryByCategoryId(String categoryId) async {
+  static Future<VendorCategoryModel?> getVendorCategoryByCategoryId(
+    String categoryId,
+  ) async {
     VendorCategoryModel? vendorCategoryModel;
     try {
-      await fireStore.collection(CollectionName.vendorCategories).doc(categoryId).get().then((value) {
-        if (value.exists) {
-          vendorCategoryModel = VendorCategoryModel.fromJson(value.data()!);
-        }
-      });
+      await fireStore
+          .collection(CollectionName.vendorCategories)
+          .doc(categoryId)
+          .get()
+          .then((value) {
+            if (value.exists) {
+              vendorCategoryModel = VendorCategoryModel.fromJson(value.data()!);
+            }
+          });
     } catch (e, s) {
       log('FireStoreUtils.firebaseCreateNewUser $e $s');
       return null;
@@ -804,14 +1046,22 @@ class FireStoreUtils {
     return vendorCategoryModel;
   }
 
-  static Future<ReviewAttributeModel?> getVendorReviewAttribute(String attributeId) async {
+  static Future<ReviewAttributeModel?> getVendorReviewAttribute(
+    String attributeId,
+  ) async {
     ReviewAttributeModel? vendorCategoryModel;
     try {
-      await fireStore.collection(CollectionName.reviewAttributes).doc(attributeId).get().then((value) {
-        if (value.exists) {
-          vendorCategoryModel = ReviewAttributeModel.fromJson(value.data()!);
-        }
-      });
+      await fireStore
+          .collection(CollectionName.reviewAttributes)
+          .doc(attributeId)
+          .get()
+          .then((value) {
+            if (value.exists) {
+              vendorCategoryModel = ReviewAttributeModel.fromJson(
+                value.data()!,
+              );
+            }
+          });
     } catch (e, s) {
       log('FireStoreUtils.firebaseCreateNewUser $e $s');
       return null;
@@ -836,9 +1086,13 @@ class FireStoreUtils {
   // }
 
   static Future<VendorModel?> updateVendor(VendorModel vendor) async {
-    return await fireStore.collection(CollectionName.vendors).doc(vendor.id).set(vendor.toJson()).then((document) {
-      return vendor;
-    });
+    return await fireStore
+        .collection(CollectionName.vendors)
+        .doc(vendor.id)
+        .set(vendor.toJson())
+        .then((document) {
+          return vendor;
+        });
   }
 
   static Future<bool?> setProduct(ProductModel orderModel) async {
@@ -860,9 +1114,13 @@ class FireStoreUtils {
   static Future<ReferralModel?> getReferralUserBy() async {
     ReferralModel? referralModel;
     try {
-      await fireStore.collection(CollectionName.referral).doc(getCurrentUid()).get().then((value) {
-        referralModel = ReferralModel.fromJson(value.data()!);
-      });
+      await fireStore
+          .collection(CollectionName.referral)
+          .doc(getCurrentUid())
+          .get()
+          .then((value) {
+            referralModel = ReferralModel.fromJson(value.data()!);
+          });
     } catch (e, s) {
       print('FireStoreUtils.firebaseCreateNewUser $e $s');
       return null;
@@ -870,8 +1128,13 @@ class FireStoreUtils {
     return referralModel;
   }
 
-  static Future<List<ProductModel>> getProductByVendorId(String vendorId) async {
-    String selectedFoodType = Preferences.getString(Preferences.foodDeliveryType, defaultValue: "Delivery");
+  static Future<List<ProductModel>> getProductByVendorId(
+    String vendorId,
+  ) async {
+    String selectedFoodType = Preferences.getString(
+      Preferences.foodDeliveryType,
+      defaultValue: "Delivery",
+    );
     List<ProductModel> list = [];
     log("GetProductByVendorId :: $selectedFoodType");
     if (selectedFoodType == "TakeAway") {
@@ -915,11 +1178,15 @@ class FireStoreUtils {
   static Future<DeliveryCharge?> getDeliveryCharge() async {
     DeliveryCharge? deliveryCharge;
     try {
-      await fireStore.collection(CollectionName.settings).doc("DeliveryCharge").get().then((value) {
-        if (value.exists) {
-          deliveryCharge = DeliveryCharge.fromJson(value.data()!);
-        }
-      });
+      await fireStore
+          .collection(CollectionName.settings)
+          .doc("DeliveryCharge")
+          .get()
+          .then((value) {
+            if (value.exists) {
+              deliveryCharge = DeliveryCharge.fromJson(value.data()!);
+            }
+          });
     } catch (e, s) {
       log('FireStoreUtils.firebaseCreateNewUser $e $s');
       return null;
@@ -927,7 +1194,9 @@ class FireStoreUtils {
     return deliveryCharge;
   }
 
-  static Future<List<CouponModel>> getAllVendorPublicCoupons(String vendorId) async {
+  static Future<List<CouponModel>> getAllVendorPublicCoupons(
+    String vendorId,
+  ) async {
     List<CouponModel> coupon = [];
 
     await fireStore
@@ -990,24 +1259,36 @@ class FireStoreUtils {
     return cashbackList;
   }
 
-  static Future<List<CashbackRedeemModel>> getRedeemedCashbacks(String cashbackId) async {
+  static Future<List<CashbackRedeemModel>> getRedeemedCashbacks(
+    String cashbackId,
+  ) async {
     List<CashbackRedeemModel> redeemedDocs = [];
 
     try {
-      await fireStore.collection(CollectionName.cashbackRedeem).where('userId', isEqualTo: FireStoreUtils.getCurrentUid()).where('cashbackId', isEqualTo: cashbackId).get().then((value) {
-        redeemedDocs =
-            value.docs.map((doc) {
-              return CashbackRedeemModel.fromJson(doc.data());
-            }).toList();
-      });
+      await fireStore
+          .collection(CollectionName.cashbackRedeem)
+          .where('userId', isEqualTo: FireStoreUtils.getCurrentUid())
+          .where('cashbackId', isEqualTo: cashbackId)
+          .get()
+          .then((value) {
+            redeemedDocs =
+                value.docs.map((doc) {
+                  return CashbackRedeemModel.fromJson(doc.data());
+                }).toList();
+          });
     } catch (error, stackTrace) {
-      log('Error fetching redeemed cashback data: $error', stackTrace: stackTrace);
+      log(
+        'Error fetching redeemed cashback data: $error',
+        stackTrace: stackTrace,
+      );
     }
 
     return redeemedDocs;
   }
 
-  static Future<bool?> setCashbackRedeemModel(CashbackRedeemModel cashbackRedeemModel) async {
+  static Future<bool?> setCashbackRedeemModel(
+    CashbackRedeemModel cashbackRedeemModel,
+  ) async {
     bool isAdded = false;
     await fireStore
         .collection(CollectionName.cashbackRedeem)
@@ -1059,23 +1340,33 @@ class FireStoreUtils {
 
   static Future<List<AttributesModel>?> getAttributes() async {
     List<AttributesModel> attributeList = [];
-    await fireStore.collection(CollectionName.vendorAttributes).get().then((value) {
+    await fireStore.collection(CollectionName.vendorAttributes).get().then((
+      value,
+    ) {
       for (var element in value.docs) {
-        AttributesModel favouriteModel = AttributesModel.fromJson(element.data());
+        AttributesModel favouriteModel = AttributesModel.fromJson(
+          element.data(),
+        );
         attributeList.add(favouriteModel);
       }
     });
     return attributeList;
   }
 
-  static Future<VendorCategoryModel?> getVendorCategoryById(String categoryId) async {
+  static Future<VendorCategoryModel?> getVendorCategoryById(
+    String categoryId,
+  ) async {
     VendorCategoryModel? vendorCategoryModel;
     try {
-      await fireStore.collection(CollectionName.vendorCategories).doc(categoryId).get().then((value) {
-        if (value.exists) {
-          vendorCategoryModel = VendorCategoryModel.fromJson(value.data()!);
-        }
-      });
+      await fireStore
+          .collection(CollectionName.vendorCategories)
+          .doc(categoryId)
+          .get()
+          .then((value) {
+            if (value.exists) {
+              vendorCategoryModel = VendorCategoryModel.fromJson(value.data()!);
+            }
+          });
     } catch (e, s) {
       log('FireStoreUtils.firebaseCreateNewUser $e $s');
       return null;
@@ -1085,107 +1376,409 @@ class FireStoreUtils {
 
   static Future<List<RatingModel>> getVendorReviews(String vendorId) async {
     List<RatingModel> ratingList = [];
-    await fireStore.collection(CollectionName.itemsReview).where('VendorId', isEqualTo: vendorId).get().then((value) {
-      for (var element in value.docs) {
-        RatingModel giftCardsOrderModel = RatingModel.fromJson(element.data());
-        ratingList.add(giftCardsOrderModel);
-      }
-    });
+    await fireStore
+        .collection(CollectionName.itemsReview)
+        .where('VendorId', isEqualTo: vendorId)
+        .get()
+        .then((value) {
+          for (var element in value.docs) {
+            RatingModel giftCardsOrderModel = RatingModel.fromJson(
+              element.data(),
+            );
+            ratingList.add(giftCardsOrderModel);
+          }
+        });
     return ratingList;
   }
 
   static Future getPaymentSettingsData() async {
-    await fireStore.collection(CollectionName.settings).doc("payFastSettings").get().then((value) async {
-      if (value.exists) {
-        PayFastModel payFastModel = PayFastModel.fromJson(value.data()!);
-        await Preferences.setString(Preferences.payFastSettings, jsonEncode(payFastModel.toJson()));
-      }
-    });
-    await fireStore.collection(CollectionName.settings).doc("MercadoPago").get().then((value) async {
-      if (value.exists) {
-        MercadoPagoModel mercadoPagoModel = MercadoPagoModel.fromJson(value.data()!);
-        await Preferences.setString(Preferences.mercadoPago, jsonEncode(mercadoPagoModel.toJson()));
-      }
-    });
-    await fireStore.collection(CollectionName.settings).doc("paypalSettings").get().then((value) async {
-      if (value.exists) {
-        PayPalModel payPalModel = PayPalModel.fromJson(value.data()!);
-        await Preferences.setString(Preferences.paypalSettings, jsonEncode(payPalModel.toJson()));
-      }
-    });
-    await fireStore.collection(CollectionName.settings).doc("stripeSettings").get().then((value) async {
-      if (value.exists) {
-        StripeModel stripeModel = StripeModel.fromJson(value.data()!);
-        await Preferences.setString(Preferences.stripeSettings, jsonEncode(stripeModel.toJson()));
-      }
-    });
-    await fireStore.collection(CollectionName.settings).doc("flutterWave").get().then((value) async {
-      if (value.exists) {
-        FlutterWaveModel flutterWaveModel = FlutterWaveModel.fromJson(value.data()!);
-        await Preferences.setString(Preferences.flutterWave, jsonEncode(flutterWaveModel.toJson()));
-      }
-    });
-    await fireStore.collection(CollectionName.settings).doc("payStack").get().then((value) async {
-      if (value.exists) {
-        PayStackModel payStackModel = PayStackModel.fromJson(value.data()!);
-        await Preferences.setString(Preferences.payStack, jsonEncode(payStackModel.toJson()));
-      }
-    });
-    await fireStore.collection(CollectionName.settings).doc("PaytmSettings").get().then((value) async {
-      if (value.exists) {
-        PaytmModel paytmModel = PaytmModel.fromJson(value.data()!);
-        await Preferences.setString(Preferences.paytmSettings, jsonEncode(paytmModel.toJson()));
-      }
-    });
-    await fireStore.collection(CollectionName.settings).doc("walletSettings").get().then((value) async {
-      if (value.exists) {
-        WalletSettingModel walletSettingModel = WalletSettingModel.fromJson(value.data()!);
-        await Preferences.setString(Preferences.walletSettings, jsonEncode(walletSettingModel.toJson()));
-      }
-    });
-    await fireStore.collection(CollectionName.settings).doc("razorpaySettings").get().then((value) async {
-      if (value.exists) {
-        RazorPayModel razorPayModel = RazorPayModel.fromJson(value.data()!);
-        await Preferences.setString(Preferences.razorpaySettings, jsonEncode(razorPayModel.toJson()));
-      }
-    });
-    await fireStore.collection(CollectionName.settings).doc("CODSettings").get().then((value) async {
-      if (value.exists) {
-        CodSettingModel codSettingModel = CodSettingModel.fromJson(value.data()!);
-        await Preferences.setString(Preferences.codSettings, jsonEncode(codSettingModel.toJson()));
-      }
-    });
+    print("🔵 [getPaymentSettingsData] Boshlandi");
 
-    await fireStore.collection(CollectionName.settings).doc("midtrans_settings").get().then((value) async {
-      if (value.exists) {
-        MidTrans midTrans = MidTrans.fromJson(value.data()!);
-        await Preferences.setString(Preferences.midTransSettings, jsonEncode(midTrans.toJson()));
-      }
-    });
+    // PayFast
+    await fireStore
+        .collection(CollectionName.settings)
+        .doc("payFastSettings")
+        .get()
+        .then((value) async {
+          print("🔵 [getPaymentSettingsData] PayFast: exists=${value.exists}");
+          if (value.exists) {
+            PayFastModel payFastModel = PayFastModel.fromJson(value.data()!);
+            print(
+              "🔵 [getPaymentSettingsData] PayFast: isEnable=${payFastModel.isEnable}",
+            );
+            await Preferences.setString(
+              Preferences.payFastSettings,
+              jsonEncode(payFastModel.toJson()),
+            );
+          } else {
+            print("⚠️ [getPaymentSettingsData] PayFast: Document mavjud emas");
+          }
+        })
+        .catchError((e) {
+          print("❌ [getPaymentSettingsData] PayFast xatosi: $e");
+        });
 
-    await fireStore.collection(CollectionName.settings).doc("orange_money_settings").get().then((value) async {
-      if (value.exists) {
-        OrangeMoney orangeMoney = OrangeMoney.fromJson(value.data()!);
-        await Preferences.setString(Preferences.orangeMoneySettings, jsonEncode(orangeMoney.toJson()));
-      }
-    });
+    // MercadoPago
+    await fireStore
+        .collection(CollectionName.settings)
+        .doc("MercadoPago")
+        .get()
+        .then((value) async {
+          print(
+            "🔵 [getPaymentSettingsData] MercadoPago: exists=${value.exists}",
+          );
+          if (value.exists) {
+            MercadoPagoModel mercadoPagoModel = MercadoPagoModel.fromJson(
+              value.data()!,
+            );
+            print(
+              "🔵 [getPaymentSettingsData] MercadoPago: isEnabled=${mercadoPagoModel.isEnabled}",
+            );
+            await Preferences.setString(
+              Preferences.mercadoPago,
+              jsonEncode(mercadoPagoModel.toJson()),
+            );
+          } else {
+            print(
+              "⚠️ [getPaymentSettingsData] MercadoPago: Document mavjud emas",
+            );
+          }
+        })
+        .catchError((e) {
+          print("❌ [getPaymentSettingsData] MercadoPago xatosi: $e");
+        });
 
-    await fireStore.collection(CollectionName.settings).doc("xendit_settings").get().then((value) async {
-      if (value.exists) {
-        Xendit xendit = Xendit.fromJson(value.data()!);
-        await Preferences.setString(Preferences.xenditSettings, jsonEncode(xendit.toJson()));
-      }
-    });
+    // PayPal
+    await fireStore
+        .collection(CollectionName.settings)
+        .doc("paypalSettings")
+        .get()
+        .then((value) async {
+          print("🔵 [getPaymentSettingsData] PayPal: exists=${value.exists}");
+          if (value.exists) {
+            PayPalModel payPalModel = PayPalModel.fromJson(value.data()!);
+            print(
+              "🔵 [getPaymentSettingsData] PayPal: isEnabled=${payPalModel.isEnabled}",
+            );
+            await Preferences.setString(
+              Preferences.paypalSettings,
+              jsonEncode(payPalModel.toJson()),
+            );
+          } else {
+            print("⚠️ [getPaymentSettingsData] PayPal: Document mavjud emas");
+          }
+        })
+        .catchError((e) {
+          print("❌ [getPaymentSettingsData] PayPal xatosi: $e");
+        });
+
+    // Stripe
+    await fireStore
+        .collection(CollectionName.settings)
+        .doc("stripeSettings")
+        .get()
+        .then((value) async {
+          print("🔵 [getPaymentSettingsData] Stripe: exists=${value.exists}");
+          if (value.exists) {
+            StripeModel stripeModel = StripeModel.fromJson(value.data()!);
+            print(
+              "🔵 [getPaymentSettingsData] Stripe: isEnabled=${stripeModel.isEnabled}",
+            );
+            await Preferences.setString(
+              Preferences.stripeSettings,
+              jsonEncode(stripeModel.toJson()),
+            );
+          } else {
+            print("⚠️ [getPaymentSettingsData] Stripe: Document mavjud emas");
+          }
+        })
+        .catchError((e) {
+          print("❌ [getPaymentSettingsData] Stripe xatosi: $e");
+        });
+
+    // FlutterWave
+    await fireStore
+        .collection(CollectionName.settings)
+        .doc("flutterWave")
+        .get()
+        .then((value) async {
+          print(
+            "🔵 [getPaymentSettingsData] FlutterWave: exists=${value.exists}",
+          );
+          if (value.exists) {
+            FlutterWaveModel flutterWaveModel = FlutterWaveModel.fromJson(
+              value.data()!,
+            );
+            print(
+              "🔵 [getPaymentSettingsData] FlutterWave: isEnable=${flutterWaveModel.isEnable}",
+            );
+            await Preferences.setString(
+              Preferences.flutterWave,
+              jsonEncode(flutterWaveModel.toJson()),
+            );
+          } else {
+            print(
+              "⚠️ [getPaymentSettingsData] FlutterWave: Document mavjud emas",
+            );
+          }
+        })
+        .catchError((e) {
+          print("❌ [getPaymentSettingsData] FlutterWave xatosi: $e");
+        });
+
+    // PayStack
+    await fireStore
+        .collection(CollectionName.settings)
+        .doc("payStack")
+        .get()
+        .then((value) async {
+          print("🔵 [getPaymentSettingsData] PayStack: exists=${value.exists}");
+          if (value.exists) {
+            PayStackModel payStackModel = PayStackModel.fromJson(value.data()!);
+            print(
+              "🔵 [getPaymentSettingsData] PayStack: isEnable=${payStackModel.isEnable}",
+            );
+            await Preferences.setString(
+              Preferences.payStack,
+              jsonEncode(payStackModel.toJson()),
+            );
+          } else {
+            print("⚠️ [getPaymentSettingsData] PayStack: Document mavjud emas");
+          }
+        })
+        .catchError((e) {
+          print("❌ [getPaymentSettingsData] PayStack xatosi: $e");
+        });
+
+    // Paytm
+    await fireStore
+        .collection(CollectionName.settings)
+        .doc("PaytmSettings")
+        .get()
+        .then((value) async {
+          print("🔵 [getPaymentSettingsData] Paytm: exists=${value.exists}");
+          if (value.exists) {
+            PaytmModel paytmModel = PaytmModel.fromJson(value.data()!);
+            print(
+              "🔵 [getPaymentSettingsData] Paytm: isEnabled=${paytmModel.isEnabled}",
+            );
+            await Preferences.setString(
+              Preferences.paytmSettings,
+              jsonEncode(paytmModel.toJson()),
+            );
+          } else {
+            print("⚠️ [getPaymentSettingsData] Paytm: Document mavjud emas");
+          }
+        })
+        .catchError((e) {
+          print("❌ [getPaymentSettingsData] Paytm xatosi: $e");
+        });
+
+    // Wallet
+    await fireStore
+        .collection(CollectionName.settings)
+        .doc("walletSettings")
+        .get()
+        .then((value) async {
+          print("🔵 [getPaymentSettingsData] Wallet: exists=${value.exists}");
+          if (value.exists) {
+            WalletSettingModel walletSettingModel = WalletSettingModel.fromJson(
+              value.data()!,
+            );
+            print(
+              "🔵 [getPaymentSettingsData] Wallet: isEnabled=${walletSettingModel.isEnabled}",
+            );
+            await Preferences.setString(
+              Preferences.walletSettings,
+              jsonEncode(walletSettingModel.toJson()),
+            );
+          } else {
+            print("⚠️ [getPaymentSettingsData] Wallet: Document mavjud emas");
+          }
+        })
+        .catchError((e) {
+          print("❌ [getPaymentSettingsData] Wallet xatosi: $e");
+        });
+
+    // RazorPay
+    await fireStore
+        .collection(CollectionName.settings)
+        .doc("razorpaySettings")
+        .get()
+        .then((value) async {
+          print("🔵 [getPaymentSettingsData] RazorPay: exists=${value.exists}");
+          if (value.exists) {
+            RazorPayModel razorPayModel = RazorPayModel.fromJson(value.data()!);
+            print(
+              "🔵 [getPaymentSettingsData] RazorPay: isEnabled=${razorPayModel.isEnabled}",
+            );
+            await Preferences.setString(
+              Preferences.razorpaySettings,
+              jsonEncode(razorPayModel.toJson()),
+            );
+          } else {
+            print("⚠️ [getPaymentSettingsData] RazorPay: Document mavjud emas");
+          }
+        })
+        .catchError((e) {
+          print("❌ [getPaymentSettingsData] RazorPay xatosi: $e");
+        });
+
+    // COD
+    await fireStore
+        .collection(CollectionName.settings)
+        .doc("CODSettings")
+        .get()
+        .then((value) async {
+          print("🔵 [getPaymentSettingsData] COD: exists=${value.exists}");
+          if (value.exists) {
+            CodSettingModel codSettingModel = CodSettingModel.fromJson(
+              value.data()!,
+            );
+            print(
+              "🔵 [getPaymentSettingsData] COD: isEnabled=${codSettingModel.isEnabled}",
+            );
+            await Preferences.setString(
+              Preferences.codSettings,
+              jsonEncode(codSettingModel.toJson()),
+            );
+          } else {
+            print("⚠️ [getPaymentSettingsData] COD: Document mavjud emas");
+          }
+        })
+        .catchError((e) {
+          print("❌ [getPaymentSettingsData] COD xatosi: $e");
+        });
+
+    // MidTrans
+    await fireStore
+        .collection(CollectionName.settings)
+        .doc("midtrans_settings")
+        .get()
+        .then((value) async {
+          print("🔵 [getPaymentSettingsData] MidTrans: exists=${value.exists}");
+          if (value.exists) {
+            MidTrans midTrans = MidTrans.fromJson(value.data()!);
+            print(
+              "🔵 [getPaymentSettingsData] MidTrans: enable=${midTrans.enable}",
+            );
+            await Preferences.setString(
+              Preferences.midTransSettings,
+              jsonEncode(midTrans.toJson()),
+            );
+          } else {
+            print("⚠️ [getPaymentSettingsData] MidTrans: Document mavjud emas");
+          }
+        })
+        .catchError((e) {
+          print("❌ [getPaymentSettingsData] MidTrans xatosi: $e");
+        });
+
+    // OrangeMoney
+    await fireStore
+        .collection(CollectionName.settings)
+        .doc("orange_money_settings")
+        .get()
+        .then((value) async {
+          print(
+            "🔵 [getPaymentSettingsData] OrangeMoney: exists=${value.exists}",
+          );
+          if (value.exists) {
+            OrangeMoney orangeMoney = OrangeMoney.fromJson(value.data()!);
+            print(
+              "🔵 [getPaymentSettingsData] OrangeMoney: enable=${orangeMoney.enable}",
+            );
+            await Preferences.setString(
+              Preferences.orangeMoneySettings,
+              jsonEncode(orangeMoney.toJson()),
+            );
+          } else {
+            print(
+              "⚠️ [getPaymentSettingsData] OrangeMoney: Document mavjud emas",
+            );
+          }
+        })
+        .catchError((e) {
+          print("❌ [getPaymentSettingsData] OrangeMoney xatosi: $e");
+        });
+
+    // Xendit
+    await fireStore
+        .collection(CollectionName.settings)
+        .doc("xendit_settings")
+        .get()
+        .then((value) async {
+          print("🔵 [getPaymentSettingsData] Xendit: exists=${value.exists}");
+          if (value.exists) {
+            Xendit xendit = Xendit.fromJson(value.data()!);
+            print(
+              "🔵 [getPaymentSettingsData] Xendit: enable=${xendit.enable}",
+            );
+            await Preferences.setString(
+              Preferences.xenditSettings,
+              jsonEncode(xendit.toJson()),
+            );
+          } else {
+            print("⚠️ [getPaymentSettingsData] Xendit: Document mavjud emas");
+          }
+        })
+        .catchError((e) {
+          print("❌ [getPaymentSettingsData] Xendit xatosi: $e");
+        });
+
+    // Payme
+    await fireStore
+        .collection(CollectionName.settings)
+        .doc("paymeSettings")
+        .get()
+        .then((value) async {
+          print("🔵 [getPaymentSettingsData] Payme: exists=${value.exists}");
+          if (value.exists) {
+            try {
+              PaymeModel paymeModel = PaymeModel.fromJson(value.data()!);
+              print(
+                "🔵 [getPaymentSettingsData] Payme: isEnabled=${paymeModel.isEnabled ?? paymeModel.enable}",
+              );
+              print(
+                "🔵 [getPaymentSettingsData] Payme: merchant_id=${paymeModel.merchantId}",
+              );
+              await Preferences.setString(
+                Preferences.paymeSettings,
+                jsonEncode(paymeModel.toJson()),
+              );
+              print("✅ [getPaymentSettingsData] Payme Preferences ga saqlandi");
+            } catch (e) {
+              print("❌ [getPaymentSettingsData] Payme model o'qish xatosi: $e");
+              print(
+                "🔵 [getPaymentSettingsData] Payme: raw data=${value.data()}",
+              );
+            }
+          } else {
+            print(
+              "⚠️ [getPaymentSettingsData] Payme: Document mavjud emas (paymeSettings)",
+            );
+          }
+        })
+        .catchError((e) {
+          print("❌ [getPaymentSettingsData] Payme xatosi: $e");
+        });
+
+    print("🔵 [getPaymentSettingsData] Tugadi");
   }
 
-  static Future<bool?> updateUserWallet({required String amount, required String userId}) async {
+  static Future<bool?> updateUserWallet({
+    required String amount,
+    required String userId,
+  }) async {
     bool isAdded = false;
     await getUserProfile(userId).then((value) async {
       if (value != null) {
         UserModel userModel = value;
         print("Old Wallet Amount: ${userModel.walletAmount}");
         print("Amount to Add: $amount");
-        userModel.walletAmount = double.parse(userModel.walletAmount.toString()) + double.parse(amount);
+        userModel.walletAmount =
+            double.parse(userModel.walletAmount.toString()) +
+            double.parse(amount);
         await FireStoreUtils.updateUser(userModel).then((value) {
           isAdded = value;
         });
@@ -1194,34 +1787,61 @@ class FireStoreUtils {
     return isAdded;
   }
 
-  static StreamController<List<VendorModel>>? getNearestVendorByCategoryController;
+  static StreamController<List<VendorModel>>?
+  getNearestVendorByCategoryController;
 
-  static Stream<List<VendorModel>> getAllNearestRestaurantByCategoryId({bool? isDining, required String categoryId}) async* {
+  static Stream<List<VendorModel>> getAllNearestRestaurantByCategoryId({
+    bool? isDining,
+    required String categoryId,
+  }) async* {
     try {
-      getNearestVendorByCategoryController = StreamController<List<VendorModel>>.broadcast();
+      getNearestVendorByCategoryController =
+          StreamController<List<VendorModel>>.broadcast();
       List<VendorModel> vendorList = [];
       Query<Map<String, dynamic>> query =
           isDining == true
-              ? fireStore.collection(CollectionName.vendors).where('categoryID', arrayContains: categoryId).where("enabledDiveInFuture", isEqualTo: true)
-              : fireStore.collection(CollectionName.vendors).where('categoryID', arrayContains: categoryId);
+              ? fireStore
+                  .collection(CollectionName.vendors)
+                  .where('categoryID', arrayContains: categoryId)
+                  .where("enabledDiveInFuture", isEqualTo: true)
+              : fireStore
+                  .collection(CollectionName.vendors)
+                  .where('categoryID', arrayContains: categoryId);
 
-      GeoFirePoint center = Geoflutterfire().point(latitude: Constant.selectedLocation.location!.latitude ?? 0.0, longitude: Constant.selectedLocation.location!.longitude ?? 0.0);
+      GeoFirePoint center = Geoflutterfire().point(
+        latitude: Constant.selectedLocation.location!.latitude ?? 0.0,
+        longitude: Constant.selectedLocation.location!.longitude ?? 0.0,
+      );
       String field = 'g';
 
       Stream<List<DocumentSnapshot>> stream = Geoflutterfire()
           .collection(collectionRef: query)
-          .within(center: center, radius: double.parse(Constant.sectionConstantModel!.nearByRadius.toString()), field: field, strictMode: true);
+          .within(
+            center: center,
+            radius: double.parse(
+              Constant.sectionConstantModel!.nearByRadius.toString(),
+            ),
+            field: field,
+            strictMode: true,
+          );
 
       stream.listen((List<DocumentSnapshot> documentList) async {
         vendorList.clear();
         for (var document in documentList) {
           final data = document.data() as Map<String, dynamic>;
           VendorModel vendorModel = VendorModel.fromJson(data);
-          if ((Constant.isSubscriptionModelApplied == true || vendorModel.adminCommission?.isEnabled == true) && vendorModel.subscriptionPlan != null) {
+          if ((Constant.isSubscriptionModelApplied == true ||
+                  vendorModel.adminCommission?.isEnabled == true) &&
+              vendorModel.subscriptionPlan != null) {
             if (vendorModel.subscriptionTotalOrders == "-1") {
               vendorList.add(vendorModel);
             } else {
-              if ((vendorModel.subscriptionExpiryDate != null && vendorModel.subscriptionExpiryDate!.toDate().isBefore(DateTime.now()) == false) || vendorModel.subscriptionPlan?.expiryDay == '-1') {
+              if ((vendorModel.subscriptionExpiryDate != null &&
+                      vendorModel.subscriptionExpiryDate!.toDate().isBefore(
+                            DateTime.now(),
+                          ) ==
+                          false) ||
+                  vendorModel.subscriptionPlan?.expiryDay == '-1') {
                 if (vendorModel.subscriptionTotalOrders != '0') {
                   vendorList.add(vendorModel);
                 }
@@ -1242,32 +1862,64 @@ class FireStoreUtils {
 
   static StreamController<List<VendorModel>>? getNearestVendorController;
 
-  static Stream<List<VendorModel>> getAllNearestRestaurant({bool? isDining}) async* {
+  static Stream<List<VendorModel>> getAllNearestRestaurant({
+    bool? isDining,
+  }) async* {
     try {
-      getNearestVendorController = StreamController<List<VendorModel>>.broadcast();
+      getNearestVendorController =
+          StreamController<List<VendorModel>>.broadcast();
       List<VendorModel> vendorList = [];
       Query<Map<String, dynamic>> query =
           isDining == true
-              ? fireStore.collection(CollectionName.vendors).where('section_id', isEqualTo: Constant.sectionConstantModel!.id).where("enabledDiveInFuture", isEqualTo: true)
-              : fireStore.collection(CollectionName.vendors).where('section_id', isEqualTo: Constant.sectionConstantModel!.id);
+              ? fireStore
+                  .collection(CollectionName.vendors)
+                  .where(
+                    'section_id',
+                    isEqualTo: Constant.sectionConstantModel!.id,
+                  )
+                  .where("enabledDiveInFuture", isEqualTo: true)
+              : fireStore
+                  .collection(CollectionName.vendors)
+                  .where(
+                    'section_id',
+                    isEqualTo: Constant.sectionConstantModel!.id,
+                  );
 
-      GeoFirePoint center = Geoflutterfire().point(latitude: Constant.selectedLocation.location!.latitude ?? 0.0, longitude: Constant.selectedLocation.location!.longitude ?? 0.0);
+      GeoFirePoint center = Geoflutterfire().point(
+        latitude: Constant.selectedLocation.location!.latitude ?? 0.0,
+        longitude: Constant.selectedLocation.location!.longitude ?? 0.0,
+      );
       String field = 'g';
 
       Stream<List<DocumentSnapshot>> stream = Geoflutterfire()
           .collection(collectionRef: query)
-          .within(center: center, radius: double.parse(Constant.sectionConstantModel!.nearByRadius.toString()), field: field, strictMode: true);
+          .within(
+            center: center,
+            radius: double.parse(
+              Constant.sectionConstantModel!.nearByRadius.toString(),
+            ),
+            field: field,
+            strictMode: true,
+          );
 
       stream.listen((List<DocumentSnapshot> documentList) async {
         vendorList.clear();
         for (var document in documentList) {
           final data = document.data() as Map<String, dynamic>;
           VendorModel vendorModel = VendorModel.fromJson(data);
-          if ((Constant.isSubscriptionModelApplied == true || Constant.sectionConstantModel!.adminCommision?.isEnabled == true) && vendorModel.subscriptionPlan != null) {
+          if ((Constant.isSubscriptionModelApplied == true ||
+                  Constant.sectionConstantModel!.adminCommision?.isEnabled ==
+                      true) &&
+              vendorModel.subscriptionPlan != null) {
             if (vendorModel.subscriptionTotalOrders == "-1") {
               vendorList.add(vendorModel);
             } else {
-              if ((vendorModel.subscriptionExpiryDate != null && vendorModel.subscriptionExpiryDate!.toDate().isBefore(DateTime.now()) == false) || vendorModel.subscriptionPlan?.expiryDay == "-1") {
+              if ((vendorModel.subscriptionExpiryDate != null &&
+                      vendorModel.subscriptionExpiryDate!.toDate().isBefore(
+                            DateTime.now(),
+                          ) ==
+                          false) ||
+                  vendorModel.subscriptionPlan?.expiryDay == "-1") {
                 if (vendorModel.subscriptionTotalOrders != '0') {
                   vendorList.add(vendorModel);
                 }
@@ -1296,7 +1948,8 @@ class FireStoreUtils {
         .get()
         .then((value) {
           for (var element in value.docs) {
-            VendorCategoryModel vendorCategoryModel = VendorCategoryModel.fromJson(element.data());
+            VendorCategoryModel vendorCategoryModel =
+                VendorCategoryModel.fromJson(element.data());
             vendorCategoryList.add(vendorCategoryModel);
           }
         })
@@ -1316,7 +1969,8 @@ class FireStoreUtils {
         .get()
         .then((value) {
           for (var element in value.docs) {
-            WalletTransactionModel walletTransactionModel = WalletTransactionModel.fromJson(element.data());
+            WalletTransactionModel walletTransactionModel =
+                WalletTransactionModel.fromJson(element.data());
             walletTransactionList.add(walletTransactionModel);
           }
         })
@@ -1326,11 +1980,20 @@ class FireStoreUtils {
     return walletTransactionList;
   }
 
-  static Future<List<ProductModel>> getProductListByCategoryId(String categoryId) async {
+  static Future<List<ProductModel>> getProductListByCategoryId(
+    String categoryId,
+  ) async {
     List<ProductModel> productList = [];
     List<ProductModel> categorybyProductList = [];
-    QuerySnapshot<Map<String, dynamic>> currencyQuery = await fireStore.collection(CollectionName.vendorProducts).where('categoryID', isEqualTo: categoryId).where('publish', isEqualTo: true).get();
-    await Future.forEach(currencyQuery.docs, (QueryDocumentSnapshot<Map<String, dynamic>> document) {
+    QuerySnapshot<Map<String, dynamic>> currencyQuery =
+        await fireStore
+            .collection(CollectionName.vendorProducts)
+            .where('categoryID', isEqualTo: categoryId)
+            .where('publish', isEqualTo: true)
+            .get();
+    await Future.forEach(currencyQuery.docs, (
+      QueryDocumentSnapshot<Map<String, dynamic>> document,
+    ) {
       try {
         productList.add(ProductModel.fromJson(document.data()));
       } catch (e) {
@@ -1343,12 +2006,18 @@ class FireStoreUtils {
 
     for (var vendor in vendorList) {
       await getAllProducts(vendor!.id.toString()).then((value) {
-        if (Constant.isSubscriptionModelApplied == true || vendor.adminCommission?.isEnabled == true) {
-          if (vendor.subscriptionPlan != null && Constant.isExpire(vendor) == false) {
+        if (Constant.isSubscriptionModelApplied == true ||
+            vendor.adminCommission?.isEnabled == true) {
+          if (vendor.subscriptionPlan != null &&
+              Constant.isExpire(vendor) == false) {
             if (vendor.subscriptionPlan?.itemLimit == '-1') {
               allProduct.addAll(value);
             } else {
-              int selectedProduct = value.length < int.parse(vendor.subscriptionPlan?.itemLimit ?? '0') ? (value.isEmpty ? 0 : (value.length)) : int.parse(vendor.subscriptionPlan?.itemLimit ?? '0');
+              int selectedProduct =
+                  value.length <
+                          int.parse(vendor.subscriptionPlan?.itemLimit ?? '0')
+                      ? (value.isEmpty ? 0 : (value.length))
+                      : int.parse(vendor.subscriptionPlan?.itemLimit ?? '0');
               allProduct.addAll(value.sublist(0, selectedProduct));
             }
           }
@@ -1359,7 +2028,9 @@ class FireStoreUtils {
     }
 
     for (var element in productList) {
-      bool productIsInList = allProduct.any((product) => product.id == element.id);
+      bool productIsInList = allProduct.any(
+        (product) => product.id == element.id,
+      );
       if (productIsInList) {
         categorybyProductList.add(element);
       }
@@ -1379,7 +2050,9 @@ class FireStoreUtils {
             .where('publish', isEqualTo: true)
             .orderBy('createdAt', descending: false)
             .get();
-    await Future.forEach(productsQuery.docs, (QueryDocumentSnapshot<Map<String, dynamic>> document) {
+    await Future.forEach(productsQuery.docs, (
+      QueryDocumentSnapshot<Map<String, dynamic>> document,
+    ) {
       try {
         products.add(ProductModel.fromJson(document.data()));
       } catch (e) {
@@ -1389,23 +2062,46 @@ class FireStoreUtils {
     return products;
   }
 
-  static Future<List<VendorModel>> getAllStoresFuture({String? categoryId}) async {
+  static Future<List<VendorModel>> getAllStoresFuture({
+    String? categoryId,
+  }) async {
     List<VendorModel> vendors = [];
 
     try {
       final collectionReference =
           categoryId == null
-              ? fireStore.collection(CollectionName.vendors).where("section_id", isEqualTo: Constant.sectionConstantModel!.id)
-              : fireStore.collection(CollectionName.vendors).where("section_id", isEqualTo: Constant.sectionConstantModel!.id).where("categoryID", isEqualTo: categoryId);
+              ? fireStore
+                  .collection(CollectionName.vendors)
+                  .where(
+                    "section_id",
+                    isEqualTo: Constant.sectionConstantModel!.id,
+                  )
+              : fireStore
+                  .collection(CollectionName.vendors)
+                  .where(
+                    "section_id",
+                    isEqualTo: Constant.sectionConstantModel!.id,
+                  )
+                  .where("categoryID", isEqualTo: categoryId);
 
-      GeoFirePoint center = Geoflutterfire().point(latitude: Constant.selectedLocation.location!.latitude ?? 0.0, longitude: Constant.selectedLocation.location!.longitude ?? 0.0);
+      GeoFirePoint center = Geoflutterfire().point(
+        latitude: Constant.selectedLocation.location!.latitude ?? 0.0,
+        longitude: Constant.selectedLocation.location!.longitude ?? 0.0,
+      );
 
       String field = 'g';
 
       List<DocumentSnapshot> documentList =
           await Geoflutterfire()
               .collection(collectionRef: collectionReference)
-              .within(center: center, radius: double.parse(Constant.sectionConstantModel!.nearByRadius.toString()), field: field, strictMode: true)
+              .within(
+                center: center,
+                radius: double.parse(
+                  Constant.sectionConstantModel!.nearByRadius.toString(),
+                ),
+                field: field,
+                strictMode: true,
+              )
               .first; // Fetch the data once as a Future
 
       if (documentList.isNotEmpty) {
@@ -1413,12 +2109,20 @@ class FireStoreUtils {
           final data = document.data() as Map<String, dynamic>;
           VendorModel vendorModel = VendorModel.fromJson(data);
 
-          if (Constant.isSubscriptionModelApplied == true || Constant.sectionConstantModel?.adminCommision?.isEnabled == true) {
-            if (vendorModel.subscriptionPlan != null && Constant.isExpire(vendorModel) == false) {
+          if (Constant.isSubscriptionModelApplied == true ||
+              Constant.sectionConstantModel?.adminCommision?.isEnabled ==
+                  true) {
+            if (vendorModel.subscriptionPlan != null &&
+                Constant.isExpire(vendorModel) == false) {
               if (vendorModel.subscriptionTotalOrders == "-1") {
                 vendors.add(vendorModel);
               } else {
-                if ((vendorModel.subscriptionExpiryDate != null && vendorModel.subscriptionExpiryDate!.toDate().isBefore(DateTime.now()) == false) || vendorModel.subscriptionPlan?.expiryDay == "-1") {
+                if ((vendorModel.subscriptionExpiryDate != null &&
+                        vendorModel.subscriptionExpiryDate!.toDate().isBefore(
+                              DateTime.now(),
+                            ) ==
+                            false) ||
+                    vendorModel.subscriptionPlan?.expiryDay == "-1") {
                   if (vendorModel.subscriptionTotalOrders != '0') {
                     vendors.add(vendorModel);
                   }
@@ -1439,16 +2143,27 @@ class FireStoreUtils {
 
   static Future<NotificationModel?> getNotificationContent(String type) async {
     NotificationModel? notificationModel;
-    await fireStore.collection(CollectionName.dynamicNotification).where('type', isEqualTo: type).get().then((value) {
-      print("------>");
-      if (value.docs.isNotEmpty) {
-        print(value.docs.first.data());
+    await fireStore
+        .collection(CollectionName.dynamicNotification)
+        .where('type', isEqualTo: type)
+        .get()
+        .then((value) {
+          print("------>");
+          if (value.docs.isNotEmpty) {
+            print(value.docs.first.data());
 
-        notificationModel = NotificationModel.fromJson(value.docs.first.data());
-      } else {
-        notificationModel = NotificationModel(id: "", message: "Notification setup is pending", subject: "setup notification", type: "");
-      }
-    });
+            notificationModel = NotificationModel.fromJson(
+              value.docs.first.data(),
+            );
+          } else {
+            notificationModel = NotificationModel(
+              id: "",
+              message: "Notification setup is pending",
+              subject: "setup notification",
+              type: "",
+            );
+          }
+        });
     return notificationModel;
   }
 
@@ -1462,7 +2177,8 @@ class FireStoreUtils {
         .then((value) {
           for (var element in value.docs) {
             print("====>${value.docs.length}");
-            VendorCategoryModel walletTransactionModel = VendorCategoryModel.fromJson(element.data());
+            VendorCategoryModel walletTransactionModel =
+                VendorCategoryModel.fromJson(element.data());
             list.add(walletTransactionModel);
           }
         })
@@ -1472,31 +2188,54 @@ class FireStoreUtils {
     return list;
   }
 
-  static Future<GiftCardsOrderModel> placeGiftCardOrder(GiftCardsOrderModel giftCardsOrderModel) async {
+  static Future<GiftCardsOrderModel> placeGiftCardOrder(
+    GiftCardsOrderModel giftCardsOrderModel,
+  ) async {
     print("=====>");
     print(giftCardsOrderModel.toJson());
-    await fireStore.collection(CollectionName.giftPurchases).doc(giftCardsOrderModel.id).set(giftCardsOrderModel.toJson());
+    await fireStore
+        .collection(CollectionName.giftPurchases)
+        .doc(giftCardsOrderModel.id)
+        .set(giftCardsOrderModel.toJson());
     return giftCardsOrderModel;
   }
 
   static Future removeFavouriteRestaurant(FavouriteModel favouriteModel) async {
-    await fireStore.collection(CollectionName.favoriteVendor).where("store_id", isEqualTo: favouriteModel.restaurantId).get().then((value) {
-      value.docs.forEach((element) async {
-        await fireStore.collection(CollectionName.favoriteVendor).doc(element.id).delete();
-      });
-    });
+    await fireStore
+        .collection(CollectionName.favoriteVendor)
+        .where("store_id", isEqualTo: favouriteModel.restaurantId)
+        .get()
+        .then((value) {
+          value.docs.forEach((element) async {
+            await fireStore
+                .collection(CollectionName.favoriteVendor)
+                .doc(element.id)
+                .delete();
+          });
+        });
   }
 
-  static Future<void> setFavouriteRestaurant(FavouriteModel favouriteModel) async {
+  static Future<void> setFavouriteRestaurant(
+    FavouriteModel favouriteModel,
+  ) async {
     favouriteModel.sectionId = Constant.sectionConstantModel!.id;
     log("setFavouriteRestaurant :: ${favouriteModel.toJson()}");
-    await fireStore.collection(CollectionName.favoriteVendor).add(favouriteModel.toJson());
+    await fireStore
+        .collection(CollectionName.favoriteVendor)
+        .add(favouriteModel.toJson());
   }
 
-  static Future<void> removeFavouriteItem(FavouriteItemModel favouriteModel) async {
+  static Future<void> removeFavouriteItem(
+    FavouriteItemModel favouriteModel,
+  ) async {
     try {
-      final favoriteCollection = fireStore.collection(CollectionName.favoriteItem);
-      final querySnapshot = await favoriteCollection.where("product_id", isEqualTo: favouriteModel.productId).get();
+      final favoriteCollection = fireStore.collection(
+        CollectionName.favoriteItem,
+      );
+      final querySnapshot =
+          await favoriteCollection
+              .where("product_id", isEqualTo: favouriteModel.productId)
+              .get();
       for (final doc in querySnapshot.docs) {
         await favoriteCollection.doc(doc.id).delete();
       }
@@ -1505,21 +2244,33 @@ class FireStoreUtils {
     }
   }
 
-  static Future<void> setFavouriteItem(FavouriteItemModel favouriteModel) async {
+  static Future<void> setFavouriteItem(
+    FavouriteItemModel favouriteModel,
+  ) async {
     favouriteModel.sectionId = Constant.sectionConstantModel!.id;
-    await fireStore.collection(CollectionName.favoriteItem).add(favouriteModel.toJson());
+    await fireStore
+        .collection(CollectionName.favoriteItem)
+        .add(favouriteModel.toJson());
   }
 
-  static Future<Url> uploadChatImageToFireStorage(File image, BuildContext context) async {
+  static Future<Url> uploadChatImageToFireStorage(
+    File image,
+    BuildContext context,
+  ) async {
     ShowToastDialog.showLoader("Please wait".tr);
     var uniqueID = const Uuid().v4();
-    Reference upload = FirebaseStorage.instance.ref().child('images/$uniqueID.png');
+    Reference upload = FirebaseStorage.instance.ref().child(
+      'images/$uniqueID.png',
+    );
     UploadTask uploadTask = upload.putFile(image);
     var storageRef = (await uploadTask.whenComplete(() {})).ref;
     var downloadUrl = await storageRef.getDownloadURL();
     var metaData = await storageRef.getMetadata();
     ShowToastDialog.closeLoader();
-    return Url(mime: metaData.contentType ?? 'image', url: downloadUrl.toString());
+    return Url(
+      mime: metaData.contentType ?? 'image',
+      url: downloadUrl.toString(),
+    );
   }
 
   static Future<List<CouponModel>> getHomeCoupon() async {
@@ -1532,7 +2283,9 @@ class FireStoreUtils {
         .get()
         .then((value) {
           for (var element in value.docs) {
-            CouponModel walletTransactionModel = CouponModel.fromJson(element.data());
+            CouponModel walletTransactionModel = CouponModel.fromJson(
+              element.data(),
+            );
             list.add(walletTransactionModel);
           }
         })
@@ -1569,7 +2322,9 @@ class FireStoreUtils {
         .then((value) {
           print("Number of Stories Fetched: ${value.docs.length}");
           for (var element in value.docs) {
-            StoryModel walletTransactionModel = StoryModel.fromJson(element.data());
+            StoryModel walletTransactionModel = StoryModel.fromJson(
+              element.data(),
+            );
             storyList.add(walletTransactionModel);
           }
         });
@@ -1578,33 +2333,73 @@ class FireStoreUtils {
 
   static Future<GiftCardsOrderModel?> checkRedeemCode(String giftCode) async {
     GiftCardsOrderModel? giftCardsOrderModel;
-    await fireStore.collection(CollectionName.giftPurchases).where("giftCode", isEqualTo: giftCode).get().then((value) {
-      if (value.docs.isNotEmpty) {
-        giftCardsOrderModel = GiftCardsOrderModel.fromJson(value.docs.first.data());
-      }
-    });
+    await fireStore
+        .collection(CollectionName.giftPurchases)
+        .where("giftCode", isEqualTo: giftCode)
+        .get()
+        .then((value) {
+          if (value.docs.isNotEmpty) {
+            giftCardsOrderModel = GiftCardsOrderModel.fromJson(
+              value.docs.first.data(),
+            );
+          }
+        });
     return giftCardsOrderModel;
   }
 
-  static Future<void> sendTopUpMail({required String amount, required String paymentMethod, required String tractionId}) async {
-    EmailTemplateModel? emailTemplateModel = await FireStoreUtils.getEmailTemplates(Constant.walletTopup);
+  static Future<void> sendTopUpMail({
+    required String amount,
+    required String paymentMethod,
+    required String tractionId,
+  }) async {
+    EmailTemplateModel? emailTemplateModel =
+        await FireStoreUtils.getEmailTemplates(Constant.walletTopup);
 
     String newString = emailTemplateModel!.message.toString();
-    newString = newString.replaceAll("{username}", Constant.userModel!.firstName.toString() + Constant.userModel!.lastName.toString());
-    newString = newString.replaceAll("{date}", DateFormat('yyyy-MM-dd').format(Timestamp.now().toDate()));
-    newString = newString.replaceAll("{amount}", Constant.amountShow(amount: amount));
-    newString = newString.replaceAll("{paymentmethod}", paymentMethod.toString());
+    newString = newString.replaceAll(
+      "{username}",
+      Constant.userModel!.firstName.toString() +
+          Constant.userModel!.lastName.toString(),
+    );
+    newString = newString.replaceAll(
+      "{date}",
+      DateFormat('yyyy-MM-dd').format(Timestamp.now().toDate()),
+    );
+    newString = newString.replaceAll(
+      "{amount}",
+      Constant.amountShow(amount: amount),
+    );
+    newString = newString.replaceAll(
+      "{paymentmethod}",
+      paymentMethod.toString(),
+    );
     newString = newString.replaceAll("{transactionid}", tractionId.toString());
-    newString = newString.replaceAll("{newwalletbalance}.", Constant.amountShow(amount: Constant.userModel!.walletAmount.toString()));
-    await Constant.sendMail(subject: emailTemplateModel.subject, isAdmin: emailTemplateModel.isSendToAdmin, body: newString, recipients: [Constant.userModel!.email]);
+    newString = newString.replaceAll(
+      "{newwalletbalance}.",
+      Constant.amountShow(amount: Constant.userModel!.walletAmount.toString()),
+    );
+    await Constant.sendMail(
+      subject: emailTemplateModel.subject,
+      isAdmin: emailTemplateModel.isSendToAdmin,
+      body: newString,
+      recipients: [Constant.userModel!.email],
+    );
   }
 
-  static Future<ChatVideoContainer?> uploadChatVideoToFireStorage(BuildContext context, File video) async {
+  static Future<ChatVideoContainer?> uploadChatVideoToFireStorage(
+    BuildContext context,
+    File video,
+  ) async {
     try {
       ShowToastDialog.showLoader("Uploading video...");
       final String uniqueID = const Uuid().v4();
-      final Reference videoRef = FirebaseStorage.instance.ref('videos/$uniqueID.mp4');
-      final UploadTask uploadTask = videoRef.putFile(video, SettableMetadata(contentType: 'video/mp4'));
+      final Reference videoRef = FirebaseStorage.instance.ref(
+        'videos/$uniqueID.mp4',
+      );
+      final UploadTask uploadTask = videoRef.putFile(
+        video,
+        SettableMetadata(contentType: 'video/mp4'),
+      );
       await uploadTask;
       final String videoUrl = await videoRef.getDownloadURL();
       ShowToastDialog.showLoader("Generating thumbnail...");
@@ -1615,14 +2410,26 @@ class FireStoreUtils {
       );
 
       final String thumbnailID = const Uuid().v4();
-      final Reference thumbnailRef = FirebaseStorage.instance.ref('thumbnails/$thumbnailID.jpg');
-      final UploadTask thumbnailUploadTask = thumbnailRef.putData(thumbnail.readAsBytesSync(), SettableMetadata(contentType: 'image/jpeg'));
+      final Reference thumbnailRef = FirebaseStorage.instance.ref(
+        'thumbnails/$thumbnailID.jpg',
+      );
+      final UploadTask thumbnailUploadTask = thumbnailRef.putData(
+        thumbnail.readAsBytesSync(),
+        SettableMetadata(contentType: 'image/jpeg'),
+      );
       await thumbnailUploadTask;
       final String thumbnailUrl = await thumbnailRef.getDownloadURL();
       var metaData = await thumbnailRef.getMetadata();
       ShowToastDialog.closeLoader();
 
-      return ChatVideoContainer(videoUrl: Url(url: videoUrl.toString(), mime: metaData.contentType ?? 'video', videoThumbnail: thumbnailUrl), thumbnailUrl: thumbnailUrl);
+      return ChatVideoContainer(
+        videoUrl: Url(
+          url: videoUrl.toString(),
+          mime: metaData.contentType ?? 'video',
+          videoThumbnail: thumbnailUrl,
+        ),
+        thumbnailUrl: thumbnailUrl,
+      );
     } catch (e) {
       ShowToastDialog.closeLoader();
       ShowToastDialog.showToast("Error: ${e.toString()}");
@@ -1633,11 +2440,15 @@ class FireStoreUtils {
   static Future<OrderModel?> getOrderByOrderId(String orderId) async {
     OrderModel? orderModel;
     try {
-      await fireStore.collection(CollectionName.vendorOrders).doc(orderId).get().then((value) {
-        if (value.data() != null) {
-          orderModel = OrderModel.fromJson(value.data()!);
-        }
-      });
+      await fireStore
+          .collection(CollectionName.vendorOrders)
+          .doc(orderId)
+          .get()
+          .then((value) {
+            if (value.data() != null) {
+              orderModel = OrderModel.fromJson(value.data()!);
+            }
+          });
     } catch (e, s) {
       print('FireStoreUtils.firebaseCreateNewUser $e $s');
       return null;
@@ -1699,7 +2510,10 @@ class FireStoreUtils {
   static Future<bool?> deleteUser() async {
     bool? isDelete;
     try {
-      await fireStore.collection(CollectionName.users).doc(FireStoreUtils.getCurrentUid()).delete();
+      await fireStore
+          .collection(CollectionName.users)
+          .doc(FireStoreUtils.getCurrentUid())
+          .delete();
 
       // delete user  from firebase auth
       await auth.FirebaseAuth.instance.currentUser?.delete().then((value) {
@@ -1739,7 +2553,9 @@ class FireStoreUtils {
     await fireStore.collection(CollectionName.parcelWeight).get().then((value) {
       for (var element in value.docs) {
         try {
-          ParcelWeightModel category = ParcelWeightModel.fromJson(element.data());
+          ParcelWeightModel category = ParcelWeightModel.fromJson(
+            element.data(),
+          );
           parcelWeightList.add(category);
         } catch (e, stackTrace) {
           print('getParcelWeight parse error: ${element.id} $e');
@@ -1750,7 +2566,10 @@ class FireStoreUtils {
     return parcelWeightList;
   }
 
-  static Future<bool> setParcelOrder(ParcelOrderModel orderModel, double totalAmount) async {
+  static Future<bool> setParcelOrder(
+    ParcelOrderModel orderModel,
+    double totalAmount,
+  ) async {
     // try {
     //   final firestore = FirebaseFirestore.instance;
     //   final isNew = orderModel.id.isEmpty;
@@ -1794,22 +2613,50 @@ class FireStoreUtils {
     return true;
   }
 
-  static Future<void> sendParcelBookEmail({required ParcelOrderModel orderModel}) async {
+  static Future<void> sendParcelBookEmail({
+    required ParcelOrderModel orderModel,
+  }) async {
     try {
-      EmailTemplateModel? emailTemplateModel = await FireStoreUtils.getEmailTemplates(Constant.newParcelBook);
+      EmailTemplateModel? emailTemplateModel =
+          await FireStoreUtils.getEmailTemplates(Constant.newParcelBook);
 
       String newString = emailTemplateModel!.message.toString();
-      newString = newString.replaceAll("{passengername}", "${Constant.userModel!.firstName} ${Constant.userModel!.lastName}");
+      newString = newString.replaceAll(
+        "{passengername}",
+        "${Constant.userModel!.firstName} ${Constant.userModel!.lastName}",
+      );
       newString = newString.replaceAll("{parcelid}", orderModel.id.toString());
-      newString = newString.replaceAll("{date}", DateFormat('dd-MM-yyyy').format(orderModel.createdAt!.toDate()));
-      newString = newString.replaceAll("{sendername}", orderModel.sender!.name.toString());
-      newString = newString.replaceAll("{senderphone}", orderModel.sender!.phone.toString());
+      newString = newString.replaceAll(
+        "{date}",
+        DateFormat('dd-MM-yyyy').format(orderModel.createdAt!.toDate()),
+      );
+      newString = newString.replaceAll(
+        "{sendername}",
+        orderModel.sender!.name.toString(),
+      );
+      newString = newString.replaceAll(
+        "{senderphone}",
+        orderModel.sender!.phone.toString(),
+      );
       newString = newString.replaceAll("{note}", orderModel.note.toString());
-      newString = newString.replaceAll("{deliverydate}", DateFormat('dd-MM-yyyy').format(orderModel.receiverPickupDateTime!.toDate()));
+      newString = newString.replaceAll(
+        "{deliverydate}",
+        DateFormat(
+          'dd-MM-yyyy',
+        ).format(orderModel.receiverPickupDateTime!.toDate()),
+      );
 
       String subjectNewString = emailTemplateModel.subject.toString();
-      subjectNewString = subjectNewString.replaceAll("{orderid}", orderModel.id.toString());
-      await Constant.sendMail(subject: subjectNewString, isAdmin: emailTemplateModel.isSendToAdmin, body: newString, recipients: [Constant.userModel!.email]);
+      subjectNewString = subjectNewString.replaceAll(
+        "{orderid}",
+        orderModel.id.toString(),
+      );
+      await Constant.sendMail(
+        subject: subjectNewString,
+        isAdmin: emailTemplateModel.isSendToAdmin,
+        body: newString,
+        recipients: [Constant.userModel!.email],
+      );
     } catch (e) {
       log("SIGNUP :: 22 :::::: $e");
     }
@@ -1833,52 +2680,74 @@ class FireStoreUtils {
 
   static Future<List<VehicleType>> getVehicleType() async {
     List<VehicleType> vehicleTypeList = [];
-    await fireStore.collection(CollectionName.vehicleType).where('sectionId', isEqualTo: Constant.sectionConstantModel!.id).where("isActive", isEqualTo: true).get().then((value) {
-      for (var element in value.docs) {
-        try {
-          VehicleType category = VehicleType.fromJson(element.data());
-          vehicleTypeList.add(category);
-        } catch (e, stackTrace) {
-          print('getVehicleType error: ${element.id} $e');
-          print(stackTrace);
-        }
-      }
-    });
+    await fireStore
+        .collection(CollectionName.vehicleType)
+        .where('sectionId', isEqualTo: Constant.sectionConstantModel!.id)
+        .where("isActive", isEqualTo: true)
+        .get()
+        .then((value) {
+          for (var element in value.docs) {
+            try {
+              VehicleType category = VehicleType.fromJson(element.data());
+              vehicleTypeList.add(category);
+            } catch (e, stackTrace) {
+              print('getVehicleType error: ${element.id} $e');
+              print(stackTrace);
+            }
+          }
+        });
     return vehicleTypeList;
   }
 
   static Future<List<PopularDestination>> getPopularDestination() async {
     List<PopularDestination> popularDestination = [];
-    await fireStore.collection(CollectionName.popularDestinations).where("sectionId", isEqualTo: Constant.sectionConstantModel!.id).where('is_publish', isEqualTo: true).get().then((value) {
-      for (var element in value.docs) {
-        try {
-          PopularDestination category = PopularDestination.fromJson(element.data());
-          popularDestination.add(category);
-        } catch (e, stackTrace) {
-          print('Get PopularDestination error: ${element.id} $e');
-          print(stackTrace);
-        }
-      }
-    });
+    await fireStore
+        .collection(CollectionName.popularDestinations)
+        .where("sectionId", isEqualTo: Constant.sectionConstantModel!.id)
+        .where('is_publish', isEqualTo: true)
+        .get()
+        .then((value) {
+          for (var element in value.docs) {
+            try {
+              PopularDestination category = PopularDestination.fromJson(
+                element.data(),
+              );
+              popularDestination.add(category);
+            } catch (e, stackTrace) {
+              print('Get PopularDestination error: ${element.id} $e');
+              print(stackTrace);
+            }
+          }
+        });
     return popularDestination;
   }
 
   static Future cabOrderPlace(CabOrderModel orderModel) async {
-    await fireStore.collection(CollectionName.rides).doc(orderModel.id).set(orderModel.toJson());
+    await fireStore
+        .collection(CollectionName.rides)
+        .doc(orderModel.id)
+        .set(orderModel.toJson());
   }
 
   static Future parcelOrderPlace(ParcelOrderModel orderModel) async {
-    await fireStore.collection(CollectionName.parcelOrders).doc(orderModel.id).set(orderModel.toJson());
+    await fireStore
+        .collection(CollectionName.parcelOrders)
+        .doc(orderModel.id)
+        .set(orderModel.toJson());
   }
 
   static Future rentalOrderPlace(RentalOrderModel orderModel) async {
-    await fireStore.collection(CollectionName.rentalOrders).doc(orderModel.id).set(orderModel.toJson());
+    await fireStore
+        .collection(CollectionName.rentalOrders)
+        .doc(orderModel.id)
+        .set(orderModel.toJson());
   }
 
   static Future<CabOrderModel?> getCabOrderById(String orderId) async {
     CabOrderModel? orderModel;
     try {
-      final doc = await fireStore.collection(CollectionName.rides).doc(orderId).get();
+      final doc =
+          await fireStore.collection(CollectionName.rides).doc(orderId).get();
       if (doc.data() != null) {
         final model = CabOrderModel.fromJson(doc.data()!);
         if (model.rideType == "ride") {
@@ -1895,7 +2764,8 @@ class FireStoreUtils {
   static Future<CabOrderModel?> getIntercityOrder(String orderId) async {
     CabOrderModel? orderModel;
     try {
-      final doc = await fireStore.collection(CollectionName.rides).doc(orderId).get();
+      final doc =
+          await fireStore.collection(CollectionName.rides).doc(orderId).get();
       if (doc.data() != null) {
         final model = CabOrderModel.fromJson(doc.data()!);
         if (model.rideType == "intercity") {
@@ -1913,7 +2783,8 @@ class FireStoreUtils {
     UserModel? userModel;
 
     try {
-      final doc = await fireStore.collection(CollectionName.users).doc(userId).get();
+      final doc =
+          await fireStore.collection(CollectionName.users).doc(userId).get();
 
       if (doc.data() != null) {
         userModel = UserModel.fromJson(doc.data()!);
@@ -1971,15 +2842,21 @@ class FireStoreUtils {
 
   static Future<CategoryModel?> getCategoryById(String categoryId) async {
     CategoryModel? categoryModel;
-    await fireStore.collection(CollectionName.providerCategories).doc(categoryId).get().then((value) {
-      if (value.exists) {
-        categoryModel = CategoryModel.fromJson(value.data()!);
-      }
-    });
+    await fireStore
+        .collection(CollectionName.providerCategories)
+        .doc(categoryId)
+        .get()
+        .then((value) {
+          if (value.exists) {
+            categoryModel = CategoryModel.fromJson(value.data()!);
+          }
+        });
     return categoryModel;
   }
 
-  static Future<List<ProviderServiceModel>> getProviderFuture({String categoryId = ''}) async {
+  static Future<List<ProviderServiceModel>> getProviderFuture({
+    String categoryId = '',
+  }) async {
     List<ProviderServiceModel> providerList = [];
 
     try {
@@ -1992,29 +2869,57 @@ class FireStoreUtils {
             .where('categoryId', isEqualTo: categoryId)
             .where("publish", isEqualTo: true);
       } else {
-        collectionReference = fireStore.collection(CollectionName.providersServices).where("sectionId", isEqualTo: Constant.sectionConstantModel!.id).where("publish", isEqualTo: true);
+        collectionReference = fireStore
+            .collection(CollectionName.providersServices)
+            .where("sectionId", isEqualTo: Constant.sectionConstantModel!.id)
+            .where("publish", isEqualTo: true);
       }
 
-      GeoFirePoint center = Geoflutterfire().point(latitude: Constant.selectedLocation.location!.latitude ?? 0.0, longitude: Constant.selectedLocation.location!.longitude ?? 0.0);
+      GeoFirePoint center = Geoflutterfire().point(
+        latitude: Constant.selectedLocation.location!.latitude ?? 0.0,
+        longitude: Constant.selectedLocation.location!.longitude ?? 0.0,
+      );
 
       String field = 'g';
 
       await Geoflutterfire()
           .collection(collectionRef: collectionReference)
-          .within(center: center, radius: double.parse(Constant.sectionConstantModel!.nearByRadius.toString()), field: field, strictMode: true)
+          .within(
+            center: center,
+            radius: double.parse(
+              Constant.sectionConstantModel!.nearByRadius.toString(),
+            ),
+            field: field,
+            strictMode: true,
+          )
           .first
           .then((documentList) {
             for (var document in documentList) {
-              ProviderServiceModel providerServiceModel = ProviderServiceModel.fromJson(document.data() as Map<String, dynamic>);
+              ProviderServiceModel providerServiceModel =
+                  ProviderServiceModel.fromJson(
+                    document.data() as Map<String, dynamic>,
+                  );
 
               log(
                 ":: isExpireDate(expiryDay :: ${Constant.isExpireDate(expiryDay: (providerServiceModel.subscriptionPlan?.expiryDay == '-1'), subscriptionExpiryDate: providerServiceModel.subscriptionExpiryDate)}",
               );
 
-              if (Constant.isSubscriptionModelApplied == true || Constant.sectionConstantModel?.adminCommision?.isEnabled == true) {
+              if (Constant.isSubscriptionModelApplied == true ||
+                  Constant.sectionConstantModel?.adminCommision?.isEnabled ==
+                      true) {
                 if (providerServiceModel.subscriptionPlan != null &&
-                    Constant.isExpireDate(expiryDay: (providerServiceModel.subscriptionPlan?.expiryDay == '-1'), subscriptionExpiryDate: providerServiceModel.subscriptionExpiryDate) == false) {
-                  if (providerServiceModel.subscriptionTotalOrders == "-1" || providerServiceModel.subscriptionTotalOrders != '0') {
+                    Constant.isExpireDate(
+                          expiryDay:
+                              (providerServiceModel
+                                      .subscriptionPlan
+                                      ?.expiryDay ==
+                                  '-1'),
+                          subscriptionExpiryDate:
+                              providerServiceModel.subscriptionExpiryDate,
+                        ) ==
+                        false) {
+                  if (providerServiceModel.subscriptionTotalOrders == "-1" ||
+                      providerServiceModel.subscriptionTotalOrders != '0') {
                     providerList.add(providerServiceModel);
                   }
                 }
@@ -2033,39 +2938,61 @@ class FireStoreUtils {
     return providerList;
   }
 
-  static Future<List<ProviderServiceModel>> getAllProviderServiceByAuthorId(String authId) async {
+  static Future<List<ProviderServiceModel>> getAllProviderServiceByAuthorId(
+    String authId,
+  ) async {
     List<ProviderServiceModel> providerService = [];
-    await fireStore.collection(CollectionName.providersServices).where('author', isEqualTo: authId).where('publish', isEqualTo: true).orderBy('createdAt', descending: false).get().then((value) {
-      for (var element in value.docs) {
-        ProviderServiceModel orderModel = ProviderServiceModel.fromJson(element.data());
-        providerService.add(orderModel);
-      }
-    });
+    await fireStore
+        .collection(CollectionName.providersServices)
+        .where('author', isEqualTo: authId)
+        .where('publish', isEqualTo: true)
+        .orderBy('createdAt', descending: false)
+        .get()
+        .then((value) {
+          for (var element in value.docs) {
+            ProviderServiceModel orderModel = ProviderServiceModel.fromJson(
+              element.data(),
+            );
+            providerService.add(orderModel);
+          }
+        });
     return providerService;
   }
 
   static Future<CategoryModel?> getSubCategoryById(String categoryId) async {
     CategoryModel? categoryModel;
-    await fireStore.collection(CollectionName.providerCategories).doc(categoryId).get().then((value) {
-      if (value.exists) {
-        categoryModel = CategoryModel.fromJson(value.data()!);
-      }
-    });
+    await fireStore
+        .collection(CollectionName.providerCategories)
+        .doc(categoryId)
+        .get()
+        .then((value) {
+          if (value.exists) {
+            categoryModel = CategoryModel.fromJson(value.data()!);
+          }
+        });
     return categoryModel;
   }
 
-  static Future<List<RatingModel>> getReviewByProviderServiceId(String serviceId) async {
+  static Future<List<RatingModel>> getReviewByProviderServiceId(
+    String serviceId,
+  ) async {
     List<RatingModel> providerReview = [];
-    await fireStore.collection(CollectionName.itemsReview).where('productId', isEqualTo: serviceId).get().then((value) {
-      for (var element in value.docs) {
-        RatingModel orderModel = RatingModel.fromJson(element.data());
-        providerReview.add(orderModel);
-      }
-    });
+    await fireStore
+        .collection(CollectionName.itemsReview)
+        .where('productId', isEqualTo: serviceId)
+        .get()
+        .then((value) {
+          for (var element in value.docs) {
+            RatingModel orderModel = RatingModel.fromJson(element.data());
+            providerReview.add(orderModel);
+          }
+        });
     return providerReview;
   }
 
-  static Future<List<ProviderServiceModel>> getProviderServiceByProviderId({required String providerId}) async {
+  static Future<List<ProviderServiceModel>> getProviderServiceByProviderId({
+    required String providerId,
+  }) async {
     List<ProviderServiceModel> providerList = [];
 
     try {
@@ -2076,28 +3003,53 @@ class FireStoreUtils {
           .where("publish", isEqualTo: true);
 
       // Geolocation center point
-      GeoFirePoint center = Geoflutterfire().point(latitude: Constant.selectedLocation.location!.latitude ?? 0.0, longitude: Constant.selectedLocation.location!.longitude ?? 0.0);
+      GeoFirePoint center = Geoflutterfire().point(
+        latitude: Constant.selectedLocation.location!.latitude ?? 0.0,
+        longitude: Constant.selectedLocation.location!.longitude ?? 0.0,
+      );
 
       String field = 'g';
 
       // Query within radius
       await Geoflutterfire()
           .collection(collectionRef: collectionReference)
-          .within(center: center, radius: double.parse(Constant.sectionConstantModel!.nearByRadius.toString()), field: field, strictMode: true)
+          .within(
+            center: center,
+            radius: double.parse(
+              Constant.sectionConstantModel!.nearByRadius.toString(),
+            ),
+            field: field,
+            strictMode: true,
+          )
           .first
           .then((documentList) {
             for (var document in documentList) {
-              ProviderServiceModel providerServiceModel = ProviderServiceModel.fromJson(document.data() as Map<String, dynamic>);
+              ProviderServiceModel providerServiceModel =
+                  ProviderServiceModel.fromJson(
+                    document.data() as Map<String, dynamic>,
+                  );
 
               log(
                 ":: isExpireDate(expiryDay :: ${Constant.isExpireDate(expiryDay: (providerServiceModel.subscriptionPlan?.expiryDay == '-1'), subscriptionExpiryDate: providerServiceModel.subscriptionExpiryDate)}",
               );
 
               //Subscription & Commission check
-              if (Constant.isSubscriptionModelApplied == true || Constant.sectionConstantModel?.adminCommision?.isEnabled == true) {
+              if (Constant.isSubscriptionModelApplied == true ||
+                  Constant.sectionConstantModel?.adminCommision?.isEnabled ==
+                      true) {
                 if (providerServiceModel.subscriptionPlan != null &&
-                    Constant.isExpireDate(expiryDay: (providerServiceModel.subscriptionPlan?.expiryDay == '-1'), subscriptionExpiryDate: providerServiceModel.subscriptionExpiryDate) == false) {
-                  if (providerServiceModel.subscriptionTotalOrders == "-1" || providerServiceModel.subscriptionTotalOrders != '0') {
+                    Constant.isExpireDate(
+                          expiryDay:
+                              (providerServiceModel
+                                      .subscriptionPlan
+                                      ?.expiryDay ==
+                                  '-1'),
+                          subscriptionExpiryDate:
+                              providerServiceModel.subscriptionExpiryDate,
+                        ) ==
+                        false) {
+                  if (providerServiceModel.subscriptionTotalOrders == "-1" ||
+                      providerServiceModel.subscriptionTotalOrders != '0') {
                     providerList.add(providerServiceModel);
                   }
                 }
@@ -2127,14 +3079,18 @@ class FireStoreUtils {
         .get()
         .then((value) {
           for (var element in value.docs) {
-            CouponModel favouriteOndemandServiceModel = CouponModel.fromJson(element.data());
+            CouponModel favouriteOndemandServiceModel = CouponModel.fromJson(
+              element.data(),
+            );
             offers.add(favouriteOndemandServiceModel);
           }
         });
     return offers;
   }
 
-  static Future<List<CouponModel>> getProviderCouponAfterExpire(String providerId) async {
+  static Future<List<CouponModel>> getProviderCouponAfterExpire(
+    String providerId,
+  ) async {
     List<CouponModel> coupon = [];
     await fireStore
         .collection(CollectionName.providersCoupons)
@@ -2146,27 +3102,37 @@ class FireStoreUtils {
         .get()
         .then((value) {
           for (var element in value.docs) {
-            CouponModel favouriteOndemandServiceModel = CouponModel.fromJson(element.data());
+            CouponModel favouriteOndemandServiceModel = CouponModel.fromJson(
+              element.data(),
+            );
             coupon.add(favouriteOndemandServiceModel);
           }
         });
     return coupon;
   }
 
-  static Future<OnProviderOrderModel> onDemandOrderPlace(OnProviderOrderModel orderModel, double totalAmount) async {
+  static Future<OnProviderOrderModel> onDemandOrderPlace(
+    OnProviderOrderModel orderModel,
+    double totalAmount,
+  ) async {
     DocumentReference documentReference;
     if (orderModel.id.isEmpty) {
-      documentReference = fireStore.collection(CollectionName.providerOrders).doc();
+      documentReference =
+          fireStore.collection(CollectionName.providerOrders).doc();
       orderModel.id = documentReference.id;
     } else {
-      documentReference = fireStore.collection(CollectionName.providerOrders).doc(orderModel.id);
+      documentReference = fireStore
+          .collection(CollectionName.providerOrders)
+          .doc(orderModel.id);
     }
     await documentReference.set(orderModel.toJson());
 
     return orderModel;
   }
 
-  static Future<void> sendOrderOnDemandServiceEmail({required OnProviderOrderModel orderModel}) async {
+  static Future<void> sendOrderOnDemandServiceEmail({
+    required OnProviderOrderModel orderModel,
+  }) async {
     try {
       String firstHTML = """
        <table style="width: 100%; border-collapse: collapse; border: 1px solid rgb(0, 0, 0);">
@@ -2181,25 +3147,43 @@ class FireStoreUtils {
     <tbody>
     """;
 
-      EmailTemplateModel? emailTemplateModel = await FireStoreUtils.getEmailTemplates(Constant.newOnDemandBook);
+      EmailTemplateModel? emailTemplateModel =
+          await FireStoreUtils.getEmailTemplates(Constant.newOnDemandBook);
 
       if (emailTemplateModel != null) {
         String newString = emailTemplateModel.message.toString();
-        newString = newString.replaceAll("{username}", "${Constant.userModel?.firstName ?? ''} ${Constant.userModel?.lastName ?? ''}");
+        newString = newString.replaceAll(
+          "{username}",
+          "${Constant.userModel?.firstName ?? ''} ${Constant.userModel?.lastName ?? ''}",
+        );
         newString = newString.replaceAll("{orderid}", orderModel.id);
-        newString = newString.replaceAll("{date}", DateFormat('dd-MM-yyyy').format(orderModel.createdAt.toDate()));
-        newString = newString.replaceAll("{address}", orderModel.address!.getFullAddress());
-        newString = newString.replaceAll("{paymentmethod}", orderModel.payment_method);
+        newString = newString.replaceAll(
+          "{date}",
+          DateFormat('dd-MM-yyyy').format(orderModel.createdAt.toDate()),
+        );
+        newString = newString.replaceAll(
+          "{address}",
+          orderModel.address!.getFullAddress(),
+        );
+        newString = newString.replaceAll(
+          "{paymentmethod}",
+          orderModel.payment_method,
+        );
 
         double total = 0.0;
         double discount = 0.0;
         double taxAmount = 0.0;
         List<String> htmlList = [];
 
-        if (orderModel.provider.disPrice == "" || orderModel.provider.disPrice == "0") {
-          total = double.parse(orderModel.provider.price.toString()) * orderModel.quantity;
+        if (orderModel.provider.disPrice == "" ||
+            orderModel.provider.disPrice == "0") {
+          total =
+              double.parse(orderModel.provider.price.toString()) *
+              orderModel.quantity;
         } else {
-          total = double.parse(orderModel.provider.disPrice.toString()) * orderModel.quantity;
+          total =
+              double.parse(orderModel.provider.disPrice.toString()) *
+              orderModel.quantity;
         }
 
         String product = """
@@ -2212,13 +3196,19 @@ class FireStoreUtils {
     """;
         htmlList.add(product);
 
-        if (orderModel.couponCode != null && orderModel.couponCode!.isNotEmpty) {
+        if (orderModel.couponCode != null &&
+            orderModel.couponCode!.isNotEmpty) {
           discount = double.parse(orderModel.discount.toString());
         }
         List<String> taxHtmlList = [];
         if (orderModel.taxModel != null) {
           for (var element in orderModel.taxModel!) {
-            taxAmount = taxAmount + Constant.getTaxValue(amount: (total - discount).toString(), taxModel: element);
+            taxAmount =
+                taxAmount +
+                Constant.getTaxValue(
+                  amount: (total - discount).toString(),
+                  taxModel: element,
+                );
             String taxHtml =
                 """<span style="font-size: 1rem;">${element.title}: ${Constant.amountShow(amount: Constant.getTaxValue(amount: (total - discount).toString(), taxModel: element).toString())}${Constant.taxList.indexOf(element) == Constant.taxList.length - 1 ? "</span>" : "<br></span>"}""";
             taxHtmlList.add(taxHtml);
@@ -2227,33 +3217,67 @@ class FireStoreUtils {
 
         var totalamount = total + taxAmount - discount;
 
-        newString = newString.replaceAll("{subtotal}", Constant.amountShow(amount: total.toString()));
-        newString = newString.replaceAll("{coupon}", '(${orderModel.couponCode.toString()})');
-        newString = newString.replaceAll("{discountamount}", orderModel.couponCode == null ? "0.0" : Constant.amountShow(amount: orderModel.discount.toString()));
-        newString = newString.replaceAll("{totalAmount}", Constant.amountShow(amount: totalamount.toString()));
+        newString = newString.replaceAll(
+          "{subtotal}",
+          Constant.amountShow(amount: total.toString()),
+        );
+        newString = newString.replaceAll(
+          "{coupon}",
+          '(${orderModel.couponCode.toString()})',
+        );
+        newString = newString.replaceAll(
+          "{discountamount}",
+          orderModel.couponCode == null
+              ? "0.0"
+              : Constant.amountShow(amount: orderModel.discount.toString()),
+        );
+        newString = newString.replaceAll(
+          "{totalAmount}",
+          Constant.amountShow(amount: totalamount.toString()),
+        );
 
         String tableHTML = htmlList.join();
         String lastHTML = "</tbody></table>";
-        newString = newString.replaceAll("{productdetails}", firstHTML + tableHTML + lastHTML);
+        newString = newString.replaceAll(
+          "{productdetails}",
+          firstHTML + tableHTML + lastHTML,
+        );
         newString = newString.replaceAll("{taxdetails}", taxHtmlList.join());
-        newString = newString.replaceAll("{newwalletbalance}.", Constant.amountShow(amount: Constant.userModel?.walletAmount.toString()));
+        newString = newString.replaceAll(
+          "{newwalletbalance}.",
+          Constant.amountShow(
+            amount: Constant.userModel?.walletAmount.toString(),
+          ),
+        );
 
         String subjectNewString = emailTemplateModel.subject.toString();
-        subjectNewString = subjectNewString.replaceAll("{orderid}", orderModel.id);
-        await Constant.sendMail(subject: subjectNewString, isAdmin: emailTemplateModel.isSendToAdmin, body: newString, recipients: [Constant.userModel?.email]);
+        subjectNewString = subjectNewString.replaceAll(
+          "{orderid}",
+          orderModel.id,
+        );
+        await Constant.sendMail(
+          subject: subjectNewString,
+          isAdmin: emailTemplateModel.isSendToAdmin,
+          body: newString,
+          recipients: [Constant.userModel?.email],
+        );
       }
     } catch (e) {
       log("SIGNUP :: 22 :::::: $e");
     }
   }
 
-  static Future<void> updateOnDemandOrder(OnProviderOrderModel orderModel) async {
+  static Future<void> updateOnDemandOrder(
+    OnProviderOrderModel orderModel,
+  ) async {
     if (orderModel.id.isEmpty) {
       throw Exception("Order ID cannot be empty");
     }
 
     try {
-      final docRef = fireStore.collection(CollectionName.providerOrders).doc(orderModel.id);
+      final docRef = fireStore
+          .collection(CollectionName.providerOrders)
+          .doc(orderModel.id);
       await docRef.set(orderModel.toJson(), SetOptions(merge: true));
     } catch (e) {
       print("Error updating OnDemand order: $e");
@@ -2313,15 +3337,27 @@ class FireStoreUtils {
     return fireStore
         .collection(CollectionName.providerOrders)
         .where("authorID", isEqualTo: getCurrentUid())
-        .where("sectionId", isEqualTo: Constant.sectionConstantModel!.id.toString())
+        .where(
+          "sectionId",
+          isEqualTo: Constant.sectionConstantModel!.id.toString(),
+        )
         .orderBy("createdAt", descending: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs.map((doc) => OnProviderOrderModel.fromJson(doc.data())).toList());
+        .map(
+          (snapshot) =>
+              snapshot.docs
+                  .map((doc) => OnProviderOrderModel.fromJson(doc.data()))
+                  .toList(),
+        );
   }
 
   static Future<WorkerModel?> getWorker(String id) async {
     try {
-      DocumentSnapshot<Map<String, dynamic>> doc = await fireStore.collection(CollectionName.providersWorkers).doc(id).get();
+      DocumentSnapshot<Map<String, dynamic>> doc =
+          await fireStore
+              .collection(CollectionName.providersWorkers)
+              .doc(id)
+              .get();
 
       if (doc.exists && doc.data() != null) {
         return WorkerModel.fromJson(doc.data()!);
@@ -2332,17 +3368,26 @@ class FireStoreUtils {
     return null;
   }
 
-  static Future<OnProviderOrderModel?> getProviderOrderById(String orderId) async {
+  static Future<OnProviderOrderModel?> getProviderOrderById(
+    String orderId,
+  ) async {
     OnProviderOrderModel? orderModel;
-    await fireStore.collection(CollectionName.providerOrders).doc(orderId).get().then((value) {
-      if (value.exists) {
-        orderModel = OnProviderOrderModel.fromJson(value.data()!);
-      }
-    });
+    await fireStore
+        .collection(CollectionName.providerOrders)
+        .doc(orderId)
+        .get()
+        .then((value) {
+          if (value.exists) {
+            orderModel = OnProviderOrderModel.fromJson(value.data()!);
+          }
+        });
     return orderModel;
   }
 
-  static Future<RatingModel?> getReviewsByProviderID(String orderId, String providerId) async {
+  static Future<RatingModel?> getReviewsByProviderID(
+    String orderId,
+    String providerId,
+  ) async {
     RatingModel? ratingModel;
 
     await fireStore
@@ -2363,7 +3408,10 @@ class FireStoreUtils {
     return ratingModel;
   }
 
-  static Future<RatingModel?> getReviewsByWorkerID(String orderId, String workerId) async {
+  static Future<RatingModel?> getReviewsByWorkerID(
+    String orderId,
+    String workerId,
+  ) async {
     RatingModel? ratingModel;
 
     await fireStore
@@ -2386,7 +3434,11 @@ class FireStoreUtils {
 
   static Future<ProviderServiceModel?> getCurrentProvider(String uid) async {
     try {
-      final doc = await fireStore.collection(CollectionName.providersServices).doc(uid).get();
+      final doc =
+          await fireStore
+              .collection(CollectionName.providersServices)
+              .doc(uid)
+              .get();
       if (doc.exists && doc.data() != null) {
         return ProviderServiceModel.fromJson(doc.data()!);
       }
@@ -2397,9 +3449,14 @@ class FireStoreUtils {
     return null;
   }
 
-  static Future<RatingModel?> updateReviewById(RatingModel ratingProduct) async {
+  static Future<RatingModel?> updateReviewById(
+    RatingModel ratingProduct,
+  ) async {
     try {
-      await fireStore.collection(CollectionName.itemsReview).doc(ratingProduct.id).set(ratingProduct.toJson());
+      await fireStore
+          .collection(CollectionName.itemsReview)
+          .doc(ratingProduct.id)
+          .set(ratingProduct.toJson());
       return ratingProduct;
     } catch (e, stackTrace) {
       print('Error updating review: $e');
@@ -2408,9 +3465,14 @@ class FireStoreUtils {
     }
   }
 
-  static Future<ProviderServiceModel?> updateProvider(ProviderServiceModel provider) async {
+  static Future<ProviderServiceModel?> updateProvider(
+    ProviderServiceModel provider,
+  ) async {
     try {
-      await fireStore.collection(CollectionName.providersServices).doc(provider.id).set(provider.toJson());
+      await fireStore
+          .collection(CollectionName.providersServices)
+          .doc(provider.id)
+          .set(provider.toJson());
       return provider;
     } catch (e, stackTrace) {
       print('Error updating provider: $e');
@@ -2421,7 +3483,10 @@ class FireStoreUtils {
 
   static Future<WorkerModel?> updateWorker(WorkerModel worker) async {
     try {
-      await fireStore.collection(CollectionName.providersWorkers).doc(worker.id).set(worker.toJson());
+      await fireStore
+          .collection(CollectionName.providersWorkers)
+          .doc(worker.id)
+          .set(worker.toJson());
       return worker;
     } catch (e, stackTrace) {
       print('Error updating worker: $e');
@@ -2432,7 +3497,11 @@ class FireStoreUtils {
 
   static Future<ParcelOrderModel?> getParcelOrder(String orderId) async {
     try {
-      final doc = await fireStore.collection(CollectionName.parcelOrders).doc(orderId).get();
+      final doc =
+          await fireStore
+              .collection(CollectionName.parcelOrders)
+              .doc(orderId)
+              .get();
       if (doc.exists && doc.data() != null) {
         return ParcelOrderModel.fromJson(doc.data()!);
       }
@@ -2444,12 +3513,16 @@ class FireStoreUtils {
   }
 
   static Stream<UserModel?> driverStream(String userId) {
-    return fireStore.collection(CollectionName.users).doc(userId).snapshots().map((doc) {
-      if (doc.data() != null) {
-        return UserModel.fromJson(doc.data()!);
-      }
-      return null;
-    });
+    return fireStore
+        .collection(CollectionName.users)
+        .doc(userId)
+        .snapshots()
+        .map((doc) {
+          if (doc.data() != null) {
+            return UserModel.fromJson(doc.data()!);
+          }
+          return null;
+        });
   }
 
   static Future<void> updateCabOrder(CabOrderModel orderModel) async {
@@ -2458,7 +3531,9 @@ class FireStoreUtils {
     }
 
     try {
-      final docRef = fireStore.collection(CollectionName.rides).doc(orderModel.id);
+      final docRef = fireStore
+          .collection(CollectionName.rides)
+          .doc(orderModel.id);
       await docRef.set(orderModel.toJson(), SetOptions(merge: true));
     } catch (e) {
       print("Error updating OnDemand order: $e");
@@ -2468,34 +3543,50 @@ class FireStoreUtils {
 
   static Future<List<RentalVehicleType>> getRentalVehicleType() async {
     List<RentalVehicleType> vehicleTypeList = [];
-    await fireStore.collection(CollectionName.rentalVehicleType).where('sectionId', isEqualTo: Constant.sectionConstantModel!.id).where("isActive", isEqualTo: true).get().then((value) {
-      for (var element in value.docs) {
-        try {
-          RentalVehicleType category = RentalVehicleType.fromJson(element.data());
-          vehicleTypeList.add(category);
-        } catch (e, stackTrace) {
-          print('getVehicleType error: ${element.id} $e');
-          print(stackTrace);
-        }
-      }
-    });
+    await fireStore
+        .collection(CollectionName.rentalVehicleType)
+        .where('sectionId', isEqualTo: Constant.sectionConstantModel!.id)
+        .where("isActive", isEqualTo: true)
+        .get()
+        .then((value) {
+          for (var element in value.docs) {
+            try {
+              RentalVehicleType category = RentalVehicleType.fromJson(
+                element.data(),
+              );
+              vehicleTypeList.add(category);
+            } catch (e, stackTrace) {
+              print('getVehicleType error: ${element.id} $e');
+              print(stackTrace);
+            }
+          }
+        });
     return vehicleTypeList;
   }
 
-  static Future<List<RentalPackageModel>> getRentalPackage(String vehicleId) async {
+  static Future<List<RentalPackageModel>> getRentalPackage(
+    String vehicleId,
+  ) async {
     List<RentalPackageModel> rentalPackageList = [];
-    await fireStore.collection(CollectionName.rentalPackages).where("vehicleTypeId", isEqualTo: vehicleId).orderBy("ordering", descending: false).get().then((value) {
-      for (var element in value.docs) {
-        try {
-          log('Rental Package Data: ${element.data()}');
-          RentalPackageModel category = RentalPackageModel.fromJson(element.data());
-          rentalPackageList.add(category);
-        } catch (e, stackTrace) {
-          print('getVehicleType error: ${element.id} $e');
-          print(stackTrace);
-        }
-      }
-    });
+    await fireStore
+        .collection(CollectionName.rentalPackages)
+        .where("vehicleTypeId", isEqualTo: vehicleId)
+        .orderBy("ordering", descending: false)
+        .get()
+        .then((value) {
+          for (var element in value.docs) {
+            try {
+              log('Rental Package Data: ${element.data()}');
+              RentalPackageModel category = RentalPackageModel.fromJson(
+                element.data(),
+              );
+              rentalPackageList.add(category);
+            } catch (e, stackTrace) {
+              print('getVehicleType error: ${element.id} $e');
+              print(stackTrace);
+            }
+          }
+        });
     return rentalPackageList;
   }
 
@@ -2514,16 +3605,21 @@ class FireStoreUtils {
           return ordersList;
         });
   }
+
   static Future<bool?> checkReferralCodeValidOrNot(String referralCode) async {
     bool? isExit;
     try {
-      await fireStore.collection(CollectionName.referral).where("referralCode", isEqualTo: referralCode).get().then((value) {
-        if (value.size > 0) {
-          isExit = true;
-        } else {
-          isExit = false;
-        }
-      });
+      await fireStore
+          .collection(CollectionName.referral)
+          .where("referralCode", isEqualTo: referralCode)
+          .get()
+          .then((value) {
+            if (value.size > 0) {
+              isExit = true;
+            } else {
+              isExit = false;
+            }
+          });
     } catch (e, s) {
       print('FireStoreUtils.firebaseCreateNewUser $e $s');
       return false;
@@ -2533,11 +3629,15 @@ class FireStoreUtils {
 
   static Future<RentalOrderModel?> getRentalOrderById(String orderId) async {
     RentalOrderModel? orderModel;
-    await fireStore.collection(CollectionName.rentalOrders).doc(orderId).get().then((value) {
-      if (value.exists) {
-        orderModel = RentalOrderModel.fromJson(value.data()!);
-      }
-    });
+    await fireStore
+        .collection(CollectionName.rentalOrders)
+        .doc(orderId)
+        .get()
+        .then((value) {
+          if (value.exists) {
+            orderModel = RentalOrderModel.fromJson(value.data()!);
+          }
+        });
     return orderModel;
   }
 
@@ -2561,11 +3661,22 @@ class FireStoreUtils {
   }
 
   static Future<dynamic> getOrderByIdFromAllCollections(String orderId) async {
-    final List<String> collections = [CollectionName.parcelOrders, CollectionName.rentalOrders, CollectionName.providerOrders, CollectionName.rides, CollectionName.vendorOrders];
+    final List<String> collections = [
+      CollectionName.parcelOrders,
+      CollectionName.rentalOrders,
+      CollectionName.providerOrders,
+      CollectionName.rides,
+      CollectionName.vendorOrders,
+    ];
 
     for (String collection in collections) {
       try {
-        final snapshot = await fireStore.collection(collection).where('id', isEqualTo: orderId).limit(1).get();
+        final snapshot =
+            await fireStore
+                .collection(collection)
+                .where('id', isEqualTo: orderId)
+                .limit(1)
+                .get();
 
         if (snapshot.docs.isNotEmpty) {
           final data = snapshot.docs.first.data();
@@ -2582,9 +3693,15 @@ class FireStoreUtils {
   }
 
   static Future<void> setSos(String orderId, UserLocation userLocation) {
-    DocumentReference documentReference = fireStore.collection(CollectionName.sos).doc();
+    DocumentReference documentReference =
+        fireStore.collection(CollectionName.sos).doc();
 
-    Map<String, dynamic> sosMap = {'id': documentReference.id, 'orderId': orderId, 'status': "Initiated", 'latLong': userLocation.toJson()};
+    Map<String, dynamic> sosMap = {
+      'id': documentReference.id,
+      'orderId': orderId,
+      'status': "Initiated",
+      'latLong': userLocation.toJson(),
+    };
 
     return documentReference
         .set(sosMap)
@@ -2627,7 +3744,8 @@ class FireStoreUtils {
     required String customerName,
   }) async {
     try {
-      DocumentReference docRef = fireStore.collection(CollectionName.complaints).doc();
+      DocumentReference docRef =
+          fireStore.collection(CollectionName.complaints).doc();
 
       Map<String, dynamic> complaintData = {
         'id': docRef.id,
@@ -2651,7 +3769,12 @@ class FireStoreUtils {
 
   static Future<bool> isRideComplainAdded(String orderId) async {
     try {
-      QuerySnapshot querySnapshot = await fireStore.collection(CollectionName.complaints).where('orderId', isEqualTo: orderId).limit(1).get();
+      QuerySnapshot querySnapshot =
+          await fireStore
+              .collection(CollectionName.complaints)
+              .where('orderId', isEqualTo: orderId)
+              .limit(1)
+              .get();
 
       return querySnapshot.docs.isNotEmpty;
     } catch (e) {
@@ -2660,9 +3783,16 @@ class FireStoreUtils {
     }
   }
 
-  static Future<Map<String, dynamic>?> getRideComplainData(String orderId) async {
+  static Future<Map<String, dynamic>?> getRideComplainData(
+    String orderId,
+  ) async {
     try {
-      QuerySnapshot querySnapshot = await fireStore.collection(CollectionName.complaints).where('orderId', isEqualTo: orderId).limit(1).get();
+      QuerySnapshot querySnapshot =
+          await fireStore
+              .collection(CollectionName.complaints)
+              .where('orderId', isEqualTo: orderId)
+              .limit(1)
+              .get();
 
       if (querySnapshot.docs.isNotEmpty) {
         return querySnapshot.docs.first.data() as Map<String, dynamic>;
@@ -2675,33 +3805,57 @@ class FireStoreUtils {
     }
   }
 
-  static void removeFavouriteOndemandService(FavouriteOndemandServiceModel favouriteModel) {
-    FirebaseFirestore.instance.collection(CollectionName.favoriteService).where("user_id", isEqualTo: favouriteModel.user_id).where("service_id", isEqualTo: favouriteModel.service_id).get().then((
-      value,
-    ) {
-      for (var element in value.docs) {
-        FirebaseFirestore.instance.collection(CollectionName.favoriteService).doc(element.id).delete().then((value) {
-          print("Remove Success!");
+  static void removeFavouriteOndemandService(
+    FavouriteOndemandServiceModel favouriteModel,
+  ) {
+    FirebaseFirestore.instance
+        .collection(CollectionName.favoriteService)
+        .where("user_id", isEqualTo: favouriteModel.user_id)
+        .where("service_id", isEqualTo: favouriteModel.service_id)
+        .get()
+        .then((value) {
+          for (var element in value.docs) {
+            FirebaseFirestore.instance
+                .collection(CollectionName.favoriteService)
+                .doc(element.id)
+                .delete()
+                .then((value) {
+                  print("Remove Success!");
+                });
+          }
         });
-      }
-    });
   }
 
-  static Future<void> setFavouriteOndemandSection(FavouriteOndemandServiceModel favouriteModel) async {
-    await fireStore.collection(CollectionName.favoriteService).add(favouriteModel.toJson()).then((value) {
-      print("===FAVOURITE ADDED=== ${favouriteModel.toJson()}");
-    });
+  static Future<void> setFavouriteOndemandSection(
+    FavouriteOndemandServiceModel favouriteModel,
+  ) async {
+    await fireStore
+        .collection(CollectionName.favoriteService)
+        .add(favouriteModel.toJson())
+        .then((value) {
+          print("===FAVOURITE ADDED=== ${favouriteModel.toJson()}");
+        });
   }
 
-  static Future<List<FavouriteOndemandServiceModel>> getFavouritesServiceList(String userId) async {
+  static Future<List<FavouriteOndemandServiceModel>> getFavouritesServiceList(
+    String userId,
+  ) async {
     List<FavouriteOndemandServiceModel> lstFavourites = [];
 
     QuerySnapshot<Map<String, dynamic>> favourites =
-        await fireStore.collection(CollectionName.favoriteService).where('user_id', isEqualTo: userId).where("section_id", isEqualTo: Constant.sectionConstantModel!.id).get();
+        await fireStore
+            .collection(CollectionName.favoriteService)
+            .where('user_id', isEqualTo: userId)
+            .where("section_id", isEqualTo: Constant.sectionConstantModel!.id)
+            .get();
 
-    await Future.forEach(favourites.docs, (QueryDocumentSnapshot<Map<String, dynamic>> document) {
+    await Future.forEach(favourites.docs, (
+      QueryDocumentSnapshot<Map<String, dynamic>> document,
+    ) {
       try {
-        lstFavourites.add(FavouriteOndemandServiceModel.fromJson(document.data()));
+        lstFavourites.add(
+          FavouriteOndemandServiceModel.fromJson(document.data()),
+        );
       } catch (e) {
         print('FavouriteModel.getCurrencys Parse error $e');
       }
@@ -2710,16 +3864,26 @@ class FireStoreUtils {
     return lstFavourites;
   }
 
-  static Future<List<ProviderServiceModel>> getCurrentProviderService(FavouriteOndemandServiceModel model) async {
+  static Future<List<ProviderServiceModel>> getCurrentProviderService(
+    FavouriteOndemandServiceModel model,
+  ) async {
     List<ProviderServiceModel> providerService = [];
 
     QuerySnapshot<Map<String, dynamic>> reviewQuery =
-        await fireStore.collection(CollectionName.providersServices).where('id', isEqualTo: model.service_id).where('sectionId', isEqualTo: model.section_id).get();
-    await Future.forEach(reviewQuery.docs, (QueryDocumentSnapshot<Map<String, dynamic>> document) {
+        await fireStore
+            .collection(CollectionName.providersServices)
+            .where('id', isEqualTo: model.service_id)
+            .where('sectionId', isEqualTo: model.section_id)
+            .get();
+    await Future.forEach(reviewQuery.docs, (
+      QueryDocumentSnapshot<Map<String, dynamic>> document,
+    ) {
       try {
         providerService.add(ProviderServiceModel.fromJson(document.data()));
       } catch (e) {
-        print('FireStoreUtils.getReviewByProviderServiceId Parse error ${document.id} $e');
+        print(
+          'FireStoreUtils.getReviewByProviderServiceId Parse error ${document.id} $e',
+        );
       }
     });
     return providerService;

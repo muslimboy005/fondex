@@ -18,6 +18,7 @@ import 'package:customer/models/payment_model/orange_money.dart';
 import 'package:customer/models/payment_model/pay_fast_model.dart';
 import 'package:customer/models/payment_model/pay_stack_model.dart';
 import 'package:customer/models/payment_model/paypal_model.dart';
+import 'package:customer/models/payment_model/payme_model.dart';
 import 'package:customer/models/payment_model/paytm_model.dart';
 import 'package:customer/models/payment_model/razorpay_model.dart';
 import 'package:customer/models/payment_model/stripe_model.dart';
@@ -32,6 +33,7 @@ import 'package:customer/payment/PayFastScreen.dart';
 import 'package:customer/payment/getPaytmTxtToken.dart';
 import 'package:customer/payment/midtrans_screen.dart';
 import 'package:customer/payment/orangePayScreen.dart';
+import 'package:customer/payment/PaymeScreen.dart';
 import 'package:customer/payment/paystack/pay_stack_screen.dart';
 import 'package:customer/payment/paystack/pay_stack_url_model.dart';
 import 'package:customer/payment/paystack/paystack_url_genrater.dart';
@@ -395,9 +397,7 @@ class CabBookingController extends GetxController {
         .snapshots()
         .listen((event) async {
           if (event.exists && event.data() != null) {
-            UserModel driverModel0 = UserModel.fromJson(
-              event.data()!,
-            );
+            UserModel driverModel0 = UserModel.fromJson(event.data()!);
             driverModel.value = driverModel0;
             await updateDriverRoute(driverModel0);
           }
@@ -410,7 +410,7 @@ class CabBookingController extends GetxController {
   // Lazy loading - kuponlar faqat kerak bo'lganda yuklanadi
   Future<void> loadCouponsIfNeeded() async {
     if (_couponsLoaded || cabCouponList.isNotEmpty) return;
-    
+
     try {
       isDataLoading.value = true;
       final coupons = await FireStoreUtils.getCabCoupon();
@@ -425,12 +425,12 @@ class CabBookingController extends GetxController {
 
   // Lazy loading - payment settings faqat kerak bo'lganda yuklanadi
   bool _paymentSettingsLoaded = false;
-  
+
   Future<void> loadPaymentSettingsIfNeeded() async {
     if (_paymentSettingsLoaded) {
       return; // Allaqachon yuklangan
     }
-    
+
     try {
       isDataLoading.value = true;
       await getPaymentSettings();
@@ -736,11 +736,13 @@ class CabBookingController extends GetxController {
     // Wallet bilan to'lov tanlangan bo'lsa, balansni tekshirish
     if (selectedPaymentMethod.value == PaymentGateway.wallet.name) {
       // User ma'lumotlarini yangilash - eng so'nggi balansni olish
-      final updatedUser = await FireStoreUtils.getUserProfile(FireStoreUtils.getCurrentUid());
+      final updatedUser = await FireStoreUtils.getUserProfile(
+        FireStoreUtils.getCurrentUid(),
+      );
       if (updatedUser != null) {
         userModel.value = updatedUser;
       }
-      
+
       num walletAmount = userModel.value.walletAmount ?? 0;
       num orderTotal = totalAmount.value;
 
@@ -759,7 +761,7 @@ class CabBookingController extends GetxController {
         return; // Zakaz berilmaydi
       }
     }
-    
+
     if (selectedPaymentMethod.value == PaymentGateway.cod.name) {
       currentOrder.value.paymentMethod = selectedPaymentMethod.value;
       await FireStoreUtils.cabOrderPlace(currentOrder.value).then((value) {
@@ -776,11 +778,13 @@ class CabBookingController extends GetxController {
 
       if (selectedPaymentMethod.value == PaymentGateway.wallet.name) {
         // Yana bir bor tekshirish - xavfsizlik uchun
-        final updatedUser = await FireStoreUtils.getUserProfile(FireStoreUtils.getCurrentUid());
+        final updatedUser = await FireStoreUtils.getUserProfile(
+          FireStoreUtils.getCurrentUid(),
+        );
         if (updatedUser != null) {
           userModel.value = updatedUser;
         }
-        
+
         num walletAmount = userModel.value.walletAmount ?? 0;
         num orderTotal = totalAmount.value;
 
@@ -797,7 +801,7 @@ class CabBookingController extends GetxController {
           );
           return;
         }
-        
+
         WalletTransactionModel transactionModel = WalletTransactionModel(
           id: Constant.getUuid(),
           amount: double.parse(totalAmount.toString()),
@@ -998,7 +1002,7 @@ class CabBookingController extends GetxController {
     } else {
       destinationLatLongOsm.value = latlong.LatLng(lat, lng);
     }
-    
+
     // Ikkala lokatsiya ham bo'lsa, yo'l chizish
     if (departureLatLongOsm.value.latitude != 0 &&
         departureLatLongOsm.value.longitude != 0 &&
@@ -1575,7 +1579,8 @@ class CabBookingController extends GetxController {
             .get(
               url,
               headers: {
-                'User-Agent': 'FlutterMapApp/1.0 (menil.siddhiinfosoft@gmail.com)',
+                'User-Agent':
+                    'FlutterMapApp/1.0 (menil.siddhiinfosoft@gmail.com)',
               },
             )
             .timeout(const Duration(seconds: 10));
@@ -1618,7 +1623,9 @@ class CabBookingController extends GetxController {
     final address = tempPickedAddress.value;
 
     if (!Constant.checkZoneCheck(lat, lng)) {
-      ShowToastDialog.showToast("Service is unavailable at the selected address.".tr);
+      ShowToastDialog.showToast(
+        "Service is unavailable at the selected address.".tr,
+      );
       return;
     }
 
@@ -1883,7 +1890,9 @@ class CabBookingController extends GetxController {
         }
       } else {
         sourceSearchResults.clear();
-        log("OSM Source Search HTTP Error: ${response.statusCode} - ${response.body}");
+        log(
+          "OSM Source Search HTTP Error: ${response.statusCode} - ${response.body}",
+        );
         sourceSearchError.value = '';
       }
     } on SocketException catch (e) {
@@ -1994,6 +2003,7 @@ class CabBookingController extends GetxController {
   Rx<FlutterWaveModel> flutterWaveModel = FlutterWaveModel().obs;
   Rx<PayStackModel> payStackModel = PayStackModel().obs;
   Rx<PaytmModel> paytmModel = PaytmModel().obs;
+  Rx<PaymeModel> paymeModel = PaymeModel().obs;
   Rx<RazorPayModel> razorPayModel = RazorPayModel().obs;
 
   Rx<MidTrans> midTransModel = MidTrans().obs;
@@ -2003,7 +2013,7 @@ class CabBookingController extends GetxController {
   Future<void> getPaymentSettings() async {
     // Agar allaqachon yuklangan bo'lsa, qayta yuklamaslik
     if (_paymentSettingsCached && _paymentSettingsLoaded) return;
-    
+
     await FireStoreUtils.getPaymentSettingsData().then((value) {
       stripeModel.value = StripeModel.fromJson(
         jsonDecode(Preferences.getString(Preferences.stripeSettings)),
@@ -2038,6 +2048,9 @@ class CabBookingController extends GetxController {
       xenditModel.value = Xendit.fromJson(
         jsonDecode(Preferences.getString(Preferences.xenditSettings)),
       );
+      paymeModel.value = PaymeModel.fromJson(
+        jsonDecode(Preferences.getString(Preferences.paymeSettings)),
+      );
       walletSettingModel.value = WalletSettingModel.fromJson(
         jsonDecode(Preferences.getString(Preferences.walletSettings)),
       );
@@ -2069,6 +2082,9 @@ class CabBookingController extends GetxController {
         selectedPaymentMethod.value = PaymentGateway.orangeMoney.name;
       } else if (xenditModel.value.enable == true) {
         selectedPaymentMethod.value = PaymentGateway.xendit.name;
+      } else if (paymeModel.value.isEnabled == true ||
+          paymeModel.value.enable == true) {
+        selectedPaymentMethod.value = PaymentGateway.payme.name;
       }
       Stripe.publishableKey = stripeModel.value.clientpublishableKey.toString();
       Stripe.merchantIdentifier = 'eMart Customer';
@@ -2780,6 +2796,101 @@ class CabBookingController extends GetxController {
         });
       }
     });
+  }
+
+  //PaymePayment
+  Future<void> paymeMakePayment({
+    required BuildContext context,
+    required String amount,
+  }) async {
+    log('🔵 [PaymePayment] paymeMakePayment boshlandi, amount: $amount');
+    try {
+      ShowToastDialog.showLoader("Processing...".tr);
+
+      final url = Uri.parse(
+        'https://emart-web.felix-its.uz/wallet-payme-link/',
+      );
+      final headers = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+      };
+      final body = jsonEncode({
+        'phone': '+998${userModel.value.phoneNumber}',
+        'amount': double.parse(amount).ceil().toInt(),
+      });
+
+      log('🔵 [PaymePayment] Request URL: $url');
+      log('🔵 [PaymePayment] Request Headers: $headers');
+      log('🔵 [PaymePayment] Request Body: $body');
+
+      final response = await http.post(url, headers: headers, body: body);
+
+      log('🔵 [PaymePayment] Response Status: ${response.statusCode}');
+      log('🔵 [PaymePayment] Response Headers: ${response.headers}');
+      log(
+        '🔵 [PaymePayment] Response Body: ${response.body.substring(0, response.body.length > 500 ? 500 : response.body.length)}',
+      );
+
+      ShowToastDialog.closeLoader();
+
+      // Check if response is HTML (redirect to login)
+      if (response.body.trim().startsWith('<!DOCTYPE html>') ||
+          response.body.trim().startsWith('<html>') ||
+          response.body.contains('Redirecting to')) {
+        ShowToastDialog.showToast(
+          "Server authentication error. Please try again.".tr,
+        );
+        log(
+          '❌ [PaymePayment] HTML response received (likely redirect to login)',
+        );
+        return;
+      }
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        try {
+          final data = jsonDecode(response.body);
+          if (data['status'] == true && data['link'] != null) {
+            // Pass both payment order_id and ride document ID
+            final paymentOrderId = data['order_id'];
+            final rideId = currentOrder.value.id;
+            
+            log('🔵 [PaymePayment] Opening PaymeScreen with orderId: $paymentOrderId, rideId: $rideId');
+            
+            Get.to(() => PaymeScreen(
+              initialURl: data['link'],
+              orderId: paymentOrderId,
+              rideId: rideId,
+            ))!.then((value) {
+              if (value != null && value['success'] == true && value['is_paid'] == true) {
+                ShowToastDialog.showToast("Payment Successful!!".tr);
+                completeOrder();
+              } else {
+                ShowToastDialog.showToast("Payment Unsuccessful!!".tr);
+              }
+            });
+          } else {
+            ShowToastDialog.showToast("Failed to get payment link".tr);
+            log('❌ [PaymePayment] Invalid response data: $data');
+          }
+        } catch (e) {
+          ShowToastDialog.showToast("Failed to parse server response".tr);
+          log('❌ [PaymePayment] JSON parse error: $e');
+          log('❌ [PaymePayment] Response body: ${response.body}');
+        }
+      } else {
+        ShowToastDialog.showToast(
+          "Something went wrong, please contact admin.".tr,
+        );
+        log('❌ [PaymePayment] Error status: ${response.statusCode}');
+        log('❌ [PaymePayment] Error body: ${response.body}');
+      }
+    } catch (e) {
+      ShowToastDialog.closeLoader();
+      ShowToastDialog.showToast("Payment error: ${e.toString()}".tr);
+      log('❌ [PaymePayment] Exception: $e');
+    }
   }
 
   Future<XenditModel> createXenditInvoice({required var amount}) async {

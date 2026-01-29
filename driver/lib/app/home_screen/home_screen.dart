@@ -1440,6 +1440,21 @@ class HomeScreen extends StatelessWidget {
               ],
             ),
           ),
+          // Ko'rish button - kattaroq va butun ekranni qoplaydigan
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            child: RoundedButtonFill(
+              title: "Ko'rish".tr,
+              width: double.infinity,
+              height: 5.5,
+              borderRadius: 10,
+              color: AppThemeData.primary300,
+              textColor: AppThemeData.grey50,
+              onPress: () {
+                controller.showMapSelectionDialog();
+              },
+            ),
+          ),
           InkWell(
             onTap: () async {
               if (controller.currentOrder.value.status ==

@@ -931,6 +931,37 @@ class CabHomeScreen extends StatelessWidget {
                                         "assets/icons/ic_wechat.svg"),
                                   ),
                                 ),
+                              ),
+                              SizedBox(
+                                height: 10,
+                              ),
+                              InkWell(
+                                onTap: () {
+                                  controller.showMapSelectionDialog();
+                                },
+                                child: Container(
+                                  width: 50,
+                                  height: 50,
+                                  decoration: BoxDecoration(
+                                    color: AppThemeData.primary300,
+                                    borderRadius: BorderRadius.circular(120),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: AppThemeData.primary300.withOpacity(0.3),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(10.0),
+                                    child: Icon(
+                                      Icons.map,
+                                      color: AppThemeData.grey50,
+                                      size: 28,
+                                    ),
+                                  ),
+                                ),
                               )
                             ],
                           ),
@@ -1063,6 +1094,38 @@ class CabHomeScreen extends StatelessWidget {
                                                   const EdgeInsets.all(8.0),
                                               child: SvgPicture.asset(
                                                   "assets/icons/ic_phone_call.svg"),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(
+                                          width: 5,
+                                        ),
+                                        InkWell(
+                                          onTap: () {
+                                            controller.showMapSelectionDialog();
+                                          },
+                                          child: Container(
+                                            width: 50,
+                                            height: 50,
+                                            decoration: BoxDecoration(
+                                              color: AppThemeData.primary300,
+                                              borderRadius: BorderRadius.circular(120),
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: AppThemeData.primary300.withOpacity(0.3),
+                                                  blurRadius: 8,
+                                                  offset: const Offset(0, 4),
+                                                ),
+                                              ],
+                                            ),
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.all(10.0),
+                                              child: Icon(
+                                                Icons.map,
+                                                color: AppThemeData.grey50,
+                                                size: 28,
+                                              ),
                                             ),
                                           ),
                                         ),
@@ -1326,6 +1389,21 @@ class CabHomeScreen extends StatelessWidget {
                   height: 10,
                 ),
               ],
+            ),
+          ),
+          // Ko'rish button - kattaroq va butun ekranni qoplaydigan
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            child: RoundedButtonFill(
+              title: "Ko'rish".tr,
+              width: double.infinity,
+              height: 5.5,
+              borderRadius: 10,
+              color: AppThemeData.primary300,
+              textColor: AppThemeData.grey50,
+              onPress: () {
+                controller.showMapSelectionDialog();
+              },
             ),
           ),
           InkWell(

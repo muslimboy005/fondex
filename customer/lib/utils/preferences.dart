@@ -22,6 +22,7 @@ class Preferences {
   static const midTransSettings = "midTransSettings";
   static const orangeMoneySettings = "orangeMoneySettings";
   static const xenditSettings = "xenditSettings";
+  static const paymeSettings = "paymeSettings";
 
   static late SharedPreferences pref;
 

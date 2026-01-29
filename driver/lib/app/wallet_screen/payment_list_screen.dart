@@ -102,6 +102,17 @@ class PaymentListScreen extends StatelessWidget {
                             visible: controller.xenditModel.value.enable == true,
                             child: cardDecoration(controller, PaymentGateway.xendit, isDark, "assets/images/xendit.png"),
                           ),
+                        Visibility(
+                          visible:
+                              controller.paymeModel.value.isEnabled == true ||
+                              controller.paymeModel.value.enable == true,
+                            child: Builder(
+                              builder: (context) {
+                                print('🔵 [PaymentListScreen] Payme card ko\'rsatilmoqda: isEnabled=${controller.paymeModel.value.isEnabled}, enable=${controller.paymeModel.value.enable}');
+                                return cardDecoration(controller, PaymentGateway.payme, isDark, "assets/images/payme.png");
+                              },
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -149,6 +160,11 @@ class PaymentListScreen extends StatelessWidget {
                           controller.orangeMakePayment(context: context, amount: controller.topUpAmountController.value.text);
                         } else if (controller.selectedPaymentMethod.value == PaymentGateway.xendit.name) {
                           controller.xenditPayment(context, controller.topUpAmountController.value.text);
+                        } else if (controller.selectedPaymentMethod.value == PaymentGateway.payme.name) {
+                          print('🔵 [PaymentListScreen] Payme tanlandi');
+                          print('🔵 [PaymentListScreen] Amount: ${controller.topUpAmountController.value.text}');
+                          print('🔵 [PaymentListScreen] Payme enabled: ${controller.paymeModel.value.isEnabled ?? controller.paymeModel.value.enable}');
+                          controller.paymeMakePayment(context: context, amount: controller.topUpAmountController.value.text);
                         } else if (controller.selectedPaymentMethod.value == PaymentGateway.razorpay.name) {
                           RazorPayController()
                               .createOrderRazorPay(amount: double.parse(controller.topUpAmountController.value.text), razorpayModel: controller.razorPayModel.value)
@@ -182,7 +198,9 @@ class PaymentListScreen extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         child: InkWell(
           onTap: () {
+            print('🔵 [PaymentListScreen] Payment method tanlandi: ${value.name}');
             controller.selectedPaymentMethod.value = value.name;
+            print('🔵 [PaymentListScreen] Selected payment method: ${controller.selectedPaymentMethod.value}');
           },
           child: Row(
             children: [
@@ -235,4 +253,4 @@ class PaymentListScreen extends StatelessWidget {
   }
 }
 
-enum PaymentGateway { payFast, mercadoPago, paypal, stripe, flutterWave, payStack, paytm, razorpay, cod, wallet, midTrans, orangeMoney, xendit }
+enum PaymentGateway { payFast, mercadoPago, paypal, stripe, flutterWave, payStack, paytm, razorpay, cod, wallet, midTrans, orangeMoney, xendit, payme }

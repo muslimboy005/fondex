@@ -1413,14 +1413,15 @@ class CabHomeScreen extends StatelessWidget {
                                               .value = false;
 
                                           // Vehicle selection ekraniga o'tish
-                                          if (selectedServiceType.value ==
-                                              'ride') {
-                                            controller.bottomSheetType.value =
-                                                'vehicleSelection';
-                                            Get.to(() => CabBookingScreen());
-                                          } else {
-                                            Get.to(() => IntercityHomeScreen());
-                                          }
+                                          // if (selectedServiceType.value ==
+                                          //         'ride' ||
+                                          //     true) {
+                                          controller.bottomSheetType.value =
+                                              'vehicleSelection';
+                                          Get.to(() => CabBookingScreen());
+                                          // } else {
+                                          //   Get.to(() => IntercityHomeScreen());
+                                          // }
                                         }
                                         : null,
                                 style: ElevatedButton.styleFrom(

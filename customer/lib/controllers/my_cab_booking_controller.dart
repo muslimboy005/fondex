@@ -13,6 +13,7 @@ import 'package:customer/models/payment_model/orange_money.dart';
 import 'package:customer/models/payment_model/pay_fast_model.dart';
 import 'package:customer/models/payment_model/pay_stack_model.dart';
 import 'package:customer/models/payment_model/paypal_model.dart';
+import 'package:customer/models/payment_model/payme_model.dart';
 import 'package:customer/models/payment_model/paytm_model.dart';
 import 'package:customer/models/payment_model/razorpay_model.dart';
 import 'package:customer/models/payment_model/stripe_model.dart';
@@ -25,6 +26,7 @@ import 'package:customer/payment/PayFastScreen.dart';
 import 'package:customer/payment/getPaytmTxtToken.dart';
 import 'package:customer/payment/midtrans_screen.dart';
 import 'package:customer/payment/orangePayScreen.dart';
+import 'package:customer/payment/PaymeScreen.dart';
 import 'package:customer/payment/paystack/pay_stack_screen.dart';
 import 'package:customer/payment/paystack/pay_stack_url_model.dart';
 import 'package:customer/payment/paystack/paystack_url_genrater.dart';
@@ -138,6 +140,7 @@ class MyCabBookingController extends GetxController {
   Rx<FlutterWaveModel> flutterWaveModel = FlutterWaveModel().obs;
   Rx<PayStackModel> payStackModel = PayStackModel().obs;
   Rx<PaytmModel> paytmModel = PaytmModel().obs;
+  Rx<PaymeModel> paymeModel = PaymeModel().obs;
   Rx<RazorPayModel> razorPayModel = RazorPayModel().obs;
 
   Rx<MidTrans> midTransModel = MidTrans().obs;
@@ -233,6 +236,7 @@ class MyCabBookingController extends GetxController {
       midTransModel.value = MidTrans.fromJson(jsonDecode(Preferences.getString(Preferences.midTransSettings)));
       orangeMoneyModel.value = OrangeMoney.fromJson(jsonDecode(Preferences.getString(Preferences.orangeMoneySettings)));
       xenditModel.value = Xendit.fromJson(jsonDecode(Preferences.getString(Preferences.xenditSettings)));
+      paymeModel.value = PaymeModel.fromJson(jsonDecode(Preferences.getString(Preferences.paymeSettings)));
       walletSettingModel.value = WalletSettingModel.fromJson(jsonDecode(Preferences.getString(Preferences.walletSettings)));
       cashOnDeliverySettingModel.value = CodSettingModel.fromJson(jsonDecode(Preferences.getString(Preferences.codSettings)));
 
@@ -260,6 +264,8 @@ class MyCabBookingController extends GetxController {
         selectedPaymentMethod.value = PaymentGateway.orangeMoney.name;
       } else if (xenditModel.value.enable == true) {
         selectedPaymentMethod.value = PaymentGateway.xendit.name;
+      } else if (paymeModel.value.isEnabled == true || paymeModel.value.enable == true) {
+        selectedPaymentMethod.value = PaymentGateway.payme.name;
       }
       Stripe.publishableKey = stripeModel.value.clientpublishableKey.toString();
       Stripe.merchantIdentifier = 'eMart Customer';
@@ -870,6 +876,87 @@ class MyCabBookingController extends GetxController {
         });
       }
     });
+  }
+
+  //PaymePayment
+  Future<void> paymeMakePayment({required BuildContext context, required String amount}) async {
+    log('🔵 [PaymePayment] paymeMakePayment boshlandi, amount: $amount');
+    try {
+      ShowToastDialog.showLoader("Processing...".tr);
+      
+      final url = Uri.parse('https://emart-web.felix-its.uz/wallet-payme-link/');
+      final headers = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+      };
+      final body = jsonEncode({
+        'phone': '+998${userModel.value.phoneNumber}',
+        'amount': double.parse(amount).ceil().toInt(),
+      });
+
+      log('🔵 [PaymePayment] Request URL: $url');
+      log('🔵 [PaymePayment] Request Headers: $headers');
+      log('🔵 [PaymePayment] Request Body: $body');
+
+      final response = await http.post(url, headers: headers, body: body);
+
+      log('🔵 [PaymePayment] Response Status: ${response.statusCode}');
+      log('🔵 [PaymePayment] Response Headers: ${response.headers}');
+      log('🔵 [PaymePayment] Response Body: ${response.body.substring(0, response.body.length > 500 ? 500 : response.body.length)}');
+
+      ShowToastDialog.closeLoader();
+
+      // Check if response is HTML (redirect to login)
+      if (response.body.trim().startsWith('<!DOCTYPE html>') || 
+          response.body.trim().startsWith('<html>') ||
+          response.body.contains('Redirecting to')) {
+        ShowToastDialog.showToast("Server authentication error. Please try again.".tr);
+        log('❌ [PaymePayment] HTML response received (likely redirect to login)');
+        return;
+      }
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        try {
+          final data = jsonDecode(response.body);
+          if (data['status'] == true && data['link'] != null) {
+            // Pass both payment order_id and ride document ID
+            final paymentOrderId = data['order_id'];
+            final rideId = selectedOrder.value.id;
+            
+            log('🔵 [PaymePayment] Opening PaymeScreen with orderId: $paymentOrderId, rideId: $rideId');
+            
+            Get.to(() => PaymeScreen(
+              initialURl: data['link'],
+              orderId: paymentOrderId,
+              rideId: rideId,
+            ))!.then((value) {
+              if (value != null && value['success'] == true && value['is_paid'] == true) {
+                ShowToastDialog.showToast("Payment Successful!!".tr);
+                completeOrder();
+              } else {
+                ShowToastDialog.showToast("Payment Unsuccessful!!".tr);
+              }
+            });
+          } else {
+            ShowToastDialog.showToast("Failed to get payment link".tr);
+            log('❌ [PaymePayment] Invalid response data: $data');
+          }
+        } catch (e) {
+          ShowToastDialog.showToast("Failed to parse server response".tr);
+          log('❌ [PaymePayment] JSON parse error: $e');
+          log('❌ [PaymePayment] Response body: ${response.body}');
+        }
+      } else {
+        ShowToastDialog.showToast("Something went wrong, please contact admin.".tr);
+        log('❌ [PaymePayment] Error status: ${response.statusCode}');
+        log('❌ [PaymePayment] Error body: ${response.body}');
+      }
+    } catch (e) {
+      ShowToastDialog.closeLoader();
+      ShowToastDialog.showToast("Payment error: ${e.toString()}".tr);
+      log('❌ [PaymePayment] Exception: $e');
+    }
   }
 
   Future<XenditModel> createXenditInvoice({required var amount}) async {
