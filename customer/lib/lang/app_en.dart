@@ -145,6 +145,8 @@ const Map<String, String> enUS = {
   'Something went wrong, please contact admin.':
       'Something went wrong, please contact admin.',
   'Please select payment method': 'Please select payment method',
+  'Boshqa to\'lov usullarini admin sozlamalarida yoqing.':
+      'Enable other payment methods in admin settings.',
   'Driver at Pickup': 'Driver at Pickup',
   'Driver Location': 'Driver Location',
   'Payment method changed': 'Payment method changed',
@@ -240,6 +242,7 @@ const Map<String, String> enUS = {
   'Use current location': 'Use current location',
   'Set from map': 'Set from map',
   'Enter Manually location': 'Enter Manually location',
+  'Continue to login': 'Continue to login',
   'Search the store, item and more...': 'Search the store, item and more...',
   'Category': 'Category',
   'Highlights for you': 'Highlights for you',

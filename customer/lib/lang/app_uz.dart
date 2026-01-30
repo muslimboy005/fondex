@@ -154,6 +154,8 @@ const Map<String, String> uzUZ = {
   'Something went wrong, please contact admin.':
       'Nimadir noto\'g\'ri ketdi, iltimos, administrator bilan bog\'laning.',
   'Please select payment method': 'Iltimos, to\'lov usulini tanlang',
+  'Boshqa to\'lov usullarini admin sozlamalarida yoqing.':
+      'Boshqa to\'lov usullarini admin sozlamalarida yoqing.',
   'Driver at Pickup': 'Haydovchi olish joyida',
   'Driver Location': 'Haydovchi joylashuvi',
   'Payment method changed': 'To\'lov usuli o\'zgartirildi',
@@ -251,6 +253,7 @@ const Map<String, String> uzUZ = {
   'Use current location': 'Joriy joylashuvdan foydalanish',
   'Set from map': 'Xaritadan belgilash',
   'Enter Manually location': 'Joylashuvni qo\'lda kiriting',
+  'Continue to login': 'Kirishga o\'tish',
   'Search the store, item and more...':
       'Do\'kon, mahsulot va boshqalarni qidirish...',
   'Category': 'Kategoriya',
@@ -619,7 +622,7 @@ const Map<String, String> uzUZ = {
       'Foydalanuvchilarga yetkazib berish manzillarini ko\'rish, boshqarish, qo\'shish yoki tahrirlash imkonini beradi.',
   "We'll be back soon!": "Tez orada qaytamiz!",
   "Sorry for the inconvenience but we're performing some maintenance at the moment. We'll be back online shortly!":
-      "Qulaysizlik uchun uzr so\'raymiz, lekin hozirda texnik xizmat ko\'rsatish ishlari olib borilmoqda. Tez orada onlayn bo\'lamiz!",
+      "Qulaysizlik uchun uzr so'raymiz, lekin hozirda texnik xizmat ko'rsatish ishlari olib borilmoqda. Tez orada onlayn bo'lamiz!",
   'cashback after completing the order.':
       'buyurtma bajarilgandan keyin keshbek.',
   'Please enter coupon code': 'Iltimos, kupon kodini kiriting',

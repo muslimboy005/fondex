@@ -19,18 +19,23 @@
     <key>GIDClientID</key>
     <string>841077018919-978flnqdu54q5lb5e56od2jr2oha90ll.apps.googleusercontent.com</string>
 
-    <key>NSCameraUsageDescription</key>
-    <string>This app needs access to camera permission</string>
-    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-    <string>This app needs access to location when open and in the background.</string>
-    <key>NSLocationAlwaysUsageDescription</key>
-    <string>This app needs access to location when in the background.</string>
+    <!-- Location (required for delivery & maps) -->
     <key>NSLocationWhenInUseUsageDescription</key>
-    <string>This app needs access to location when open.</string>
+    <string>Joylashuvingizni aniqlash va yaqin do'konlar va xizmatlarni ko'rsatish uchun joylashuvga ruxsat kerak.</string>
+    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+    <string>Buyurtma kuzatuvi va yetkazib berish uchun joylashuvga ruxsat bering.</string>
+    <key>NSLocationAlwaysUsageDescription</key>
+    <string>Buyurtma kuzatuvi uchun orqa fonda joylashuvga ruxsat kerak.</string>
+
+    <!-- Camera & Media -->
+    <key>NSCameraUsageDescription</key>
+    <string>Rasmlar va QR kod skanerlash uchun kameraga ruxsat kerak.</string>
     <key>NSMicrophoneUsageDescription</key>
-    <string>Used to capture audio for image picker plugin</string>
+    <string>Video yozish uchun mikrofonga ruxsat kerak.</string>
     <key>NSPhotoLibraryUsageDescription</key>
-    <string>This app needs access to your gallery photo.</string>
+    <string>Rasmlarni tanlash va yuklash uchun galereyaga ruxsat kerak.</string>
+    <key>NSPhotoLibraryAddUsageDescription</key>
+    <string>Rasmlarni saqlash uchun galereyaga yozish ruxsati kerak.</string>
     <key>UIBackgroundModes</key>
     <array>
         <string>fetch</string>

@@ -422,7 +422,7 @@ class HomeController extends GetxController {
       final Uint8List destination = await Constant()
           .getBytesFromAsset('assets/images/location_orange3x.png', 100);
       final Uint8List driver = await Constant()
-          .getBytesFromAsset('assets/images/food_delivery.png', 50);
+          .getBytesFromAsset('assets/images/food_delivery.png', 110);
 
       departureIcon = BitmapDescriptor.fromBytes(departure);
       destinationIcon = BitmapDescriptor.fromBytes(destination);
@@ -633,7 +633,7 @@ class HomeController extends GetxController {
     );
     polyLines[id] = polyline;
     update();
-    
+
     // ✅ Use current GPS location for camera if available, otherwise use polyline start
     LatLng cameraTarget;
     if (Constant.locationDataFinal != null &&
@@ -655,7 +655,7 @@ class HomeController extends GetxController {
       debugPrint(
           "📍 addPolyLine: Camera using current.value: ${cameraTarget.latitude}, ${cameraTarget.longitude}");
     }
-    
+
     updateCameraLocation(cameraTarget, mapController);
   }
 
@@ -681,7 +681,7 @@ class HomeController extends GetxController {
   void animateToSource() {
     double lat = 0.0;
     double lng = 0.0;
-    
+
     // ✅ ALWAYS prioritize current GPS location over Firestore location
     if (Constant.locationDataFinal != null &&
         Constant.locationDataFinal!.latitude != null &&
@@ -689,15 +689,14 @@ class HomeController extends GetxController {
       // Use current GPS location (most accurate)
       lat = Constant.locationDataFinal!.latitude!;
       lng = Constant.locationDataFinal!.longitude!;
-      debugPrint(
-          "📍 animateToSource: Using current GPS location: $lat, $lng");
+      debugPrint("📍 animateToSource: Using current GPS location: $lat, $lng");
     } else {
       // Fallback to driverModel.location from Firestore
-    final loc = driverModel.value.location;
-    if (loc != null) {
-      // Use string parsing to avoid nullable-toDouble issues and handle numbers/strings.
-      lat = double.tryParse('${loc.latitude}') ?? 0.0;
-      lng = double.tryParse('${loc.longitude}') ?? 0.0;
+      final loc = driverModel.value.location;
+      if (loc != null) {
+        // Use string parsing to avoid nullable-toDouble issues and handle numbers/strings.
+        lat = double.tryParse('${loc.latitude}') ?? 0.0;
+        lng = double.tryParse('${loc.longitude}') ?? 0.0;
       }
     }
 
@@ -705,7 +704,8 @@ class HomeController extends GetxController {
     if (lat == 0.0 && lng == 0.0) {
       lat = 41.3111;
       lng = 69.2797;
-      debugPrint("📍 animateToSource: Using default location (Tashkent): $lat, $lng");
+      debugPrint(
+          "📍 animateToSource: Using default location (Tashkent): $lat, $lng");
     }
 
     _updateCurrentLocationMarkers();
@@ -720,16 +720,16 @@ class HomeController extends GetxController {
     try {
       // ✅ ALWAYS prioritize current GPS location over Firestore location
       LatLng latLng;
-      
+
       if (Constant.locationDataFinal != null &&
           Constant.locationDataFinal!.latitude != null &&
           Constant.locationDataFinal!.longitude != null) {
         // Use current GPS location (most accurate and up-to-date)
-          latLng = LatLng(
+        latLng = LatLng(
           Constant.locationDataFinal!.latitude!,
           Constant.locationDataFinal!.longitude!,
-          );
-          debugPrint(
+        );
+        debugPrint(
             "📍 _updateCurrentLocationMarkers: Using current GPS location: ${latLng.latitude}, ${latLng.longitude}");
       } else {
         // Fallback to driverModel.location from Firestore
@@ -841,10 +841,13 @@ class HomeController extends GetxController {
       markers.add(
         flutterMap.Marker(
           point: current.value,
-          width: 45,
-          height: 45,
+          width: 72,
+          height: 72,
           rotate: true,
-          child: Image.asset('assets/images/food_delivery.png'),
+          child: Image.asset(
+            'assets/images/food_delivery.png',
+            fit: BoxFit.contain,
+          ),
         ),
       );
     } else {
@@ -902,7 +905,7 @@ class HomeController extends GetxController {
     try {
       if (currentOrder.value.id != null) {
         final order = currentOrder.value;
-        
+
         // ✅ Use current GPS location if available, otherwise fallback to driver.location
         UserLocation? driverLoc;
         if (Constant.locationDataFinal != null &&
@@ -1013,26 +1016,29 @@ class HomeController extends GetxController {
   /// Open Yandex Maps directly with directions
   Future<void> showMapSelectionDialog() async {
     final order = currentOrder.value;
-    
+
     // Get origin (driver current location)
     double originLat = 0.0;
     double originLng = 0.0;
-    
+
     if (Constant.locationDataFinal != null &&
         Constant.locationDataFinal!.latitude != null &&
         Constant.locationDataFinal!.longitude != null) {
       originLat = Constant.locationDataFinal!.latitude!;
       originLng = Constant.locationDataFinal!.longitude!;
     } else if (driverModel.value.location != null) {
-      originLat = (driverModel.value.location!.latitude as num?)?.toDouble() ?? 0.0;
-      originLng = (driverModel.value.location!.longitude as num?)?.toDouble() ?? 0.0;
+      originLat =
+          (driverModel.value.location!.latitude as num?)?.toDouble() ?? 0.0;
+      originLng =
+          (driverModel.value.location!.longitude as num?)?.toDouble() ?? 0.0;
     }
-    
+
     // Get destination based on order status
     double destLat = 0.0;
     double destLng = 0.0;
-    
-    if (order.status == Constant.driverAccepted || order.status == Constant.orderShipped) {
+
+    if (order.status == Constant.driverAccepted ||
+        order.status == Constant.orderShipped) {
       // Going to restaurant (vendor)
       destLat = (order.vendor?.latitude as num?)?.toDouble() ?? 0.0;
       destLng = (order.vendor?.longitude as num?)?.toDouble() ?? 0.0;
@@ -1041,23 +1047,26 @@ class HomeController extends GetxController {
       destLat = (order.address?.location?.latitude as num?)?.toDouble() ?? 0.0;
       destLng = (order.address?.location?.longitude as num?)?.toDouble() ?? 0.0;
     }
-    
-    if (originLat == 0.0 || originLng == 0.0 || destLat == 0.0 || destLng == 0.0) {
+
+    if (originLat == 0.0 ||
+        originLng == 0.0 ||
+        destLat == 0.0 ||
+        destLng == 0.0) {
       ShowToastDialog.showToast("Location information is not available".tr);
       return;
     }
-    
+
     // Open Yandex Maps directly
     _openYandexMaps(originLat, originLng, destLat, destLng);
   }
 
   /// Open Google Maps with directions
-  Future<void> _openGoogleMaps(
-      double originLat, double originLng, double destLat, double destLng) async {
+  Future<void> _openGoogleMaps(double originLat, double originLng,
+      double destLat, double destLng) async {
     final url = Uri.parse(
       'https://www.google.com/maps/dir/?api=1&origin=$originLat,$originLng&destination=$destLat,$destLng&travelmode=driving',
     );
-    
+
     try {
       if (await canLaunchUrl(url)) {
         await launchUrl(url, mode: LaunchMode.externalApplication);
@@ -1071,12 +1080,12 @@ class HomeController extends GetxController {
   }
 
   /// Open Yandex Maps with directions
-  Future<void> _openYandexMaps(
-      double originLat, double originLng, double destLat, double destLng) async {
+  Future<void> _openYandexMaps(double originLat, double originLng,
+      double destLat, double destLng) async {
     final url = Uri.parse(
       'https://yandex.com/maps/?rtext=$originLat,$originLng~$destLat,$destLng&rtt=auto',
     );
-    
+
     try {
       if (await canLaunchUrl(url)) {
         await launchUrl(url, mode: LaunchMode.externalApplication);

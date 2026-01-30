@@ -27,13 +27,23 @@ class DriverListScreen extends StatelessWidget {
           appBar: AppBar(
             backgroundColor: AppThemeData.primary300,
             centerTitle: false,
-            iconTheme: IconThemeData(color: isDark ? AppThemeData.grey800 : AppThemeData.grey100, size: 20),
+            iconTheme: IconThemeData(
+              color: isDark ? AppThemeData.grey800 : AppThemeData.grey100,
+              size: 20,
+            ),
             title: Text(
               "Manage Delivery Man".tr,
-              style: TextStyle(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50, fontSize: 18, fontFamily: AppThemeData.medium),
+              style: TextStyle(
+                color: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
+                fontSize: 18,
+                fontFamily: AppThemeData.medium,
+              ),
             ),
             actions: [
-              ((Constant.isStoreVerification == true && Constant.userModel?.isDocumentVerify == false) || (Constant.userModel?.vendorID == null || Constant.userModel?.vendorID?.isEmpty == true))
+              ((Constant.isStoreVerification == true &&
+                          Constant.userModel?.isDocumentVerify == false) ||
+                      (Constant.userModel?.vendorID == null ||
+                          Constant.userModel?.vendorID?.isEmpty == true))
                   ? SizedBox()
                   : InkWell(
                       splashColor: Colors.transparent,
@@ -48,11 +58,22 @@ class DriverListScreen extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: Row(
                           children: [
-                            Icon(Icons.add, color: isDark ? AppThemeData.grey900 : AppThemeData.grey50),
+                            Icon(
+                              Icons.add,
+                              color: isDark
+                                  ? AppThemeData.grey900
+                                  : AppThemeData.grey50,
+                            ),
                             const SizedBox(width: 5),
                             Text(
                               "Add".tr,
-                              style: TextStyle(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50, fontSize: 18, fontFamily: AppThemeData.medium),
+                              style: TextStyle(
+                                color: isDark
+                                    ? AppThemeData.grey900
+                                    : AppThemeData.grey50,
+                                fontSize: 18,
+                                fontFamily: AppThemeData.medium,
+                              ),
                             ),
                           ],
                         ),
@@ -62,7 +83,8 @@ class DriverListScreen extends StatelessWidget {
           ),
           body: controller.isLoading.value
               ? Constant.loader()
-              : (Constant.isStoreVerification == true && Constant.userModel?.isDocumentVerify == false)
+              : (Constant.isStoreVerification == true &&
+                    Constant.userModel?.isDocumentVerify == false)
               ? Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Column(
@@ -71,21 +93,43 @@ class DriverListScreen extends StatelessWidget {
                     children: [
                       Container(
                         decoration: ShapeDecoration(
-                          color: isDark ? AppThemeData.grey700 : AppThemeData.grey200,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(120)),
+                          color: isDark
+                              ? AppThemeData.grey700
+                              : AppThemeData.grey200,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(120),
+                          ),
                         ),
-                        child: Padding(padding: const EdgeInsets.all(20), child: SvgPicture.asset("assets/icons/ic_document.svg")),
+                        child: Padding(
+                          padding: const EdgeInsets.all(20),
+                          child: SvgPicture.asset(
+                            "assets/icons/ic_document.svg",
+                          ),
+                        ),
                       ),
                       const SizedBox(height: 12),
                       Text(
                         "Document Verification in Pending".tr,
-                        style: TextStyle(color: isDark ? AppThemeData.grey100 : AppThemeData.grey800, fontSize: 22, fontFamily: AppThemeData.semiBold),
+                        style: TextStyle(
+                          color: isDark
+                              ? AppThemeData.grey100
+                              : AppThemeData.grey800,
+                          fontSize: 22,
+                          fontFamily: AppThemeData.semiBold,
+                        ),
                       ),
                       const SizedBox(height: 5),
                       Text(
-                        "Your documents are being reviewed. We will notify you once the verification is complete.".tr,
+                        "Your documents are being reviewed. We will notify you once the verification is complete."
+                            .tr,
                         textAlign: TextAlign.center,
-                        style: TextStyle(color: isDark ? AppThemeData.grey50 : AppThemeData.grey500, fontSize: 16, fontFamily: AppThemeData.bold),
+                        style: TextStyle(
+                          color: isDark
+                              ? AppThemeData.grey50
+                              : AppThemeData.grey500,
+                          fontSize: 16,
+                          fontFamily: AppThemeData.bold,
+                        ),
                       ),
                       const SizedBox(height: 20),
                       RoundedButtonFill(
@@ -101,7 +145,8 @@ class DriverListScreen extends StatelessWidget {
                     ],
                   ),
                 )
-              : (Constant.userModel?.vendorID?.isEmpty == true || Constant.userModel?.vendorID == null)
+              : (Constant.userModel?.vendorID?.isEmpty == true ||
+                    Constant.userModel?.vendorID == null)
               ? Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Column(
@@ -110,21 +155,43 @@ class DriverListScreen extends StatelessWidget {
                     children: [
                       Container(
                         decoration: ShapeDecoration(
-                          color: isDark ? AppThemeData.grey700 : AppThemeData.grey200,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(120)),
+                          color: isDark
+                              ? AppThemeData.grey700
+                              : AppThemeData.grey200,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(120),
+                          ),
                         ),
-                        child: Padding(padding: const EdgeInsets.all(20), child: SvgPicture.asset("assets/icons/ic_building_two.svg")),
+                        child: Padding(
+                          padding: const EdgeInsets.all(20),
+                          child: SvgPicture.asset(
+                            "assets/icons/ic_building_two.svg",
+                          ),
+                        ),
                       ),
                       const SizedBox(height: 12),
                       Text(
                         "Add Your First Store".tr,
-                        style: TextStyle(color: isDark ? AppThemeData.grey100 : AppThemeData.grey800, fontSize: 22, fontFamily: AppThemeData.semiBold),
+                        style: TextStyle(
+                          color: isDark
+                              ? AppThemeData.grey100
+                              : AppThemeData.grey800,
+                          fontSize: 22,
+                          fontFamily: AppThemeData.semiBold,
+                        ),
                       ),
                       const SizedBox(height: 5),
                       Text(
-                        "Get started by adding your store details to manage your delivery men.".tr,
+                        "Get started by adding your store details to manage your delivery men."
+                            .tr,
                         textAlign: TextAlign.center,
-                        style: TextStyle(color: isDark ? AppThemeData.grey50 : AppThemeData.grey500, fontSize: 16, fontFamily: AppThemeData.bold),
+                        style: TextStyle(
+                          color: isDark
+                              ? AppThemeData.grey50
+                              : AppThemeData.grey500,
+                          fontSize: 16,
+                          fontFamily: AppThemeData.bold,
+                        ),
                       ),
                       const SizedBox(height: 20),
                       RoundedButtonFill(
@@ -147,17 +214,32 @@ class DriverListScreen extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      SvgPicture.asset("assets/icons/ic_manage_deliveryman.svg"),
+                      SvgPicture.asset(
+                        "assets/icons/ic_manage_deliveryman.svg",
+                      ),
                       const SizedBox(height: 12),
                       Text(
                         "No Delivery Men Available".tr,
-                        style: TextStyle(color: isDark ? AppThemeData.grey100 : AppThemeData.grey800, fontSize: 22, fontFamily: AppThemeData.semiBold),
+                        style: TextStyle(
+                          color: isDark
+                              ? AppThemeData.grey100
+                              : AppThemeData.grey800,
+                          fontSize: 22,
+                          fontFamily: AppThemeData.semiBold,
+                        ),
                       ),
                       const SizedBox(height: 5),
                       Text(
-                        "No Delivery Men found! Add your first Delivery Man to start using the self-delivery feature.".tr,
+                        "No Delivery Men found! Add your first Delivery Man to start using the self-delivery feature."
+                            .tr,
                         textAlign: TextAlign.center,
-                        style: TextStyle(color: isDark ? AppThemeData.grey50 : AppThemeData.grey500, fontSize: 16, fontFamily: AppThemeData.bold),
+                        style: TextStyle(
+                          color: isDark
+                              ? AppThemeData.grey50
+                              : AppThemeData.grey500,
+                          fontSize: 16,
+                          fontFamily: AppThemeData.bold,
+                        ),
                       ),
                       const SizedBox(height: 20),
                       RoundedButtonFill(
@@ -178,14 +260,22 @@ class DriverListScreen extends StatelessWidget {
                   ),
                 )
               : Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
                   child: ListView.builder(
                     itemCount: controller.driverUserList.length,
                     shrinkWrap: true,
                     itemBuilder: (context, index) {
                       return InkWell(
                         onTap: () {
-                          Get.to(const AddDriverScreen(), arguments: {"driverModel": controller.driverUserList[index]})!.then((value) {
+                          Get.to(
+                            const AddDriverScreen(),
+                            arguments: {
+                              "driverModel": controller.driverUserList[index],
+                            },
+                          )!.then((value) {
                             if (value == true) {
                               controller.getAllDriverList();
                             }
@@ -195,25 +285,60 @@ class DriverListScreen extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(vertical: 5),
                           child: Container(
                             decoration: ShapeDecoration(
-                              color: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                              color: isDark
+                                  ? AppThemeData.grey900
+                                  : AppThemeData.grey50,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
                             ),
                             child: Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: Row(
                                 children: [
-                                  controller.driverUserList[index].profilePictureURL == null || controller.driverUserList[index].profilePictureURL == ''
+                                  controller
+                                                  .driverUserList[index]
+                                                  .profilePictureURL ==
+                                              null ||
+                                          controller
+                                                  .driverUserList[index]
+                                                  .profilePictureURL ==
+                                              ''
                                       ? ClipRRect(
-                                          borderRadius: BorderRadius.circular(60),
-                                          child: Image.asset(Constant.userPlaceHolder, height: Responsive.width(20, context), width: Responsive.width(20, context), fit: BoxFit.cover),
+                                          borderRadius: BorderRadius.circular(
+                                            60,
+                                          ),
+                                          child: Image.asset(
+                                            Constant.userPlaceHolder,
+                                            height: Responsive.width(
+                                              20,
+                                              context,
+                                            ),
+                                            width: Responsive.width(
+                                              20,
+                                              context,
+                                            ),
+                                            fit: BoxFit.cover,
+                                          ),
                                         )
                                       : ClipRRect(
-                                          borderRadius: const BorderRadius.all(Radius.circular(60)),
+                                          borderRadius: const BorderRadius.all(
+                                            Radius.circular(60),
+                                          ),
                                           child: NetworkImageWidget(
-                                            imageUrl: controller.driverUserList[index].profilePictureURL.toString(),
+                                            imageUrl: controller
+                                                .driverUserList[index]
+                                                .profilePictureURL
+                                                .toString(),
                                             fit: BoxFit.cover,
-                                            height: Responsive.width(20, context),
-                                            width: Responsive.width(20, context),
+                                            height: Responsive.width(
+                                              20,
+                                              context,
+                                            ),
+                                            width: Responsive.width(
+                                              20,
+                                              context,
+                                            ),
                                           ),
                                         ),
                                   const SizedBox(width: 10),
@@ -221,22 +346,46 @@ class DriverListScreen extends StatelessWidget {
                                     child: SizedBox(
                                       height: Responsive.width(18, context),
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceEvenly,
                                         children: [
                                           Text(
                                             "${controller.driverUserList[index].firstName ?? ''} ${controller.driverUserList[index].lastName ?? ''}",
-                                            style: TextStyle(fontSize: 18, color: isDark ? AppThemeData.grey50 : AppThemeData.grey900, fontFamily: AppThemeData.semiBold, fontWeight: FontWeight.w600),
+                                            style: TextStyle(
+                                              fontSize: 18,
+                                              color: isDark
+                                                  ? AppThemeData.grey50
+                                                  : AppThemeData.grey900,
+                                              fontFamily: AppThemeData.semiBold,
+                                              fontWeight: FontWeight.w600,
+                                            ),
                                           ),
                                           Text(
                                             "${controller.driverUserList[index].countryCode} ${controller.driverUserList[index].phoneNumber}",
                                             maxLines: 1,
-                                            style: TextStyle(fontSize: 14, color: isDark ? AppThemeData.grey50 : AppThemeData.grey900, fontFamily: AppThemeData.regular),
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              color: isDark
+                                                  ? AppThemeData.grey50
+                                                  : AppThemeData.grey900,
+                                              fontFamily: AppThemeData.regular,
+                                            ),
                                           ),
                                           Text(
-                                            controller.driverUserList[index].email.toString(),
+                                            controller
+                                                .driverUserList[index]
+                                                .email
+                                                .toString(),
                                             maxLines: 1,
-                                            style: TextStyle(fontSize: 14, color: isDark ? AppThemeData.grey50 : AppThemeData.grey900, fontFamily: AppThemeData.regular),
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              color: isDark
+                                                  ? AppThemeData.grey50
+                                                  : AppThemeData.grey900,
+                                              fontFamily: AppThemeData.regular,
+                                            ),
                                           ),
                                         ],
                                       ),
@@ -247,10 +396,19 @@ class DriverListScreen extends StatelessWidget {
                                       return Transform.scale(
                                         scale: 0.8,
                                         child: CupertinoSwitch(
-                                          value: controller.driverUserList[index].active ?? false,
+                                          value:
+                                              controller
+                                                  .driverUserList[index]
+                                                  .active ??
+                                              false,
                                           onChanged: (value) {
-                                            controller.driverUserList[index].active = value;
-                                            controller.updateDriver(controller.driverUserList[index]);
+                                            controller
+                                                    .driverUserList[index]
+                                                    .active =
+                                                value;
+                                            controller.updateDriver(
+                                              controller.driverUserList[index],
+                                            );
                                             controller.update();
                                           },
                                         ),

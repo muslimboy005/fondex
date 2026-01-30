@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:driver/app/auth_screen/auth_screen.dart';
-import 'package:driver/app/auth_screen/login_screen.dart';
 import 'package:driver/app/cab_screen/cab_dashboard_screen.dart';
 import 'package:driver/app/dash_board_screen/dash_board_screen.dart';
 import 'package:driver/app/maintenance_mode_screen/maintenance_mode_screen.dart';

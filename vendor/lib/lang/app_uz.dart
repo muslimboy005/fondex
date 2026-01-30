@@ -124,7 +124,7 @@ const Map<String, String> uzUZ = {
   "Takes Reservations": "Bron qabul qiladi",
   "Vegetarian Friendly": "Vegetarianlar uchun mos",
   "Live Music": "Jonli musiqa",
-  "Outdoor Seating": "Ochiq havoda o\'tirish",
+  "Outdoor Seating": "Ochiq havoda o'tirish",
   "Free Wi-Fi": "Bepul Wi-Fi",
   "Delivery Settings": "Yetkazib berish sozlamalari",
   'Charges per': 'Har biriga to\'lov',

@@ -43,6 +43,7 @@ import 'package:customer/payment/xenditScreen.dart';
 import 'package:customer/service/fire_store_utils.dart';
 import 'package:customer/themes/show_toast_dialog.dart';
 import 'package:customer/utils/preferences.dart';
+import 'package:customer/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart' as flutterMap;
 import 'package:flutter_paypal/flutter_paypal.dart';
@@ -164,6 +165,9 @@ class CabBookingController extends GetxController {
       // Icons yuklash - parallel
       futures.add(setIcons());
 
+      // To'lov usullarini darhaqoza yuklash (bottom sheet uchun)
+      futures.add(loadPaymentSettingsIfNeeded());
+
       // Vehicle types yuklash - parallel (cache'dan olish mumkin bo'lsa)
       if (_vehicleTypesCached && _cachedVehicleTypes != null) {
         vehicleTypes.value = _cachedVehicleTypes!;
@@ -196,14 +200,11 @@ class CabBookingController extends GetxController {
       // Barcha parallel operatsiyalarni kutish
       await Future.wait(futures);
 
-      // 2. Initial loading tugadi - UI ko'rinadi
+      // 2. Initial loading tugadi - UI ko'rinadi (to'lov usullari parallel yuklangan)
       isInitialLoading.value = false;
       isLoading.value = false;
 
-      // 3. To'lov turlarini yuklash - CabBookingScreen uchun kerak
-      await loadPaymentSettingsIfNeeded();
-
-      // 4. Background'da qolgan operatsiyalarni bajarish
+      // 3. Background'da qolgan operatsiyalarni bajarish
       _loadBackgroundData();
 
       // 5. Reverse geocoding ni background'da bajarish (kutmaslik)
@@ -931,6 +932,7 @@ class CabBookingController extends GetxController {
 
     await FireStoreUtils.cabOrderPlace(orderModel);
 
+    userModel.value.inProgressOrderID ??= [];
     userModel.value.inProgressOrderID!.add(orderModel.id);
     await FireStoreUtils.updateUser(userModel.value);
 
@@ -953,6 +955,39 @@ class CabBookingController extends GetxController {
       _setOsmMarker(lat, long, isDeparture: true);
     } else {
       _setGoogleMarker(lat, long, isDeparture: true);
+    }
+  }
+
+  /// Cab home ga qaytganda joriy joylashuvni yangilash (sayohat bekor qilinganda)
+  Future<void> refreshCurrentLocation() async {
+    try {
+      final position = await Utils.getCurrentLocation();
+      if (position == null) return;
+      Constant.currentLocation = position;
+      currentPosition.value = LatLng(position.latitude, position.longitude);
+      departureLatLong.value = LatLng(position.latitude, position.longitude);
+      departureLatLongOsm.value = latlong.LatLng(
+        position.latitude,
+        position.longitude,
+      );
+      setDepartureMarker(position.latitude, position.longitude);
+      if (Constant.selectedMapType == 'osm') {
+        mapOsmController.move(
+          latlong.LatLng(position.latitude, position.longitude),
+          14,
+        );
+      } else {
+        _safeAnimateCamera(
+          CameraUpdate.newCameraPosition(
+            CameraPosition(
+              target: LatLng(position.latitude, position.longitude),
+              zoom: 14,
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      log("refreshCurrentLocation error: $e");
     }
   }
 
@@ -1060,12 +1095,21 @@ class CabBookingController extends GetxController {
         destinationLatLong.value.longitude != 0) {
       getDirections();
     } else {
-      mapController.animateCamera(
+      _safeAnimateCamera(
         CameraUpdate.newCameraPosition(
           CameraPosition(target: LatLng(lat, lng), zoom: 14),
         ),
       );
     }
+  }
+
+  /// Xarita dispose bo'lgan bo'lsa animateCamera chaqirmaydi
+  Future<void> _safeAnimateCamera(CameraUpdate update) async {
+    try {
+      await mapController.animateCamera(update);
+    } on StateError catch (_) {
+      // Xarita widget dispose bo'lgan
+    } catch (_) {}
   }
 
   Future<void> getDirections({bool isStopMarker = false}) async {
@@ -1123,8 +1167,9 @@ class CabBookingController extends GetxController {
 
   Future<void> fetchGoogleRouteWithWaypoints() async {
     if (departureLatLong.value.latitude == 0.0 ||
-        destinationLatLong.value.latitude == 0.0)
+        destinationLatLong.value.latitude == 0.0) {
       return;
+    }
 
     final origin =
         '${departureLatLong.value.latitude},${departureLatLong.value.longitude}';
@@ -1386,13 +1431,17 @@ class CabBookingController extends GetxController {
     CameraUpdate cameraUpdate,
     GoogleMapController mapController,
   ) async {
-    await mapController.animateCamera(cameraUpdate);
-    final l1 = await mapController.getVisibleRegion();
-    final l2 = await mapController.getVisibleRegion();
+    try {
+      await mapController.animateCamera(cameraUpdate);
+      final l1 = await mapController.getVisibleRegion();
+      final l2 = await mapController.getVisibleRegion();
 
-    if (l1.southwest.latitude == -90 || l2.southwest.latitude == -90) {
-      await checkCameraLocation(cameraUpdate, mapController);
-    }
+      if (l1.southwest.latitude == -90 || l2.southwest.latitude == -90) {
+        await checkCameraLocation(cameraUpdate, mapController);
+      }
+    } on StateError catch (_) {
+      // Xarita widget dispose bo'lgan
+    } catch (_) {}
   }
 
   Future<void> setIcons() async {
@@ -2014,87 +2063,153 @@ class CabBookingController extends GetxController {
     // Agar allaqachon yuklangan bo'lsa, qayta yuklamaslik
     if (_paymentSettingsCached && _paymentSettingsLoaded) return;
 
-    await FireStoreUtils.getPaymentSettingsData().then((value) {
-      stripeModel.value = StripeModel.fromJson(
-        jsonDecode(Preferences.getString(Preferences.stripeSettings)),
-      );
-      payPalModel.value = PayPalModel.fromJson(
-        jsonDecode(Preferences.getString(Preferences.paypalSettings)),
-      );
-      payStackModel.value = PayStackModel.fromJson(
-        jsonDecode(Preferences.getString(Preferences.payStack)),
-      );
-      mercadoPagoModel.value = MercadoPagoModel.fromJson(
-        jsonDecode(Preferences.getString(Preferences.mercadoPago)),
-      );
-      flutterWaveModel.value = FlutterWaveModel.fromJson(
-        jsonDecode(Preferences.getString(Preferences.flutterWave)),
-      );
-      paytmModel.value = PaytmModel.fromJson(
-        jsonDecode(Preferences.getString(Preferences.paytmSettings)),
-      );
-      payFastModel.value = PayFastModel.fromJson(
-        jsonDecode(Preferences.getString(Preferences.payFastSettings)),
-      );
-      razorPayModel.value = RazorPayModel.fromJson(
-        jsonDecode(Preferences.getString(Preferences.razorpaySettings)),
-      );
-      midTransModel.value = MidTrans.fromJson(
-        jsonDecode(Preferences.getString(Preferences.midTransSettings)),
-      );
-      orangeMoneyModel.value = OrangeMoney.fromJson(
-        jsonDecode(Preferences.getString(Preferences.orangeMoneySettings)),
-      );
-      xenditModel.value = Xendit.fromJson(
-        jsonDecode(Preferences.getString(Preferences.xenditSettings)),
-      );
-      paymeModel.value = PaymeModel.fromJson(
-        jsonDecode(Preferences.getString(Preferences.paymeSettings)),
-      );
-      walletSettingModel.value = WalletSettingModel.fromJson(
-        jsonDecode(Preferences.getString(Preferences.walletSettings)),
-      );
-      cashOnDeliverySettingModel.value = CodSettingModel.fromJson(
-        jsonDecode(Preferences.getString(Preferences.codSettings)),
-      );
+    await FireStoreUtils.getPaymentSettingsData()
+        .then((value) {
+          try {
+            _applyPaymentSettingsFromPreferences();
+          } catch (e) {
+            log("Error parsing payment settings: $e");
+            cashOnDeliverySettingModel.value = CodSettingModel(isEnabled: true);
+            selectedPaymentMethod.value = PaymentGateway.cod.name;
+          }
+        })
+        .catchError((e) {
+          log("Error loading payment settings: $e");
+          cashOnDeliverySettingModel.value = CodSettingModel(isEnabled: true);
+          selectedPaymentMethod.value = PaymentGateway.cod.name;
+        });
+  }
 
-      if (walletSettingModel.value.isEnabled == true) {
-        selectedPaymentMethod.value = PaymentGateway.wallet.name;
-      } else if (cashOnDeliverySettingModel.value.isEnabled == true) {
-        selectedPaymentMethod.value = PaymentGateway.cod.name;
-      } else if (stripeModel.value.isEnabled == true) {
-        selectedPaymentMethod.value = PaymentGateway.stripe.name;
-      } else if (payPalModel.value.isEnabled == true) {
-        selectedPaymentMethod.value = PaymentGateway.paypal.name;
-      } else if (payStackModel.value.isEnable == true) {
-        selectedPaymentMethod.value = PaymentGateway.payStack.name;
-      } else if (mercadoPagoModel.value.isEnabled == true) {
-        selectedPaymentMethod.value = PaymentGateway.mercadoPago.name;
-      } else if (flutterWaveModel.value.isEnable == true) {
-        selectedPaymentMethod.value = PaymentGateway.flutterWave.name;
-      } else if (payFastModel.value.isEnable == true) {
-        selectedPaymentMethod.value = PaymentGateway.payFast.name;
-      } else if (razorPayModel.value.isEnabled == true) {
-        selectedPaymentMethod.value = PaymentGateway.razorpay.name;
-      } else if (midTransModel.value.enable == true) {
-        selectedPaymentMethod.value = PaymentGateway.midTrans.name;
-      } else if (orangeMoneyModel.value.enable == true) {
-        selectedPaymentMethod.value = PaymentGateway.orangeMoney.name;
-      } else if (xenditModel.value.enable == true) {
-        selectedPaymentMethod.value = PaymentGateway.xendit.name;
-      } else if (paymeModel.value.isEnabled == true ||
-          paymeModel.value.enable == true) {
-        selectedPaymentMethod.value = PaymentGateway.payme.name;
+  void _applyPaymentSettingsFromPreferences() {
+    void _trySet<T>(
+      String prefKey,
+      T Function(Map<String, dynamic>) fromJson,
+      void Function(T) setModel,
+    ) {
+      final s = Preferences.getString(prefKey);
+      if (s.isEmpty) return;
+      try {
+        setModel(fromJson(jsonDecode(s) as Map<String, dynamic>));
+      } catch (_) {}
+    }
+
+    _trySet(
+      Preferences.stripeSettings,
+      StripeModel.fromJson,
+      (v) => stripeModel.value = v,
+    );
+    _trySet(
+      Preferences.paypalSettings,
+      PayPalModel.fromJson,
+      (v) => payPalModel.value = v,
+    );
+    _trySet(
+      Preferences.payStack,
+      PayStackModel.fromJson,
+      (v) => payStackModel.value = v,
+    );
+    _trySet(
+      Preferences.mercadoPago,
+      MercadoPagoModel.fromJson,
+      (v) => mercadoPagoModel.value = v,
+    );
+    _trySet(
+      Preferences.flutterWave,
+      FlutterWaveModel.fromJson,
+      (v) => flutterWaveModel.value = v,
+    );
+    _trySet(
+      Preferences.paytmSettings,
+      PaytmModel.fromJson,
+      (v) => paytmModel.value = v,
+    );
+    _trySet(
+      Preferences.payFastSettings,
+      PayFastModel.fromJson,
+      (v) => payFastModel.value = v,
+    );
+    _trySet(
+      Preferences.razorpaySettings,
+      RazorPayModel.fromJson,
+      (v) => razorPayModel.value = v,
+    );
+    _trySet(
+      Preferences.midTransSettings,
+      MidTrans.fromJson,
+      (v) => midTransModel.value = v,
+    );
+    _trySet(
+      Preferences.orangeMoneySettings,
+      OrangeMoney.fromJson,
+      (v) => orangeMoneyModel.value = v,
+    );
+    _trySet(
+      Preferences.xenditSettings,
+      Xendit.fromJson,
+      (v) => xenditModel.value = v,
+    );
+    _trySet(
+      Preferences.paymeSettings,
+      PaymeModel.fromJson,
+      (v) => paymeModel.value = v,
+    );
+    _trySet(
+      Preferences.walletSettings,
+      WalletSettingModel.fromJson,
+      (v) => walletSettingModel.value = v,
+    );
+    final codStr = Preferences.getString(Preferences.codSettings);
+    if (codStr.isNotEmpty) {
+      try {
+        cashOnDeliverySettingModel.value = CodSettingModel.fromJson(
+          jsonDecode(codStr) as Map<String, dynamic>,
+        );
+      } catch (_) {
+        cashOnDeliverySettingModel.value = CodSettingModel(isEnabled: true);
       }
+    } else {
+      cashOnDeliverySettingModel.value = CodSettingModel(isEnabled: true);
+    }
+
+    if (walletSettingModel.value.isEnabled == true) {
+      selectedPaymentMethod.value = PaymentGateway.wallet.name;
+    } else if (cashOnDeliverySettingModel.value.isEnabled == true) {
+      selectedPaymentMethod.value = PaymentGateway.cod.name;
+    } else if (stripeModel.value.isEnabled == true) {
+      selectedPaymentMethod.value = PaymentGateway.stripe.name;
+    } else if (payPalModel.value.isEnabled == true) {
+      selectedPaymentMethod.value = PaymentGateway.paypal.name;
+    } else if (payStackModel.value.isEnable == true) {
+      selectedPaymentMethod.value = PaymentGateway.payStack.name;
+    } else if (mercadoPagoModel.value.isEnabled == true) {
+      selectedPaymentMethod.value = PaymentGateway.mercadoPago.name;
+    } else if (flutterWaveModel.value.isEnable == true) {
+      selectedPaymentMethod.value = PaymentGateway.flutterWave.name;
+    } else if (payFastModel.value.isEnable == true) {
+      selectedPaymentMethod.value = PaymentGateway.payFast.name;
+    } else if (razorPayModel.value.isEnabled == true) {
+      selectedPaymentMethod.value = PaymentGateway.razorpay.name;
+    } else if (midTransModel.value.enable == true) {
+      selectedPaymentMethod.value = PaymentGateway.midTrans.name;
+    } else if (orangeMoneyModel.value.enable == true) {
+      selectedPaymentMethod.value = PaymentGateway.orangeMoney.name;
+    } else if (xenditModel.value.enable == true) {
+      selectedPaymentMethod.value = PaymentGateway.xendit.name;
+    } else if (paymeModel.value.isEnabled == true ||
+        paymeModel.value.enable == true) {
+      selectedPaymentMethod.value = PaymentGateway.payme.name;
+    } else {
+      selectedPaymentMethod.value = PaymentGateway.cod.name;
+    }
+    if ((Preferences.getString(Preferences.stripeSettings)).isNotEmpty) {
       Stripe.publishableKey = stripeModel.value.clientpublishableKey.toString();
       Stripe.merchantIdentifier = 'eMart Customer';
       Stripe.instance.applySettings();
-      setRef();
-
-      razorPay.on(Razorpay.EVENT_PAYMENT_SUCCESS, handlePaymentSuccess);
-      razorPay.on(Razorpay.EVENT_EXTERNAL_WALLET, handleExternalWaller);
-      razorPay.on(Razorpay.EVENT_PAYMENT_ERROR, handlePaymentError);
-    });
+    }
+    setRef();
+    razorPay.on(Razorpay.EVENT_PAYMENT_SUCCESS, handlePaymentSuccess);
+    razorPay.on(Razorpay.EVENT_EXTERNAL_WALLET, handleExternalWaller);
+    razorPay.on(Razorpay.EVENT_PAYMENT_ERROR, handlePaymentError);
   }
 
   // Strip
@@ -2855,15 +2970,21 @@ class CabBookingController extends GetxController {
             // Pass both payment order_id and ride document ID
             final paymentOrderId = data['order_id'];
             final rideId = currentOrder.value.id;
-            
-            log('🔵 [PaymePayment] Opening PaymeScreen with orderId: $paymentOrderId, rideId: $rideId');
-            
-            Get.to(() => PaymeScreen(
-              initialURl: data['link'],
-              orderId: paymentOrderId,
-              rideId: rideId,
-            ))!.then((value) {
-              if (value != null && value['success'] == true && value['is_paid'] == true) {
+
+            log(
+              '🔵 [PaymePayment] Opening PaymeScreen with orderId: $paymentOrderId, rideId: $rideId',
+            );
+
+            Get.to(
+              () => PaymeScreen(
+                initialURl: data['link'],
+                orderId: paymentOrderId,
+                rideId: rideId,
+              ),
+            )!.then((value) {
+              if (value != null &&
+                  value['success'] == true &&
+                  value['is_paid'] == true) {
                 ShowToastDialog.showToast("Payment Successful!!".tr);
                 completeOrder();
               } else {

@@ -14,7 +14,6 @@ import 'package:driver/models/wallet_transaction_model.dart';
 import 'package:driver/services/audio_player_service.dart';
 import 'package:driver/themes/app_them_data.dart';
 import 'package:driver/utils/fire_store_utils.dart';
-import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';

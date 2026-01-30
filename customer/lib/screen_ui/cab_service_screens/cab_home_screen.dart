@@ -1064,7 +1064,7 @@ class CabHomeScreen extends StatelessWidget {
                                                 },
                                                 isDark,
                                               );
-                                            }).toList(),
+                                            }),
                                         ],
                                       )
                                       : const SizedBox.shrink(),
@@ -1284,7 +1284,7 @@ class CabHomeScreen extends StatelessWidget {
                                                 },
                                                 isDark,
                                               );
-                                            }).toList(),
+                                            }),
                                         ],
                                       )
                                       : const SizedBox.shrink(),
@@ -1418,7 +1418,14 @@ class CabHomeScreen extends StatelessWidget {
                                           //     true) {
                                           controller.bottomSheetType.value =
                                               'vehicleSelection';
-                                          Get.to(() => CabBookingScreen());
+                                          Get.to(
+                                            () => CabBookingScreen(),
+                                          )?.then((result) {
+                                            if (result == true) {
+                                              controller
+                                                  .refreshCurrentLocation();
+                                            }
+                                          });
                                           // } else {
                                           //   Get.to(() => IntercityHomeScreen());
                                           // }

@@ -15,22 +15,29 @@
             </array>
         </dict>
     </array>
+    <!-- Bluetooth (thermal printers) -->
     <key>NSBluetoothPeripheralUsageDescription</key>
-    <string>Bluetooth access to connect 58mm or 80mm thermal printers</string>
+    <string>58mm yoki 80mm termal printerlarni ulash uchun Bluetooth ruxsati kerak.</string>
     <key>NSBluetoothAlwaysUsageDescription</key>
-    <string>Bluetooth access to connect 58mm or 80mm thermal printers</string>
-    <key>NSCameraUsageDescription</key>
-    <string>This app needs access to camera permission</string>
-    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-    <string>This app needs access to location when open and in the background.</string>
-    <key>NSLocationAlwaysUsageDescription</key>
-    <string>This app needs access to location when in the background.</string>
+    <string>58mm yoki 80mm termal printerlarni ulash uchun Bluetooth ruxsati kerak.</string>
+
+    <!-- Location (maps, delivery zones) -->
     <key>NSLocationWhenInUseUsageDescription</key>
-    <string>This app needs access to location when open.</string>
+    <string>Xaritalar va yetkazib berish zonalari uchun joylashuvga ruxsat kerak.</string>
+    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+    <string>Do'kon va yetkazib berish zonalarini ko'rsatish uchun joylashuvga ruxsat bering.</string>
+    <key>NSLocationAlwaysUsageDescription</key>
+    <string>Orqa fonda joylashuv kerak bo'lsa ruxsat bering.</string>
+
+    <!-- Camera & Media -->
+    <key>NSCameraUsageDescription</key>
+    <string>Mahsulot rasmlari va hujjatlar uchun kameraga ruxsat kerak.</string>
     <key>NSMicrophoneUsageDescription</key>
-    <string>Used to capture audio for image picker plugin</string>
+    <string>Video yozish uchun mikrofonga ruxsat kerak.</string>
     <key>NSPhotoLibraryUsageDescription</key>
-    <string>This app needs access to your gallery photo.</string>
+    <string>Rasmlarni tanlash va yuklash uchun galereyaga ruxsat kerak.</string>
+    <key>NSPhotoLibraryAddUsageDescription</key>
+    <string>Rasmlarni saqlash uchun galereyaga yozish ruxsati kerak.</string>
 
     <key>UIBackgroundModes</key>
     <array>

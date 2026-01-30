@@ -34,6 +34,7 @@ dependencies:
   # Network & Storage
   cached_network_image: ^3.4.1
   shared_preferences: ^2.5.3
+  shared_preferences_android: ^2.4.20
   path_provider: ^2.1.5
   path: ^1.9.1
 
@@ -56,7 +57,7 @@ dependencies:
   google_maps_flutter: ^2.14.0
   flutter_osm_plugin: ^1.4.3
   osm_nominatim: ^4.0.1
-  geolocator: any
+  geolocator: ^14.0.0
   geocoding: ^4.0.0
   flutter_polyline_points: ^3.1.0
   map_launcher: ^4.4.2
@@ -67,6 +68,7 @@ dependencies:
   # Media
   image_picker: ^1.2.1
   video_player: ^2.10.1
+  video_player_android: ^2.9.1
   video_compress: ^3.1.4
 
   # Sharing & QR

@@ -64,10 +64,13 @@ class IntercityHomeController extends GetxController {
   late GoogleMapController mapController;
   final flutterMap.MapController mapOsmController = flutterMap.MapController();
 
-  final Rx<TextEditingController> sourceTextEditController = TextEditingController().obs;
-  final Rx<TextEditingController> destinationTextEditController = TextEditingController().obs;
+  final Rx<TextEditingController> sourceTextEditController =
+      TextEditingController().obs;
+  final Rx<TextEditingController> destinationTextEditController =
+      TextEditingController().obs;
 
-  final Rx<TextEditingController> couponCodeTextEditController = TextEditingController().obs;
+  final Rx<TextEditingController> couponCodeTextEditController =
+      TextEditingController().obs;
 
   final Rx<Location> currentLocation = Location().obs;
 
@@ -141,64 +144,99 @@ class IntercityHomeController extends GetxController {
 
     await getPaymentSettings();
 
-    FireStoreUtils.fireStore.collection(CollectionName.users).doc(FireStoreUtils.getCurrentUid()).snapshots().listen((userSnapshot) async {
-      if (!userSnapshot.exists) return;
+    FireStoreUtils.fireStore
+        .collection(CollectionName.users)
+        .doc(FireStoreUtils.getCurrentUid())
+        .snapshots()
+        .listen((userSnapshot) async {
+          if (!userSnapshot.exists) return;
 
-      userModel.value = UserModel.fromJson(userSnapshot.data()!);
+          userModel.value = UserModel.fromJson(userSnapshot.data()!);
 
-      if (userModel.value.inProgressOrderID != null && userModel.value.inProgressOrderID!.isNotEmpty) {
-        String? validRideId;
+          if (userModel.value.inProgressOrderID != null &&
+              userModel.value.inProgressOrderID!.isNotEmpty) {
+            String? validRideId;
 
-        for (String id in userModel.value.inProgressOrderID!) {
-          final rideDoc = await FireStoreUtils.fireStore.collection(CollectionName.rides).doc(id).get();
+            for (String id in userModel.value.inProgressOrderID!) {
+              final rideDoc =
+                  await FireStoreUtils.fireStore
+                      .collection(CollectionName.rides)
+                      .doc(id)
+                      .get();
 
-          if (rideDoc.exists && (rideDoc.data()?['rideType'] ?? '').toString().toLowerCase() == "intercity") {
-            validRideId = userModel.value.inProgressOrderID!.first!;
-            break;
-          }
-        }
-
-        FireStoreUtils.fireStore.collection(CollectionName.rides).doc(validRideId).snapshots().listen((rideSnapshot) async {
-          if (!rideSnapshot.exists) return;
-
-          final rideData = rideSnapshot.data()!;
-          currentOrder.value = CabOrderModel.fromJson(rideData);
-          final status = currentOrder.value.status;
-
-          if (status == Constant.driverAccepted || status == Constant.orderInTransit) {
-            FireStoreUtils.fireStore.collection(CollectionName.users).doc(currentOrder.value.driverId).snapshots().listen((event) async {
-              if (event.exists && event.data() != null) {
-                UserModel driverModel0 = UserModel.fromJson(event.data()!);
-                driverModel.value = driverModel0;
-                await updateDriverRoute(driverModel0);
+              if (rideDoc.exists &&
+                  (rideDoc.data()?['rideType'] ?? '')
+                          .toString()
+                          .toLowerCase() ==
+                      "intercity") {
+                validRideId = userModel.value.inProgressOrderID!.first!;
+                break;
               }
-            });
-          }
+            }
 
-          print("Current Ride Status: $status");
-          if (status == Constant.orderPlaced || status == Constant.driverPending || status == Constant.driverRejected || (status == Constant.orderAccepted && currentOrder.value.driverId == null)) {
-            bottomSheetType.value = 'waitingForDriver';
-          } else if (status == Constant.driverAccepted || status == Constant.orderInTransit) {
-            bottomSheetType.value = 'driverDetails';
-            sourceTextEditController.value.text = currentOrder.value.sourceLocationName ?? '';
-            destinationTextEditController.value.text = currentOrder.value.destinationLocationName ?? '';
-            selectedPaymentMethod.value = currentOrder.value.paymentMethod ?? '';
-            calculateTotalAmountAfterAccept();
-          } else if (status == Constant.orderCompleted) {
-            userModel.value.inProgressOrderID!.remove(validRideId);
-            await FireStoreUtils.updateUser(userModel.value);
+            FireStoreUtils.fireStore
+                .collection(CollectionName.rides)
+                .doc(validRideId)
+                .snapshots()
+                .listen((rideSnapshot) async {
+                  if (!rideSnapshot.exists) return;
+
+                  final rideData = rideSnapshot.data()!;
+                  currentOrder.value = CabOrderModel.fromJson(rideData);
+                  final status = currentOrder.value.status;
+
+                  if (status == Constant.driverAccepted ||
+                      status == Constant.orderInTransit) {
+                    FireStoreUtils.fireStore
+                        .collection(CollectionName.users)
+                        .doc(currentOrder.value.driverId)
+                        .snapshots()
+                        .listen((event) async {
+                          if (event.exists && event.data() != null) {
+                            UserModel driverModel0 = UserModel.fromJson(
+                              event.data()!,
+                            );
+                            driverModel.value = driverModel0;
+                            await updateDriverRoute(driverModel0);
+                          }
+                        });
+                  }
+
+                  print("Current Ride Status: $status");
+                  if (status == Constant.orderPlaced ||
+                      status == Constant.driverPending ||
+                      status == Constant.driverRejected ||
+                      (status == Constant.orderAccepted &&
+                          currentOrder.value.driverId == null)) {
+                    bottomSheetType.value = 'waitingForDriver';
+                  } else if (status == Constant.driverAccepted ||
+                      status == Constant.orderInTransit) {
+                    bottomSheetType.value = 'driverDetails';
+                    sourceTextEditController.value.text =
+                        currentOrder.value.sourceLocationName ?? '';
+                    destinationTextEditController.value.text =
+                        currentOrder.value.destinationLocationName ?? '';
+                    selectedPaymentMethod.value =
+                        currentOrder.value.paymentMethod ?? '';
+                    calculateTotalAmountAfterAccept();
+                  } else if (status == Constant.orderCompleted) {
+                    userModel.value.inProgressOrderID!.remove(validRideId);
+                    await FireStoreUtils.updateUser(userModel.value);
+                    bottomSheetType.value = 'location';
+                    Get.back();
+                  }
+                });
+          } else {
             bottomSheetType.value = 'location';
-            Get.back();
+            if (Constant.currentLocation != null) {
+              setDepartureMarker(
+                Constant.currentLocation!.latitude,
+                Constant.currentLocation!.longitude,
+              );
+              searchPlaceNameOSM();
+            }
           }
         });
-      } else {
-        bottomSheetType.value = 'location';
-        if (Constant.currentLocation != null) {
-          setDepartureMarker(Constant.currentLocation!.latitude, Constant.currentLocation!.longitude);
-          searchPlaceNameOSM();
-        }
-      }
-    });
 
     final coupons = await FireStoreUtils.getCabCoupon();
     cabCouponList.value = coupons;
@@ -225,18 +263,30 @@ class IntercityHomeController extends GetxController {
 
         if (order.status == Constant.driverAccepted) {
           // DRIVER → PICKUP
-          await fetchRouteWithWaypoints([latlong.LatLng(driverLat, driverLng), latlong.LatLng(pickupLat, pickupLng)]);
+          await fetchRouteWithWaypoints([
+            latlong.LatLng(driverLat, driverLng),
+            latlong.LatLng(pickupLat, pickupLng),
+          ]);
         } else if (order.status == Constant.orderInTransit) {
           // PICKUP → DESTINATION
-          await fetchRouteWithWaypoints([latlong.LatLng(pickupLat, pickupLng), latlong.LatLng(destLat, destLng)]);
+          await fetchRouteWithWaypoints([
+            latlong.LatLng(pickupLat, pickupLng),
+            latlong.LatLng(destLat, destLng),
+          ]);
         }
         updateRouteMarkers(driverModel);
       } else {
         /// For Google Maps
         if (order.status == Constant.driverAccepted) {
-          await fetchGoogleRouteBetween(LatLng(driverLat, driverLng), LatLng(pickupLat, pickupLng));
+          await fetchGoogleRouteBetween(
+            LatLng(driverLat, driverLng),
+            LatLng(pickupLat, pickupLng),
+          );
         } else if (order.status == Constant.orderInTransit) {
-          await fetchGoogleRouteBetween(LatLng(pickupLat, pickupLng), LatLng(destLat, destLng));
+          await fetchGoogleRouteBetween(
+            LatLng(pickupLat, pickupLng),
+            LatLng(destLat, destLng),
+          );
         }
         updateRouteMarkers(driverModel);
       }
@@ -260,12 +310,24 @@ class IntercityHomeController extends GetxController {
       markers.clear();
       osmMarker.clear();
 
-      final departureBytes = await Constant().getBytesFromAsset('assets/images/location_black3x.png', 50);
-      final destinationBytes = await Constant().getBytesFromAsset('assets/images/location_orange3x.png', 50);
+      final departureBytes = await Constant().getBytesFromAsset(
+        'assets/images/location_black3x.png',
+        50,
+      );
+      final destinationBytes = await Constant().getBytesFromAsset(
+        'assets/images/location_orange3x.png',
+        50,
+      );
       final driverBytesRaw =
           (Constant.sectionConstantModel?.markerIcon?.isNotEmpty ?? false)
-              ? await Constant().getBytesFromUrl(Constant.sectionConstantModel!.markerIcon!, width: 120)
-              : await Constant().getBytesFromAsset('assets/images/ic_cab.png', 50);
+              ? await Constant().getBytesFromUrl(
+                Constant.sectionConstantModel!.markerIcon!,
+                width: 120,
+              )
+              : await Constant().getBytesFromAsset(
+                'assets/images/ic_cab.png',
+                50,
+              );
 
       departureIcon = BitmapDescriptor.fromBytes(departureBytes);
       destinationIcon = BitmapDescriptor.fromBytes(destinationBytes);
@@ -274,7 +336,15 @@ class IntercityHomeController extends GetxController {
       if (Constant.selectedMapType == 'osm') {
         if (order.status == Constant.driverAccepted) {
           osmMarker.addAll([
-            flutterMap.Marker(point: latlong.LatLng(pickupLat, pickupLng), width: 40, height: 40, child: Image.asset('assets/images/location_black3x.png', width: 40)),
+            flutterMap.Marker(
+              point: latlong.LatLng(pickupLat, pickupLng),
+              width: 40,
+              height: 40,
+              child: Image.asset(
+                'assets/images/location_black3x.png',
+                width: 40,
+              ),
+            ),
             flutterMap.Marker(
               point: latlong.LatLng(driverLat, driverLng),
               width: 45,
@@ -285,13 +355,26 @@ class IntercityHomeController extends GetxController {
                 height: 50,
                 imageUrl: Constant.sectionConstantModel!.markerIcon.toString(),
                 placeholder: (context, url) => Constant.loader(),
-                errorWidget: (context, url, error) => SizedBox(width: 30, height: 30, child: CircularProgressIndicator(strokeWidth: 2)),
+                errorWidget:
+                    (context, url, error) => SizedBox(
+                      width: 30,
+                      height: 30,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
               ),
             ),
           ]);
         } else if (order.status == Constant.orderInTransit) {
           osmMarker.addAll([
-            flutterMap.Marker(point: latlong.LatLng(destLat, destLng), width: 40, height: 40, child: Image.asset('assets/images/location_orange3x.png', width: 40)),
+            flutterMap.Marker(
+              point: latlong.LatLng(destLat, destLng),
+              width: 40,
+              height: 40,
+              child: Image.asset(
+                'assets/images/location_orange3x.png',
+                width: 40,
+              ),
+            ),
             flutterMap.Marker(
               point: latlong.LatLng(driverLat, driverLng),
               width: 45,
@@ -302,7 +385,12 @@ class IntercityHomeController extends GetxController {
                 height: 50,
                 imageUrl: Constant.sectionConstantModel!.markerIcon.toString(),
                 placeholder: (context, url) => Constant.loader(),
-                errorWidget: (context, url, error) => SizedBox(width: 30, height: 30, child: CircularProgressIndicator(strokeWidth: 2)),
+                errorWidget:
+                    (context, url, error) => SizedBox(
+                      width: 30,
+                      height: 30,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
               ),
             ),
           ]);
@@ -314,9 +402,18 @@ class IntercityHomeController extends GetxController {
               markerId: const MarkerId("pickup"),
               position: LatLng(pickupLat, pickupLng),
               infoWindow: InfoWindow(title: "Pickup Location".tr),
-              icon: departureIcon ?? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+              icon:
+                  departureIcon ??
+                  BitmapDescriptor.defaultMarkerWithHue(
+                    BitmapDescriptor.hueGreen,
+                  ),
             ),
-            Marker(markerId: const MarkerId("driver"), position: LatLng(driverLat, driverLng), infoWindow: InfoWindow(title: "Driver at Pickup".tr), icon: taxiIcon ?? BitmapDescriptor.defaultMarker),
+            Marker(
+              markerId: const MarkerId("driver"),
+              position: LatLng(driverLat, driverLng),
+              infoWindow: InfoWindow(title: "Driver at Pickup".tr),
+              icon: taxiIcon ?? BitmapDescriptor.defaultMarker,
+            ),
           ]);
         } else if (order.status == Constant.orderInTransit) {
           markers.addAll([
@@ -324,9 +421,18 @@ class IntercityHomeController extends GetxController {
               markerId: const MarkerId("destination"),
               position: LatLng(destLat, destLng),
               infoWindow: InfoWindow(title: "Destination Location".tr),
-              icon: destinationIcon ?? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+              icon:
+                  destinationIcon ??
+                  BitmapDescriptor.defaultMarkerWithHue(
+                    BitmapDescriptor.hueRed,
+                  ),
             ),
-            Marker(markerId: const MarkerId("driver"), position: LatLng(driverLat, driverLng), infoWindow: InfoWindow(title: "Driver Location".tr), icon: taxiIcon ?? BitmapDescriptor.defaultMarker),
+            Marker(
+              markerId: const MarkerId("driver"),
+              position: LatLng(driverLat, driverLng),
+              infoWindow: InfoWindow(title: "Driver Location".tr),
+              icon: taxiIcon ?? BitmapDescriptor.defaultMarker,
+            ),
           ]);
         }
       }
@@ -337,7 +443,10 @@ class IntercityHomeController extends GetxController {
     }
   }
 
-  Future<void> fetchGoogleRouteBetween(LatLng originPoint, LatLng destPoint) async {
+  Future<void> fetchGoogleRouteBetween(
+    LatLng originPoint,
+    LatLng destPoint,
+  ) async {
     final origin = '${originPoint.latitude},${originPoint.longitude}';
     final destination = '${destPoint.latitude},${destPoint.longitude}';
     final url = Uri.parse(
@@ -354,7 +463,8 @@ class IntercityHomeController extends GetxController {
         final route = data['routes'][0];
         final encodedPolyline = route['overview_polyline']['points'];
         final decodedPoints = PolylinePoints.decodePolyline(encodedPolyline);
-        final coordinates = decodedPoints.map((e) => LatLng(e.latitude, e.longitude)).toList();
+        final coordinates =
+            decodedPoints.map((e) => LatLng(e.latitude, e.longitude)).toList();
 
         addPolyLine(coordinates);
 
@@ -381,7 +491,12 @@ class IntercityHomeController extends GetxController {
 
     if (currentOrder.value.taxSetting != null) {
       for (var element in currentOrder.value.taxSetting!) {
-        taxAmount.value = (taxAmount.value + Constant.calculateTax(amount: (subTotal.value - discount.value).toString(), taxModel: element));
+        taxAmount.value =
+            (taxAmount.value +
+                Constant.calculateTax(
+                  amount: (subTotal.value - discount.value).toString(),
+                  taxModel: element,
+                ));
       }
     }
 
@@ -397,11 +512,19 @@ class IntercityHomeController extends GetxController {
     subTotal.value = getAmount(selectedVehicleType.value);
 
     if (selectedCouponModel.value.id != null) {
-      discount.value = Constant.calculateDiscount(amount: subTotal.value.toString(), offerModel: selectedCouponModel.value);
+      discount.value = Constant.calculateDiscount(
+        amount: subTotal.value.toString(),
+        offerModel: selectedCouponModel.value,
+      );
     }
 
     for (var element in Constant.taxList) {
-      taxAmount.value = (taxAmount.value + Constant.calculateTax(amount: (subTotal.value - discount.value).toString(), taxModel: element));
+      taxAmount.value =
+          (taxAmount.value +
+              Constant.calculateTax(
+                amount: (subTotal.value - discount.value).toString(),
+                taxModel: element,
+              ));
     }
 
     totalAmount.value = (subTotal.value - discount.value) + taxAmount.value;
@@ -438,9 +561,14 @@ class IntercityHomeController extends GetxController {
           serviceType: Constant.parcelServiceType,
         );
 
-        await FireStoreUtils.setWalletTransaction(transactionModel).then((value) async {
+        await FireStoreUtils.setWalletTransaction(transactionModel).then((
+          value,
+        ) async {
           if (value == true) {
-            await FireStoreUtils.updateUserWallet(amount: "-${totalAmount.value.toString()}", userId: FireStoreUtils.getCurrentUid());
+            await FireStoreUtils.updateUserWallet(
+              amount: "-${totalAmount.value.toString()}",
+              userId: FireStoreUtils.getCurrentUid(),
+            );
           }
         });
       }
@@ -454,13 +582,25 @@ class IntercityHomeController extends GetxController {
 
   Future<void> placeOrder() async {
     DestinationLocation sourceLocation = DestinationLocation(
-      latitude: Constant.selectedMapType == 'osm' ? departureLatLongOsm.value.latitude : departureLatLong.value.latitude,
-      longitude: Constant.selectedMapType == 'osm' ? departureLatLongOsm.value.longitude : departureLatLong.value.longitude,
+      latitude:
+          Constant.selectedMapType == 'osm'
+              ? departureLatLongOsm.value.latitude
+              : departureLatLong.value.latitude,
+      longitude:
+          Constant.selectedMapType == 'osm'
+              ? departureLatLongOsm.value.longitude
+              : departureLatLong.value.longitude,
     );
 
     DestinationLocation destinationLocation = DestinationLocation(
-      latitude: Constant.selectedMapType == 'osm' ? destinationLatLongOsm.value.latitude : destinationLatLong.value.latitude,
-      longitude: Constant.selectedMapType == 'osm' ? destinationLatLongOsm.value.longitude : destinationLatLong.value.longitude,
+      latitude:
+          Constant.selectedMapType == 'osm'
+              ? destinationLatLongOsm.value.latitude
+              : destinationLatLong.value.latitude,
+      longitude:
+          Constant.selectedMapType == 'osm'
+              ? destinationLatLongOsm.value.longitude
+              : destinationLatLong.value.longitude,
     );
 
     CabOrderModel orderModel = CabOrderModel();
@@ -471,7 +611,8 @@ class IntercityHomeController extends GetxController {
     orderModel.vehicleType = selectedVehicleType.value;
     orderModel.authorID = FireStoreUtils.getCurrentUid();
     orderModel.sourceLocationName = sourceTextEditController.value.text;
-    orderModel.destinationLocationName = destinationTextEditController.value.text;
+    orderModel.destinationLocationName =
+        destinationTextEditController.value.text;
 
     orderModel.sourceLocation = sourceLocation;
     orderModel.destinationLocation = destinationLocation;
@@ -483,11 +624,14 @@ class IntercityHomeController extends GetxController {
 
     orderModel.taxSetting = Constant.taxList;
     orderModel.adminCommissionType =
-        Constant.sectionConstantModel!.adminCommision != null && Constant.sectionConstantModel!.adminCommision!.isEnabled == true
-            ? Constant.sectionConstantModel!.adminCommision!.commissionType.toString()
+        Constant.sectionConstantModel!.adminCommision != null &&
+                Constant.sectionConstantModel!.adminCommision!.isEnabled == true
+            ? Constant.sectionConstantModel!.adminCommision!.commissionType
+                .toString()
             : null;
     orderModel.adminCommission =
-        Constant.sectionConstantModel!.adminCommision != null && Constant.sectionConstantModel!.adminCommision!.isEnabled == true
+        Constant.sectionConstantModel!.adminCommision != null &&
+                Constant.sectionConstantModel!.adminCommision!.isEnabled == true
             ? Constant.sectionConstantModel!.adminCommision!.amount.toString()
             : null;
     orderModel.couponCode = couponCodeTextEditController.value.text;
@@ -500,13 +644,16 @@ class IntercityHomeController extends GetxController {
     orderModel.roundTrip = false;
     orderModel.sectionId = Constant.sectionConstantModel!.id;
     orderModel.createdAt = Timestamp.now();
-    orderModel.otpCode = (maths.Random().nextInt(9000) + 1000).toString(); // Generate a 4-digit OTP
+    orderModel.otpCode =
+        (maths.Random().nextInt(9000) + 1000)
+            .toString(); // Generate a 4-digit OTP
     orderModel.status = Constant.orderPlaced;
     orderModel.scheduleDateTime = Timestamp.now();
     log("Order Model : ${orderModel.toJson()}");
 
     await FireStoreUtils.cabOrderPlace(orderModel);
 
+    userModel.value.inProgressOrderID ??= [];
     userModel.value.inProgressOrderID!.add(orderModel.id);
     await FireStoreUtils.updateUser(userModel.value);
 
@@ -515,8 +662,10 @@ class IntercityHomeController extends GetxController {
 
   double getAmount(VehicleType vehicleType) {
     final double currentDistance = distance.value;
-    if (currentDistance <= (vehicleType.minimum_delivery_charges_within_km ?? 0)) {
-      return double.tryParse(vehicleType.minimum_delivery_charges.toString()) ?? 0.0;
+    if (currentDistance <=
+        (vehicleType.minimum_delivery_charges_within_km ?? 0)) {
+      return double.tryParse(vehicleType.minimum_delivery_charges.toString()) ??
+          0.0;
     } else {
       return (vehicleType.delivery_charges_per_km ?? 0.0) * currentDistance;
     }
@@ -541,28 +690,50 @@ class IntercityHomeController extends GetxController {
   void setStopMarker(double lat, double lng, int index) {
     if (Constant.selectedMapType == 'osm') {
       // Add new stop marker without clearing
-      osmMarker.add(flutterMap.Marker(point: latlong.LatLng(lat, lng), width: 40, height: 40, child: stopIconOsm!));
+      osmMarker.add(
+        flutterMap.Marker(
+          point: latlong.LatLng(lat, lng),
+          width: 40,
+          height: 40,
+          child: stopIconOsm!,
+        ),
+      );
 
       getDirections(isStopMarker: true);
     } else {
       final markerId = MarkerId('Stop $index');
 
       markers.removeWhere((marker) => marker.markerId == markerId);
-      markers.add(Marker(markerId: markerId, infoWindow: InfoWindow(title: 'Stop ${String.fromCharCode(index + 65)}'), position: LatLng(lat, lng), icon: stopIcon!));
+      markers.add(
+        Marker(
+          markerId: markerId,
+          infoWindow: InfoWindow(
+            title: 'Stop ${String.fromCharCode(index + 65)}',
+          ),
+          position: LatLng(lat, lng),
+          icon: stopIcon!,
+        ),
+      );
 
       getDirections();
     }
   }
 
   void _setOsmMarker(double lat, double lng, {required bool isDeparture}) {
-    final marker = flutterMap.Marker(point: latlong.LatLng(lat, lng), width: 40, height: 40, child: isDeparture ? departureIconOsm! : destinationIconOsm!);
+    final marker = flutterMap.Marker(
+      point: latlong.LatLng(lat, lng),
+      width: 40,
+      height: 40,
+      child: isDeparture ? departureIconOsm! : destinationIconOsm!,
+    );
     if (isDeparture) {
       departureLatLongOsm.value = latlong.LatLng(lat, lng);
     } else {
       destinationLatLongOsm.value = latlong.LatLng(lat, lng);
     }
     osmMarker.add(marker);
-    if (departureLatLongOsm.value.latitude != 0 && destinationLatLongOsm.value.latitude != 0) {
+    if (departureLatLongOsm.value.latitude != 0 &&
+        destinationLatLongOsm.value.latitude != 0) {
       getDirections();
       animateToSource(lat, lng);
     }
@@ -584,14 +755,26 @@ class IntercityHomeController extends GetxController {
     markers.removeWhere((marker) => marker.markerId == markerId);
 
     // Add new marker
-    markers.add(Marker(markerId: markerId, position: pos, icon: icon, infoWindow: InfoWindow(title: title)));
+    markers.add(
+      Marker(
+        markerId: markerId,
+        position: pos,
+        icon: icon,
+        infoWindow: InfoWindow(title: title),
+      ),
+    );
 
     mapController.animateCamera(CameraUpdate.newLatLngZoom(pos, 14));
 
-    if (departureLatLong.value.latitude != 0 && destinationLatLong.value.latitude != 0) {
+    if (departureLatLong.value.latitude != 0 &&
+        destinationLatLong.value.latitude != 0) {
       getDirections();
     } else {
-      mapController.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(target: LatLng(lat, lng), zoom: 14)));
+      mapController.animateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(target: LatLng(lat, lng), zoom: 14),
+        ),
+      );
     }
   }
 
@@ -600,25 +783,43 @@ class IntercityHomeController extends GetxController {
       final wayPoints = <latlong.LatLng>[];
 
       // Only add valid source
-      if (departureLatLongOsm.value.latitude != 0.0 && departureLatLongOsm.value.longitude != 0.0) {
+      if (departureLatLongOsm.value.latitude != 0.0 &&
+          departureLatLongOsm.value.longitude != 0.0) {
         wayPoints.add(departureLatLongOsm.value);
       }
 
       // Only add valid destination
-      if (destinationLatLongOsm.value.latitude != 0.0 && destinationLatLongOsm.value.longitude != 0.0) {
+      if (destinationLatLongOsm.value.latitude != 0.0 &&
+          destinationLatLongOsm.value.longitude != 0.0) {
         wayPoints.add(destinationLatLongOsm.value);
       }
 
       if (!isStopMarker) osmMarker.clear();
 
       // Add source marker
-      if (departureLatLongOsm.value.latitude != 0.0 && departureLatLongOsm.value.longitude != 0.0) {
-        osmMarker.add(flutterMap.Marker(point: departureLatLongOsm.value, width: 40, height: 40, child: departureIconOsm!));
+      if (departureLatLongOsm.value.latitude != 0.0 &&
+          departureLatLongOsm.value.longitude != 0.0) {
+        osmMarker.add(
+          flutterMap.Marker(
+            point: departureLatLongOsm.value,
+            width: 40,
+            height: 40,
+            child: departureIconOsm!,
+          ),
+        );
       }
 
       // Add destination marker
-      if (destinationLatLongOsm.value.latitude != 0.0 && destinationLatLongOsm.value.longitude != 0.0) {
-        osmMarker.add(flutterMap.Marker(point: destinationLatLongOsm.value, width: 40, height: 40, child: destinationIconOsm!));
+      if (destinationLatLongOsm.value.latitude != 0.0 &&
+          destinationLatLongOsm.value.longitude != 0.0) {
+        osmMarker.add(
+          flutterMap.Marker(
+            point: destinationLatLongOsm.value,
+            width: 40,
+            height: 40,
+            child: destinationIconOsm!,
+          ),
+        );
       }
 
       if (wayPoints.length >= 2) {
@@ -631,10 +832,14 @@ class IntercityHomeController extends GetxController {
   }
 
   Future<void> fetchGoogleRouteWithWaypoints() async {
-    if (departureLatLong.value.latitude == 0.0 || destinationLatLong.value.latitude == 0.0) return;
+    if (departureLatLong.value.latitude == 0.0 ||
+        destinationLatLong.value.latitude == 0.0)
+      return;
 
-    final origin = '${departureLatLong.value.latitude},${departureLatLong.value.longitude}';
-    final destination = '${destinationLatLong.value.latitude},${destinationLatLong.value.longitude}';
+    final origin =
+        '${departureLatLong.value.latitude},${departureLatLong.value.longitude}';
+    final destination =
+        '${destinationLatLong.value.latitude},${destinationLatLong.value.longitude}';
 
     final url = Uri.parse(
       'https://maps.googleapis.com/maps/api/directions/json'
@@ -653,7 +858,8 @@ class IntercityHomeController extends GetxController {
         // Polyline
         final encodedPolyline = route['overview_polyline']['points'];
         final decodedPoints = PolylinePoints.decodePolyline(encodedPolyline);
-        final coordinates = decodedPoints.map((e) => LatLng(e.latitude, e.longitude)).toList();
+        final coordinates =
+            decodedPoints.map((e) => LatLng(e.latitude, e.longitude)).toList();
 
         addPolyLine(coordinates);
 
@@ -685,19 +891,26 @@ class IntercityHomeController extends GetxController {
   }
 
   Future<void> fetchRouteWithWaypoints(List<latlong.LatLng> points) async {
-    final coordinates = points.map((p) => '${p.longitude},${p.latitude}').join(';');
-    final url = Uri.parse('https://router.project-osrm.org/route/v1/driving/$coordinates?overview=full&geometries=geojson');
+    final coordinates = points
+        .map((p) => '${p.longitude},${p.latitude}')
+        .join(';');
+    final url = Uri.parse(
+      'https://router.project-osrm.org/route/v1/driving/$coordinates?overview=full&geometries=geojson',
+    );
 
     try {
       final response = await http.get(url);
       if (response.statusCode == 200) {
         final decoded = json.decode(response.body);
-        final geometry = decoded['routes'][0]['geometry']['coordinates'] as List;
+        final geometry =
+            decoded['routes'][0]['geometry']['coordinates'] as List;
         final dist = decoded['routes'][0]['distance'];
         final dur = decoded['routes'][0]['duration'];
 
         routePoints.clear();
-        routePoints.addAll(geometry.map((coord) => latlong.LatLng(coord[1], coord[0])));
+        routePoints.addAll(
+          geometry.map((coord) => latlong.LatLng(coord[1], coord[0])),
+        );
 
         if (Constant.distanceType.toLowerCase() == "KM".toLowerCase()) {
           distance.value = dist / 1000.00;
@@ -722,7 +935,10 @@ class IntercityHomeController extends GetxController {
   void zoomToPolylineOSM() {
     if (routePoints.isEmpty) return;
     // LatLngBounds requires at least two points
-    final bounds = flutterMap.LatLngBounds(routePoints.first, routePoints.first);
+    final bounds = flutterMap.LatLngBounds(
+      routePoints.first,
+      routePoints.first,
+    );
     for (final point in routePoints) {
       bounds.extend(point);
     }
@@ -734,8 +950,10 @@ class IntercityHomeController extends GetxController {
 
   double getBoundsZoomLevel(flutterMap.LatLngBounds bounds) {
     // Simple heuristic: zoom out for larger bounds
-    final latDiff = (bounds.northEast.latitude - bounds.southWest.latitude).abs();
-    final lngDiff = (bounds.northEast.longitude - bounds.southWest.longitude).abs();
+    final latDiff =
+        (bounds.northEast.latitude - bounds.southWest.latitude).abs();
+    final lngDiff =
+        (bounds.northEast.longitude - bounds.southWest.longitude).abs();
     double maxDiff = math.max(latDiff, lngDiff);
     if (maxDiff < 0.005) return 18.0;
     if (maxDiff < 0.01) return 16.0;
@@ -747,7 +965,13 @@ class IntercityHomeController extends GetxController {
 
   void addPolyLine(List<LatLng> points) {
     final id = const PolylineId("poly");
-    final polyline = Polyline(polylineId: id, color: AppThemeData.primary300, points: points, width: 6, geodesic: true);
+    final polyline = Polyline(
+      polylineId: id,
+      color: AppThemeData.primary300,
+      points: points,
+      width: 6,
+      geodesic: true,
+    );
     polyLines[id] = polyline;
 
     if (points.length >= 2) {
@@ -756,7 +980,10 @@ class IntercityHomeController extends GetxController {
     }
   }
 
-  Future<void> updateCameraLocationToFitPolyline(List<LatLng> points, GoogleMapController? mapController) async {
+  Future<void> updateCameraLocationToFitPolyline(
+    List<LatLng> points,
+    GoogleMapController? mapController,
+  ) async {
     if (mapController == null || points.isEmpty) return;
     double minLat = points.first.latitude, maxLat = points.first.latitude;
     double minLng = points.first.longitude, maxLng = points.first.longitude;
@@ -766,16 +993,24 @@ class IntercityHomeController extends GetxController {
       if (p.longitude < minLng) minLng = p.longitude;
       if (p.longitude > maxLng) maxLng = p.longitude;
     }
-    final bounds = LatLngBounds(southwest: LatLng(minLat, minLng), northeast: LatLng(maxLat, maxLng));
+    final bounds = LatLngBounds(
+      southwest: LatLng(minLat, minLng),
+      northeast: LatLng(maxLat, maxLng),
+    );
     final cameraUpdate = CameraUpdate.newLatLngBounds(bounds, 50);
     await checkCameraLocation(cameraUpdate, mapController);
   }
 
   Future<void> animateToSource(double lat, double long) async {
-    final hasBothCoords = departureLatLongOsm.value.latitude != 0.0 && destinationLatLongOsm.value.latitude != 0.0;
+    final hasBothCoords =
+        departureLatLongOsm.value.latitude != 0.0 &&
+        destinationLatLongOsm.value.latitude != 0.0;
 
     if (hasBothCoords) {
-      await calculateZoomLevel(source: departureLatLongOsm.value, destination: destinationLatLongOsm.value);
+      await calculateZoomLevel(
+        source: departureLatLongOsm.value,
+        destination: destinationLatLongOsm.value,
+      );
     } else {
       mapOsmController.move(latlong.LatLng(lat, long), 10);
     }
@@ -783,15 +1018,25 @@ class IntercityHomeController extends GetxController {
 
   RxMap<PolylineId, Polyline> polyLines = <PolylineId, Polyline>{}.obs;
 
-  Future<void> calculateZoomLevel({required latlong.LatLng source, required latlong.LatLng destination, double paddingFraction = 0.001}) async {
+  Future<void> calculateZoomLevel({
+    required latlong.LatLng source,
+    required latlong.LatLng destination,
+    double paddingFraction = 0.001,
+  }) async {
     final bounds = flutterMap.LatLngBounds.fromPoints([source, destination]);
     final screenSize = Size(Get.width, Get.height * 0.5);
     const double worldDimension = 256.0;
     const double maxZoom = 10.0;
 
-    double latToRad(double lat) => math.log((1 + math.sin(lat * math.pi / 180)) / (1 - math.sin(lat * math.pi / 180))) / 2;
+    double latToRad(double lat) =>
+        math.log(
+          (1 + math.sin(lat * math.pi / 180)) /
+              (1 - math.sin(lat * math.pi / 180)),
+        ) /
+        2;
 
-    double computeZoom(double screenPx, double worldPx, double fraction) => math.log(screenPx / worldPx / fraction) / math.ln2;
+    double computeZoom(double screenPx, double worldPx, double fraction) =>
+        math.log(screenPx / worldPx / fraction) / math.ln2;
 
     final north = bounds.northEast.latitude;
     final south = bounds.southWest.latitude;
@@ -809,27 +1054,48 @@ class IntercityHomeController extends GetxController {
       final latFraction = (latToRad(north) - latToRad(south)) / math.pi;
       final lngFraction = ((east - west + 360) % 360) / 360;
 
-      final latZoom = computeZoom(screenSize.height, worldDimension, latFraction + paddingFraction);
-      final lngZoom = computeZoom(screenSize.width, worldDimension, lngFraction + paddingFraction);
+      final latZoom = computeZoom(
+        screenSize.height,
+        worldDimension,
+        latFraction + paddingFraction,
+      );
+      final lngZoom = computeZoom(
+        screenSize.width,
+        worldDimension,
+        lngFraction + paddingFraction,
+      );
 
       final zoomLevel = math.min(latZoom, lngZoom).clamp(0.0, maxZoom);
       mapOsmController.move(center, zoomLevel);
     }
   }
 
-  Future<void> updateCameraLocation(LatLng source, LatLng destination, GoogleMapController? mapController) async {
+  Future<void> updateCameraLocation(
+    LatLng source,
+    LatLng destination,
+    GoogleMapController? mapController,
+  ) async {
     if (mapController == null) return;
 
     final bounds = LatLngBounds(
-      southwest: LatLng(math.min(source.latitude, destination.latitude), math.min(source.longitude, destination.longitude)),
-      northeast: LatLng(math.max(source.latitude, destination.latitude), math.max(source.longitude, destination.longitude)),
+      southwest: LatLng(
+        math.min(source.latitude, destination.latitude),
+        math.min(source.longitude, destination.longitude),
+      ),
+      northeast: LatLng(
+        math.max(source.latitude, destination.latitude),
+        math.max(source.longitude, destination.longitude),
+      ),
     );
 
     final cameraUpdate = CameraUpdate.newLatLngBounds(bounds, 90);
     await checkCameraLocation(cameraUpdate, mapController);
   }
 
-  Future<void> checkCameraLocation(CameraUpdate cameraUpdate, GoogleMapController mapController) async {
+  Future<void> checkCameraLocation(
+    CameraUpdate cameraUpdate,
+    GoogleMapController mapController,
+  ) async {
     await mapController.animateCamera(cameraUpdate);
     final l1 = await mapController.getVisibleRegion();
     final l2 = await mapController.getVisibleRegion();
@@ -842,16 +1108,44 @@ class IntercityHomeController extends GetxController {
   Future<void> setIcons() async {
     try {
       if (Constant.selectedMapType == 'osm') {
-        departureIconOsm = Image.asset("assets/icons/pickup.png", width: 30, height: 30);
-        destinationIconOsm = Image.asset("assets/icons/dropoff.png", width: 30, height: 30);
-        taxiIconOsm = Image.asset("assets/icons/ic_taxi.png", width: 30, height: 30);
-        stopIconOsm = Image.asset("assets/icons/location.png", width: 26, height: 26);
+        departureIconOsm = Image.asset(
+          "assets/icons/pickup.png",
+          width: 30,
+          height: 30,
+        );
+        destinationIconOsm = Image.asset(
+          "assets/icons/dropoff.png",
+          width: 30,
+          height: 30,
+        );
+        taxiIconOsm = Image.asset(
+          "assets/icons/ic_taxi.png",
+          width: 30,
+          height: 30,
+        );
+        stopIconOsm = Image.asset(
+          "assets/icons/location.png",
+          width: 26,
+          height: 26,
+        );
       } else {
         const config = ImageConfiguration(size: Size(48, 48));
-        departureIcon = await BitmapDescriptor.fromAssetImage(config, "assets/icons/pickup.png");
-        destinationIcon = await BitmapDescriptor.fromAssetImage(config, "assets/icons/dropoff.png");
-        taxiIcon = await BitmapDescriptor.fromAssetImage(config, "assets/icons/ic_taxi.png");
-        stopIcon = await BitmapDescriptor.fromAssetImage(config, "assets/icons/location.png");
+        departureIcon = await BitmapDescriptor.fromAssetImage(
+          config,
+          "assets/icons/pickup.png",
+        );
+        destinationIcon = await BitmapDescriptor.fromAssetImage(
+          config,
+          "assets/icons/dropoff.png",
+        );
+        taxiIcon = await BitmapDescriptor.fromAssetImage(
+          config,
+          "assets/icons/ic_taxi.png",
+        );
+        stopIcon = await BitmapDescriptor.fromAssetImage(
+          config,
+          "assets/icons/location.png",
+        );
       }
     } catch (e) {
       print('Error loading icons: $e');
@@ -859,8 +1153,12 @@ class IntercityHomeController extends GetxController {
   }
 
   void clearMapDataIfLocationsRemoved() {
-    final isSourceEmpty = departureLatLongOsm.value.latitude == 0.0 && departureLatLongOsm.value.longitude == 0.0;
-    final isDestinationEmpty = destinationLatLongOsm.value.latitude == 0.0 && destinationLatLongOsm.value.longitude == 0.0;
+    final isSourceEmpty =
+        departureLatLongOsm.value.latitude == 0.0 &&
+        departureLatLongOsm.value.longitude == 0.0;
+    final isDestinationEmpty =
+        destinationLatLongOsm.value.latitude == 0.0 &&
+        destinationLatLongOsm.value.longitude == 0.0;
 
     if (isSourceEmpty || isDestinationEmpty) {
       // Clear polylines
@@ -889,7 +1187,9 @@ class IntercityHomeController extends GetxController {
 
     // Remove marker
     if (Constant.selectedMapType == 'osm') {
-      osmMarker.removeWhere((marker) => marker.point == departureLatLongOsm.value);
+      osmMarker.removeWhere(
+        (marker) => marker.point == departureLatLongOsm.value,
+      );
     } else {
       markers.removeWhere((marker) => marker.markerId.value == 'Departure');
     }
@@ -905,7 +1205,9 @@ class IntercityHomeController extends GetxController {
     destinationTextEditController.value.clear();
 
     if (Constant.selectedMapType == 'osm') {
-      osmMarker.removeWhere((marker) => marker.point == destinationLatLongOsm.value);
+      osmMarker.removeWhere(
+        (marker) => marker.point == destinationLatLongOsm.value,
+      );
     } else {
       markers.removeWhere((marker) => marker.markerId.value == 'Destination');
     }
@@ -915,9 +1217,16 @@ class IntercityHomeController extends GetxController {
   }
 
   Future<void> searchPlaceNameOSM() async {
-    final url = Uri.parse('https://nominatim.openstreetmap.org/reverse?lat=${departureLatLongOsm.value.latitude}&lon=${departureLatLongOsm.value.longitude}&format=json');
+    final url = Uri.parse(
+      'https://nominatim.openstreetmap.org/reverse?lat=${departureLatLongOsm.value.latitude}&lon=${departureLatLongOsm.value.longitude}&format=json',
+    );
 
-    final response = await http.get(url, headers: {'User-Agent': 'FlutterMapApp/1.0 (menil.siddhiinfosoft@gmail.com)'});
+    final response = await http.get(
+      url,
+      headers: {
+        'User-Agent': 'FlutterMapApp/1.0 (menil.siddhiinfosoft@gmail.com)',
+      },
+    );
 
     if (response.statusCode == 200) {
       log("response.body :: ${response.body}");
@@ -930,7 +1239,9 @@ class IntercityHomeController extends GetxController {
     final lat = departureLatLong.value.latitude;
     final lng = departureLatLong.value.longitude;
 
-    final url = Uri.parse('https://maps.googleapis.com/maps/api/geocode/json?latlng=$lat,$lng&key=${Constant.mapAPIKey}');
+    final url = Uri.parse(
+      'https://maps.googleapis.com/maps/api/geocode/json?latlng=$lat,$lng&key=${Constant.mapAPIKey}',
+    );
 
     final response = await http.get(url);
 
@@ -973,19 +1284,45 @@ class IntercityHomeController extends GetxController {
 
   Future<void> getPaymentSettings() async {
     await FireStoreUtils.getPaymentSettingsData().then((value) {
-      stripeModel.value = StripeModel.fromJson(jsonDecode(Preferences.getString(Preferences.stripeSettings)));
-      payPalModel.value = PayPalModel.fromJson(jsonDecode(Preferences.getString(Preferences.paypalSettings)));
-      payStackModel.value = PayStackModel.fromJson(jsonDecode(Preferences.getString(Preferences.payStack)));
-      mercadoPagoModel.value = MercadoPagoModel.fromJson(jsonDecode(Preferences.getString(Preferences.mercadoPago)));
-      flutterWaveModel.value = FlutterWaveModel.fromJson(jsonDecode(Preferences.getString(Preferences.flutterWave)));
-      paytmModel.value = PaytmModel.fromJson(jsonDecode(Preferences.getString(Preferences.paytmSettings)));
-      payFastModel.value = PayFastModel.fromJson(jsonDecode(Preferences.getString(Preferences.payFastSettings)));
-      razorPayModel.value = RazorPayModel.fromJson(jsonDecode(Preferences.getString(Preferences.razorpaySettings)));
-      midTransModel.value = MidTrans.fromJson(jsonDecode(Preferences.getString(Preferences.midTransSettings)));
-      orangeMoneyModel.value = OrangeMoney.fromJson(jsonDecode(Preferences.getString(Preferences.orangeMoneySettings)));
-      xenditModel.value = Xendit.fromJson(jsonDecode(Preferences.getString(Preferences.xenditSettings)));
-      walletSettingModel.value = WalletSettingModel.fromJson(jsonDecode(Preferences.getString(Preferences.walletSettings)));
-      cashOnDeliverySettingModel.value = CodSettingModel.fromJson(jsonDecode(Preferences.getString(Preferences.codSettings)));
+      stripeModel.value = StripeModel.fromJson(
+        jsonDecode(Preferences.getString(Preferences.stripeSettings)),
+      );
+      payPalModel.value = PayPalModel.fromJson(
+        jsonDecode(Preferences.getString(Preferences.paypalSettings)),
+      );
+      payStackModel.value = PayStackModel.fromJson(
+        jsonDecode(Preferences.getString(Preferences.payStack)),
+      );
+      mercadoPagoModel.value = MercadoPagoModel.fromJson(
+        jsonDecode(Preferences.getString(Preferences.mercadoPago)),
+      );
+      flutterWaveModel.value = FlutterWaveModel.fromJson(
+        jsonDecode(Preferences.getString(Preferences.flutterWave)),
+      );
+      paytmModel.value = PaytmModel.fromJson(
+        jsonDecode(Preferences.getString(Preferences.paytmSettings)),
+      );
+      payFastModel.value = PayFastModel.fromJson(
+        jsonDecode(Preferences.getString(Preferences.payFastSettings)),
+      );
+      razorPayModel.value = RazorPayModel.fromJson(
+        jsonDecode(Preferences.getString(Preferences.razorpaySettings)),
+      );
+      midTransModel.value = MidTrans.fromJson(
+        jsonDecode(Preferences.getString(Preferences.midTransSettings)),
+      );
+      orangeMoneyModel.value = OrangeMoney.fromJson(
+        jsonDecode(Preferences.getString(Preferences.orangeMoneySettings)),
+      );
+      xenditModel.value = Xendit.fromJson(
+        jsonDecode(Preferences.getString(Preferences.xenditSettings)),
+      );
+      walletSettingModel.value = WalletSettingModel.fromJson(
+        jsonDecode(Preferences.getString(Preferences.walletSettings)),
+      );
+      cashOnDeliverySettingModel.value = CodSettingModel.fromJson(
+        jsonDecode(Preferences.getString(Preferences.codSettings)),
+      );
 
       if (walletSettingModel.value.isEnabled == true) {
         selectedPaymentMethod.value = PaymentGateway.wallet.name;
@@ -1027,20 +1364,32 @@ class IntercityHomeController extends GetxController {
   Future<void> stripeMakePayment({required String amount}) async {
     log(double.parse(amount).toStringAsFixed(0));
     try {
-      Map<String, dynamic>? paymentIntentData = await createStripeIntent(amount: amount);
+      Map<String, dynamic>? paymentIntentData = await createStripeIntent(
+        amount: amount,
+      );
       log("stripe Responce====>$paymentIntentData");
       if (paymentIntentData!.containsKey("error")) {
         Get.back();
-        ShowToastDialog.showToast("Something went wrong, please contact admin.".tr);
+        ShowToastDialog.showToast(
+          "Something went wrong, please contact admin.".tr,
+        );
       } else {
         await Stripe.instance.initPaymentSheet(
           paymentSheetParameters: SetupPaymentSheetParameters(
             paymentIntentClientSecret: paymentIntentData['client_secret'],
             allowsDelayedPaymentMethods: false,
-            googlePay: const PaymentSheetGooglePay(merchantCountryCode: 'US', testEnv: true, currencyCode: "USD"),
+            googlePay: const PaymentSheetGooglePay(
+              merchantCountryCode: 'US',
+              testEnv: true,
+              currencyCode: "USD",
+            ),
             customFlow: true,
             style: ThemeMode.system,
-            appearance: PaymentSheetAppearance(colors: PaymentSheetAppearanceColors(primary: AppThemeData.primary300)),
+            appearance: PaymentSheetAppearance(
+              colors: PaymentSheetAppearanceColors(
+                primary: AppThemeData.primary300,
+              ),
+            ),
             merchantDisplayName: 'GoRide',
           ),
         );
@@ -1086,7 +1435,10 @@ class IntercityHomeController extends GetxController {
       var response = await http.post(
         Uri.parse('https://api.stripe.com/v1/payment_intents'),
         body: body,
-        headers: {'Authorization': 'Bearer $stripeSecret', 'Content-Type': 'application/x-www-form-urlencoded'},
+        headers: {
+          'Authorization': 'Bearer $stripeSecret',
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
       );
 
       return jsonDecode(response.body);
@@ -1096,8 +1448,14 @@ class IntercityHomeController extends GetxController {
   }
 
   //mercadoo
-  Future<Null> mercadoPagoMakePayment({required BuildContext context, required String amount}) async {
-    final headers = {'Authorization': 'Bearer ${mercadoPagoModel.value.accessToken}', 'Content-Type': 'application/json'};
+  Future<Null> mercadoPagoMakePayment({
+    required BuildContext context,
+    required String amount,
+  }) async {
+    final headers = {
+      'Authorization': 'Bearer ${mercadoPagoModel.value.accessToken}',
+      'Content-Type': 'application/json',
+    };
 
     final body = jsonEncode({
       "items": [
@@ -1110,12 +1468,20 @@ class IntercityHomeController extends GetxController {
         },
       ],
       "payer": {"email": userModel.value.email},
-      "back_urls": {"failure": "${Constant.globalUrl}payment/failure", "pending": "${Constant.globalUrl}payment/pending", "success": "${Constant.globalUrl}payment/success"},
+      "back_urls": {
+        "failure": "${Constant.globalUrl}payment/failure",
+        "pending": "${Constant.globalUrl}payment/pending",
+        "success": "${Constant.globalUrl}payment/success",
+      },
       "auto_return": "approved",
       // Automatically return after payment is approved
     });
 
-    final response = await http.post(Uri.parse("https://api.mercadopago.com/checkout/preferences"), headers: headers, body: body);
+    final response = await http.post(
+      Uri.parse("https://api.mercadopago.com/checkout/preferences"),
+      headers: headers,
+      body: body,
+    );
 
     if (response.statusCode == 200 || response.statusCode == 201) {
       final data = jsonDecode(response.body);
@@ -1173,9 +1539,12 @@ class IntercityHomeController extends GetxController {
 
   ///PayStack Payment Method
   Future<void> payStackPayment(String totalAmount) async {
-    await PayStackURLGen.payStackURLGen(amount: (double.parse(totalAmount) * 100).toString(), currency: "ZAR", secretKey: payStackModel.value.secretKey.toString(), userModel: userModel.value).then((
-      value,
-    ) async {
+    await PayStackURLGen.payStackURLGen(
+      amount: (double.parse(totalAmount) * 100).toString(),
+      currency: "ZAR",
+      secretKey: payStackModel.value.secretKey.toString(),
+      userModel: userModel.value,
+    ).then((value) async {
       if (value != null) {
         PayStackUrlModel payStackModel0 = value;
         Get.to(
@@ -1195,15 +1564,23 @@ class IntercityHomeController extends GetxController {
           }
         });
       } else {
-        ShowToastDialog.showToast("Something went wrong, please contact admin.".tr);
+        ShowToastDialog.showToast(
+          "Something went wrong, please contact admin.".tr,
+        );
       }
     });
   }
 
   //flutter wave Payment Method
-  Future<Null> flutterWaveInitiatePayment({required BuildContext context, required String amount}) async {
+  Future<Null> flutterWaveInitiatePayment({
+    required BuildContext context,
+    required String amount,
+  }) async {
     final url = Uri.parse('https://api.flutterwave.com/v3/payments');
-    final headers = {'Authorization': 'Bearer ${flutterWaveModel.value.secretKey}', 'Content-Type': 'application/json'};
+    final headers = {
+      'Authorization': 'Bearer ${flutterWaveModel.value.secretKey}',
+      'Content-Type': 'application/json',
+    };
 
     final body = jsonEncode({
       "tx_ref": _ref,
@@ -1216,14 +1593,19 @@ class IntercityHomeController extends GetxController {
         "phonenumber": userModel.value.phoneNumber, // Add a real phone number
         "name": userModel.value.fullName(), // Add a real customer name
       },
-      "customizations": {"title": "Payment for Services", "description": "Payment for XYZ services"},
+      "customizations": {
+        "title": "Payment for Services",
+        "description": "Payment for XYZ services",
+      },
     });
 
     final response = await http.post(url, headers: headers, body: body);
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      Get.to(MercadoPagoScreen(initialURl: data['data']['link']))!.then((value) {
+      Get.to(MercadoPagoScreen(initialURl: data['data']['link']))!.then((
+        value,
+      ) {
         if (value) {
           ShowToastDialog.showToast("Payment Successful!!".tr);
           completeOrder();
@@ -1252,8 +1634,14 @@ class IntercityHomeController extends GetxController {
 
   // payFast
   void payFastPayment({required BuildContext context, required String amount}) {
-    PayStackURLGen.getPayHTML(payFastSettingData: payFastModel.value, amount: amount.toString(), userModel: userModel.value).then((String? value) async {
-      bool isDone = await Get.to(PayFastScreen(htmlData: value!, payFastSettingData: payFastModel.value));
+    PayStackURLGen.getPayHTML(
+      payFastSettingData: payFastModel.value,
+      amount: amount.toString(),
+      userModel: userModel.value,
+    ).then((String? value) async {
+      bool isDone = await Get.to(
+        PayFastScreen(htmlData: value!, payFastSettingData: payFastModel.value),
+      );
       if (isDone) {
         Get.back();
         ShowToastDialog.showToast("Payment successfully".tr);
@@ -1292,7 +1680,14 @@ class IntercityHomeController extends GetxController {
     // });
   }
 
-  Future<void> startTransaction(context, {required String txnTokenBy, required orderId, required double amount, required callBackURL, required isStaging}) async {
+  Future<void> startTransaction(
+    context, {
+    required String txnTokenBy,
+    required orderId,
+    required double amount,
+    required callBackURL,
+    required isStaging,
+  }) async {
     // try {
     //   var response = AllInOneSdk.startTransaction(
     //     paytmModel.value.paytmMID.toString(),
@@ -1328,24 +1723,38 @@ class IntercityHomeController extends GetxController {
     // }
   }
 
-  Future verifyCheckSum({required String checkSum, required double amount, required orderId}) async {
+  Future verifyCheckSum({
+    required String checkSum,
+    required double amount,
+    required orderId,
+  }) async {
     String getChecksum = "${Constant.globalUrl}payments/validatechecksum";
     final response = await http.post(
       Uri.parse(getChecksum),
       headers: {},
-      body: {"mid": paytmModel.value.paytmMID.toString(), "order_id": orderId, "key_secret": paytmModel.value.pAYTMMERCHANTKEY.toString(), "checksum_value": checkSum},
+      body: {
+        "mid": paytmModel.value.paytmMID.toString(),
+        "order_id": orderId,
+        "key_secret": paytmModel.value.pAYTMMERCHANTKEY.toString(),
+        "checksum_value": checkSum,
+      },
     );
     final data = jsonDecode(response.body);
     return data['status'];
   }
 
-  Future<GetPaymentTxtTokenModel> initiatePayment({required double amount, required orderId}) async {
+  Future<GetPaymentTxtTokenModel> initiatePayment({
+    required double amount,
+    required orderId,
+  }) async {
     String initiateURL = "${Constant.globalUrl}payments/initiatepaytmpayment";
     String callback = "";
     if (paytmModel.value.isSandboxEnabled == true) {
-      callback = "${callback}https://securegw-stage.paytm.in/theia/paytmCallback?ORDER_ID=$orderId";
+      callback =
+          "${callback}https://securegw-stage.paytm.in/theia/paytmCallback?ORDER_ID=$orderId";
     } else {
-      callback = "${callback}https://securegw.paytm.in/theia/paytmCallback?ORDER_ID=$orderId";
+      callback =
+          "${callback}https://securegw.paytm.in/theia/paytmCallback?ORDER_ID=$orderId";
     }
     final response = await http.post(
       Uri.parse(initiateURL),
@@ -1363,9 +1772,12 @@ class IntercityHomeController extends GetxController {
     );
     log(response.body);
     final data = jsonDecode(response.body);
-    if (data["body"]["txnToken"] == null || data["body"]["txnToken"].toString().isEmpty) {
+    if (data["body"]["txnToken"] == null ||
+        data["body"]["txnToken"].toString().isEmpty) {
       Get.back();
-      ShowToastDialog.showToast("something went wrong, please contact admin.".tr);
+      ShowToastDialog.showToast(
+        "something went wrong, please contact admin.".tr,
+      );
     }
     return GetPaymentTxtTokenModel.fromJson(data);
   }
@@ -1383,7 +1795,10 @@ class IntercityHomeController extends GetxController {
       'description': 'wallet Topup',
       'retry': {'enabled': true, 'max_count': 1},
       'send_sms_hash': true,
-      'prefill': {'contact': userModel.value.phoneNumber, 'email': userModel.value.email},
+      'prefill': {
+        'contact': userModel.value.phoneNumber,
+        'email': userModel.value.email,
+      },
       'external': {
         'wallets': ['paytm'],
       },
@@ -1418,7 +1833,10 @@ class IntercityHomeController extends GetxController {
   }
 
   //Midtrans payment
-  Future<void> midtransMakePayment({required String amount, required BuildContext context}) async {
+  Future<void> midtransMakePayment({
+    required String amount,
+    required BuildContext context,
+  }) async {
     await createPaymentLink(amount: amount).then((url) {
       ShowToastDialog.closeLoader();
       if (url != '') {
@@ -1436,15 +1854,30 @@ class IntercityHomeController extends GetxController {
 
   Future<String> createPaymentLink({required var amount}) async {
     var ordersId = const Uuid().v1();
-    final url = Uri.parse(midTransModel.value.isSandbox! ? 'https://api.sandbox.midtrans.com/v1/payment-links' : 'https://api.midtrans.com/v1/payment-links');
+    final url = Uri.parse(
+      midTransModel.value.isSandbox!
+          ? 'https://api.sandbox.midtrans.com/v1/payment-links'
+          : 'https://api.midtrans.com/v1/payment-links',
+    );
 
     final response = await http.post(
       url,
-      headers: {'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': generateBasicAuthHeader(midTransModel.value.serverKey!)},
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': generateBasicAuthHeader(
+          midTransModel.value.serverKey!,
+        ),
+      },
       body: jsonEncode({
-        'transaction_details': {'order_id': ordersId, 'gross_amount': double.parse(amount.toString()).toInt()},
+        'transaction_details': {
+          'order_id': ordersId,
+          'gross_amount': double.parse(amount.toString()).toInt(),
+        },
         'usage_limit': 2,
-        "callbacks": {"finish": "https://www.google.com?merchant_order_id=$ordersId"},
+        "callbacks": {
+          "finish": "https://www.google.com?merchant_order_id=$ordersId",
+        },
       }),
     );
 
@@ -1452,7 +1885,9 @@ class IntercityHomeController extends GetxController {
       final responseData = jsonDecode(response.body);
       return responseData['payment_url'];
     } else {
-      ShowToastDialog.showToast("something went wrong, please contact admin.".tr);
+      ShowToastDialog.showToast(
+        "something went wrong, please contact admin.".tr,
+      );
       return '';
     }
   }
@@ -1469,13 +1904,30 @@ class IntercityHomeController extends GetxController {
   static String orderId = '';
   static String amount = '';
 
-  Future<void> orangeMakePayment({required String amount, required BuildContext context}) async {
+  Future<void> orangeMakePayment({
+    required String amount,
+    required BuildContext context,
+  }) async {
     reset();
     var id = const Uuid().v4();
-    var paymentURL = await fetchToken(context: context, orderId: id, amount: amount, currency: 'USD');
+    var paymentURL = await fetchToken(
+      context: context,
+      orderId: id,
+      amount: amount,
+      currency: 'USD',
+    );
     ShowToastDialog.closeLoader();
     if (paymentURL.toString() != '') {
-      Get.to(() => OrangeMoneyScreen(initialURl: paymentURL, accessToken: accessToken, amount: amount, orangePay: orangeMoneyModel.value, orderId: orderId, payToken: payToken))!.then((value) {
+      Get.to(
+        () => OrangeMoneyScreen(
+          initialURl: paymentURL,
+          accessToken: accessToken,
+          amount: amount,
+          orangePay: orangeMoneyModel.value,
+          orderId: orderId,
+          payToken: payToken,
+        ),
+      )!.then((value) {
         if (value == true) {
           ShowToastDialog.showToast("Payment Successful!!".tr);
           completeOrder();
@@ -1487,13 +1939,22 @@ class IntercityHomeController extends GetxController {
     }
   }
 
-  Future fetchToken({required String orderId, required String currency, required BuildContext context, required String amount}) async {
+  Future fetchToken({
+    required String orderId,
+    required String currency,
+    required BuildContext context,
+    required String amount,
+  }) async {
     String apiUrl = 'https://api.orange.com/oauth/v3/token';
     Map<String, String> requestBody = {'grant_type': 'client_credentials'};
 
     var response = await http.post(
       Uri.parse(apiUrl),
-      headers: <String, String>{'Authorization': "Basic ${orangeMoneyModel.value.auth!}", 'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'application/json'},
+      headers: <String, String>{
+        'Authorization': "Basic ${orangeMoneyModel.value.auth!}",
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Accept': 'application/json',
+      },
       body: requestBody,
     );
 
@@ -1504,17 +1965,32 @@ class IntercityHomeController extends GetxController {
 
       accessToken = responseData['access_token'];
       // ignore: use_build_context_synchronously
-      return await webpayment(context: context, amountData: amount, currency: currency, orderIdData: orderId);
+      return await webpayment(
+        context: context,
+        amountData: amount,
+        currency: currency,
+        orderIdData: orderId,
+      );
     } else {
-      ShowToastDialog.showToast("Something went wrong, please contact admin.".tr);
+      ShowToastDialog.showToast(
+        "Something went wrong, please contact admin.".tr,
+      );
       return '';
     }
   }
 
-  Future webpayment({required String orderIdData, required BuildContext context, required String currency, required String amountData}) async {
+  Future webpayment({
+    required String orderIdData,
+    required BuildContext context,
+    required String currency,
+    required String amountData,
+  }) async {
     orderId = orderIdData;
     amount = amountData;
-    String apiUrl = orangeMoneyModel.value.isSandbox! == true ? 'https://api.orange.com/orange-money-webpay/dev/v1/webpayment' : 'https://api.orange.com/orange-money-webpay/cm/v1/webpayment';
+    String apiUrl =
+        orangeMoneyModel.value.isSandbox! == true
+            ? 'https://api.orange.com/orange-money-webpay/dev/v1/webpayment'
+            : 'https://api.orange.com/orange-money-webpay/cm/v1/webpayment';
     Map<String, String> requestBody = {
       "merchant_key": orangeMoneyModel.value.merchantKey ?? '',
       "currency": orangeMoneyModel.value.isSandbox == true ? "OUV" : currency,
@@ -1529,7 +2005,11 @@ class IntercityHomeController extends GetxController {
 
     var response = await http.post(
       Uri.parse(apiUrl),
-      headers: <String, String>{'Authorization': 'Bearer $accessToken', 'Content-Type': 'application/json', 'Accept': 'application/json'},
+      headers: <String, String>{
+        'Authorization': 'Bearer $accessToken',
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
       body: json.encode(requestBody),
     );
 
@@ -1543,7 +2023,9 @@ class IntercityHomeController extends GetxController {
         return '';
       }
     } else {
-      ShowToastDialog.showToast("Something went wrong, please contact admin.".tr);
+      ShowToastDialog.showToast(
+        "Something went wrong, please contact admin.".tr,
+      );
       return '';
     }
   }
@@ -1560,7 +2042,13 @@ class IntercityHomeController extends GetxController {
     await createXenditInvoice(amount: amount).then((model) {
       ShowToastDialog.closeLoader();
       if (model.id != null) {
-        Get.to(() => XenditScreen(initialURl: model.invoiceUrl ?? '', transId: model.id ?? '', apiKey: xenditModel.value.apiKey!.toString()))!.then((value) {
+        Get.to(
+          () => XenditScreen(
+            initialURl: model.invoiceUrl ?? '',
+            transId: model.id ?? '',
+            apiKey: xenditModel.value.apiKey!.toString(),
+          ),
+        )!.then((value) {
           if (value == true) {
             ShowToastDialog.showToast("Payment Successful!!".tr);
             completeOrder();
@@ -1577,7 +2065,9 @@ class IntercityHomeController extends GetxController {
     const url = 'https://api.xendit.co/v2/invoices';
     var headers = {
       'Content-Type': 'application/json',
-      'Authorization': generateBasicAuthHeader(xenditModel.value.apiKey!.toString()),
+      'Authorization': generateBasicAuthHeader(
+        xenditModel.value.apiKey!.toString(),
+      ),
       // 'Cookie': '__cf_bm=yERkrx3xDITyFGiou0bbKY1bi7xEwovHNwxV1vCNbVc-1724155511-1.0.1.1-jekyYQmPCwY6vIJ524K0V6_CEw6O.dAwOmQnHtwmaXO_MfTrdnmZMka0KZvjukQgXu5B.K_6FJm47SGOPeWviQ',
     };
 
@@ -1590,7 +2080,11 @@ class IntercityHomeController extends GetxController {
     });
 
     try {
-      final response = await http.post(Uri.parse(url), headers: headers, body: body);
+      final response = await http.post(
+        Uri.parse(url),
+        headers: headers,
+        body: body,
+      );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         XenditModel model = XenditModel.fromJson(jsonDecode(response.body));

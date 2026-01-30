@@ -32,14 +32,27 @@ class _AddDriverScreenState extends State<AddDriverScreen> {
                 appBar: AppBar(
                   backgroundColor: AppThemeData.primary300,
                   centerTitle: false,
-                  iconTheme: IconThemeData(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50),
+                  iconTheme: IconThemeData(
+                    color: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
+                  ),
                   title: Text(
-                    controller.driverModel.value.id == null ? "Add Delivery Man".tr : "Edit Delivery Man".tr,
-                    style: TextStyle(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50, fontSize: 18, fontFamily: AppThemeData.medium),
+                    controller.driverModel.value.id == null
+                        ? "Add Delivery Man".tr
+                        : "Edit Delivery Man".tr,
+                    style: TextStyle(
+                      color: isDark
+                          ? AppThemeData.grey900
+                          : AppThemeData.grey50,
+                      fontSize: 18,
+                      fontFamily: AppThemeData.medium,
+                    ),
                   ),
                 ),
                 body: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
                   child: SingleChildScrollView(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -51,11 +64,21 @@ class _AddDriverScreenState extends State<AddDriverScreen> {
                               Expanded(
                                 child: TextFieldWidget(
                                   title: 'First Name'.tr,
-                                  controller: controller.firstNameEditingController.value,
+                                  controller: controller
+                                      .firstNameEditingController
+                                      .value,
                                   hintText: 'Enter First Name'.tr,
                                   prefix: Padding(
                                     padding: const EdgeInsets.all(12),
-                                    child: SvgPicture.asset("assets/icons/ic_user.svg", colorFilter: ColorFilter.mode(isDark ? AppThemeData.grey300 : AppThemeData.grey600, BlendMode.srcIn)),
+                                    child: SvgPicture.asset(
+                                      "assets/icons/ic_user.svg",
+                                      colorFilter: ColorFilter.mode(
+                                        isDark
+                                            ? AppThemeData.grey300
+                                            : AppThemeData.grey600,
+                                        BlendMode.srcIn,
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ),
@@ -63,11 +86,21 @@ class _AddDriverScreenState extends State<AddDriverScreen> {
                               Expanded(
                                 child: TextFieldWidget(
                                   title: 'Last Name'.tr,
-                                  controller: controller.lastNameEditingController.value,
+                                  controller: controller
+                                      .lastNameEditingController
+                                      .value,
                                   hintText: 'Enter Last Name'.tr,
                                   prefix: Padding(
                                     padding: const EdgeInsets.all(12),
-                                    child: SvgPicture.asset("assets/icons/ic_user.svg", colorFilter: ColorFilter.mode(isDark ? AppThemeData.grey300 : AppThemeData.grey600, BlendMode.srcIn)),
+                                    child: SvgPicture.asset(
+                                      "assets/icons/ic_user.svg",
+                                      colorFilter: ColorFilter.mode(
+                                        isDark
+                                            ? AppThemeData.grey300
+                                            : AppThemeData.grey600,
+                                        BlendMode.srcIn,
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ),
@@ -75,7 +108,9 @@ class _AddDriverScreenState extends State<AddDriverScreen> {
                           ),
                         ),
                         TextFieldWidget(
-                          readOnly: (controller.driverModel.value.id != null && controller.driverModel.value.id != ''),
+                          readOnly:
+                              (controller.driverModel.value.id != null &&
+                              controller.driverModel.value.id != ''),
                           title: 'Email Address'.tr,
                           textInputType: TextInputType.emailAddress,
                           controller: controller.emailEditingController.value,
@@ -83,29 +118,75 @@ class _AddDriverScreenState extends State<AddDriverScreen> {
                           enable: true,
                           prefix: Padding(
                             padding: const EdgeInsets.all(12),
-                            child: SvgPicture.asset("assets/icons/ic_mail.svg", colorFilter: ColorFilter.mode(isDark ? AppThemeData.grey300 : AppThemeData.grey600, BlendMode.srcIn)),
+                            child: SvgPicture.asset(
+                              "assets/icons/ic_mail.svg",
+                              colorFilter: ColorFilter.mode(
+                                isDark
+                                    ? AppThemeData.grey300
+                                    : AppThemeData.grey600,
+                                BlendMode.srcIn,
+                              ),
+                            ),
                           ),
                         ),
                         TextFieldWidget(
                           title: 'Phone Number'.tr,
-                          controller: controller.phoneNUmberEditingController.value,
+                          controller:
+                              controller.phoneNUmberEditingController.value,
                           hintText: 'Enter Phone Number'.tr,
                           enable: true,
-                          textInputType: const TextInputType.numberWithOptions(signed: true, decimal: true),
+                          textInputType: const TextInputType.numberWithOptions(
+                            signed: true,
+                            decimal: true,
+                          ),
                           textInputAction: TextInputAction.done,
-                          inputFormatters: [FilteringTextInputFormatter.allow(RegExp('[0-9]'))],
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(RegExp('[0-9]')),
+                          ],
                           prefix: CountryCodePicker(
                             enabled: true,
                             onChanged: (value) {
-                              controller.countryCodeEditingController.value.text = value.dialCode ?? Constant.defaultCountryCode;
+                              controller
+                                      .countryCodeEditingController
+                                      .value
+                                      .text =
+                                  value.dialCode ?? Constant.defaultCountryCode;
                             },
-                            dialogTextStyle: TextStyle(color: isDark ? AppThemeData.grey50 : AppThemeData.grey900, fontWeight: FontWeight.w500, fontFamily: AppThemeData.medium),
-                            dialogBackgroundColor: isDark ? AppThemeData.grey800 : AppThemeData.grey100,
-                            initialSelection: controller.countryCodeEditingController.value.text,
-                            comparator: (a, b) => b.name!.compareTo(a.name.toString()),
-                            textStyle: TextStyle(fontSize: 14, color: isDark ? AppThemeData.grey50 : AppThemeData.grey900, fontFamily: AppThemeData.medium),
-                            searchDecoration: InputDecoration(iconColor: isDark ? AppThemeData.grey50 : AppThemeData.grey900),
-                            searchStyle: TextStyle(color: isDark ? AppThemeData.grey50 : AppThemeData.grey900, fontWeight: FontWeight.w500, fontFamily: AppThemeData.medium),
+                            dialogTextStyle: TextStyle(
+                              color: isDark
+                                  ? AppThemeData.grey50
+                                  : AppThemeData.grey900,
+                              fontWeight: FontWeight.w500,
+                              fontFamily: AppThemeData.medium,
+                            ),
+                            dialogBackgroundColor: isDark
+                                ? AppThemeData.grey800
+                                : AppThemeData.grey100,
+                            initialSelection: controller
+                                .countryCodeEditingController
+                                .value
+                                .text,
+                            comparator: (a, b) =>
+                                b.name!.compareTo(a.name.toString()),
+                            textStyle: TextStyle(
+                              fontSize: 14,
+                              color: isDark
+                                  ? AppThemeData.grey50
+                                  : AppThemeData.grey900,
+                              fontFamily: AppThemeData.medium,
+                            ),
+                            searchDecoration: InputDecoration(
+                              iconColor: isDark
+                                  ? AppThemeData.grey50
+                                  : AppThemeData.grey900,
+                            ),
+                            searchStyle: TextStyle(
+                              color: isDark
+                                  ? AppThemeData.grey50
+                                  : AppThemeData.grey900,
+                              fontWeight: FontWeight.w500,
+                              fontFamily: AppThemeData.medium,
+                            ),
                           ),
                         ),
                         // Column(
@@ -169,43 +250,100 @@ class _AddDriverScreenState extends State<AddDriverScreen> {
                             children: [
                               TextFieldWidget(
                                 title: 'Password'.tr,
-                                controller: controller.passwordEditingController.value,
+                                controller:
+                                    controller.passwordEditingController.value,
                                 hintText: 'Enter Password'.tr,
                                 obscureText: controller.passwordVisible.value,
                                 prefix: Padding(
                                   padding: const EdgeInsets.all(12),
-                                  child: SvgPicture.asset("assets/icons/ic_lock.svg", colorFilter: ColorFilter.mode(isDark ? AppThemeData.grey300 : AppThemeData.grey600, BlendMode.srcIn)),
+                                  child: SvgPicture.asset(
+                                    "assets/icons/ic_lock.svg",
+                                    colorFilter: ColorFilter.mode(
+                                      isDark
+                                          ? AppThemeData.grey300
+                                          : AppThemeData.grey600,
+                                      BlendMode.srcIn,
+                                    ),
+                                  ),
                                 ),
                                 suffix: Padding(
                                   padding: const EdgeInsets.all(12),
                                   child: InkWell(
                                     onTap: () {
-                                      controller.passwordVisible.value = !controller.passwordVisible.value;
+                                      controller.passwordVisible.value =
+                                          !controller.passwordVisible.value;
                                     },
                                     child: controller.passwordVisible.value
-                                        ? SvgPicture.asset("assets/icons/ic_password_show.svg", colorFilter: ColorFilter.mode(isDark ? AppThemeData.grey300 : AppThemeData.grey600, BlendMode.srcIn))
-                                        : SvgPicture.asset("assets/icons/ic_password_close.svg", colorFilter: ColorFilter.mode(isDark ? AppThemeData.grey300 : AppThemeData.grey600, BlendMode.srcIn)),
+                                        ? SvgPicture.asset(
+                                            "assets/icons/ic_password_show.svg",
+                                            colorFilter: ColorFilter.mode(
+                                              isDark
+                                                  ? AppThemeData.grey300
+                                                  : AppThemeData.grey600,
+                                              BlendMode.srcIn,
+                                            ),
+                                          )
+                                        : SvgPicture.asset(
+                                            "assets/icons/ic_password_close.svg",
+                                            colorFilter: ColorFilter.mode(
+                                              isDark
+                                                  ? AppThemeData.grey300
+                                                  : AppThemeData.grey600,
+                                              BlendMode.srcIn,
+                                            ),
+                                          ),
                                   ),
                                 ),
                               ),
                               TextFieldWidget(
                                 title: 'Confirm Password'.tr,
-                                controller: controller.conformPasswordEditingController.value,
+                                controller: controller
+                                    .conformPasswordEditingController
+                                    .value,
                                 hintText: 'Enter Confirm Password'.tr,
-                                obscureText: controller.conformPasswordVisible.value,
+                                obscureText:
+                                    controller.conformPasswordVisible.value,
                                 prefix: Padding(
                                   padding: const EdgeInsets.all(12),
-                                  child: SvgPicture.asset("assets/icons/ic_lock.svg", colorFilter: ColorFilter.mode(isDark ? AppThemeData.grey300 : AppThemeData.grey600, BlendMode.srcIn)),
+                                  child: SvgPicture.asset(
+                                    "assets/icons/ic_lock.svg",
+                                    colorFilter: ColorFilter.mode(
+                                      isDark
+                                          ? AppThemeData.grey300
+                                          : AppThemeData.grey600,
+                                      BlendMode.srcIn,
+                                    ),
+                                  ),
                                 ),
                                 suffix: Padding(
                                   padding: const EdgeInsets.all(12),
                                   child: InkWell(
                                     onTap: () {
-                                      controller.conformPasswordVisible.value = !controller.conformPasswordVisible.value;
+                                      controller.conformPasswordVisible.value =
+                                          !controller
+                                              .conformPasswordVisible
+                                              .value;
                                     },
-                                    child: controller.conformPasswordVisible.value
-                                        ? SvgPicture.asset("assets/icons/ic_password_show.svg", colorFilter: ColorFilter.mode(isDark ? AppThemeData.grey300 : AppThemeData.grey600, BlendMode.srcIn))
-                                        : SvgPicture.asset("assets/icons/ic_password_close.svg", colorFilter: ColorFilter.mode(isDark ? AppThemeData.grey300 : AppThemeData.grey600, BlendMode.srcIn)),
+                                    child:
+                                        controller.conformPasswordVisible.value
+                                        ? SvgPicture.asset(
+                                            "assets/icons/ic_password_show.svg",
+                                            colorFilter: ColorFilter.mode(
+                                              isDark
+                                                  ? AppThemeData.grey300
+                                                  : AppThemeData.grey600,
+                                              BlendMode.srcIn,
+                                            ),
+                                          )
+                                        : SvgPicture.asset(
+                                            "assets/icons/ic_password_close.svg",
+                                            colorFilter: ColorFilter.mode(
+                                              isDark
+                                                  ? AppThemeData.grey300
+                                                  : AppThemeData.grey600,
+                                              BlendMode.srcIn,
+                                            ),
+                                          ),
                                   ),
                                 ),
                               ),
@@ -218,30 +356,83 @@ class _AddDriverScreenState extends State<AddDriverScreen> {
                 ),
                 bottomNavigationBar: Container(
                   color: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 20,
+                  ),
                   child: Padding(
                     padding: const EdgeInsets.only(bottom: 20),
                     child: RoundedButtonFill(
                       title: "Save Details".tr,
                       height: 5.5,
-                      color: isDark ? AppThemeData.primary300 : AppThemeData.primary300,
-                      textColor: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
+                      color: isDark
+                          ? AppThemeData.primary300
+                          : AppThemeData.primary300,
+                      textColor: isDark
+                          ? AppThemeData.grey900
+                          : AppThemeData.grey50,
                       fontSizes: 16,
                       onPress: () async {
-                        if (controller.firstNameEditingController.value.text.isEmpty) {
-                          ShowToastDialog.showToast("Please enter first name".tr);
-                        } else if (controller.lastNameEditingController.value.text.isEmpty) {
-                          ShowToastDialog.showToast("Please enter last name".tr);
-                        } else if (controller.emailEditingController.value.text.isEmpty) {
-                          ShowToastDialog.showToast("Please enter valid email".tr);
-                        } else if (controller.phoneNUmberEditingController.value.text.isEmpty) {
-                          ShowToastDialog.showToast("Please enter Phone number".tr);
-                        } else if (controller.passwordEditingController.value.text.isEmpty && controller.driverModel.value.id == null) {
+                        if (controller
+                            .firstNameEditingController
+                            .value
+                            .text
+                            .isEmpty) {
+                          ShowToastDialog.showToast(
+                            "Please enter first name".tr,
+                          );
+                        } else if (controller
+                            .lastNameEditingController
+                            .value
+                            .text
+                            .isEmpty) {
+                          ShowToastDialog.showToast(
+                            "Please enter last name".tr,
+                          );
+                        } else if (controller
+                            .emailEditingController
+                            .value
+                            .text
+                            .isEmpty) {
+                          ShowToastDialog.showToast(
+                            "Please enter valid email".tr,
+                          );
+                        } else if (controller
+                            .phoneNUmberEditingController
+                            .value
+                            .text
+                            .isEmpty) {
+                          ShowToastDialog.showToast(
+                            "Please enter Phone number".tr,
+                          );
+                        } else if (controller
+                                .passwordEditingController
+                                .value
+                                .text
+                                .isEmpty &&
+                            controller.driverModel.value.id == null) {
                           ShowToastDialog.showToast("Please enter password".tr);
-                        } else if (controller.conformPasswordEditingController.value.text.isEmpty && controller.driverModel.value.id == null) {
-                          ShowToastDialog.showToast("Please enter Confirm password".tr);
-                        } else if (controller.passwordEditingController.value.text != controller.conformPasswordEditingController.value.text && controller.driverModel.value.id == null) {
-                          ShowToastDialog.showToast("Password and Confirm password doesn't match".tr);
+                        } else if (controller
+                                .conformPasswordEditingController
+                                .value
+                                .text
+                                .isEmpty &&
+                            controller.driverModel.value.id == null) {
+                          ShowToastDialog.showToast(
+                            "Please enter Confirm password".tr,
+                          );
+                        } else if (controller
+                                    .passwordEditingController
+                                    .value
+                                    .text !=
+                                controller
+                                    .conformPasswordEditingController
+                                    .value
+                                    .text &&
+                            controller.driverModel.value.id == null) {
+                          ShowToastDialog.showToast(
+                            "Password and Confirm password doesn't match".tr,
+                          );
                         } else {
                           controller.signUpWithEmailAndPassword();
                         }

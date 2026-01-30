@@ -363,7 +363,7 @@ class OtpVerifyController extends GetxController {
           );
           log("   Phone Digits Only: $phoneDigits");
 
-          final firebaseEmail = "${phoneDigits}@fondex.com";
+          final firebaseEmail = "$phoneDigits@fondex.com";
           final firebasePassword = "123456";
 
           log("📧 FIREBASE CREDENTIALS GENERATED:");
@@ -608,17 +608,13 @@ class OtpVerifyController extends GetxController {
       log("   Collection: ${CollectionName.users}");
       log("   Document ID: ${userModel.id}");
 
+      Constant.userModel = userModel;
       ShowToastDialog.closeLoader();
 
-      log("🧭 Navigating to SignUpScreen with pre-filled data...");
-      // Navigate to signup screen with pre-filled data (email, phone already set)
-      Get.offAll(
-        () => const SignUpScreen(),
-        arguments: {
-          'type': 'mobileNumber',
-          'userModel': userModel,
-        },
+      log(
+        "🧭 Navigating to LocationPermissionScreen (registration complete)...",
       );
+      Get.offAll(() => const LocationPermissionScreen());
       log("✅ Navigation completed");
     } catch (e, stackTrace) {
       log("❌ FIREBASE REGISTRATION ERROR:");

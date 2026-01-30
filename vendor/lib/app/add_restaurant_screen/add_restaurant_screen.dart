@@ -572,7 +572,7 @@ class AddRestaurantScreen extends StatelessWidget {
                                     prefix: Padding(
                                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                                       child: Text(
-                                        "${Constant.currencyModel?.symbol ?? ''}".tr,
+                                        (Constant.currencyModel?.symbol ?? '').tr,
                                         style: TextStyle(color: isDark ? AppThemeData.grey50 : AppThemeData.grey900, fontFamily: AppThemeData.semiBold, fontSize: 18),
                                       ),
                                     ),
@@ -588,7 +588,7 @@ class AddRestaurantScreen extends StatelessWidget {
                                     prefix: Padding(
                                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                                       child: Text(
-                                        "${Constant.currencyModel?.symbol ?? ''}".tr,
+                                        (Constant.currencyModel?.symbol ?? '').tr,
                                         style: TextStyle(color: isDark ? AppThemeData.grey50 : AppThemeData.grey900, fontFamily: AppThemeData.semiBold, fontSize: 18),
                                       ),
                                     ),

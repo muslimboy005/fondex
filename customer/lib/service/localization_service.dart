@@ -24,10 +24,12 @@ class LocalizationService extends Translations {
           }
         } else {
           // Direct language code
-          if (langData == 'ru' || langData.contains('ru'))
+          if (langData == 'ru' || langData.contains('ru')) {
             return const Locale('ru', 'RU');
-          if (langData == 'uz' || langData.contains('uz'))
+          }
+          if (langData == 'uz' || langData.contains('uz')) {
             return const Locale('uz', 'UZ');
+          }
         }
       } catch (e) {
         // If parsing fails, return default

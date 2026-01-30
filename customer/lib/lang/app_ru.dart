@@ -151,6 +151,8 @@ const Map<String, String> ruRU = {
   'Something went wrong, please contact admin.':
       'Что-то пошло не так, пожалуйста, свяжитесь с администратором.',
   'Please select payment method': 'Пожалуйста, выберите способ оплаты',
+  'Boshqa to\'lov usullarini admin sozlamalarida yoqing.':
+      'Включите другие способы оплаты в настройках админа.',
   'Driver at Pickup': 'Водитель на месте отправления',
   'Driver Location': 'Местоположение водителя',
   'Payment method changed': 'Способ оплаты изменен',
@@ -248,6 +250,7 @@ const Map<String, String> ruRU = {
   'Use current location': 'Использовать текущее местоположение',
   'Set from map': 'Установить с карты',
   'Enter Manually location': 'Ввести местоположение вручную',
+  'Continue to login': 'Перейти к входу',
   'Search the store, item and more...':
       'Поиск магазина, товара и многое другое...',
   'Category': 'Категория',

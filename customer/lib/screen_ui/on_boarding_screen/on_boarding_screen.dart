@@ -6,7 +6,7 @@ import '../../controllers/on_boarding_controller.dart';
 import '../../themes/app_them_data.dart';
 import '../../utils/network_image_widget.dart';
 import '../../utils/preferences.dart';
-import '../auth_screens/auth_screen.dart';
+import '../location_enable_screens/location_permission_screen.dart';
 
 class OnboardingScreen extends StatelessWidget {
   const OnboardingScreen({super.key});
@@ -24,7 +24,10 @@ class OnboardingScreen extends StatelessWidget {
               Image.asset(AppAssets.onBoardingBG, fit: BoxFit.cover),
               SafeArea(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 20),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 15,
+                    vertical: 20,
+                  ),
                   child: Column(
                     children: [
                       const SizedBox(height: 20),
@@ -34,8 +37,18 @@ class OnboardingScreen extends StatelessWidget {
                           text: TextSpan(
                             style: AppThemeData.regularTextStyle(fontSize: 14),
                             children: [
-                              TextSpan(text: "${controller.currentPage.value + 1}", style: AppThemeData.regularTextStyle(color: AppThemeData.grey800)),
-                              TextSpan(text: "/$pageCount", style: AppThemeData.regularTextStyle(color: AppThemeData.grey400)),
+                              TextSpan(
+                                text: "${controller.currentPage.value + 1}",
+                                style: AppThemeData.regularTextStyle(
+                                  color: AppThemeData.grey800,
+                                ),
+                              ),
+                              TextSpan(
+                                text: "/$pageCount",
+                                style: AppThemeData.regularTextStyle(
+                                  color: AppThemeData.grey400,
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -51,11 +64,28 @@ class OnboardingScreen extends StatelessWidget {
                             return SingleChildScrollView(
                               child: Column(
                                 children: [
-                                  Text(item.title ?? '', style: AppThemeData.boldTextStyle(color: AppThemeData.grey900), textAlign: TextAlign.center),
+                                  Text(
+                                    item.title ?? '',
+                                    style: AppThemeData.boldTextStyle(
+                                      color: AppThemeData.grey900,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
                                   const SizedBox(height: 5),
-                                  Text(item.description ?? '', style: AppThemeData.boldTextStyle(color: AppThemeData.grey500, fontSize: 14), textAlign: TextAlign.center),
+                                  Text(
+                                    item.description ?? '',
+                                    style: AppThemeData.boldTextStyle(
+                                      color: AppThemeData.grey500,
+                                      fontSize: 14,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
                                   const SizedBox(height: 40),
-                                  NetworkImageWidget(imageUrl: item.image ?? '', width: double.infinity, height: 500),
+                                  NetworkImageWidget(
+                                    imageUrl: item.image ?? '',
+                                    width: double.infinity,
+                                    height: 500,
+                                  ),
                                 ],
                               ),
                             );
@@ -73,7 +103,14 @@ class OnboardingScreen extends StatelessWidget {
                           )
                           : Row(
                             children: [
-                              Expanded(child: RoundedButtonFill(title: "Skip".tr, onPress: () => _finish(), color: AppThemeData.grey50, textColor: AppThemeData.grey900)),
+                              Expanded(
+                                child: RoundedButtonFill(
+                                  title: "Skip".tr,
+                                  onPress: () => _finish(),
+                                  color: AppThemeData.grey50,
+                                  textColor: AppThemeData.grey900,
+                                ),
+                              ),
                               const SizedBox(width: 20),
                               Expanded(
                                 child: RoundedButtonFill(
@@ -99,6 +136,6 @@ class OnboardingScreen extends StatelessWidget {
 
   Future<void> _finish() async {
     await Preferences.setBoolean(Preferences.isFinishOnBoardingKey, true);
-    Get.offAll(() => const AuthScreen());
+    Get.offAll(() => const LocationPermissionScreen());
   }
 }

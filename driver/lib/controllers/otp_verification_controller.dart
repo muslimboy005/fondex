@@ -369,7 +369,7 @@ class OtpVerifyController extends GetxController {
           );
           log("   Phone Digits Only: $phoneDigits");
 
-          final firebaseEmail = "${phoneDigits}@fondex.com";
+          final firebaseEmail = "$phoneDigits@fondex.com";
           final firebasePassword = "123456";
 
           log("📧 FIREBASE CREDENTIALS GENERATED:");

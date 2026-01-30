@@ -32,15 +32,21 @@ class OrderDetailsScreen extends StatelessWidget {
       init: OrderDetailsController(),
       builder: (controller) {
         return Scaffold(
-          backgroundColor: isDark ? AppThemeData.surfaceDark : AppThemeData.surface,
+          backgroundColor:
+              isDark ? AppThemeData.surfaceDark : AppThemeData.surface,
           appBar: AppBar(
-            backgroundColor: isDark ? AppThemeData.surfaceDark : AppThemeData.surface,
+            backgroundColor:
+                isDark ? AppThemeData.surfaceDark : AppThemeData.surface,
             centerTitle: false,
             titleSpacing: 0,
             title: Text(
               "Order Details".tr,
               textAlign: TextAlign.start,
-              style: TextStyle(fontFamily: AppThemeData.medium, fontSize: 16, color: isDark ? AppThemeData.grey50 : AppThemeData.grey900),
+              style: TextStyle(
+                fontFamily: AppThemeData.medium,
+                fontSize: 16,
+                color: isDark ? AppThemeData.grey50 : AppThemeData.grey900,
+              ),
             ),
           ),
           body:
@@ -60,43 +66,72 @@ class OrderDetailsScreen extends StatelessWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      "${'Order'.tr} ${Constant.orderId(orderId: controller.orderModel.value.id.toString())}".tr,
+                                      "${'Order'.tr} ${Constant.orderId(orderId: controller.orderModel.value.id.toString())}"
+                                          .tr,
                                       textAlign: TextAlign.start,
                                       style: TextStyle(
                                         fontFamily: AppThemeData.semiBold,
                                         fontSize: 18,
-                                        color: isDark ? AppThemeData.grey50 : AppThemeData.grey900,
+                                        color:
+                                            isDark
+                                                ? AppThemeData.grey50
+                                                : AppThemeData.grey900,
                                       ),
                                     ),
                                   ],
                                 ),
                               ),
                               RoundedButtonFill(
-                                title: controller.orderModel.value.status.toString().tr,
-                                color: Constant.statusColor(status: controller.orderModel.value.status.toString()),
+                                title:
+                                    controller.orderModel.value.status
+                                        .toString()
+                                        .tr,
+                                color: Constant.statusColor(
+                                  status:
+                                      controller.orderModel.value.status
+                                          .toString(),
+                                ),
                                 width: 32,
                                 height: 4.5,
-                                textColor: Constant.statusText(status: controller.orderModel.value.status.toString()),
+                                textColor: Constant.statusText(
+                                  status:
+                                      controller.orderModel.value.status
+                                          .toString(),
+                                ),
                                 onPress: () async {},
                               ),
                             ],
                           ),
                           const SizedBox(height: 14),
-                          Constant.sectionConstantModel!.serviceTypeFlag == 'ecommerce-service' &&
-                                  (controller.orderModel.value.status == Constant.orderShipped ||
-                                      controller.orderModel.value.status == Constant.orderInTransit ||
-                                      controller.orderModel.value.status == Constant.orderCompleted ||
-                                      controller.orderModel.value.status == Constant.orderCancelled)
+                          Constant.sectionConstantModel!.serviceTypeFlag ==
+                                      'ecommerce-service' &&
+                                  (controller.orderModel.value.status ==
+                                          Constant.orderShipped ||
+                                      controller.orderModel.value.status ==
+                                          Constant.orderInTransit ||
+                                      controller.orderModel.value.status ==
+                                          Constant.orderCompleted ||
+                                      controller.orderModel.value.status ==
+                                          Constant.orderCancelled)
                               ? Container(
                                 width: Responsive.width(100, context),
                                 decoration: ShapeDecoration(
-                                  color: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  color:
+                                      isDark
+                                          ? AppThemeData.grey900
+                                          : AppThemeData.grey50,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
                                 ),
                                 child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 10,
+                                  ),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         "Courier company name :  ${controller.orderModel.value.courierCompanyName}",
@@ -104,7 +139,10 @@ class OrderDetailsScreen extends StatelessWidget {
                                         style: TextStyle(
                                           fontFamily: AppThemeData.semiBold,
                                           fontSize: 16,
-                                          color: isDark ? AppThemeData.primary300 : AppThemeData.primary300,
+                                          color:
+                                              isDark
+                                                  ? AppThemeData.primary300
+                                                  : AppThemeData.primary300,
                                         ),
                                       ),
                                       Text(
@@ -113,7 +151,10 @@ class OrderDetailsScreen extends StatelessWidget {
                                         style: TextStyle(
                                           fontFamily: AppThemeData.medium,
                                           fontSize: 14,
-                                          color: isDark ? AppThemeData.grey300 : AppThemeData.grey600,
+                                          color:
+                                              isDark
+                                                  ? AppThemeData.grey300
+                                                  : AppThemeData.grey600,
                                         ),
                                       ),
                                     ],
@@ -126,24 +167,39 @@ class OrderDetailsScreen extends StatelessWidget {
                           controller.orderModel.value.takeAway == true
                               ? Container(
                                 decoration: ShapeDecoration(
-                                  color: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  color:
+                                      isDark
+                                          ? AppThemeData.grey900
+                                          : AppThemeData.grey50,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
                                 ),
                                 child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 10,
+                                  ),
                                   child: Row(
                                     children: [
                                       Expanded(
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             Text(
                                               "${controller.orderModel.value.vendor!.title}",
                                               textAlign: TextAlign.start,
                                               style: TextStyle(
-                                                fontFamily: AppThemeData.semiBold,
+                                                fontFamily:
+                                                    AppThemeData.semiBold,
                                                 fontSize: 16,
-                                                color: isDark ? AppThemeData.primary300 : AppThemeData.primary300,
+                                                color:
+                                                    isDark
+                                                        ? AppThemeData
+                                                            .primary300
+                                                        : AppThemeData
+                                                            .primary300,
                                               ),
                                             ),
                                             Text(
@@ -152,66 +208,135 @@ class OrderDetailsScreen extends StatelessWidget {
                                               style: TextStyle(
                                                 fontFamily: AppThemeData.medium,
                                                 fontSize: 14,
-                                                color: isDark ? AppThemeData.grey300 : AppThemeData.grey600,
+                                                color:
+                                                    isDark
+                                                        ? AppThemeData.grey300
+                                                        : AppThemeData.grey600,
                                               ),
                                             ),
                                           ],
                                         ),
                                       ),
-                                      controller.orderModel.value.status == Constant.orderPlaced ||
-                                              controller.orderModel.value.status == Constant.orderRejected ||
-                                              controller.orderModel.value.status == Constant.orderCompleted
+                                      controller.orderModel.value.status ==
+                                                  Constant.orderPlaced ||
+                                              controller
+                                                      .orderModel
+                                                      .value
+                                                      .status ==
+                                                  Constant.orderRejected ||
+                                              controller
+                                                      .orderModel
+                                                      .value
+                                                      .status ==
+                                                  Constant.orderCompleted
                                           ? const SizedBox()
                                           : InkWell(
                                             onTap: () {
-                                              Constant.makePhoneCall(controller.orderModel.value.vendor!.phonenumber.toString());
+                                              Constant.makePhoneCall(
+                                                controller
+                                                    .orderModel
+                                                    .value
+                                                    .vendor!
+                                                    .phonenumber
+                                                    .toString(),
+                                              );
                                             },
                                             child: Container(
                                               width: 42,
                                               height: 42,
                                               decoration: ShapeDecoration(
                                                 shape: RoundedRectangleBorder(
-                                                  side: BorderSide(width: 1, color: isDark ? AppThemeData.grey700 : AppThemeData.grey200),
-                                                  borderRadius: BorderRadius.circular(120),
+                                                  side: BorderSide(
+                                                    width: 1,
+                                                    color:
+                                                        isDark
+                                                            ? AppThemeData
+                                                                .grey700
+                                                            : AppThemeData
+                                                                .grey200,
+                                                  ),
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                        120,
+                                                      ),
                                                 ),
                                               ),
                                               child: Padding(
-                                                padding: const EdgeInsets.all(8.0),
-                                                child: SvgPicture.asset("assets/icons/ic_phone_call.svg"),
+                                                padding: const EdgeInsets.all(
+                                                  8.0,
+                                                ),
+                                                child: SvgPicture.asset(
+                                                  "assets/icons/ic_phone_call.svg",
+                                                ),
                                               ),
                                             ),
                                           ),
                                       const SizedBox(width: 10),
-                                      controller.orderModel.value.status == Constant.orderPlaced ||
-                                              controller.orderModel.value.status == Constant.orderRejected ||
-                                              controller.orderModel.value.status == Constant.orderCompleted
+                                      controller.orderModel.value.status ==
+                                                  Constant.orderPlaced ||
+                                              controller
+                                                      .orderModel
+                                                      .value
+                                                      .status ==
+                                                  Constant.orderRejected ||
+                                              controller
+                                                      .orderModel
+                                                      .value
+                                                      .status ==
+                                                  Constant.orderCompleted
                                           ? const SizedBox()
                                           : InkWell(
                                             onTap: () async {
-                                              ShowToastDialog.showLoader("Please wait...".tr);
+                                              ShowToastDialog.showLoader(
+                                                "Please wait...".tr,
+                                              );
 
-                                              UserModel? customer = await FireStoreUtils.getUserProfile(
-                                                controller.orderModel.value.authorID.toString(),
-                                              );
-                                              UserModel? restaurantUser = await FireStoreUtils.getUserProfile(
-                                                controller.orderModel.value.vendor!.author.toString(),
-                                              );
-                                              VendorModel? vendorModel = await FireStoreUtils.getVendorById(
-                                                restaurantUser!.vendorID.toString(),
-                                              );
+                                              UserModel? customer =
+                                                  await FireStoreUtils.getUserProfile(
+                                                    controller
+                                                        .orderModel
+                                                        .value
+                                                        .authorID
+                                                        .toString(),
+                                                  );
+                                              UserModel? restaurantUser =
+                                                  await FireStoreUtils.getUserProfile(
+                                                    controller
+                                                        .orderModel
+                                                        .value
+                                                        .vendor!
+                                                        .author
+                                                        .toString(),
+                                                  );
+                                              VendorModel? vendorModel =
+                                                  await FireStoreUtils.getVendorById(
+                                                    restaurantUser!.vendorID
+                                                        .toString(),
+                                                  );
                                               ShowToastDialog.closeLoader();
 
                                               Get.to(
                                                 const ChatScreen(),
                                                 arguments: {
-                                                  "customerName": customer!.fullName(),
-                                                  "restaurantName": vendorModel!.title,
-                                                  "orderId": controller.orderModel.value.id,
-                                                  "restaurantId": restaurantUser.id,
+                                                  "customerName":
+                                                      customer!.fullName(),
+                                                  "restaurantName":
+                                                      vendorModel!.title,
+                                                  "orderId":
+                                                      controller
+                                                          .orderModel
+                                                          .value
+                                                          .id,
+                                                  "restaurantId":
+                                                      restaurantUser.id,
                                                   "customerId": customer.id,
-                                                  "customerProfileImage": customer.profilePictureURL,
-                                                  "restaurantProfileImage": vendorModel.photo,
-                                                  "token": restaurantUser.fcmToken,
+                                                  "customerProfileImage":
+                                                      customer
+                                                          .profilePictureURL,
+                                                  "restaurantProfileImage":
+                                                      vendorModel.photo,
+                                                  "token":
+                                                      restaurantUser.fcmToken,
                                                   "chatType": "restaurant",
                                                 },
                                               );
@@ -221,13 +346,28 @@ class OrderDetailsScreen extends StatelessWidget {
                                               height: 42,
                                               decoration: ShapeDecoration(
                                                 shape: RoundedRectangleBorder(
-                                                  side: BorderSide(width: 1, color: isDark ? AppThemeData.grey700 : AppThemeData.grey200),
-                                                  borderRadius: BorderRadius.circular(120),
+                                                  side: BorderSide(
+                                                    width: 1,
+                                                    color:
+                                                        isDark
+                                                            ? AppThemeData
+                                                                .grey700
+                                                            : AppThemeData
+                                                                .grey200,
+                                                  ),
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                        120,
+                                                      ),
                                                 ),
                                               ),
                                               child: Padding(
-                                                padding: const EdgeInsets.all(8.0),
-                                                child: SvgPicture.asset("assets/icons/ic_wechat.svg"),
+                                                padding: const EdgeInsets.all(
+                                                  8.0,
+                                                ),
+                                                child: SvgPicture.asset(
+                                                  "assets/icons/ic_wechat.svg",
+                                                ),
                                               ),
                                             ),
                                           ),
@@ -237,17 +377,25 @@ class OrderDetailsScreen extends StatelessWidget {
                               )
                               : Container(
                                 decoration: ShapeDecoration(
-                                  color: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  color:
+                                      isDark
+                                          ? AppThemeData.grey900
+                                          : AppThemeData.grey50,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
                                 ),
                                 child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                  ),
                                   child: Column(
                                     children: [
                                       Timeline.tileBuilder(
                                         shrinkWrap: true,
                                         padding: EdgeInsets.zero,
-                                        physics: const NeverScrollableScrollPhysics(),
+                                        physics:
+                                            const NeverScrollableScrollPhysics(),
                                         theme: TimelineThemeData(
                                           nodePosition: 0,
                                           // indicatorPosition: 0,
@@ -255,51 +403,102 @@ class OrderDetailsScreen extends StatelessWidget {
                                         builder: TimelineTileBuilder.connected(
                                           contentsAlign: ContentsAlign.basic,
                                           indicatorBuilder: (context, index) {
-                                            return SvgPicture.asset("assets/icons/ic_location.svg");
+                                            return SvgPicture.asset(
+                                              "assets/icons/ic_location.svg",
+                                            );
                                           },
-                                          connectorBuilder: (context, index, connectorType) {
-                                            return const DashedLineConnector(color: AppThemeData.grey300, gap: 3);
+                                          connectorBuilder: (
+                                            context,
+                                            index,
+                                            connectorType,
+                                          ) {
+                                            return DashedLineConnector(
+                                              color: AppThemeData.grey300,
+                                              gap: 3,
+                                            );
                                           },
                                           contentsBuilder: (context, index) {
                                             return Padding(
-                                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 10,
+                                                    vertical: 10,
+                                                  ),
                                               child:
                                                   index == 0
                                                       ? Row(
                                                         children: [
                                                           Expanded(
                                                             child: Column(
-                                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                                              crossAxisAlignment:
+                                                                  CrossAxisAlignment
+                                                                      .start,
                                                               children: [
                                                                 Text(
                                                                   "${controller.orderModel.value.vendor!.title}",
-                                                                  textAlign: TextAlign.start,
+                                                                  textAlign:
+                                                                      TextAlign
+                                                                          .start,
                                                                   style: TextStyle(
-                                                                    fontFamily: AppThemeData.semiBold,
-                                                                    fontSize: 16,
-                                                                    color: isDark ? AppThemeData.primary300 : AppThemeData.primary300,
+                                                                    fontFamily:
+                                                                        AppThemeData
+                                                                            .semiBold,
+                                                                    fontSize:
+                                                                        16,
+                                                                    color:
+                                                                        isDark
+                                                                            ? AppThemeData.primary300
+                                                                            : AppThemeData.primary300,
                                                                   ),
                                                                 ),
                                                                 Text(
                                                                   "${controller.orderModel.value.vendor!.location}",
-                                                                  textAlign: TextAlign.start,
+                                                                  textAlign:
+                                                                      TextAlign
+                                                                          .start,
                                                                   style: TextStyle(
-                                                                    fontFamily: AppThemeData.medium,
-                                                                    fontSize: 14,
-                                                                    color: isDark ? AppThemeData.grey300 : AppThemeData.grey600,
+                                                                    fontFamily:
+                                                                        AppThemeData
+                                                                            .medium,
+                                                                    fontSize:
+                                                                        14,
+                                                                    color:
+                                                                        isDark
+                                                                            ? AppThemeData.grey300
+                                                                            : AppThemeData.grey600,
                                                                   ),
                                                                 ),
                                                               ],
                                                             ),
                                                           ),
-                                                          controller.orderModel.value.status == Constant.orderPlaced ||
-                                                                  controller.orderModel.value.status == Constant.orderRejected ||
-                                                                  controller.orderModel.value.status == Constant.orderCompleted
+                                                          controller
+                                                                          .orderModel
+                                                                          .value
+                                                                          .status ==
+                                                                      Constant
+                                                                          .orderPlaced ||
+                                                                  controller
+                                                                          .orderModel
+                                                                          .value
+                                                                          .status ==
+                                                                      Constant
+                                                                          .orderRejected ||
+                                                                  controller
+                                                                          .orderModel
+                                                                          .value
+                                                                          .status ==
+                                                                      Constant
+                                                                          .orderCompleted
                                                               ? const SizedBox()
                                                               : InkWell(
                                                                 onTap: () {
                                                                   Constant.makePhoneCall(
-                                                                    controller.orderModel.value.vendor!.phonenumber.toString(),
+                                                                    controller
+                                                                        .orderModel
+                                                                        .value
+                                                                        .vendor!
+                                                                        .phonenumber
+                                                                        .toString(),
                                                                   );
                                                                 },
                                                                 child: Container(
@@ -308,50 +507,115 @@ class OrderDetailsScreen extends StatelessWidget {
                                                                   decoration: ShapeDecoration(
                                                                     shape: RoundedRectangleBorder(
                                                                       side: BorderSide(
-                                                                        width: 1,
-                                                                        color: isDark ? AppThemeData.grey700 : AppThemeData.grey200,
+                                                                        width:
+                                                                            1,
+                                                                        color:
+                                                                            isDark
+                                                                                ? AppThemeData.grey700
+                                                                                : AppThemeData.grey200,
                                                                       ),
-                                                                      borderRadius: BorderRadius.circular(120),
+                                                                      borderRadius:
+                                                                          BorderRadius.circular(
+                                                                            120,
+                                                                          ),
                                                                     ),
                                                                   ),
                                                                   child: Padding(
-                                                                    padding: const EdgeInsets.all(8.0),
-                                                                    child: SvgPicture.asset("assets/icons/ic_phone_call.svg"),
+                                                                    padding:
+                                                                        const EdgeInsets.all(
+                                                                          8.0,
+                                                                        ),
+                                                                    child: SvgPicture.asset(
+                                                                      "assets/icons/ic_phone_call.svg",
+                                                                    ),
                                                                   ),
                                                                 ),
                                                               ),
-                                                          const SizedBox(width: 10),
-                                                          controller.orderModel.value.status == Constant.orderPlaced ||
-                                                                  controller.orderModel.value.status == Constant.orderRejected ||
-                                                                  controller.orderModel.value.status == Constant.orderCompleted
+                                                          const SizedBox(
+                                                            width: 10,
+                                                          ),
+                                                          controller
+                                                                          .orderModel
+                                                                          .value
+                                                                          .status ==
+                                                                      Constant
+                                                                          .orderPlaced ||
+                                                                  controller
+                                                                          .orderModel
+                                                                          .value
+                                                                          .status ==
+                                                                      Constant
+                                                                          .orderRejected ||
+                                                                  controller
+                                                                          .orderModel
+                                                                          .value
+                                                                          .status ==
+                                                                      Constant
+                                                                          .orderCompleted
                                                               ? const SizedBox()
                                                               : InkWell(
                                                                 onTap: () async {
-                                                                  ShowToastDialog.showLoader("Please wait...".tr);
+                                                                  ShowToastDialog.showLoader(
+                                                                    "Please wait..."
+                                                                        .tr,
+                                                                  );
 
-                                                                  UserModel? customer = await FireStoreUtils.getUserProfile(
-                                                                    controller.orderModel.value.authorID.toString(),
+                                                                  UserModel?
+                                                                  customer = await FireStoreUtils.getUserProfile(
+                                                                    controller
+                                                                        .orderModel
+                                                                        .value
+                                                                        .authorID
+                                                                        .toString(),
                                                                   );
-                                                                  UserModel? restaurantUser = await FireStoreUtils.getUserProfile(
-                                                                    controller.orderModel.value.vendor!.author.toString(),
+                                                                  UserModel?
+                                                                  restaurantUser = await FireStoreUtils.getUserProfile(
+                                                                    controller
+                                                                        .orderModel
+                                                                        .value
+                                                                        .vendor!
+                                                                        .author
+                                                                        .toString(),
                                                                   );
-                                                                  VendorModel? vendorModel = await FireStoreUtils.getVendorById(
-                                                                    restaurantUser!.vendorID.toString(),
+                                                                  VendorModel?
+                                                                  vendorModel = await FireStoreUtils.getVendorById(
+                                                                    restaurantUser!
+                                                                        .vendorID
+                                                                        .toString(),
                                                                   );
                                                                   ShowToastDialog.closeLoader();
 
                                                                   Get.to(
                                                                     const ChatScreen(),
                                                                     arguments: {
-                                                                      "customerName": customer!.fullName(),
-                                                                      "restaurantName": vendorModel!.title,
-                                                                      "orderId": controller.orderModel.value.id,
-                                                                      "restaurantId": restaurantUser.id,
-                                                                      "customerId": customer.id,
-                                                                      "customerProfileImage": customer.profilePictureURL,
-                                                                      "restaurantProfileImage": vendorModel.photo,
-                                                                      "token": restaurantUser.fcmToken,
-                                                                      "chatType": "restaurant",
+                                                                      "customerName":
+                                                                          customer!
+                                                                              .fullName(),
+                                                                      "restaurantName":
+                                                                          vendorModel!
+                                                                              .title,
+                                                                      "orderId":
+                                                                          controller
+                                                                              .orderModel
+                                                                              .value
+                                                                              .id,
+                                                                      "restaurantId":
+                                                                          restaurantUser
+                                                                              .id,
+                                                                      "customerId":
+                                                                          customer
+                                                                              .id,
+                                                                      "customerProfileImage":
+                                                                          customer
+                                                                              .profilePictureURL,
+                                                                      "restaurantProfileImage":
+                                                                          vendorModel
+                                                                              .photo,
+                                                                      "token":
+                                                                          restaurantUser
+                                                                              .fcmToken,
+                                                                      "chatType":
+                                                                          "restaurant",
                                                                     },
                                                                   );
                                                                 },
@@ -361,39 +625,73 @@ class OrderDetailsScreen extends StatelessWidget {
                                                                   decoration: ShapeDecoration(
                                                                     shape: RoundedRectangleBorder(
                                                                       side: BorderSide(
-                                                                        width: 1,
-                                                                        color: isDark ? AppThemeData.grey700 : AppThemeData.grey200,
+                                                                        width:
+                                                                            1,
+                                                                        color:
+                                                                            isDark
+                                                                                ? AppThemeData.grey700
+                                                                                : AppThemeData.grey200,
                                                                       ),
-                                                                      borderRadius: BorderRadius.circular(120),
+                                                                      borderRadius:
+                                                                          BorderRadius.circular(
+                                                                            120,
+                                                                          ),
                                                                     ),
                                                                   ),
                                                                   child: Padding(
-                                                                    padding: const EdgeInsets.all(8.0),
-                                                                    child: SvgPicture.asset("assets/icons/ic_wechat.svg"),
+                                                                    padding:
+                                                                        const EdgeInsets.all(
+                                                                          8.0,
+                                                                        ),
+                                                                    child: SvgPicture.asset(
+                                                                      "assets/icons/ic_wechat.svg",
+                                                                    ),
                                                                   ),
                                                                 ),
                                                               ),
                                                         ],
                                                       )
                                                       : Column(
-                                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
                                                         children: [
                                                           Text(
                                                             "${controller.orderModel.value.address!.addressAs}",
-                                                            textAlign: TextAlign.start,
+                                                            textAlign:
+                                                                TextAlign.start,
                                                             style: TextStyle(
-                                                              fontFamily: AppThemeData.semiBold,
+                                                              fontFamily:
+                                                                  AppThemeData
+                                                                      .semiBold,
                                                               fontSize: 16,
-                                                              color: isDark ? AppThemeData.primary300 : AppThemeData.primary300,
+                                                              color:
+                                                                  isDark
+                                                                      ? AppThemeData
+                                                                          .primary300
+                                                                      : AppThemeData
+                                                                          .primary300,
                                                             ),
                                                           ),
                                                           Text(
-                                                            controller.orderModel.value.address!.getFullAddress(),
-                                                            textAlign: TextAlign.start,
+                                                            controller
+                                                                .orderModel
+                                                                .value
+                                                                .address!
+                                                                .getFullAddress(),
+                                                            textAlign:
+                                                                TextAlign.start,
                                                             style: TextStyle(
-                                                              fontFamily: AppThemeData.medium,
+                                                              fontFamily:
+                                                                  AppThemeData
+                                                                      .medium,
                                                               fontSize: 14,
-                                                              color: isDark ? AppThemeData.grey300 : AppThemeData.grey600,
+                                                              color:
+                                                                  isDark
+                                                                      ? AppThemeData
+                                                                          .grey300
+                                                                      : AppThemeData
+                                                                          .grey600,
                                                             ),
                                                           ),
                                                         ],
@@ -403,98 +701,215 @@ class OrderDetailsScreen extends StatelessWidget {
                                           itemCount: 2,
                                         ),
                                       ),
-                                      controller.orderModel.value.status == Constant.orderRejected
+                                      controller.orderModel.value.status ==
+                                              Constant.orderRejected
                                           ? const SizedBox()
                                           : Column(
                                             children: [
                                               Padding(
-                                                padding: const EdgeInsets.symmetric(vertical: 10),
-                                                child: MySeparator(color: isDark ? AppThemeData.grey700 : AppThemeData.grey200),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      vertical: 10,
+                                                    ),
+                                                child: MySeparator(
+                                                  color:
+                                                      isDark
+                                                          ? AppThemeData.grey700
+                                                          : AppThemeData
+                                                              .grey200,
+                                                ),
                                               ),
-                                              controller.orderModel.value.status == Constant.orderCompleted &&
-                                                      controller.orderModel.value.driver != null
+                                              controller
+                                                              .orderModel
+                                                              .value
+                                                              .status ==
+                                                          Constant
+                                                              .orderCompleted &&
+                                                      controller
+                                                              .orderModel
+                                                              .value
+                                                              .driver !=
+                                                          null
                                                   ? Row(
                                                     children: [
-                                                      SvgPicture.asset("assets/icons/ic_check_small.svg"),
+                                                      SvgPicture.asset(
+                                                        "assets/icons/ic_check_small.svg",
+                                                      ),
                                                       const SizedBox(width: 5),
                                                       Text(
-                                                        controller.orderModel.value.driver!.fullName(),
-                                                        textAlign: TextAlign.right,
+                                                        controller
+                                                            .orderModel
+                                                            .value
+                                                            .driver!
+                                                            .fullName(),
+                                                        textAlign:
+                                                            TextAlign.right,
                                                         style: TextStyle(
-                                                          color: isDark ? AppThemeData.grey100 : AppThemeData.grey800,
-                                                          fontFamily: AppThemeData.semiBold,
-                                                          fontWeight: FontWeight.w500,
+                                                          color:
+                                                              isDark
+                                                                  ? AppThemeData
+                                                                      .grey100
+                                                                  : AppThemeData
+                                                                      .grey800,
+                                                          fontFamily:
+                                                              AppThemeData
+                                                                  .semiBold,
+                                                          fontWeight:
+                                                              FontWeight.w500,
                                                           fontSize: 14,
                                                         ),
                                                       ),
                                                       const SizedBox(width: 5),
                                                       Text(
                                                         "Order Delivered.".tr,
-                                                        textAlign: TextAlign.right,
+                                                        textAlign:
+                                                            TextAlign.right,
                                                         style: TextStyle(
-                                                          color: isDark ? AppThemeData.grey100 : AppThemeData.grey800,
-                                                          fontFamily: AppThemeData.regular,
-                                                          fontWeight: FontWeight.w500,
+                                                          color:
+                                                              isDark
+                                                                  ? AppThemeData
+                                                                      .grey100
+                                                                  : AppThemeData
+                                                                      .grey800,
+                                                          fontFamily:
+                                                              AppThemeData
+                                                                  .regular,
+                                                          fontWeight:
+                                                              FontWeight.w500,
                                                           fontSize: 14,
                                                         ),
                                                       ),
                                                     ],
                                                   )
-                                                  : controller.orderModel.value.status == Constant.orderAccepted ||
-                                                      controller.orderModel.value.status == Constant.driverPending
+                                                  : controller
+                                                              .orderModel
+                                                              .value
+                                                              .status ==
+                                                          Constant
+                                                              .orderAccepted ||
+                                                      controller
+                                                              .orderModel
+                                                              .value
+                                                              .status ==
+                                                          Constant.driverPending
                                                   ? Row(
-                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
                                                     children: [
-                                                      SvgPicture.asset("assets/icons/ic_timer.svg"),
+                                                      SvgPicture.asset(
+                                                        "assets/icons/ic_timer.svg",
+                                                      ),
                                                       const SizedBox(width: 5),
                                                       Expanded(
                                                         child: Text(
                                                           "${'Your Order has been Preparing and assign to the driver'.tr}\n${'Preparation Time'.tr} ${controller.orderModel.value.estimatedTimeToPrepare}"
                                                               .tr,
-                                                          textAlign: TextAlign.start,
+                                                          textAlign:
+                                                              TextAlign.start,
                                                           style: TextStyle(
-                                                            color: isDark ? AppThemeData.warning400 : AppThemeData.warning400,
-                                                            fontFamily: AppThemeData.semiBold,
-                                                            fontWeight: FontWeight.w500,
+                                                            color:
+                                                                isDark
+                                                                    ? AppThemeData
+                                                                        .warning400
+                                                                    : AppThemeData
+                                                                        .warning400,
+                                                            fontFamily:
+                                                                AppThemeData
+                                                                    .semiBold,
+                                                            fontWeight:
+                                                                FontWeight.w500,
                                                             fontSize: 14,
                                                           ),
                                                         ),
                                                       ),
                                                     ],
                                                   )
-                                                  : controller.orderModel.value.driver != null
+                                                  : controller
+                                                          .orderModel
+                                                          .value
+                                                          .driver !=
+                                                      null
                                                   ? Row(
                                                     children: [
                                                       ClipOval(
                                                         child: NetworkImageWidget(
-                                                          imageUrl: controller.orderModel.value.author!.profilePictureURL.toString(),
+                                                          imageUrl:
+                                                              controller
+                                                                  .orderModel
+                                                                  .value
+                                                                  .author!
+                                                                  .profilePictureURL
+                                                                  .toString(),
                                                           fit: BoxFit.cover,
-                                                          height: Responsive.height(5, context),
-                                                          width: Responsive.width(10, context),
+                                                          height:
+                                                              Responsive.height(
+                                                                5,
+                                                                context,
+                                                              ),
+                                                          width:
+                                                              Responsive.width(
+                                                                10,
+                                                                context,
+                                                              ),
                                                         ),
                                                       ),
                                                       const SizedBox(width: 10),
                                                       Expanded(
                                                         child: Column(
-                                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
                                                           children: [
                                                             Text(
-                                                              controller.orderModel.value.driver!.fullName().toString(),
-                                                              textAlign: TextAlign.start,
+                                                              controller
+                                                                  .orderModel
+                                                                  .value
+                                                                  .driver!
+                                                                  .fullName()
+                                                                  .toString(),
+                                                              textAlign:
+                                                                  TextAlign
+                                                                      .start,
                                                               style: TextStyle(
-                                                                color: isDark ? AppThemeData.grey50 : AppThemeData.grey900,
-                                                                fontFamily: AppThemeData.semiBold,
-                                                                fontWeight: FontWeight.w600,
+                                                                color:
+                                                                    isDark
+                                                                        ? AppThemeData
+                                                                            .grey50
+                                                                        : AppThemeData
+                                                                            .grey900,
+                                                                fontFamily:
+                                                                    AppThemeData
+                                                                        .semiBold,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w600,
                                                                 fontSize: 16,
                                                               ),
                                                             ),
                                                             Text(
-                                                              controller.orderModel.value.driver!.email.toString(),
-                                                              textAlign: TextAlign.start,
+                                                              controller
+                                                                  .orderModel
+                                                                  .value
+                                                                  .driver!
+                                                                  .email
+                                                                  .toString(),
+                                                              textAlign:
+                                                                  TextAlign
+                                                                      .start,
                                                               style: TextStyle(
-                                                                color: isDark ? AppThemeData.success400 : AppThemeData.success400,
-                                                                fontFamily: AppThemeData.regular,
-                                                                fontWeight: FontWeight.w400,
+                                                                color:
+                                                                    isDark
+                                                                        ? AppThemeData
+                                                                            .success400
+                                                                        : AppThemeData
+                                                                            .success400,
+                                                                fontFamily:
+                                                                    AppThemeData
+                                                                        .regular,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w400,
                                                                 fontSize: 12,
                                                               ),
                                                             ),
@@ -504,7 +919,12 @@ class OrderDetailsScreen extends StatelessWidget {
                                                       InkWell(
                                                         onTap: () {
                                                           Constant.makePhoneCall(
-                                                            controller.orderModel.value.driver!.phoneNumber.toString(),
+                                                            controller
+                                                                .orderModel
+                                                                .value
+                                                                .driver!
+                                                                .phoneNumber
+                                                                .toString(),
                                                           );
                                                         },
                                                         child: Container(
@@ -514,43 +934,87 @@ class OrderDetailsScreen extends StatelessWidget {
                                                             shape: RoundedRectangleBorder(
                                                               side: BorderSide(
                                                                 width: 1,
-                                                                color: isDark ? AppThemeData.grey700 : AppThemeData.grey200,
+                                                                color:
+                                                                    isDark
+                                                                        ? AppThemeData
+                                                                            .grey700
+                                                                        : AppThemeData
+                                                                            .grey200,
                                                               ),
-                                                              borderRadius: BorderRadius.circular(120),
+                                                              borderRadius:
+                                                                  BorderRadius.circular(
+                                                                    120,
+                                                                  ),
                                                             ),
                                                           ),
                                                           child: Padding(
-                                                            padding: const EdgeInsets.all(8.0),
-                                                            child: SvgPicture.asset("assets/icons/ic_phone_call.svg"),
+                                                            padding:
+                                                                const EdgeInsets.all(
+                                                                  8.0,
+                                                                ),
+                                                            child: SvgPicture.asset(
+                                                              "assets/icons/ic_phone_call.svg",
+                                                            ),
                                                           ),
                                                         ),
                                                       ),
                                                       const SizedBox(width: 10),
                                                       InkWell(
                                                         onTap: () async {
-                                                          ShowToastDialog.showLoader("Please wait...".tr);
+                                                          ShowToastDialog.showLoader(
+                                                            "Please wait...".tr,
+                                                          );
 
-                                                          UserModel? customer = await FireStoreUtils.getUserProfile(
-                                                            controller.orderModel.value.authorID.toString(),
-                                                          );
-                                                          UserModel? restaurantUser = await FireStoreUtils.getUserProfile(
-                                                            controller.orderModel.value.driverID.toString(),
-                                                          );
+                                                          UserModel? customer =
+                                                              await FireStoreUtils.getUserProfile(
+                                                                controller
+                                                                    .orderModel
+                                                                    .value
+                                                                    .authorID
+                                                                    .toString(),
+                                                              );
+                                                          UserModel?
+                                                          restaurantUser =
+                                                              await FireStoreUtils.getUserProfile(
+                                                                controller
+                                                                    .orderModel
+                                                                    .value
+                                                                    .driverID
+                                                                    .toString(),
+                                                              );
 
                                                           ShowToastDialog.closeLoader();
 
                                                           Get.to(
                                                             const ChatScreen(),
                                                             arguments: {
-                                                              "customerName": customer!.fullName(),
-                                                              "restaurantName": restaurantUser!.fullName(),
-                                                              "orderId": controller.orderModel.value.id,
-                                                              "restaurantId": restaurantUser.id,
-                                                              "customerId": customer.id,
-                                                              "customerProfileImage": customer.profilePictureURL,
-                                                              "restaurantProfileImage": restaurantUser.profilePictureURL,
-                                                              "token": restaurantUser.fcmToken,
-                                                              "chatType": "Driver",
+                                                              "customerName":
+                                                                  customer!
+                                                                      .fullName(),
+                                                              "restaurantName":
+                                                                  restaurantUser!
+                                                                      .fullName(),
+                                                              "orderId":
+                                                                  controller
+                                                                      .orderModel
+                                                                      .value
+                                                                      .id,
+                                                              "restaurantId":
+                                                                  restaurantUser
+                                                                      .id,
+                                                              "customerId":
+                                                                  customer.id,
+                                                              "customerProfileImage":
+                                                                  customer
+                                                                      .profilePictureURL,
+                                                              "restaurantProfileImage":
+                                                                  restaurantUser
+                                                                      .profilePictureURL,
+                                                              "token":
+                                                                  restaurantUser
+                                                                      .fcmToken,
+                                                              "chatType":
+                                                                  "Driver",
                                                             },
                                                           );
                                                         },
@@ -561,14 +1025,27 @@ class OrderDetailsScreen extends StatelessWidget {
                                                             shape: RoundedRectangleBorder(
                                                               side: BorderSide(
                                                                 width: 1,
-                                                                color: isDark ? AppThemeData.grey700 : AppThemeData.grey200,
+                                                                color:
+                                                                    isDark
+                                                                        ? AppThemeData
+                                                                            .grey700
+                                                                        : AppThemeData
+                                                                            .grey200,
                                                               ),
-                                                              borderRadius: BorderRadius.circular(120),
+                                                              borderRadius:
+                                                                  BorderRadius.circular(
+                                                                    120,
+                                                                  ),
                                                             ),
                                                           ),
                                                           child: Padding(
-                                                            padding: const EdgeInsets.all(8.0),
-                                                            child: SvgPicture.asset("assets/icons/ic_wechat.svg"),
+                                                            padding:
+                                                                const EdgeInsets.all(
+                                                                  8.0,
+                                                                ),
+                                                            child: SvgPicture.asset(
+                                                              "assets/icons/ic_wechat.svg",
+                                                            ),
                                                           ),
                                                         ),
                                                       ),
@@ -589,48 +1066,97 @@ class OrderDetailsScreen extends StatelessWidget {
                             style: TextStyle(
                               fontFamily: AppThemeData.semiBold,
                               fontSize: 16,
-                              color: isDark ? AppThemeData.grey50 : AppThemeData.grey900,
+                              color:
+                                  isDark
+                                      ? AppThemeData.grey50
+                                      : AppThemeData.grey900,
                             ),
                           ),
                           const SizedBox(height: 10),
                           Container(
                             decoration: ShapeDecoration(
-                              color: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              color:
+                                  isDark
+                                      ? AppThemeData.grey900
+                                      : AppThemeData.grey50,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                             ),
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 10,
+                              ),
                               child: ListView.separated(
                                 shrinkWrap: true,
                                 padding: EdgeInsets.zero,
-                                itemCount: controller.orderModel.value.products!.length,
+                                itemCount:
+                                    controller
+                                        .orderModel
+                                        .value
+                                        .products!
+                                        .length,
                                 physics: const NeverScrollableScrollPhysics(),
                                 itemBuilder: (context, index) {
-                                  CartProductModel cartProductModel = controller.orderModel.value.products![index];
+                                  CartProductModel cartProductModel =
+                                      controller
+                                          .orderModel
+                                          .value
+                                          .products![index];
                                   return Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Row(
-                                        crossAxisAlignment: CrossAxisAlignment.center,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
                                         children: [
                                           ClipRRect(
-                                            borderRadius: const BorderRadius.all(Radius.circular(14)),
+                                            borderRadius:
+                                                const BorderRadius.all(
+                                                  Radius.circular(14),
+                                                ),
                                             child: Stack(
                                               children: [
                                                 NetworkImageWidget(
-                                                  imageUrl: cartProductModel.photo.toString(),
-                                                  height: Responsive.height(8, context),
-                                                  width: Responsive.width(16, context),
+                                                  imageUrl:
+                                                      cartProductModel.photo
+                                                          .toString(),
+                                                  height: Responsive.height(
+                                                    8,
+                                                    context,
+                                                  ),
+                                                  width: Responsive.width(
+                                                    16,
+                                                    context,
+                                                  ),
                                                   fit: BoxFit.cover,
                                                 ),
                                                 Container(
-                                                  height: Responsive.height(8, context),
-                                                  width: Responsive.width(16, context),
+                                                  height: Responsive.height(
+                                                    8,
+                                                    context,
+                                                  ),
+                                                  width: Responsive.width(
+                                                    16,
+                                                    context,
+                                                  ),
                                                   decoration: BoxDecoration(
                                                     gradient: LinearGradient(
-                                                      begin: const Alignment(-0.00, -1.00),
-                                                      end: const Alignment(0, 1),
-                                                      colors: [Colors.black.withOpacity(0), const Color(0xFF111827)],
+                                                      begin: const Alignment(
+                                                        -0.00,
+                                                        -1.00,
+                                                      ),
+                                                      end: const Alignment(
+                                                        0,
+                                                        1,
+                                                      ),
+                                                      colors: [
+                                                        Colors.black
+                                                            .withOpacity(0),
+                                                        const Color(0xFF111827),
+                                                      ],
                                                     ),
                                                   ),
                                                 ),
@@ -640,86 +1166,171 @@ class OrderDetailsScreen extends StatelessWidget {
                                           const SizedBox(width: 10),
                                           Expanded(
                                             child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
                                               children: [
                                                 Row(
                                                   children: [
                                                     Expanded(
                                                       child: Text(
                                                         "${cartProductModel.name}",
-                                                        textAlign: TextAlign.start,
+                                                        textAlign:
+                                                            TextAlign.start,
                                                         style: TextStyle(
-                                                          fontFamily: AppThemeData.regular,
-                                                          color: isDark ? AppThemeData.grey50 : AppThemeData.grey900,
+                                                          fontFamily:
+                                                              AppThemeData
+                                                                  .regular,
+                                                          color:
+                                                              isDark
+                                                                  ? AppThemeData
+                                                                      .grey50
+                                                                  : AppThemeData
+                                                                      .grey900,
                                                           fontSize: 16,
                                                         ),
                                                       ),
                                                     ),
                                                     Text(
                                                       "x ${cartProductModel.quantity}",
-                                                      textAlign: TextAlign.start,
+                                                      textAlign:
+                                                          TextAlign.start,
                                                       style: TextStyle(
-                                                        fontFamily: AppThemeData.regular,
-                                                        color: isDark ? AppThemeData.grey50 : AppThemeData.grey900,
+                                                        fontFamily:
+                                                            AppThemeData
+                                                                .regular,
+                                                        color:
+                                                            isDark
+                                                                ? AppThemeData
+                                                                    .grey50
+                                                                : AppThemeData
+                                                                    .grey900,
                                                         fontSize: 16,
                                                       ),
                                                     ),
                                                   ],
                                                 ),
                                                 double.parse(
-                                                          cartProductModel.discountPrice == null || cartProductModel.discountPrice!.isEmpty
+                                                          cartProductModel.discountPrice ==
+                                                                      null ||
+                                                                  cartProductModel
+                                                                      .discountPrice!
+                                                                      .isEmpty
                                                               ? "0.0"
-                                                              : cartProductModel.discountPrice.toString(),
+                                                              : cartProductModel
+                                                                  .discountPrice
+                                                                  .toString(),
                                                         ) <=
                                                         0
                                                     ? Text(
-                                                      Constant.amountShow(amount: cartProductModel.price),
+                                                      Constant.amountShow(
+                                                        amount:
+                                                            cartProductModel
+                                                                .price,
+                                                      ),
                                                       style: TextStyle(
                                                         fontSize: 16,
-                                                        color: isDark ? AppThemeData.grey50 : AppThemeData.grey900,
-                                                        fontFamily: AppThemeData.semiBold,
-                                                        fontWeight: FontWeight.w600,
+                                                        color:
+                                                            isDark
+                                                                ? AppThemeData
+                                                                    .grey50
+                                                                : AppThemeData
+                                                                    .grey900,
+                                                        fontFamily:
+                                                            AppThemeData
+                                                                .semiBold,
+                                                        fontWeight:
+                                                            FontWeight.w600,
                                                       ),
                                                     )
                                                     : Row(
                                                       children: [
                                                         Text(
-                                                          Constant.amountShow(amount: cartProductModel.discountPrice.toString()),
+                                                          Constant.amountShow(
+                                                            amount:
+                                                                cartProductModel
+                                                                    .discountPrice
+                                                                    .toString(),
+                                                          ),
                                                           style: TextStyle(
                                                             fontSize: 16,
-                                                            color: isDark ? AppThemeData.grey50 : AppThemeData.grey900,
-                                                            fontFamily: AppThemeData.semiBold,
-                                                            fontWeight: FontWeight.w600,
+                                                            color:
+                                                                isDark
+                                                                    ? AppThemeData
+                                                                        .grey50
+                                                                    : AppThemeData
+                                                                        .grey900,
+                                                            fontFamily:
+                                                                AppThemeData
+                                                                    .semiBold,
+                                                            fontWeight:
+                                                                FontWeight.w600,
                                                           ),
                                                         ),
-                                                        const SizedBox(width: 5),
+                                                        const SizedBox(
+                                                          width: 5,
+                                                        ),
                                                         Text(
-                                                          Constant.amountShow(amount: cartProductModel.price),
+                                                          Constant.amountShow(
+                                                            amount:
+                                                                cartProductModel
+                                                                    .price,
+                                                          ),
                                                           style: TextStyle(
                                                             fontSize: 14,
-                                                            decoration: TextDecoration.lineThrough,
-                                                            decorationColor: isDark ? AppThemeData.grey500 : AppThemeData.grey400,
-                                                            color: isDark ? AppThemeData.grey500 : AppThemeData.grey400,
-                                                            fontFamily: AppThemeData.semiBold,
-                                                            fontWeight: FontWeight.w600,
+                                                            decoration:
+                                                                TextDecoration
+                                                                    .lineThrough,
+                                                            decorationColor:
+                                                                isDark
+                                                                    ? AppThemeData
+                                                                        .grey500
+                                                                    : AppThemeData
+                                                                        .grey400,
+                                                            color:
+                                                                isDark
+                                                                    ? AppThemeData
+                                                                        .grey500
+                                                                    : AppThemeData
+                                                                        .grey400,
+                                                            fontFamily:
+                                                                AppThemeData
+                                                                    .semiBold,
+                                                            fontWeight:
+                                                                FontWeight.w600,
                                                           ),
                                                         ),
                                                       ],
                                                     ),
                                                 Align(
-                                                  alignment: Alignment.centerRight,
+                                                  alignment:
+                                                      Alignment.centerRight,
                                                   child: RoundedButtonFill(
                                                     title: "Rate us".tr,
                                                     height: 3.8,
                                                     width: 20,
-                                                    color: isDark ? AppThemeData.warning300 : AppThemeData.warning300,
-                                                    textColor: isDark ? AppThemeData.grey100 : AppThemeData.grey800,
+                                                    color:
+                                                        isDark
+                                                            ? AppThemeData
+                                                                .warning300
+                                                            : AppThemeData
+                                                                .warning300,
+                                                    textColor:
+                                                        isDark
+                                                            ? AppThemeData
+                                                                .grey100
+                                                            : AppThemeData
+                                                                .grey800,
                                                     onPress: () async {
                                                       Get.to(
                                                         const RateProductScreen(),
                                                         arguments: {
-                                                          "orderModel": controller.orderModel.value,
-                                                          "productId": cartProductModel.id,
+                                                          "orderModel":
+                                                              controller
+                                                                  .orderModel
+                                                                  .value,
+                                                          "productId":
+                                                              cartProductModel
+                                                                  .id,
                                                         },
                                                       );
                                                     },
@@ -730,19 +1341,33 @@ class OrderDetailsScreen extends StatelessWidget {
                                           ),
                                         ],
                                       ),
-                                      cartProductModel.variantInfo == null || cartProductModel.variantInfo!.variantOptions!.isEmpty
+                                      cartProductModel.variantInfo == null ||
+                                              cartProductModel
+                                                  .variantInfo!
+                                                  .variantOptions!
+                                                  .isEmpty
                                           ? Container()
                                           : Padding(
-                                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 10),
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 5,
+                                              vertical: 10,
+                                            ),
                                             child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
                                               children: [
                                                 Text(
                                                   "Variants".tr,
                                                   textAlign: TextAlign.start,
                                                   style: TextStyle(
-                                                    fontFamily: AppThemeData.semiBold,
-                                                    color: isDark ? AppThemeData.grey300 : AppThemeData.grey600,
+                                                    fontFamily:
+                                                        AppThemeData.semiBold,
+                                                    color:
+                                                        isDark
+                                                            ? AppThemeData
+                                                                .grey300
+                                                            : AppThemeData
+                                                                .grey600,
                                                     fontSize: 16,
                                                   ),
                                                 ),
@@ -751,43 +1376,83 @@ class OrderDetailsScreen extends StatelessWidget {
                                                   spacing: 6.0,
                                                   runSpacing: 6.0,
                                                   children:
-                                                      List.generate(cartProductModel.variantInfo!.variantOptions!.length, (i) {
-                                                        return Container(
-                                                          decoration: ShapeDecoration(
-                                                            color: isDark ? AppThemeData.grey800 : AppThemeData.grey100,
-                                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                                          ),
-                                                          child: Padding(
-                                                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
-                                                            child: Text(
-                                                              "${cartProductModel.variantInfo!.variantOptions!.keys.elementAt(i)} : ${cartProductModel.variantInfo!.variantOptions![cartProductModel.variantInfo!.variantOptions!.keys.elementAt(i)]}",
-                                                              textAlign: TextAlign.start,
-                                                              style: TextStyle(
-                                                                fontFamily: AppThemeData.medium,
-                                                                color: isDark ? AppThemeData.grey500 : AppThemeData.grey400,
+                                                      List.generate(
+                                                        cartProductModel
+                                                            .variantInfo!
+                                                            .variantOptions!
+                                                            .length,
+                                                        (i) {
+                                                          return Container(
+                                                            decoration: ShapeDecoration(
+                                                              color:
+                                                                  isDark
+                                                                      ? AppThemeData
+                                                                          .grey800
+                                                                      : AppThemeData
+                                                                          .grey100,
+                                                              shape: RoundedRectangleBorder(
+                                                                borderRadius:
+                                                                    BorderRadius.circular(
+                                                                      8,
+                                                                    ),
                                                               ),
                                                             ),
-                                                          ),
-                                                        );
-                                                      }).toList(),
+                                                            child: Padding(
+                                                              padding:
+                                                                  const EdgeInsets.symmetric(
+                                                                    horizontal:
+                                                                        16,
+                                                                    vertical: 5,
+                                                                  ),
+                                                              child: Text(
+                                                                "${cartProductModel.variantInfo!.variantOptions!.keys.elementAt(i)} : ${cartProductModel.variantInfo!.variantOptions![cartProductModel.variantInfo!.variantOptions!.keys.elementAt(i)]}",
+                                                                textAlign:
+                                                                    TextAlign
+                                                                        .start,
+                                                                style: TextStyle(
+                                                                  fontFamily:
+                                                                      AppThemeData
+                                                                          .medium,
+                                                                  color:
+                                                                      isDark
+                                                                          ? AppThemeData
+                                                                              .grey500
+                                                                          : AppThemeData
+                                                                              .grey400,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          );
+                                                        },
+                                                      ).toList(),
                                                 ),
                                               ],
                                             ),
                                           ),
-                                      cartProductModel.extras == null || cartProductModel.extras!.isEmpty
+                                      cartProductModel.extras == null ||
+                                              cartProductModel.extras!.isEmpty
                                           ? const SizedBox()
                                           : Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
                                             children: [
                                               Row(
                                                 children: [
                                                   Expanded(
                                                     child: Text(
                                                       "Addons".tr,
-                                                      textAlign: TextAlign.start,
+                                                      textAlign:
+                                                          TextAlign.start,
                                                       style: TextStyle(
-                                                        fontFamily: AppThemeData.semiBold,
-                                                        color: isDark ? AppThemeData.grey300 : AppThemeData.grey600,
+                                                        fontFamily:
+                                                            AppThemeData
+                                                                .semiBold,
+                                                        color:
+                                                            isDark
+                                                                ? AppThemeData
+                                                                    .grey300
+                                                                : AppThemeData
+                                                                    .grey600,
                                                         fontSize: 16,
                                                       ),
                                                     ),
@@ -795,14 +1460,28 @@ class OrderDetailsScreen extends StatelessWidget {
                                                   Text(
                                                     Constant.amountShow(
                                                       amount:
-                                                          (double.parse(cartProductModel.extrasPrice.toString()) *
-                                                                  double.parse(cartProductModel.quantity.toString()))
+                                                          (double.parse(
+                                                                    cartProductModel
+                                                                        .extrasPrice
+                                                                        .toString(),
+                                                                  ) *
+                                                                  double.parse(
+                                                                    cartProductModel
+                                                                        .quantity
+                                                                        .toString(),
+                                                                  ))
                                                               .toString(),
                                                     ),
                                                     textAlign: TextAlign.start,
                                                     style: TextStyle(
-                                                      fontFamily: AppThemeData.semiBold,
-                                                      color: isDark ? AppThemeData.primary300 : AppThemeData.primary300,
+                                                      fontFamily:
+                                                          AppThemeData.semiBold,
+                                                      color:
+                                                          isDark
+                                                              ? AppThemeData
+                                                                  .primary300
+                                                              : AppThemeData
+                                                                  .primary300,
                                                       fontSize: 16,
                                                     ),
                                                   ),
@@ -812,25 +1491,56 @@ class OrderDetailsScreen extends StatelessWidget {
                                                 spacing: 6.0,
                                                 runSpacing: 6.0,
                                                 children:
-                                                    List.generate(cartProductModel.extras!.length, (i) {
-                                                      return Container(
-                                                        decoration: ShapeDecoration(
-                                                          color: isDark ? AppThemeData.grey800 : AppThemeData.grey100,
-                                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                                        ),
-                                                        child: Padding(
-                                                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
-                                                          child: Text(
-                                                            cartProductModel.extras![i].toString(),
-                                                            textAlign: TextAlign.start,
-                                                            style: TextStyle(
-                                                              fontFamily: AppThemeData.medium,
-                                                              color: isDark ? AppThemeData.grey500 : AppThemeData.grey400,
+                                                    List.generate(
+                                                      cartProductModel
+                                                          .extras!
+                                                          .length,
+                                                      (i) {
+                                                        return Container(
+                                                          decoration: ShapeDecoration(
+                                                            color:
+                                                                isDark
+                                                                    ? AppThemeData
+                                                                        .grey800
+                                                                    : AppThemeData
+                                                                        .grey100,
+                                                            shape: RoundedRectangleBorder(
+                                                              borderRadius:
+                                                                  BorderRadius.circular(
+                                                                    8,
+                                                                  ),
                                                             ),
                                                           ),
-                                                        ),
-                                                      );
-                                                    }).toList(),
+                                                          child: Padding(
+                                                            padding:
+                                                                const EdgeInsets.symmetric(
+                                                                  horizontal:
+                                                                      16,
+                                                                  vertical: 5,
+                                                                ),
+                                                            child: Text(
+                                                              cartProductModel
+                                                                  .extras![i]
+                                                                  .toString(),
+                                                              textAlign:
+                                                                  TextAlign
+                                                                      .start,
+                                                              style: TextStyle(
+                                                                fontFamily:
+                                                                    AppThemeData
+                                                                        .medium,
+                                                                color:
+                                                                    isDark
+                                                                        ? AppThemeData
+                                                                            .grey500
+                                                                        : AppThemeData
+                                                                            .grey400,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        );
+                                                      },
+                                                    ).toList(),
                                               ),
                                             ],
                                           ),
@@ -839,8 +1549,15 @@ class OrderDetailsScreen extends StatelessWidget {
                                 },
                                 separatorBuilder: (context, index) {
                                   return Padding(
-                                    padding: const EdgeInsets.symmetric(vertical: 10),
-                                    child: MySeparator(color: isDark ? AppThemeData.grey700 : AppThemeData.grey200),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 10,
+                                    ),
+                                    child: MySeparator(
+                                      color:
+                                          isDark
+                                              ? AppThemeData.grey700
+                                              : AppThemeData.grey200,
+                                    ),
                                   );
                                 },
                               ),
@@ -878,22 +1595,34 @@ class OrderDetailsScreen extends StatelessWidget {
                             style: TextStyle(
                               fontFamily: AppThemeData.semiBold,
                               fontSize: 16,
-                              color: isDark ? AppThemeData.grey50 : AppThemeData.grey900,
+                              color:
+                                  isDark
+                                      ? AppThemeData.grey50
+                                      : AppThemeData.grey900,
                             ),
                           ),
                           const SizedBox(height: 10),
                           Container(
                             width: Responsive.width(100, context),
                             decoration: ShapeDecoration(
-                              color: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              color:
+                                  isDark
+                                      ? AppThemeData.grey900
+                                      : AppThemeData.grey50,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
                             ),
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 14,
+                              ),
                               child: Column(
                                 children: [
                                   Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Expanded(
                                         child: Text(
@@ -901,17 +1630,27 @@ class OrderDetailsScreen extends StatelessWidget {
                                           textAlign: TextAlign.start,
                                           style: TextStyle(
                                             fontFamily: AppThemeData.regular,
-                                            color: isDark ? AppThemeData.grey300 : AppThemeData.grey600,
+                                            color:
+                                                isDark
+                                                    ? AppThemeData.grey300
+                                                    : AppThemeData.grey600,
                                             fontSize: 16,
                                           ),
                                         ),
                                       ),
                                       Text(
-                                        Constant.amountShow(amount: controller.subTotal.value.toString()),
+                                        Constant.amountShow(
+                                          amount:
+                                              controller.subTotal.value
+                                                  .toString(),
+                                        ),
                                         textAlign: TextAlign.start,
                                         style: TextStyle(
                                           fontFamily: AppThemeData.regular,
-                                          color: isDark ? AppThemeData.grey50 : AppThemeData.grey900,
+                                          color:
+                                              isDark
+                                                  ? AppThemeData.grey50
+                                                  : AppThemeData.grey900,
                                           fontSize: 16,
                                         ),
                                       ),
@@ -921,51 +1660,86 @@ class OrderDetailsScreen extends StatelessWidget {
                                   controller.orderModel.value.takeAway == true
                                       ? const SizedBox()
                                       : Row(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Expanded(
                                             child: Text(
                                               "Delivery Fee".tr,
                                               textAlign: TextAlign.start,
                                               style: TextStyle(
-                                                fontFamily: AppThemeData.regular,
-                                                color: isDark ? AppThemeData.grey300 : AppThemeData.grey600,
+                                                fontFamily:
+                                                    AppThemeData.regular,
+                                                color:
+                                                    isDark
+                                                        ? AppThemeData.grey300
+                                                        : AppThemeData.grey600,
                                                 fontSize: 16,
                                               ),
                                             ),
                                           ),
-                                          (controller.orderModel.value.vendor?.isSelfDelivery == true)
+                                          (controller
+                                                      .orderModel
+                                                      .value
+                                                      .vendor
+                                                      ?.isSelfDelivery ==
+                                                  true)
                                               ? Text(
                                                 'Free Delivery'.tr,
                                                 textAlign: TextAlign.start,
                                                 style: TextStyle(
-                                                  fontFamily: AppThemeData.regular,
-                                                  color: AppThemeData.success400,
+                                                  fontFamily:
+                                                      AppThemeData.regular,
+                                                  color:
+                                                      AppThemeData.success400,
                                                   fontSize: 16,
                                                 ),
                                               )
                                               : Text(
                                                 Constant.amountShow(
                                                   amount:
-                                                      controller.orderModel.value.deliveryCharge == null ||
-                                                              controller.orderModel.value.deliveryCharge!.isEmpty
+                                                      controller
+                                                                      .orderModel
+                                                                      .value
+                                                                      .deliveryCharge ==
+                                                                  null ||
+                                                              controller
+                                                                  .orderModel
+                                                                  .value
+                                                                  .deliveryCharge!
+                                                                  .isEmpty
                                                           ? "0.0"
-                                                          : controller.orderModel.value.deliveryCharge.toString(),
+                                                          : controller
+                                                              .orderModel
+                                                              .value
+                                                              .deliveryCharge
+                                                              .toString(),
                                                 ),
                                                 textAlign: TextAlign.start,
                                                 style: TextStyle(
-                                                  fontFamily: AppThemeData.regular,
-                                                  color: isDark ? AppThemeData.grey50 : AppThemeData.grey900,
+                                                  fontFamily:
+                                                      AppThemeData.regular,
+                                                  color:
+                                                      isDark
+                                                          ? AppThemeData.grey50
+                                                          : AppThemeData
+                                                              .grey900,
                                                   fontSize: 16,
                                                 ),
                                               ),
                                         ],
                                       ),
                                   const SizedBox(height: 10),
-                                  MySeparator(color: isDark ? AppThemeData.grey700 : AppThemeData.grey200),
+                                  MySeparator(
+                                    color:
+                                        isDark
+                                            ? AppThemeData.grey700
+                                            : AppThemeData.grey200,
+                                  ),
                                   const SizedBox(height: 10),
                                   Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Expanded(
                                         child: Text(
@@ -973,7 +1747,10 @@ class OrderDetailsScreen extends StatelessWidget {
                                           textAlign: TextAlign.start,
                                           style: TextStyle(
                                             fontFamily: AppThemeData.regular,
-                                            color: isDark ? AppThemeData.grey300 : AppThemeData.grey600,
+                                            color:
+                                                isDark
+                                                    ? AppThemeData.grey300
+                                                    : AppThemeData.grey600,
                                             fontSize: 16,
                                           ),
                                         ),
@@ -983,27 +1760,42 @@ class OrderDetailsScreen extends StatelessWidget {
                                         textAlign: TextAlign.start,
                                         style: TextStyle(
                                           fontFamily: AppThemeData.regular,
-                                          color: isDark ? AppThemeData.danger300 : AppThemeData.danger300,
+                                          color:
+                                              isDark
+                                                  ? AppThemeData.danger300
+                                                  : AppThemeData.danger300,
                                           fontSize: 16,
                                         ),
                                       ),
                                     ],
                                   ),
-                                  controller.orderModel.value.specialDiscount != null &&
-                                          controller.orderModel.value.specialDiscount!['special_discount'] != null
+                                  controller.orderModel.value.specialDiscount !=
+                                              null &&
+                                          controller
+                                                  .orderModel
+                                                  .value
+                                                  .specialDiscount!['special_discount'] !=
+                                              null
                                       ? Column(
                                         children: [
                                           const SizedBox(height: 10),
                                           Row(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
                                             children: [
                                               Expanded(
                                                 child: Text(
                                                   "Special Discount".tr,
                                                   textAlign: TextAlign.start,
                                                   style: TextStyle(
-                                                    fontFamily: AppThemeData.regular,
-                                                    color: isDark ? AppThemeData.grey300 : AppThemeData.grey600,
+                                                    fontFamily:
+                                                        AppThemeData.regular,
+                                                    color:
+                                                        isDark
+                                                            ? AppThemeData
+                                                                .grey300
+                                                            : AppThemeData
+                                                                .grey600,
                                                     fontSize: 16,
                                                   ),
                                                 ),
@@ -1012,8 +1804,14 @@ class OrderDetailsScreen extends StatelessWidget {
                                                 "- (${Constant.amountShow(amount: controller.specialDiscountAmount.value.toString())})",
                                                 textAlign: TextAlign.start,
                                                 style: TextStyle(
-                                                  fontFamily: AppThemeData.regular,
-                                                  color: isDark ? AppThemeData.danger300 : AppThemeData.danger300,
+                                                  fontFamily:
+                                                      AppThemeData.regular,
+                                                  color:
+                                                      isDark
+                                                          ? AppThemeData
+                                                              .danger300
+                                                          : AppThemeData
+                                                              .danger300,
                                                   fontSize: 16,
                                                 ),
                                               ),
@@ -1023,21 +1821,36 @@ class OrderDetailsScreen extends StatelessWidget {
                                       )
                                       : const SizedBox(),
                                   const SizedBox(height: 10),
-                                  controller.orderModel.value.takeAway == true || controller.orderModel.value.vendor?.isSelfDelivery == true
+                                  controller.orderModel.value.takeAway ==
+                                              true ||
+                                          controller
+                                                  .orderModel
+                                                  .value
+                                                  .vendor
+                                                  ?.isSelfDelivery ==
+                                              true
                                       ? const SizedBox()
                                       : Row(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Expanded(
                                             child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
                                               children: [
                                                 Text(
                                                   "Delivery Tips".tr,
                                                   textAlign: TextAlign.start,
                                                   style: TextStyle(
-                                                    fontFamily: AppThemeData.regular,
-                                                    color: isDark ? AppThemeData.grey300 : AppThemeData.grey600,
+                                                    fontFamily:
+                                                        AppThemeData.regular,
+                                                    color:
+                                                        isDark
+                                                            ? AppThemeData
+                                                                .grey300
+                                                            : AppThemeData
+                                                                .grey600,
                                                     fontSize: 16,
                                                   ),
                                                 ),
@@ -1045,38 +1858,71 @@ class OrderDetailsScreen extends StatelessWidget {
                                             ),
                                           ),
                                           Text(
-                                            Constant.amountShow(amount: controller.orderModel.value.tipAmount.toString()),
+                                            Constant.amountShow(
+                                              amount:
+                                                  controller
+                                                      .orderModel
+                                                      .value
+                                                      .tipAmount
+                                                      .toString(),
+                                            ),
                                             textAlign: TextAlign.start,
                                             style: TextStyle(
                                               fontFamily: AppThemeData.regular,
-                                              color: isDark ? AppThemeData.grey50 : AppThemeData.grey900,
+                                              color:
+                                                  isDark
+                                                      ? AppThemeData.grey50
+                                                      : AppThemeData.grey900,
                                               fontSize: 16,
                                             ),
                                           ),
                                         ],
                                       ),
                                   const SizedBox(height: 10),
-                                  MySeparator(color: isDark ? AppThemeData.grey700 : AppThemeData.grey200),
+                                  MySeparator(
+                                    color:
+                                        isDark
+                                            ? AppThemeData.grey700
+                                            : AppThemeData.grey200,
+                                  ),
                                   const SizedBox(height: 10),
                                   ListView.builder(
-                                    itemCount: controller.orderModel.value.taxSetting!.length,
+                                    itemCount:
+                                        controller
+                                            .orderModel
+                                            .value
+                                            .taxSetting!
+                                            .length,
                                     shrinkWrap: true,
                                     padding: EdgeInsets.zero,
-                                    physics: const NeverScrollableScrollPhysics(),
+                                    physics:
+                                        const NeverScrollableScrollPhysics(),
                                     itemBuilder: (context, index) {
-                                      TaxModel taxModel = controller.orderModel.value.taxSetting![index];
+                                      TaxModel taxModel =
+                                          controller
+                                              .orderModel
+                                              .value
+                                              .taxSetting![index];
                                       return Padding(
-                                        padding: const EdgeInsets.symmetric(vertical: 5),
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 5,
+                                        ),
                                         child: Row(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             Expanded(
                                               child: Text(
                                                 "${taxModel.title.toString()} (${taxModel.type == "fix" ? Constant.amountShow(amount: taxModel.tax) : "${taxModel.tax}%"})",
                                                 textAlign: TextAlign.start,
                                                 style: TextStyle(
-                                                  fontFamily: AppThemeData.regular,
-                                                  color: isDark ? AppThemeData.grey300 : AppThemeData.grey600,
+                                                  fontFamily:
+                                                      AppThemeData.regular,
+                                                  color:
+                                                      isDark
+                                                          ? AppThemeData.grey300
+                                                          : AppThemeData
+                                                              .grey600,
                                                   fontSize: 16,
                                                 ),
                                               ),
@@ -1086,17 +1932,31 @@ class OrderDetailsScreen extends StatelessWidget {
                                                 amount:
                                                     Constant.calculateTax(
                                                       amount:
-                                                          (controller.subTotal.value -
-                                                                  double.parse(controller.orderModel.value.discount.toString()) -
-                                                                  controller.specialDiscountAmount.value)
+                                                          (controller
+                                                                      .subTotal
+                                                                      .value -
+                                                                  double.parse(
+                                                                    controller
+                                                                        .orderModel
+                                                                        .value
+                                                                        .discount
+                                                                        .toString(),
+                                                                  ) -
+                                                                  controller
+                                                                      .specialDiscountAmount
+                                                                      .value)
                                                               .toString(),
                                                       taxModel: taxModel,
                                                     ).toString(),
                                               ),
                                               textAlign: TextAlign.start,
                                               style: TextStyle(
-                                                fontFamily: AppThemeData.regular,
-                                                color: isDark ? AppThemeData.grey50 : AppThemeData.grey900,
+                                                fontFamily:
+                                                    AppThemeData.regular,
+                                                color:
+                                                    isDark
+                                                        ? AppThemeData.grey50
+                                                        : AppThemeData.grey900,
                                                 fontSize: 16,
                                               ),
                                             ),
@@ -1107,7 +1967,8 @@ class OrderDetailsScreen extends StatelessWidget {
                                   ),
                                   const SizedBox(height: 10),
                                   Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Expanded(
                                         child: Text(
@@ -1115,17 +1976,27 @@ class OrderDetailsScreen extends StatelessWidget {
                                           textAlign: TextAlign.start,
                                           style: TextStyle(
                                             fontFamily: AppThemeData.regular,
-                                            color: isDark ? AppThemeData.grey300 : AppThemeData.grey600,
+                                            color:
+                                                isDark
+                                                    ? AppThemeData.grey300
+                                                    : AppThemeData.grey600,
                                             fontSize: 16,
                                           ),
                                         ),
                                       ),
                                       Text(
-                                        Constant.amountShow(amount: controller.totalAmount.value.toString()),
+                                        Constant.amountShow(
+                                          amount:
+                                              controller.totalAmount.value
+                                                  .toString(),
+                                        ),
                                         textAlign: TextAlign.start,
                                         style: TextStyle(
                                           fontFamily: AppThemeData.regular,
-                                          color: isDark ? AppThemeData.grey50 : AppThemeData.grey900,
+                                          color:
+                                              isDark
+                                                  ? AppThemeData.grey50
+                                                  : AppThemeData.grey900,
                                           fontSize: 16,
                                         ),
                                       ),
@@ -1142,22 +2013,34 @@ class OrderDetailsScreen extends StatelessWidget {
                             style: TextStyle(
                               fontFamily: AppThemeData.semiBold,
                               fontSize: 16,
-                              color: isDark ? AppThemeData.grey50 : AppThemeData.grey900,
+                              color:
+                                  isDark
+                                      ? AppThemeData.grey50
+                                      : AppThemeData.grey900,
                             ),
                           ),
                           const SizedBox(height: 10),
                           Container(
                             width: Responsive.width(100, context),
                             decoration: ShapeDecoration(
-                              color: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              color:
+                                  isDark
+                                      ? AppThemeData.grey900
+                                      : AppThemeData.grey50,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
                             ),
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 14,
+                              ),
                               child: Column(
                                 children: [
                                   Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Expanded(
                                         child: Text(
@@ -1165,22 +2048,34 @@ class OrderDetailsScreen extends StatelessWidget {
                                           textAlign: TextAlign.start,
                                           style: TextStyle(
                                             fontFamily: AppThemeData.regular,
-                                            color: isDark ? AppThemeData.grey300 : AppThemeData.grey600,
+                                            color:
+                                                isDark
+                                                    ? AppThemeData.grey300
+                                                    : AppThemeData.grey600,
                                             fontSize: 16,
                                           ),
                                         ),
                                       ),
                                       Text(
-                                        controller.orderModel.value.takeAway == true
+                                        controller.orderModel.value.takeAway ==
+                                                true
                                             ? "TakeAway".tr
-                                            : controller.orderModel.value.scheduleTime == null
+                                            : controller
+                                                    .orderModel
+                                                    .value
+                                                    .scheduleTime ==
+                                                null
                                             ? "Standard".tr
                                             : "Schedule".tr,
                                         textAlign: TextAlign.start,
                                         style: TextStyle(
                                           fontFamily: AppThemeData.medium,
                                           color:
-                                              controller.orderModel.value.scheduleTime != null
+                                              controller
+                                                          .orderModel
+                                                          .value
+                                                          .scheduleTime !=
+                                                      null
                                                   ? AppThemeData.primary300
                                                   : isDark
                                                   ? AppThemeData.grey50
@@ -1192,7 +2087,8 @@ class OrderDetailsScreen extends StatelessWidget {
                                   ),
                                   const SizedBox(height: 10),
                                   Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Expanded(
                                         child: Text(
@@ -1200,17 +2096,27 @@ class OrderDetailsScreen extends StatelessWidget {
                                           textAlign: TextAlign.start,
                                           style: TextStyle(
                                             fontFamily: AppThemeData.regular,
-                                            color: isDark ? AppThemeData.grey300 : AppThemeData.grey600,
+                                            color:
+                                                isDark
+                                                    ? AppThemeData.grey300
+                                                    : AppThemeData.grey600,
                                             fontSize: 16,
                                           ),
                                         ),
                                       ),
                                       Text(
-                                        controller.orderModel.value.paymentMethod.toString(),
+                                        controller
+                                            .orderModel
+                                            .value
+                                            .paymentMethod
+                                            .toString(),
                                         textAlign: TextAlign.start,
                                         style: TextStyle(
                                           fontFamily: AppThemeData.regular,
-                                          color: isDark ? AppThemeData.grey50 : AppThemeData.grey900,
+                                          color:
+                                              isDark
+                                                  ? AppThemeData.grey50
+                                                  : AppThemeData.grey900,
                                           fontSize: 16,
                                         ),
                                       ),
@@ -1218,7 +2124,8 @@ class OrderDetailsScreen extends StatelessWidget {
                                   ),
                                   const SizedBox(height: 10),
                                   Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Expanded(
                                         child: Text(
@@ -1226,17 +2133,28 @@ class OrderDetailsScreen extends StatelessWidget {
                                           textAlign: TextAlign.start,
                                           style: TextStyle(
                                             fontFamily: AppThemeData.regular,
-                                            color: isDark ? AppThemeData.grey300 : AppThemeData.grey600,
+                                            color:
+                                                isDark
+                                                    ? AppThemeData.grey300
+                                                    : AppThemeData.grey600,
                                             fontSize: 16,
                                           ),
                                         ),
                                       ),
                                       Text(
-                                        Constant.timestampToDateTime(controller.orderModel.value.createdAt!),
+                                        Constant.timestampToDateTime(
+                                          controller
+                                              .orderModel
+                                              .value
+                                              .createdAt!,
+                                        ),
                                         textAlign: TextAlign.start,
                                         style: TextStyle(
                                           fontFamily: AppThemeData.regular,
-                                          color: isDark ? AppThemeData.grey300 : AppThemeData.grey600,
+                                          color:
+                                              isDark
+                                                  ? AppThemeData.grey300
+                                                  : AppThemeData.grey600,
                                           fontSize: 16,
                                         ),
                                       ),
@@ -1244,18 +2162,24 @@ class OrderDetailsScreen extends StatelessWidget {
                                   ),
                                   const SizedBox(height: 10),
                                   Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Expanded(
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             Text(
                                               "Phone Number".tr,
                                               textAlign: TextAlign.start,
                                               style: TextStyle(
-                                                fontFamily: AppThemeData.regular,
-                                                color: isDark ? AppThemeData.grey300 : AppThemeData.grey600,
+                                                fontFamily:
+                                                    AppThemeData.regular,
+                                                color:
+                                                    isDark
+                                                        ? AppThemeData.grey300
+                                                        : AppThemeData.grey600,
                                                 fontSize: 16,
                                               ),
                                             ),
@@ -1263,11 +2187,19 @@ class OrderDetailsScreen extends StatelessWidget {
                                         ),
                                       ),
                                       Text(
-                                        controller.orderModel.value.author!.phoneNumber.toString(),
+                                        controller
+                                            .orderModel
+                                            .value
+                                            .author!
+                                            .phoneNumber
+                                            .toString(),
                                         textAlign: TextAlign.start,
                                         style: TextStyle(
                                           fontFamily: AppThemeData.regular,
-                                          color: isDark ? AppThemeData.grey50 : AppThemeData.grey900,
+                                          color:
+                                              isDark
+                                                  ? AppThemeData.grey50
+                                                  : AppThemeData.grey900,
                                           fontSize: 16,
                                         ),
                                       ),
@@ -1279,7 +2211,8 @@ class OrderDetailsScreen extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 20),
-                          controller.orderModel.value.notes == null || controller.orderModel.value.notes!.isEmpty
+                          controller.orderModel.value.notes == null ||
+                                  controller.orderModel.value.notes!.isEmpty
                               ? const SizedBox()
                               : Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1290,24 +2223,39 @@ class OrderDetailsScreen extends StatelessWidget {
                                     style: TextStyle(
                                       fontFamily: AppThemeData.semiBold,
                                       fontSize: 16,
-                                      color: isDark ? AppThemeData.grey50 : AppThemeData.grey900,
+                                      color:
+                                          isDark
+                                              ? AppThemeData.grey50
+                                              : AppThemeData.grey900,
                                     ),
                                   ),
                                   const SizedBox(height: 10),
                                   Container(
                                     width: Responsive.width(100, context),
                                     decoration: ShapeDecoration(
-                                      color: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                      color:
+                                          isDark
+                                              ? AppThemeData.grey900
+                                              : AppThemeData.grey50,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
                                     ),
                                     child: Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                        vertical: 14,
+                                      ),
                                       child: Text(
-                                        controller.orderModel.value.notes.toString(),
+                                        controller.orderModel.value.notes
+                                            .toString(),
                                         textAlign: TextAlign.start,
                                         style: TextStyle(
                                           fontFamily: AppThemeData.regular,
-                                          color: isDark ? AppThemeData.grey50 : AppThemeData.grey900,
+                                          color:
+                                              isDark
+                                                  ? AppThemeData.grey50
+                                                  : AppThemeData.grey900,
                                           fontSize: 16,
                                         ),
                                       ),
@@ -1321,17 +2269,27 @@ class OrderDetailsScreen extends StatelessWidget {
                   ),
           bottomNavigationBar:
               controller.orderModel.value.status == Constant.orderShipped ||
-                      controller.orderModel.value.status == Constant.orderInTransit ||
-                      controller.orderModel.value.status == Constant.orderCompleted
+                      controller.orderModel.value.status ==
+                          Constant.orderInTransit ||
+                      controller.orderModel.value.status ==
+                          Constant.orderCompleted
                   ? Container(
                     color: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 20,
+                    ),
                     child: Padding(
                       padding: const EdgeInsets.only(bottom: 20),
                       child:
-                          controller.orderModel.value.status == Constant.orderShipped ||
-                                  controller.orderModel.value.status == Constant.orderInTransit
-                              ? Constant.sectionConstantModel!.serviceTypeFlag == 'ecommerce-service'
+                          controller.orderModel.value.status ==
+                                      Constant.orderShipped ||
+                                  controller.orderModel.value.status ==
+                                      Constant.orderInTransit
+                              ? Constant
+                                          .sectionConstantModel!
+                                          .serviceTypeFlag ==
+                                      'ecommerce-service'
                                   ? SizedBox()
                                   : RoundedButtonFill(
                                     title: "Track Order".tr,
@@ -1339,7 +2297,13 @@ class OrderDetailsScreen extends StatelessWidget {
                                     color: AppThemeData.warning300,
                                     textColor: AppThemeData.grey900,
                                     onPress: () async {
-                                      Get.to(const LiveTrackingScreen(), arguments: {"orderModel": controller.orderModel.value});
+                                      Get.to(
+                                        const LiveTrackingScreen(),
+                                        arguments: {
+                                          "orderModel":
+                                              controller.orderModel.value,
+                                        },
+                                      );
                                     },
                                   )
                               : RoundedButtonFill(
@@ -1348,9 +2312,17 @@ class OrderDetailsScreen extends StatelessWidget {
                                 color: AppThemeData.primary300,
                                 textColor: AppThemeData.grey50,
                                 onPress: () async {
-                                  for (var element in controller.orderModel.value.products!) {
-                                    controller.addToCart(cartProductModel: element);
-                                    ShowToastDialog.showToast("Item Added In a cart".tr);
+                                  for (var element
+                                      in controller
+                                          .orderModel
+                                          .value
+                                          .products!) {
+                                    controller.addToCart(
+                                      cartProductModel: element,
+                                    );
+                                    ShowToastDialog.showToast(
+                                      "Item Added In a cart".tr,
+                                    );
                                   }
                                 },
                               ),

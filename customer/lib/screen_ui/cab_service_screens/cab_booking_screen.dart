@@ -1056,12 +1056,15 @@ class CabBookingScreen extends StatelessWidget {
                         // Payment method button
                         Obx(
                           () => GestureDetector(
-                            onTap: () {
-                              _showPaymentMethodPicker(
-                                context,
-                                controller,
-                                isDark,
-                              );
+                            onTap: () async {
+                              await controller.loadPaymentSettingsIfNeeded();
+                              if (context.mounted) {
+                                _showPaymentMethodPicker(
+                                  context,
+                                  controller,
+                                  isDark,
+                                );
+                              }
                             },
                             child: Container(
                               padding: const EdgeInsets.symmetric(
@@ -1175,6 +1178,38 @@ class CabBookingScreen extends StatelessWidget {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
+        final hasCod =
+            controller.cashOnDeliverySettingModel.value.isEnabled == true;
+        final hasWallet = controller.walletSettingModel.value.isEnabled == true;
+        final hasStripe = controller.stripeModel.value.isEnabled == true;
+        final hasPaypal = controller.payPalModel.value.isEnabled == true;
+        final hasPayStack = controller.payStackModel.value.isEnable == true;
+        final hasMercado = controller.mercadoPagoModel.value.isEnabled == true;
+        final hasFlutterWave =
+            controller.flutterWaveModel.value.isEnable == true;
+        final hasPayFast = controller.payFastModel.value.isEnable == true;
+        final hasRazorpay = controller.razorPayModel.value.isEnabled == true;
+        final hasMidTrans = controller.midTransModel.value.enable == true;
+        final hasOrange = controller.orangeMoneyModel.value.enable == true;
+        final hasXendit = controller.xenditModel.value.enable == true;
+        final hasPayme =
+            controller.paymeModel.value.isEnabled == true ||
+            controller.paymeModel.value.enable == true;
+        final hasAny =
+            hasCod ||
+            hasWallet ||
+            hasStripe ||
+            hasPaypal ||
+            hasPayStack ||
+            hasMercado ||
+            hasFlutterWave ||
+            hasPayFast ||
+            hasRazorpay ||
+            hasMidTrans ||
+            hasOrange ||
+            hasXendit ||
+            hasPayme;
+
         return Padding(
           padding: const EdgeInsets.all(20),
           child: Column(
@@ -1189,7 +1224,7 @@ class CabBookingScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              if (controller.cashOnDeliverySettingModel.value.isEnabled == true)
+              if (hasCod || !hasAny)
                 _buildPaymentOption(
                   context,
                   controller,
@@ -1198,7 +1233,7 @@ class CabBookingScreen extends StatelessWidget {
                   'Naqd pul',
                   Icons.money,
                 ),
-              if (controller.walletSettingModel.value.isEnabled == true)
+              if (hasWallet)
                 _buildPaymentOption(
                   context,
                   controller,
@@ -1207,7 +1242,7 @@ class CabBookingScreen extends StatelessWidget {
                   'Hamyon',
                   Icons.account_balance_wallet,
                 ),
-              if (controller.stripeModel.value.isEnabled == true)
+              if (hasStripe)
                 _buildPaymentOption(
                   context,
                   controller,
@@ -1216,7 +1251,7 @@ class CabBookingScreen extends StatelessWidget {
                   'Karta',
                   Icons.credit_card,
                 ),
-              if (controller.payPalModel.value.isEnabled == true)
+              if (hasPaypal)
                 _buildPaymentOption(
                   context,
                   controller,
@@ -1225,7 +1260,7 @@ class CabBookingScreen extends StatelessWidget {
                   'PayPal',
                   Icons.payment,
                 ),
-              if (controller.payStackModel.value.isEnable == true)
+              if (hasPayStack)
                 _buildPaymentOption(
                   context,
                   controller,
@@ -1234,7 +1269,7 @@ class CabBookingScreen extends StatelessWidget {
                   'PayStack',
                   Icons.payment,
                 ),
-              if (controller.mercadoPagoModel.value.isEnabled == true)
+              if (hasMercado)
                 _buildPaymentOption(
                   context,
                   controller,
@@ -1243,7 +1278,7 @@ class CabBookingScreen extends StatelessWidget {
                   'MercadoPago',
                   Icons.payment,
                 ),
-              if (controller.flutterWaveModel.value.isEnable == true)
+              if (hasFlutterWave)
                 _buildPaymentOption(
                   context,
                   controller,
@@ -1252,7 +1287,7 @@ class CabBookingScreen extends StatelessWidget {
                   'FlutterWave',
                   Icons.payment,
                 ),
-              if (controller.payFastModel.value.isEnable == true)
+              if (hasPayFast)
                 _buildPaymentOption(
                   context,
                   controller,
@@ -1261,7 +1296,7 @@ class CabBookingScreen extends StatelessWidget {
                   'PayFast',
                   Icons.payment,
                 ),
-              if (controller.razorPayModel.value.isEnabled == true)
+              if (hasRazorpay)
                 _buildPaymentOption(
                   context,
                   controller,
@@ -1270,7 +1305,7 @@ class CabBookingScreen extends StatelessWidget {
                   'RazorPay',
                   Icons.payment,
                 ),
-              if (controller.midTransModel.value.enable == true)
+              if (hasMidTrans)
                 _buildPaymentOption(
                   context,
                   controller,
@@ -1279,7 +1314,7 @@ class CabBookingScreen extends StatelessWidget {
                   'MidTrans',
                   Icons.payment,
                 ),
-              if (controller.orangeMoneyModel.value.enable == true)
+              if (hasOrange)
                 _buildPaymentOption(
                   context,
                   controller,
@@ -1288,7 +1323,7 @@ class CabBookingScreen extends StatelessWidget {
                   'OrangeMoney',
                   Icons.payment,
                 ),
-              if (controller.xenditModel.value.enable == true)
+              if (hasXendit)
                 _buildPaymentOption(
                   context,
                   controller,
@@ -1297,8 +1332,7 @@ class CabBookingScreen extends StatelessWidget {
                   'Xendit',
                   Icons.payment,
                 ),
-              if (controller.paymeModel.value.isEnabled == true ||
-                  controller.paymeModel.value.enable == true)
+              if (hasPayme)
                 _buildPaymentOption(
                   context,
                   controller,
@@ -1306,6 +1340,18 @@ class CabBookingScreen extends StatelessWidget {
                   'payme',
                   'Payme',
                   Icons.payment,
+                ),
+              if (!hasAny)
+                Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: Text(
+                    "Boshqa to'lov usullarini admin sozlamalarida yoqing.".tr,
+                    style: AppThemeData.regularTextStyle(
+                      fontSize: 12,
+                      color:
+                          isDark ? AppThemeData.grey400 : AppThemeData.grey600,
+                    ),
+                  ),
                 ),
               const SizedBox(height: 10),
             ],
@@ -2687,8 +2733,7 @@ class CabBookingScreen extends StatelessWidget {
                         ShowToastDialog.showToast(
                           "Ride cancelled successfully".tr,
                         );
-                        // Get.offAll(const CabDashboardScreen());
-                        Get.back();
+                        Get.back(result: true);
                         CabDashboardController cabDashboardController = Get.put(
                           CabDashboardController(),
                         );

@@ -9,7 +9,7 @@ import 'package:driver/utils/fire_store_utils.dart';
 import 'package:get/get.dart';
 
 class HomeScreenMultipleOrderController extends GetxController {
-  Rx<UserModel> driverModel = Constant.userModel!.obs;
+  Rx<UserModel> driverModel = (Constant.userModel ?? UserModel()).obs;
   RxBool isLoading = true.obs;
   RxInt selectedTabIndex = 0.obs;
 
@@ -24,7 +24,11 @@ class HomeScreenMultipleOrderController extends GetxController {
   }
 
   Future<void> getDriver() async {
-    FireStoreUtils.fireStore.collection(CollectionName.users).doc(FireStoreUtils.getCurrentUid()).snapshots().listen(
+    FireStoreUtils.fireStore
+        .collection(CollectionName.users)
+        .doc(FireStoreUtils.getCurrentUid())
+        .snapshots()
+        .listen(
       (event) async {
         if (event.exists) {
           driverModel.value = UserModel.fromJson(event.data()!);
@@ -74,8 +78,10 @@ class HomeScreenMultipleOrderController extends GetxController {
 
     await FireStoreUtils.setOrder(currentOrder);
     ShowToastDialog.closeLoader();
-    await SendNotification.sendFcmMessage(Constant.driverAcceptedNotification, currentOrder.author!.fcmToken.toString(), {});
-    await SendNotification.sendFcmMessage(Constant.driverAcceptedNotification, currentOrder.vendor!.fcmToken.toString(), {});
+    await SendNotification.sendFcmMessage(Constant.driverAcceptedNotification,
+        currentOrder.author!.fcmToken.toString(), {});
+    await SendNotification.sendFcmMessage(Constant.driverAcceptedNotification,
+        currentOrder.vendor!.fcmToken.toString(), {});
   }
 
   Future<void> rejectOrder(OrderModel currentOrder) async {

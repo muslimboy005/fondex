@@ -3,7 +3,6 @@ import 'dart:developer';
 import 'package:customer/constant/constant.dart';
 import 'package:customer/models/user_model.dart';
 import 'package:customer/screen_ui/maintenance_mode_screen/maintenance_mode_screen.dart';
-import 'package:customer/screen_ui/service_home_screen/service_list_screen.dart';
 import 'package:customer/utils/notification_service.dart';
 import 'package:customer/utils/preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -30,7 +29,9 @@ class SplashController extends GetxController {
     } else {
       bool isLogin = await FireStoreUtils.isLogin();
       if (isLogin == true) {
-        await FireStoreUtils.getUserProfile(FireStoreUtils.getCurrentUid()).then((value) async {
+        await FireStoreUtils.getUserProfile(
+          FireStoreUtils.getCurrentUid(),
+        ).then((value) async {
           if (value != null) {
             UserModel userModel = value;
             log(userModel.toJson().toString());
@@ -38,16 +39,22 @@ class SplashController extends GetxController {
               if (userModel.active == true) {
                 userModel.fcmToken = await NotificationService.getToken();
                 await FireStoreUtils.updateUser(userModel);
-                if (userModel.shippingAddress != null && userModel.shippingAddress!.isNotEmpty) {
-                  if (userModel.shippingAddress!.where((element) => element.isDefault == true).isNotEmpty) {
-                    Constant.selectedLocation = userModel.shippingAddress!.where((element) => element.isDefault == true).single;
+                // Har doim lokatsiya tanlash ekranini ko'rsatish (joriy lokatsiya yoki xaritadan)
+                if (userModel.shippingAddress != null &&
+                    userModel.shippingAddress!.isNotEmpty) {
+                  if (userModel.shippingAddress!
+                      .where((element) => element.isDefault == true)
+                      .isNotEmpty) {
+                    Constant.selectedLocation =
+                        userModel.shippingAddress!
+                            .where((element) => element.isDefault == true)
+                            .single;
                   } else {
-                    Constant.selectedLocation = userModel.shippingAddress!.first;
+                    Constant.selectedLocation =
+                        userModel.shippingAddress!.first;
                   }
-                  Get.offAll(const ServiceListScreen());
-                } else {
-                  Get.offAll(const LocationPermissionScreen());
                 }
+                Get.offAll(const LocationPermissionScreen());
               } else {
                 await FirebaseAuth.instance.signOut();
                 Get.offAll(const AuthScreen());
@@ -56,6 +63,9 @@ class SplashController extends GetxController {
               await FirebaseAuth.instance.signOut();
               Get.offAll(const AuthScreen());
             }
+          } else {
+            // Profile not found (e.g. network error, first launch) – show location then auth
+            Get.offAll(const LocationPermissionScreen());
           }
         });
       } else {

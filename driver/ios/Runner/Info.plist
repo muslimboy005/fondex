@@ -66,18 +66,23 @@
 	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-	<key>NSCameraUsageDescription</key>
-	<string>This app needs access to camera permission</string>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>This app needs access to location when open and in the background.</string>
-	<key>NSLocationAlwaysUsageDescription</key>
-	<string>This app needs access to location when in the background.</string>
+	<!-- Location (order tracking, navigation) -->
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>This app needs access to location when open.</string>
+	<string>Buyurtmalarni kuzatish va navigatsiya uchun joylashuvga ruxsat kerak.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Orqa fonda joylashuvingizni yuborish va buyurtmalarni kuzatish uchun ruxsat bering.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Haydovchi sifatida orqa fonda joylashuv yuborish uchun ruxsat kerak.</string>
+
+	<!-- Camera & Media -->
+	<key>NSCameraUsageDescription</key>
+	<string>Rasmlar va hujjatlar uchun kameraga ruxsat kerak.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Used to capture audio for image picker plugin</string>
+	<string>Video yozish uchun mikrofonga ruxsat kerak.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>This app needs access to your gallery photo.</string>
+	<string>Rasmlarni tanlash uchun galereyaga ruxsat kerak.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Rasmlarni saqlash uchun galereyaga yozish ruxsati kerak.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UIBackgroundModes</key>
