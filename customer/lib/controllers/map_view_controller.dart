@@ -4,12 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart' as flutterMap;
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:yandex_mapkit/yandex_mapkit.dart' as ym;
 import 'package:latlong2/latlong.dart' as location;
 import '../screen_ui/multi_vendor_service/restaurant_details_screen/restaurant_details_screen.dart';
 import 'food_home_controller.dart';
 
 class MapViewController extends GetxController {
   GoogleMapController? mapController;
+  ym.YandexMapController? yandexMapController;
   BitmapDescriptor? parkingMarker;
   BitmapDescriptor? currentLocationMarker;
 

@@ -11,6 +11,8 @@ import '../../themes/app_them_data.dart';
 import 'package:flutter_map/flutter_map.dart' as fm;
 import 'package:google_maps_flutter/google_maps_flutter.dart' as gmap;
 import 'package:latlong2/latlong.dart' as osm;
+import 'package:yandex_mapkit/yandex_mapkit.dart' as ym;
+import 'package:customer/utils/yandex_map_utils.dart';
 
 import '../../themes/round_button_border.dart';
 import '../../themes/round_button_fill.dart';
@@ -183,7 +185,7 @@ class CabOrderDetails extends StatelessWidget {
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(15),
                             child:
-                                Constant.selectedMapType == "osm"
+                                Constant.isOsmMap
                                     ? fm.FlutterMap(
                                       options: fm.MapOptions(
                                         initialCenter: osm.LatLng(controller.cabOrder.value.sourceLocation!.latitude!, controller.cabOrder.value.sourceLocation!.longitude!),
@@ -213,14 +215,35 @@ class CabOrderDetails extends StatelessWidget {
                                         ),
                                       ],
                                     )
-                                    : gmap.GoogleMap(
-                                      initialCameraPosition: gmap.CameraPosition(
-                                        target: gmap.LatLng(controller.cabOrder.value.sourceLocation!.latitude!, controller.cabOrder.value.sourceLocation!.longitude!),
-                                        zoom: 13,
-                                      ),
-                                      polylines: controller.googlePolylines.toSet(),
-                                      markers: controller.googleMarkers.toSet(),
-                                    ),
+                                    : Constant.isYandexMap
+                                        ? ym.YandexMap(
+                                          onMapCreated:
+                                              (ym.YandexMapController mapController) async {
+                                            await mapController.moveCamera(
+                                              ym.CameraUpdate.newCameraPosition(
+                                                ym.CameraPosition(
+                                                  target: ym.Point(
+                                                    latitude: controller.cabOrder.value.sourceLocation!.latitude!,
+                                                    longitude: controller.cabOrder.value.sourceLocation!.longitude!,
+                                                  ),
+                                                  zoom: 13,
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                          mapObjects: yandexMapObjectsFromGoogle(
+                                            markers: controller.googleMarkers,
+                                            polylines: controller.googlePolylines,
+                                          ),
+                                        )
+                                        : gmap.GoogleMap(
+                                          initialCameraPosition: gmap.CameraPosition(
+                                            target: gmap.LatLng(controller.cabOrder.value.sourceLocation!.latitude!, controller.cabOrder.value.sourceLocation!.longitude!),
+                                            zoom: 13,
+                                          ),
+                                          polylines: controller.googlePolylines.toSet(),
+                                          markers: controller.googleMarkers.toSet(),
+                                        ),
                           ),
                         ),
                         controller.cabOrder.value.driver != null

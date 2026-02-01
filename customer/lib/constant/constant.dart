@@ -159,6 +159,37 @@ class Constant {
 
   static String? we = "google";
 
+  static String normalizeSelectedMapType(String? value) {
+    final raw = (value ?? '').toLowerCase().trim();
+    if (raw.isEmpty) return 'google';
+    if (raw.contains('osm') || raw.contains('openstreet')) return 'osm';
+    if (raw.contains('yandex')) return 'yandexMaps';
+    if (raw.contains('google')) return 'google';
+    return value!;
+  }
+
+  static String normalizeMapType(String? value) {
+    final raw = (value ?? '').toLowerCase().trim();
+    if (raw.isEmpty) return 'google';
+    if (raw.contains('inapp')) return 'inappmap';
+    if (raw.contains('yandex')) {
+      return raw.contains('navi') ? 'yandexNavi' : 'yandexMaps';
+    }
+    if (raw.contains('google') && raw.contains('go')) return 'googleGo';
+    if (raw.contains('google')) return 'google';
+    if (raw.contains('waze')) return 'waze';
+    if (raw.contains('mapswithme') || raw.contains('maps_with_me')) {
+      return 'mapswithme';
+    }
+    return value!;
+  }
+
+  static bool get isOsmMap =>
+      normalizeSelectedMapType(selectedMapType) == 'osm';
+
+  static bool get isYandexMap =>
+      normalizeSelectedMapType(selectedMapType) == 'yandexMaps';
+
   static bool isEnableAdsFeature = true;
   static bool isSelfDeliveryFeature = false;
 

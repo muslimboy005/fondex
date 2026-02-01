@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
+import 'package:location/location.dart' as loc;
 
 import '../../constant/assets.dart';
 import '../../utils/utils.dart';
@@ -23,6 +24,38 @@ void _navigateAfterLocation() {
     Get.offAll(const ServiceListScreen());
   } else {
     Get.offAll(const AuthScreen());
+  }
+}
+
+Future<Position?> _getBestPosition() async {
+  try {
+    final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      await loc.Location().requestService();
+    }
+  } catch (_) {}
+
+  try {
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+    }
+    if (permission == LocationPermission.denied ||
+        permission == LocationPermission.deniedForever) {
+      return null;
+    }
+  } catch (_) {}
+
+  try {
+    return await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    ).timeout(const Duration(seconds: 8));
+  } catch (_) {
+    try {
+      return await Geolocator.getLastKnownPosition();
+    } catch (_) {
+      return null;
+    }
   }
 }
 
@@ -84,52 +117,72 @@ class LocationPermissionScreen extends StatelessWidget {
                         ShowToastDialog.showLoader("Please wait...".tr);
                         ShippingAddress addressModel = ShippingAddress();
                         try {
-                          await Geolocator.requestPermission();
-                          Position newLocalData =
-                              await Geolocator.getCurrentPosition(
-                                desiredAccuracy: LocationAccuracy.high,
+                          Position? newLocalData = await _getBestPosition();
+                          if (newLocalData == null) {
+                            throw Exception("Location not available");
+                          }
+                          try {
+                            await placemarkFromCoordinates(
+                              newLocalData.latitude,
+                              newLocalData.longitude,
+                            ).timeout(const Duration(seconds: 6)).then((valuePlaceMaker) {
+                              Placemark placeMark = valuePlaceMaker[0];
+                              addressModel.addressAs = "Home";
+                              addressModel.location = UserLocation(
+                                latitude: newLocalData.latitude,
+                                longitude: newLocalData.longitude,
                               );
-                          await placemarkFromCoordinates(
-                            newLocalData.latitude,
-                            newLocalData.longitude,
-                          ).then((valuePlaceMaker) {
-                            Placemark placeMark = valuePlaceMaker[0];
+                              String currentLocation =
+                                  "${placeMark.name}, ${placeMark.subLocality}, ${placeMark.locality}, ${placeMark.administrativeArea}, ${placeMark.postalCode}, ${placeMark.country}";
+                              addressModel.locality = currentLocation;
+                            });
+                          } catch (_) {
                             addressModel.addressAs = "Home";
                             addressModel.location = UserLocation(
                               latitude: newLocalData.latitude,
                               longitude: newLocalData.longitude,
                             );
-                            String currentLocation =
-                                "${placeMark.name}, ${placeMark.subLocality}, ${placeMark.locality}, ${placeMark.administrativeArea}, ${placeMark.postalCode}, ${placeMark.country}";
-                            addressModel.locality = currentLocation;
-                          });
+                            addressModel.locality = "${newLocalData.latitude}, ${newLocalData.longitude}";
+                          }
 
                           Constant.selectedLocation = addressModel;
-                          Constant.currentLocation =
-                              await Utils.getCurrentLocation();
+                          try {
+                            Constant.currentLocation = newLocalData;
+                          } catch (_) {}
 
                           ShowToastDialog.closeLoader();
 
                           _navigateAfterLocation();
                         } catch (e) {
-                          await placemarkFromCoordinates(
-                            19.228825,
-                            72.854118,
-                          ).then((valuePlaceMaker) {
-                            Placemark placeMark = valuePlaceMaker[0];
+                          try {
+                            await placemarkFromCoordinates(
+                              19.228825,
+                              72.854118,
+                            ).timeout(const Duration(seconds: 6)).then((valuePlaceMaker) {
+                              Placemark placeMark = valuePlaceMaker[0];
+                              addressModel.addressAs = "Home";
+                              addressModel.location = UserLocation(
+                                latitude: 19.228825,
+                                longitude: 72.854118,
+                              );
+                              String currentLocation =
+                                  "${placeMark.name}, ${placeMark.subLocality}, ${placeMark.locality}, ${placeMark.administrativeArea}, ${placeMark.postalCode}, ${placeMark.country}";
+                              addressModel.locality = currentLocation;
+                            });
+                          } catch (_) {
                             addressModel.addressAs = "Home";
                             addressModel.location = UserLocation(
                               latitude: 19.228825,
                               longitude: 72.854118,
                             );
-                            String currentLocation =
-                                "${placeMark.name}, ${placeMark.subLocality}, ${placeMark.locality}, ${placeMark.administrativeArea}, ${placeMark.postalCode}, ${placeMark.country}";
-                            addressModel.locality = currentLocation;
-                          });
+                            addressModel.locality = "19.228825, 72.854118";
+                          }
 
                           Constant.selectedLocation = addressModel;
-                          Constant.currentLocation =
-                              await Utils.getCurrentLocation();
+                          try {
+                            Constant.currentLocation =
+                                await Utils.getCurrentLocation().timeout(const Duration(seconds: 6));
+                          } catch (_) {}
 
                           ShowToastDialog.closeLoader();
 
@@ -151,10 +204,7 @@ class LocationPermissionScreen extends StatelessWidget {
                         ShowToastDialog.showLoader("Please wait...".tr);
                         ShippingAddress addressModel = ShippingAddress();
                         try {
-                          await Geolocator.requestPermission();
-                          await Geolocator.getCurrentPosition(
-                            desiredAccuracy: LocationAccuracy.high,
-                          );
+                          await _getBestPosition();
                           ShowToastDialog.closeLoader();
                           if (Constant.selectedMapType == 'osm') {
                             final result = await Get.to(() => MapPickerPage());

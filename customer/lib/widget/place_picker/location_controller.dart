@@ -1,12 +1,15 @@
+import 'package:customer/constant/constant.dart';
 import 'package:customer/widget/place_picker/selected_location_model.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:flutter/material.dart';
+import 'package:yandex_mapkit/yandex_mapkit.dart' as ym;
 
 class LocationController extends GetxController {
   GoogleMapController? mapController;
+  ym.YandexMapController? yandexMapController;
   var selectedLocation = Rxn<LatLng>();
   var selectedPlaceAddress = Rxn<Placemark>();
   var address = "Move the map to select a location".obs;
@@ -32,18 +35,55 @@ class LocationController extends GetxController {
     update();
   }
 
+  LatLng _fallbackLatLng() {
+    final lat = Constant.selectedLocation.location?.latitude ??
+        Constant.userModel?.location?.latitude ??
+        45.521563;
+    final lng = Constant.selectedLocation.location?.longitude ??
+        Constant.userModel?.location?.longitude ??
+        -122.677433;
+    return LatLng(lat, lng);
+  }
+
+  Future<void> _moveCameraTo(LatLng target, {double zoom = 15}) async {
+    if (Constant.isYandexMap) {
+      final controller = yandexMapController;
+      if (controller == null) return;
+      await controller.moveCamera(
+        ym.CameraUpdate.newCameraPosition(
+          ym.CameraPosition(
+            target: ym.Point(latitude: target.latitude, longitude: target.longitude),
+            zoom: zoom,
+          ),
+        ),
+      );
+    } else {
+      mapController?.animateCamera(CameraUpdate.newLatLngZoom(target, zoom));
+    }
+  }
+
   Future<void> getCurrentLocation() async {
+    final fallback = _fallbackLatLng();
     try {
-      Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-      selectedLocation.value = LatLng(position.latitude, position.longitude);
-
-      if (mapController != null) {
-        mapController!.animateCamera(CameraUpdate.newLatLngZoom(selectedLocation.value!, 15));
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
       }
-
-      await getAddressFromLatLng(selectedLocation.value!);
+      Position? position;
+      if (permission == LocationPermission.always || permission == LocationPermission.whileInUse) {
+        position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high)
+            .timeout(const Duration(seconds: 8));
+      }
+      final resolved = position == null
+          ? fallback
+          : LatLng(position.latitude, position.longitude);
+      selectedLocation.value = resolved;
+      await _moveCameraTo(resolved);
+      await getAddressFromLatLng(resolved);
     } catch (e) {
-      print("Error fetching current location: $e");
+      selectedLocation.value = fallback;
+      await _moveCameraTo(fallback);
+      await getAddressFromLatLng(fallback);
     }
   }
 

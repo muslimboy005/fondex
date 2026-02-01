@@ -68,7 +68,7 @@
     </queries>
 
     <application
-        android:name="${applicationName}"
+        android:name="felix.fondex.uz.MainApplication"
         android:icon="@mipmap/ic_launcher"
         android:label="Fondex"
         android:requestLegacyExternalStorage="true"
@@ -156,6 +156,14 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyDxOSX6rowgZnN20x7smx7V9COeW1I7hkU" />
+
+        <!-- Yandex MapKit API Key -->
+        <meta-data
+            android:name="com.yandex.mapkit.api.key"
+            android:value="9bd1fb94-3024-43a3-9d31-44ecc894e42f" />
+        <meta-data
+            android:name="com.yandex.maps.api.key"
+            android:value="9bd1fb94-3024-43a3-9d31-44ecc894e42f" />
 
         <!-- ML Kit Barcode -->
         <meta-data

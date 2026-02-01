@@ -8,13 +8,16 @@ import 'package:customer/service/fire_store_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:yandex_mapkit/yandex_mapkit.dart' as ym;
 import 'package:latlong2/latlong.dart' as location;
 import 'package:flutter_map/flutter_map.dart' as flutterMap;
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:http/http.dart' as http;
+import 'package:customer/utils/yandex_map_utils.dart';
 
 class LiveTrackingController extends GetxController {
   GoogleMapController? mapController;
+  ym.YandexMapController? yandexMapController;
   final flutterMap.MapController osmMapController = flutterMap.MapController();
 
   Rx<OrderModel> orderModel = OrderModel().obs;
@@ -242,7 +245,18 @@ class LiveTrackingController extends GetxController {
   }
 
   Future<void> updateCameraBounds(List<LatLng> points) async {
-    if (mapController == null || points.isEmpty) return;
+    if (points.isEmpty) return;
+    if (Constant.isYandexMap) {
+      if (yandexMapController == null) return;
+      final bounds = yandexBoundsFromLatLngs(points);
+      await yandexMapController!.moveCamera(
+        ym.CameraUpdate.newGeometry(
+          ym.Geometry.fromBoundingBox(bounds),
+        ),
+      );
+      return;
+    }
+    if (mapController == null) return;
 
     double minLat = points.map((e) => e.latitude).reduce((a, b) => a < b ? a : b);
     double maxLat = points.map((e) => e.latitude).reduce((a, b) => a > b ? a : b);

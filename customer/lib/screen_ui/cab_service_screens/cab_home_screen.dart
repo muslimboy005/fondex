@@ -16,24 +16,40 @@ import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter_map/flutter_map.dart' as flutterMap;
 import 'package:latlong2/latlong.dart' as latlong;
+import 'package:yandex_mapkit/yandex_mapkit.dart' as ym;
+import 'package:customer/utils/yandex_map_utils.dart';
 
 import 'Intercity_home_screen.dart';
 import 'cab_booking_screen.dart';
 
-class CabHomeScreen extends StatelessWidget {
-  CabHomeScreen({super.key});
+class CabHomeScreen extends StatefulWidget {
+  const CabHomeScreen({super.key});
+
+  @override
+  State<CabHomeScreen> createState() => _CabHomeScreenState();
+}
+
+class _CabHomeScreenState extends State<CabHomeScreen> {
+  late CabHomeController homeController;
+  late CabBookingController controller;
+
+  @override
+  void initState() {
+    super.initState();
+    homeController = Get.isRegistered<CabHomeController>()
+        ? Get.find<CabHomeController>()
+        : Get.put(CabHomeController());
+    controller = Get.isRegistered<CabBookingController>()
+        ? Get.find<CabBookingController>()
+        : Get.put(CabBookingController());
+  }
 
   @override
   Widget build(BuildContext context) {
     final themeController = Get.find<ThemeController>();
-    final isDark = themeController.isDark.value;
-    return GetX(
-      init: CabHomeController(),
-      builder: (homeController) {
-        return GetX(
-          init: CabBookingController(),
-          builder: (controller) {
-            return Scaffold(
+    return Obx(() {
+      final isDark = themeController.isDark.value;
+      return Scaffold(
               body:
                   // 2 bosqichli loading - initial loading tez tugaydi
                   homeController.isInitialLoading.value ||
@@ -42,7 +58,7 @@ class CabHomeScreen extends StatelessWidget {
                       : Stack(
                         children: [
                           // Map View
-                          Constant.selectedMapType == "osm"
+                          Constant.isOsmMap
                               ? flutterMap.FlutterMap(
                                 mapController: controller.mapOsmController,
                                 options: flutterMap.MapOptions(
@@ -115,66 +131,137 @@ class CabHomeScreen extends StatelessWidget {
                                   ),
                                 ],
                               )
-                              : GoogleMap(
-                                onMapCreated: (googleMapController) {
-                                  controller.mapController =
-                                      googleMapController;
-                                  if (Constant.currentLocation != null) {
-                                    controller.setDepartureMarker(
-                                      Constant.currentLocation!.latitude,
-                                      Constant.currentLocation!.longitude,
-                                    );
-                                    controller.searchPlaceNameGoogle();
-                                  }
-                                },
-                                onTap:
-                                    controller.isMapPickingMode.value
-                                        ? (position) {
-                                          controller
-                                              .getAddressFromPickedLocation(
-                                                position.latitude,
-                                                position.longitude,
-                                              );
-                                        }
-                                        : null,
-                                initialCameraPosition: CameraPosition(
-                                  target: controller.currentPosition.value,
-                                  zoom: 14,
-                                ),
-                                myLocationEnabled: true,
-                                zoomControlsEnabled: true,
-                                zoomGesturesEnabled: true,
-                                markers: {
-                                  ...controller.markers.toSet(),
-                                  if (controller.isMapPickingMode.value &&
-                                      controller
-                                              .tempPickedLocation
-                                              .value
-                                              .latitude !=
-                                          0)
-                                    Marker(
-                                      markerId: const MarkerId(
-                                        'picked_location',
-                                      ),
-                                      position: LatLng(
-                                        controller
-                                            .tempPickedLocation
-                                            .value
-                                            .latitude,
-                                        controller
-                                            .tempPickedLocation
-                                            .value
-                                            .longitude,
-                                      ),
-                                      icon:
-                                          BitmapDescriptor.defaultMarkerWithHue(
-                                            controller.isPickingSource.value
-                                                ? BitmapDescriptor.hueGreen
-                                                : BitmapDescriptor.hueRed,
+                              : Constant.isYandexMap
+                                  ? ym.YandexMap(
+                                    onMapCreated:
+                                        (ym.YandexMapController mapController) async {
+                                      controller.yandexMapController =
+                                          mapController;
+                                      await mapController.toggleUserLayer(
+                                        visible: true,
+                                      );
+                                      await mapController.moveCamera(
+                                        ym.CameraUpdate.newCameraPosition(
+                                          ym.CameraPosition(
+                                            target: ym.Point(
+                                              latitude: controller
+                                                  .currentPosition
+                                                  .value
+                                                  .latitude,
+                                              longitude: controller
+                                                  .currentPosition
+                                                  .value
+                                                  .longitude,
+                                            ),
+                                            zoom: 14,
                                           ),
+                                        ),
+                                      );
+                                      if (Constant.currentLocation != null) {
+                                        controller.setDepartureMarker(
+                                          Constant.currentLocation!.latitude,
+                                          Constant.currentLocation!.longitude,
+                                        );
+                                        controller.searchPlaceNameGoogle();
+                                      }
+                                    },
+                                    onMapTap:
+                                        controller.isMapPickingMode.value
+                                            ? (point) {
+                                              controller
+                                                  .getAddressFromPickedLocation(
+                                                    point.latitude,
+                                                    point.longitude,
+                                                  );
+                                            }
+                                            : null,
+                                    mapObjects: yandexMapObjectsFromGoogle(
+                                      markers: {
+                                        ...controller.markers.toSet(),
+                                        if (controller.isMapPickingMode.value &&
+                                            controller
+                                                    .tempPickedLocation
+                                                    .value
+                                                    .latitude !=
+                                                0)
+                                          Marker(
+                                            markerId: const MarkerId(
+                                              'picked_location',
+                                            ),
+                                            position: LatLng(
+                                              controller
+                                                  .tempPickedLocation
+                                                  .value
+                                                  .latitude,
+                                              controller
+                                                  .tempPickedLocation
+                                                  .value
+                                                  .longitude,
+                                            ),
+                                          ),
+                                      },
                                     ),
-                                },
-                              ),
+                                  )
+                                  : GoogleMap(
+                                    onMapCreated: (googleMapController) {
+                                      controller.mapController =
+                                          googleMapController;
+                                      if (Constant.currentLocation != null) {
+                                        controller.setDepartureMarker(
+                                          Constant.currentLocation!.latitude,
+                                          Constant.currentLocation!.longitude,
+                                        );
+                                        controller.searchPlaceNameGoogle();
+                                      }
+                                    },
+                                    onTap:
+                                        controller.isMapPickingMode.value
+                                            ? (position) {
+                                              controller
+                                                  .getAddressFromPickedLocation(
+                                                    position.latitude,
+                                                    position.longitude,
+                                                  );
+                                            }
+                                            : null,
+                                    initialCameraPosition: CameraPosition(
+                                      target: controller.currentPosition.value,
+                                      zoom: 14,
+                                    ),
+                                    myLocationEnabled: true,
+                                    zoomControlsEnabled: true,
+                                    zoomGesturesEnabled: true,
+                                    markers: {
+                                      ...controller.markers.toSet(),
+                                      if (controller.isMapPickingMode.value &&
+                                          controller
+                                                  .tempPickedLocation
+                                                  .value
+                                                  .latitude !=
+                                              0)
+                                        Marker(
+                                          markerId: const MarkerId(
+                                            'picked_location',
+                                          ),
+                                          position: LatLng(
+                                            controller
+                                                .tempPickedLocation
+                                                .value
+                                                .latitude,
+                                            controller
+                                                .tempPickedLocation
+                                                .value
+                                                .longitude,
+                                          ),
+                                          icon:
+                                              BitmapDescriptor.defaultMarkerWithHue(
+                                                controller.isPickingSource.value
+                                                    ? BitmapDescriptor.hueGreen
+                                                    : BitmapDescriptor.hueRed,
+                                              ),
+                                        ),
+                                    },
+                                  ),
                           // Back Button
                           Positioned(
                             top: 50,
@@ -571,10 +658,7 @@ class CabHomeScreen extends StatelessWidget {
                         ],
                       ),
             );
-          },
-        );
-      },
-    );
+      });
   }
 
   // Global sheet controller

@@ -49,11 +49,13 @@ import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:yandex_mapkit/yandex_mapkit.dart' as ym;
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart' as latlong;
 import 'package:location/location.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:uuid/uuid.dart';
+import 'package:customer/utils/yandex_map_utils.dart';
 
 import '../screen_ui/multi_vendor_service/wallet_screen/wallet_screen.dart';
 import '../themes/app_them_data.dart';
@@ -61,7 +63,8 @@ import '../themes/app_them_data.dart';
 class IntercityHomeController extends GetxController {
   RxList<PopularDestination> popularDestination = <PopularDestination>[].obs;
 
-  late GoogleMapController mapController;
+  GoogleMapController? mapController;
+  ym.YandexMapController? yandexMapController;
   final flutterMap.MapController mapOsmController = flutterMap.MapController();
 
   final Rx<TextEditingController> sourceTextEditController =
@@ -77,6 +80,7 @@ class IntercityHomeController extends GetxController {
   final RxSet<Marker> markers = <Marker>{}.obs;
   final RxList<flutterMap.Marker> osmMarker = <flutterMap.Marker>[].obs;
   final RxList<latlong.LatLng> routePoints = <latlong.LatLng>[].obs;
+  bool _isMarkersRefreshScheduled = false;
 
   final Rx<LatLng> currentPosition = LatLng(23.0225, 72.5714).obs;
 
@@ -742,7 +746,15 @@ class IntercityHomeController extends GetxController {
   void _setGoogleMarker(double lat, double lng, {required bool isDeparture}) {
     final LatLng pos = LatLng(lat, lng);
     final markerId = MarkerId(isDeparture ? 'Departure' : 'Destination');
-    final icon = isDeparture ? departureIcon! : destinationIcon!;
+    final icon = isDeparture
+        ? (departureIcon ??
+            BitmapDescriptor.defaultMarkerWithHue(
+              BitmapDescriptor.hueGreen,
+            ))
+        : (destinationIcon ??
+            BitmapDescriptor.defaultMarkerWithHue(
+              BitmapDescriptor.hueRed,
+            ));
     final title = isDeparture ? 'Departure'.tr : 'Destination'.tr;
 
     if (isDeparture) {
@@ -763,19 +775,52 @@ class IntercityHomeController extends GetxController {
         infoWindow: InfoWindow(title: title),
       ),
     );
+    _scheduleMarkersRefresh();
 
-    mapController.animateCamera(CameraUpdate.newLatLngZoom(pos, 14));
+    if (Constant.isYandexMap) {
+      _safeMoveYandexCamera(pos, zoom: 14);
+    } else if (mapController != null) {
+      mapController!.animateCamera(CameraUpdate.newLatLngZoom(pos, 14));
+    }
 
     if (departureLatLong.value.latitude != 0 &&
         destinationLatLong.value.latitude != 0) {
       getDirections();
     } else {
-      mapController.animateCamera(
-        CameraUpdate.newCameraPosition(
-          CameraPosition(target: LatLng(lat, lng), zoom: 14),
+      if (Constant.isYandexMap) {
+        _safeMoveYandexCamera(LatLng(lat, lng), zoom: 14);
+      } else if (mapController != null) {
+        mapController!.animateCamera(
+          CameraUpdate.newCameraPosition(
+            CameraPosition(target: LatLng(lat, lng), zoom: 14),
+          ),
+        );
+      }
+    }
+  }
+
+  void _scheduleMarkersRefresh() {
+    if (_isMarkersRefreshScheduled) return;
+    _isMarkersRefreshScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _isMarkersRefreshScheduled = false;
+      if (isClosed) return;
+      markers.refresh();
+    });
+  }
+
+  Future<void> _safeMoveYandexCamera(LatLng target, {double zoom = 14}) async {
+    if (yandexMapController == null) return;
+    try {
+      await yandexMapController!.moveCamera(
+        ym.CameraUpdate.newCameraPosition(
+          ym.CameraPosition(
+            target: ym.Point(latitude: target.latitude, longitude: target.longitude),
+            zoom: zoom,
+          ),
         ),
       );
-    }
+    } catch (_) {}
   }
 
   Future<void> getDirections({bool isStopMarker = false}) async {
@@ -976,8 +1021,24 @@ class IntercityHomeController extends GetxController {
 
     if (points.length >= 2) {
       // Zoom to fit all polyline points
-      updateCameraLocationToFitPolyline(points, mapController);
+      if (Constant.isYandexMap) {
+        updateCameraLocationToFitPolylineYandex(points);
+      } else {
+        updateCameraLocationToFitPolyline(points, mapController);
+      }
     }
+  }
+
+  Future<void> updateCameraLocationToFitPolylineYandex(
+    List<LatLng> points,
+  ) async {
+    if (yandexMapController == null || points.isEmpty) return;
+    final bounds = yandexBoundsFromLatLngs(points);
+    await yandexMapController!.moveCamera(
+      ym.CameraUpdate.newGeometry(
+        ym.Geometry.fromBoundingBox(bounds),
+      ),
+    );
   }
 
   Future<void> updateCameraLocationToFitPolyline(
@@ -1109,34 +1170,34 @@ class IntercityHomeController extends GetxController {
     try {
       if (Constant.selectedMapType == 'osm') {
         departureIconOsm = Image.asset(
-          "assets/icons/pickup.png",
-          width: 30,
-          height: 30,
+          "assets/icons/ic_cab_pickup.png",
+          width: 14,
+          height: 14,
         );
         destinationIconOsm = Image.asset(
-          "assets/icons/dropoff.png",
-          width: 30,
-          height: 30,
+          "assets/icons/ic_cab_destination.png",
+          width: 14,
+          height: 14,
         );
         taxiIconOsm = Image.asset(
           "assets/icons/ic_taxi.png",
-          width: 30,
-          height: 30,
+          width: 14,
+          height: 14,
         );
         stopIconOsm = Image.asset(
-          "assets/icons/location.png",
-          width: 26,
-          height: 26,
+          "assets/icons/ic_location.png",
+          width: 12,
+          height: 12,
         );
       } else {
-        const config = ImageConfiguration(size: Size(48, 48));
+        const config = ImageConfiguration(size: Size(18, 18));
         departureIcon = await BitmapDescriptor.fromAssetImage(
           config,
-          "assets/icons/pickup.png",
+          "assets/icons/ic_cab_pickup.png",
         );
         destinationIcon = await BitmapDescriptor.fromAssetImage(
           config,
-          "assets/icons/dropoff.png",
+          "assets/icons/ic_cab_destination.png",
         );
         taxiIcon = await BitmapDescriptor.fromAssetImage(
           config,
@@ -1144,7 +1205,7 @@ class IntercityHomeController extends GetxController {
         );
         stopIcon = await BitmapDescriptor.fromAssetImage(
           config,
-          "assets/icons/location.png",
+          "assets/icons/ic_location.png",
         );
       }
     } catch (e) {

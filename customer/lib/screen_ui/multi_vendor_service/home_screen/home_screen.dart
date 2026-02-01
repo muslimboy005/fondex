@@ -29,8 +29,10 @@ import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:yandex_mapkit/yandex_mapkit.dart' as ym;
 import 'package:latlong2/latlong.dart' as location;
 import 'package:url_launcher/url_launcher.dart';
+import 'package:customer/utils/yandex_map_utils.dart';
 
 import '../../../controllers/food_home_controller.dart';
 import '../../../controllers/theme_controller.dart';
@@ -3046,9 +3048,25 @@ class MapView extends StatelessWidget {
     return GetX(
       init: MapViewController(),
       builder: (controller) {
+        final initialLatLng =
+            controller.homeController.allNearestRestaurant.isEmpty
+                ? LatLng(
+                  Constant.selectedLocation.location!.latitude ?? 45.521563,
+                  Constant.selectedLocation.location!.longitude ?? -122.677433,
+                )
+                : LatLng(
+                  controller.homeController.allNearestRestaurant.first.latitude ??
+                      45.521563,
+                  controller
+                          .homeController
+                          .allNearestRestaurant
+                          .first
+                          .longitude ??
+                      -122.677433,
+                );
         return Stack(
           children: [
-            Constant.selectedMapType == "osm"
+            Constant.isOsmMap
                 ? flutterMap.FlutterMap(
                   mapController: controller.osmMapController,
                   options: flutterMap.MapOptions(
@@ -3067,42 +3085,42 @@ class MapView extends StatelessWidget {
                     flutterMap.MarkerLayer(markers: controller.osmMarker),
                   ],
                 )
-                : GoogleMap(
-                  mapType: MapType.terrain,
-                  myLocationEnabled: true,
-                  myLocationButtonEnabled: true,
-                  zoomControlsEnabled: false,
-                  markers: Set<Marker>.of(controller.markers.values),
-                  onMapCreated: (GoogleMapController mapController) {
-                    controller.mapController = mapController;
-                  },
-                  mapToolbarEnabled: true,
-                  initialCameraPosition: CameraPosition(
-                    zoom: 18,
-                    target:
-                        controller.homeController.allNearestRestaurant.isEmpty
-                            ? LatLng(
-                              Constant.selectedLocation.location!.latitude ??
-                                  45.521563,
-                              Constant.selectedLocation.location!.longitude ??
-                                  -122.677433,
-                            )
-                            : LatLng(
-                              controller
-                                      .homeController
-                                      .allNearestRestaurant
-                                      .first
-                                      .latitude ??
-                                  45.521563,
-                              controller
-                                      .homeController
-                                      .allNearestRestaurant
-                                      .first
-                                      .longitude ??
-                                  -122.677433,
+                : Constant.isYandexMap
+                    ? ym.YandexMap(
+                      onMapCreated: (ym.YandexMapController mapController) async {
+                        controller.yandexMapController = mapController;
+                        await mapController.toggleUserLayer(visible: true);
+                        await mapController.moveCamera(
+                          ym.CameraUpdate.newCameraPosition(
+                            ym.CameraPosition(
+                              target: ym.Point(
+                                latitude: initialLatLng.latitude,
+                                longitude: initialLatLng.longitude,
+                              ),
+                              zoom: 18,
                             ),
-                  ),
-                ),
+                          ),
+                        );
+                      },
+                      mapObjects: yandexMapObjectsFromGoogle(
+                        markers: controller.markers.values,
+                      ),
+                    )
+                    : GoogleMap(
+                      mapType: MapType.terrain,
+                      myLocationEnabled: true,
+                      myLocationButtonEnabled: true,
+                      zoomControlsEnabled: false,
+                      markers: Set<Marker>.of(controller.markers.values),
+                      onMapCreated: (GoogleMapController mapController) {
+                        controller.mapController = mapController;
+                      },
+                      mapToolbarEnabled: true,
+                      initialCameraPosition: CameraPosition(
+                        zoom: 18,
+                        target: initialLatLng,
+                      ),
+                    ),
             controller.homeController.allNearestRestaurant.isEmpty
                 ? Container()
                 : Align(
@@ -3121,7 +3139,7 @@ class MapView extends StatelessWidget {
                                 viewportFraction: 0.88,
                               ),
                               onPageChanged: (value) async {
-                                if (Constant.selectedMapType == "osm") {
+                                if (Constant.isOsmMap) {
                                   controller.osmMapController.move(
                                     location.LatLng(
                                       controller
@@ -3134,6 +3152,25 @@ class MapView extends StatelessWidget {
                                           .longitude!,
                                     ),
                                     16,
+                                  );
+                                } else if (Constant.isYandexMap) {
+                                  await controller.yandexMapController
+                                      ?.moveCamera(
+                                    ym.CameraUpdate.newCameraPosition(
+                                      ym.CameraPosition(
+                                        zoom: 18,
+                                        target: ym.Point(
+                                          latitude: controller
+                                              .homeController
+                                              .allNearestRestaurant[value]
+                                              .latitude!,
+                                          longitude: controller
+                                              .homeController
+                                              .allNearestRestaurant[value]
+                                              .longitude!,
+                                        ),
+                                      ),
+                                    ),
                                   );
                                 } else {
                                   CameraUpdate cameraUpdate =
@@ -3152,7 +3189,7 @@ class MapView extends StatelessWidget {
                                           ),
                                         ),
                                       );
-                                  controller.mapController!.animateCamera(
+                                  controller.mapController?.animateCamera(
                                     cameraUpdate,
                                   );
                                 }

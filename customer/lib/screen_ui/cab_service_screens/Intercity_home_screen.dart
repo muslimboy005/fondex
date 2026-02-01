@@ -22,6 +22,8 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter_map/flutter_map.dart' as flutterMap;
 import 'package:latlong2/latlong.dart' as latlong;
 import 'package:location/location.dart';
+import 'package:yandex_mapkit/yandex_mapkit.dart' as ym;
+import 'package:customer/utils/yandex_map_utils.dart';
 import '../../constant/constant.dart';
 import '../../controllers/cab_dashboard_controller.dart';
 import '../../controllers/theme_controller.dart';
@@ -51,7 +53,7 @@ class IntercityHomeScreen extends StatelessWidget {
                   ? Constant.loader()
                   : Stack(
                     children: [
-                      Constant.selectedMapType == "osm"
+                      Constant.isOsmMap
                           ? flutterMap.FlutterMap(
                             mapController: controller.mapOsmController,
                             options: flutterMap.MapOptions(
@@ -110,32 +112,72 @@ class IntercityHomeScreen extends StatelessWidget {
                                 ),
                             ],
                           )
-                          : GoogleMap(
-                            onMapCreated: (googleMapController) {
-                              controller.mapController = googleMapController;
+                          : Constant.isYandexMap
+                              ? ym.YandexMap(
+                                onMapCreated:
+                                    (ym.YandexMapController mapController) async {
+                                  controller.yandexMapController =
+                                      mapController;
+                                  await mapController.toggleUserLayer(
+                                    visible: true,
+                                  );
+                                  await mapController.moveCamera(
+                                    ym.CameraUpdate.newCameraPosition(
+                                      ym.CameraPosition(
+                                        target: ym.Point(
+                                          latitude: controller
+                                              .currentPosition
+                                              .value
+                                              .latitude,
+                                          longitude: controller
+                                              .currentPosition
+                                              .value
+                                              .longitude,
+                                        ),
+                                        zoom: 14,
+                                      ),
+                                    ),
+                                  );
+                                  if (Constant.currentLocation != null) {
+                                    controller.setDepartureMarker(
+                                      Constant.currentLocation!.latitude,
+                                      Constant.currentLocation!.longitude,
+                                    );
+                                    controller.searchPlaceNameGoogle();
+                                  }
+                                },
+                                mapObjects: yandexMapObjectsFromGoogle(
+                                  markers: controller.markers.toSet(),
+                                  polylines: controller.polyLines.values,
+                                ),
+                              )
+                              : GoogleMap(
+                                onMapCreated: (googleMapController) {
+                                  controller.mapController =
+                                      googleMapController;
 
-                              if (Constant.currentLocation != null) {
-                                controller.setDepartureMarker(
-                                  Constant.currentLocation!.latitude,
-                                  Constant.currentLocation!.longitude,
-                                );
-                                controller.searchPlaceNameGoogle();
-                              }
-                            },
-                            initialCameraPosition: CameraPosition(
-                              target: controller.currentPosition.value,
-                              zoom: 14,
-                            ),
-                            myLocationEnabled: true,
-                            zoomControlsEnabled: true,
-                            zoomGesturesEnabled: true,
-                            polylines: Set<Polyline>.of(
-                              controller.polyLines.values,
-                            ),
-                            markers:
-                                controller.markers
-                                    .toSet(), // reactive marker set
-                          ),
+                                  if (Constant.currentLocation != null) {
+                                    controller.setDepartureMarker(
+                                      Constant.currentLocation!.latitude,
+                                      Constant.currentLocation!.longitude,
+                                    );
+                                    controller.searchPlaceNameGoogle();
+                                  }
+                                },
+                                initialCameraPosition: CameraPosition(
+                                  target: controller.currentPosition.value,
+                                  zoom: 14,
+                                ),
+                                myLocationEnabled: true,
+                                zoomControlsEnabled: true,
+                                zoomGesturesEnabled: true,
+                                polylines: Set<Polyline>.of(
+                                  controller.polyLines.values,
+                                ),
+                                markers:
+                                    controller.markers
+                                        .toSet(), // reactive marker set
+                              ),
                       Positioned(
                         top: 50,
                         left: Constant.isRtl ? null : 20,

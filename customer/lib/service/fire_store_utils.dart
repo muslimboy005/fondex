@@ -868,9 +868,12 @@ class FireStoreUtils {
               .get();
 
       if (driverNearBySnap.exists && driverNearBySnap.data() != null) {
-        Constant.selectedMapType =
-            driverNearBySnap.data()?["selectedMapType"] ?? "";
-        Constant.mapType = driverNearBySnap.data()?["mapType"] ?? "";
+        Constant.selectedMapType = Constant.normalizeSelectedMapType(
+          driverNearBySnap.data()?["selectedMapType"],
+        );
+        Constant.mapType = Constant.normalizeMapType(
+          driverNearBySnap.data()?["mapType"],
+        );
       }
 
       fireStore

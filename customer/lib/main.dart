@@ -11,7 +11,7 @@ import 'package:get/get.dart';
 import 'controllers/global_setting_controller.dart';
 import 'controllers/theme_controller.dart';
 import 'firebase_options.dart';
-
+ 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
