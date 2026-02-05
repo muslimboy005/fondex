@@ -3091,7 +3091,7 @@ class ProductDetailsView extends StatelessWidget {
                     child: RoundedButtonFill(
                       title:
                           "${'Add item'.tr} ${Constant.amountShow(amount: controller.calculatePrice(productModel))}"
-                              .tr,
+                              ,
                       height: 5.5,
                       color: AppThemeData.primary300,
                       textColor: AppThemeData.grey50,

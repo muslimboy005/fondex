@@ -15,7 +15,7 @@ ym.PlacemarkIcon _defaultPlacemarkIcon(String assetName) {
 ym.PlacemarkIcon yandexPlacemarkIconFromAsset(
   String assetName, {
   Offset anchor = const Offset(0.5, 1.0),
-  double scale = 0.28,
+  double scale = 0.18,
 }) {
   return ym.PlacemarkIcon.single(
     ym.PlacemarkIconStyle(

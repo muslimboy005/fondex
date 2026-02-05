@@ -126,7 +126,7 @@ class DineInRestaurantDetailsController extends GetxController {
       ShowToastDialog.showToast('Dine-In Request submitted successfully.'.tr);
     } catch (e) {
       ShowToastDialog.closeLoader();
-      ShowToastDialog.showToast("Error booking table: ${e.toString()}".tr);
+      ShowToastDialog.showToast("${'Error booking table'.tr}: ${e.toString()}");
       print("Error in orderBook: $e");
     }
   }

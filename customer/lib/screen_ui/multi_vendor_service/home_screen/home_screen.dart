@@ -335,8 +335,8 @@ class HomeScreen extends StatelessWidget {
                                                               }
                                                             } catch (e) {
                                                               await placemarkFromCoordinates(
-                                                                19.228825,
-                                                                72.854118,
+                                                                Constant.defaultLocationLat,
+                                                                Constant.defaultLocationLng,
                                                               ).then((
                                                                 valuePlaceMaker,
                                                               ) {
@@ -347,9 +347,9 @@ class HomeScreen extends StatelessWidget {
                                                                         .location =
                                                                     UserLocation(
                                                                       latitude:
-                                                                          19.228825,
+                                                                          Constant.defaultLocationLat,
                                                                       longitude:
-                                                                          72.854118,
+                                                                          Constant.defaultLocationLng,
                                                                     );
                                                                 String
                                                                 currentLocation =

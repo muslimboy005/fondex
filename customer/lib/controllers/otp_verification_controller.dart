@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:customer/constant/collection_name.dart';
+import 'package:customer/controllers/theme_controller.dart';
 import 'package:customer/screen_ui/location_enable_screens/location_permission_screen.dart';
 import 'package:customer/themes/app_them_data.dart';
 import 'package:customer/themes/show_toast_dialog.dart';
@@ -451,8 +452,13 @@ class OtpVerifyController extends GetxController {
     final formKey = GlobalKey<FormState>();
 
     log("📋 Opening name input dialog...");
+    final themeController = Get.find<ThemeController>();
+    final isDark = themeController.isDark.value;
+
     await Get.dialog(
       Dialog(
+        backgroundColor: isDark ? AppThemeData.greyDark50 : AppThemeData.grey50,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: Padding(
           padding: const EdgeInsets.all(20),
           child: Form(
@@ -463,14 +469,64 @@ class OtpVerifyController extends GetxController {
               children: [
                 Text(
                   "Enter your name".tr,
-                  style: AppThemeData.boldTextStyle(fontSize: 20),
+                  style: AppThemeData.boldTextStyle(
+                    fontSize: 20,
+                    color:
+                        isDark
+                            ? AppThemeData.greyDark900
+                            : AppThemeData.grey900,
+                  ),
                 ),
                 const SizedBox(height: 20),
                 TextFormField(
                   controller: firstNameController,
+                  style: TextStyle(
+                    color:
+                        isDark
+                            ? AppThemeData.greyDark900
+                            : AppThemeData.grey900,
+                  ),
                   decoration: InputDecoration(
                     labelText: "First Name*".tr,
-                    border: OutlineInputBorder(),
+                    labelStyle: TextStyle(
+                      color:
+                          isDark
+                              ? AppThemeData.greyDark600
+                              : AppThemeData.grey600,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(
+                        color:
+                            isDark
+                                ? AppThemeData.greyDark400
+                                : AppThemeData.grey400,
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(
+                        color:
+                            isDark
+                                ? AppThemeData.greyDark400
+                                : AppThemeData.grey400,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(
+                        color:
+                            isDark
+                                ? AppThemeData.greyDark900
+                                : AppThemeData.grey900,
+                        width: 2,
+                      ),
+                    ),
+                    filled: true,
+                    fillColor:
+                        isDark
+                            ? AppThemeData.greyDark100
+                            : AppThemeData.grey100,
                   ),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
@@ -482,9 +538,53 @@ class OtpVerifyController extends GetxController {
                 const SizedBox(height: 15),
                 TextFormField(
                   controller: lastNameController,
+                  style: TextStyle(
+                    color:
+                        isDark
+                            ? AppThemeData.greyDark900
+                            : AppThemeData.grey900,
+                  ),
                   decoration: InputDecoration(
                     labelText: "Last Name*".tr,
-                    border: OutlineInputBorder(),
+                    labelStyle: TextStyle(
+                      color:
+                          isDark
+                              ? AppThemeData.greyDark600
+                              : AppThemeData.grey600,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(
+                        color:
+                            isDark
+                                ? AppThemeData.greyDark400
+                                : AppThemeData.grey400,
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(
+                        color:
+                            isDark
+                                ? AppThemeData.greyDark400
+                                : AppThemeData.grey400,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(
+                        color:
+                            isDark
+                                ? AppThemeData.greyDark900
+                                : AppThemeData.grey900,
+                        width: 2,
+                      ),
+                    ),
+                    filled: true,
+                    fillColor:
+                        isDark
+                            ? AppThemeData.greyDark100
+                            : AppThemeData.grey100,
                   ),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
@@ -499,10 +599,35 @@ class OtpVerifyController extends GetxController {
                   children: [
                     TextButton(
                       onPressed: () => Get.back(),
-                      child: Text("Cancel".tr),
+                      child: Text(
+                        "Cancel".tr,
+                        style: TextStyle(
+                          color:
+                              isDark
+                                  ? AppThemeData.greyDark600
+                                  : AppThemeData.grey600,
+                        ),
+                      ),
                     ),
                     const SizedBox(width: 10),
                     ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor:
+                            isDark
+                                ? AppThemeData.greyDark900
+                                : AppThemeData.grey900,
+                        foregroundColor:
+                            isDark
+                                ? AppThemeData.greyDark50
+                                : AppThemeData.grey50,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
+                      ),
                       onPressed: () {
                         log("🔘 Continue button pressed");
                         if (formKey.currentState!.validate()) {

@@ -20,11 +20,9 @@ import '../../constant/assets.dart';
 import '../../utils/utils.dart';
 
 void _navigateAfterLocation() {
-  if (Constant.userModel != null) {
-    Get.offAll(const ServiceListScreen());
-  } else {
-    Get.offAll(const AuthScreen());
-  }
+  // Always go to ServiceListScreen after location is set
+  // User can access main page without login (guest mode)
+  Get.offAll(const ServiceListScreen());
 }
 
 Future<Position?> _getBestPosition() async {
@@ -125,7 +123,9 @@ class LocationPermissionScreen extends StatelessWidget {
                             await placemarkFromCoordinates(
                               newLocalData.latitude,
                               newLocalData.longitude,
-                            ).timeout(const Duration(seconds: 6)).then((valuePlaceMaker) {
+                            ).timeout(const Duration(seconds: 6)).then((
+                              valuePlaceMaker,
+                            ) {
                               Placemark placeMark = valuePlaceMaker[0];
                               addressModel.addressAs = "Home";
                               addressModel.location = UserLocation(
@@ -142,7 +142,8 @@ class LocationPermissionScreen extends StatelessWidget {
                               latitude: newLocalData.latitude,
                               longitude: newLocalData.longitude,
                             );
-                            addressModel.locality = "${newLocalData.latitude}, ${newLocalData.longitude}";
+                            addressModel.locality =
+                                "${newLocalData.latitude}, ${newLocalData.longitude}";
                           }
 
                           Constant.selectedLocation = addressModel;
@@ -156,14 +157,16 @@ class LocationPermissionScreen extends StatelessWidget {
                         } catch (e) {
                           try {
                             await placemarkFromCoordinates(
-                              19.228825,
-                              72.854118,
-                            ).timeout(const Duration(seconds: 6)).then((valuePlaceMaker) {
+                              Constant.defaultLocationLat,
+                              Constant.defaultLocationLng,
+                            ).timeout(const Duration(seconds: 6)).then((
+                              valuePlaceMaker,
+                            ) {
                               Placemark placeMark = valuePlaceMaker[0];
                               addressModel.addressAs = "Home";
                               addressModel.location = UserLocation(
-                                latitude: 19.228825,
-                                longitude: 72.854118,
+                                latitude: Constant.defaultLocationLat,
+                                longitude: Constant.defaultLocationLng,
                               );
                               String currentLocation =
                                   "${placeMark.name}, ${placeMark.subLocality}, ${placeMark.locality}, ${placeMark.administrativeArea}, ${placeMark.postalCode}, ${placeMark.country}";
@@ -172,16 +175,19 @@ class LocationPermissionScreen extends StatelessWidget {
                           } catch (_) {
                             addressModel.addressAs = "Home";
                             addressModel.location = UserLocation(
-                              latitude: 19.228825,
-                              longitude: 72.854118,
+                              latitude: Constant.defaultLocationLat,
+                              longitude: Constant.defaultLocationLng,
                             );
-                            addressModel.locality = "19.228825, 72.854118";
+                            addressModel.locality =
+                                "${Constant.defaultLocationLat}, ${Constant.defaultLocationLng}";
                           }
 
                           Constant.selectedLocation = addressModel;
                           try {
                             Constant.currentLocation =
-                                await Utils.getCurrentLocation().timeout(const Duration(seconds: 6));
+                                await Utils.getCurrentLocation().timeout(
+                                  const Duration(seconds: 6),
+                                );
                           } catch (_) {}
 
                           ShowToastDialog.closeLoader();
@@ -247,14 +253,14 @@ class LocationPermissionScreen extends StatelessWidget {
                           }
                         } catch (e) {
                           await placemarkFromCoordinates(
-                            19.228825,
-                            72.854118,
+                            Constant.defaultLocationLat,
+                            Constant.defaultLocationLng,
                           ).then((valuePlaceMaker) {
                             Placemark placeMark = valuePlaceMaker[0];
                             addressModel.addressAs = "Home";
                             addressModel.location = UserLocation(
-                              latitude: 19.228825,
-                              longitude: 72.854118,
+                              latitude: Constant.defaultLocationLat,
+                              longitude: Constant.defaultLocationLng,
                             );
                             String currentLocation =
                                 "${placeMark.name}, ${placeMark.subLocality}, ${placeMark.locality}, ${placeMark.administrativeArea}, ${placeMark.postalCode}, ${placeMark.country}";

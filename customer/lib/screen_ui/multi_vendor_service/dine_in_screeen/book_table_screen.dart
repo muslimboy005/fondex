@@ -210,7 +210,7 @@ class BookTableScreen extends StatelessWidget {
                                       right: 0,
                                       child: Center(
                                         child: RoundedButtonFill(
-                                          title: "${controller.dateList[index].discountPer}%".tr,
+                                          title: "${controller.dateList[index].discountPer}%",
                                           color: AppThemeData.primary300,
                                           textColor: AppThemeData.grey50,
                                           width: 12,

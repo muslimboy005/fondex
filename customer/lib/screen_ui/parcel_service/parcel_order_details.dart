@@ -79,7 +79,7 @@ class ParcelOrderDetails extends StatelessWidget {
                           width: double.infinity,
                           padding: const EdgeInsets.all(16),
                           child: Text(
-                            "${'Order Id:'.tr} ${Constant.orderId(orderId: controller.parcelOrder.value.id.toString())}".tr,
+                            "${'Order Id:'.tr} ${Constant.orderId(orderId: controller.parcelOrder.value.id.toString())}",
                             textAlign: TextAlign.start,
                             style: TextStyle(fontFamily: AppThemeData.semiBold, fontSize: 18, color: isDark ? AppThemeData.grey50 : AppThemeData.grey900),
                           ),

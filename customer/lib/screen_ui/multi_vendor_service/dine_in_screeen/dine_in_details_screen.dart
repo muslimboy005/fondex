@@ -259,7 +259,7 @@ class DineInDetailsScreen extends StatelessWidget {
                                       ),
                                       Padding(padding: const EdgeInsets.symmetric(horizontal: 10), child: Icon(Icons.circle, size: 5, color: isDark ? AppThemeData.grey400 : AppThemeData.grey500)),
                                       Text(
-                                        "${Constant.amountShow(amount: controller.vendorModel.value.restaurantCost)} ${'for two'.tr}".tr,
+                                        "${Constant.amountShow(amount: controller.vendorModel.value.restaurantCost)} ${'for two'.tr}",
                                         textAlign: TextAlign.start,
                                         maxLines: 1,
                                         style: TextStyle(

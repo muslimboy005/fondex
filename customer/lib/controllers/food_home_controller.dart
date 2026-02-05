@@ -34,8 +34,10 @@ class FoodHomeController extends GetxController {
   RxBool isPopular = true.obs;
   RxString selectedOrderTypeValue = "Delivery".tr.obs;
 
-  Rx<PageController> pageController = PageController(viewportFraction: 0.877).obs;
-  Rx<PageController> pageBottomController = PageController(viewportFraction: 0.877).obs;
+  Rx<PageController> pageController =
+      PageController(viewportFraction: 0.877).obs;
+  Rx<PageController> pageBottomController =
+      PageController(viewportFraction: 0.877).obs;
   RxInt currentPage = 0.obs;
   RxInt currentBottomPage = 0.obs;
 
@@ -65,7 +67,10 @@ class FoodHomeController extends GetxController {
   Future<void> getData() async {
     isLoading.value = true;
     getCartData();
-    selectedOrderTypeValue.value = Preferences.getString(Preferences.foodDeliveryType, defaultValue: "Delivery");
+    selectedOrderTypeValue.value = Preferences.getString(
+      Preferences.foodDeliveryType,
+      defaultValue: "Delivery",
+    );
     await getZone();
     FireStoreUtils.getAllNearestRestaurant().listen((event) async {
       popularRestaurantList.clear();
@@ -81,17 +86,27 @@ class FoodHomeController extends GetxController {
         (a, b) => Constant.calculateReview(
           reviewCount: b.reviewsCount.toString(),
           reviewSum: b.reviewsSum.toString(),
-        ).compareTo(Constant.calculateReview(reviewCount: a.reviewsCount.toString(), reviewSum: a.reviewsSum.toString())),
+        ).compareTo(
+          Constant.calculateReview(
+            reviewCount: a.reviewsCount.toString(),
+            reviewSum: a.reviewsSum.toString(),
+          ),
+        ),
       );
 
-      newArrivalRestaurantList.sort((a, b) => (b.createdAt ?? Timestamp.now()).toDate().compareTo((a.createdAt ?? Timestamp.now()).toDate()));
+      newArrivalRestaurantList.sort(
+        (a, b) => (b.createdAt ?? Timestamp.now()).toDate().compareTo(
+          (a.createdAt ?? Timestamp.now()).toDate(),
+        ),
+      );
       await getVendorCategory();
       await FireStoreUtils.getHomeCoupon().then((value) {
         couponRestaurantList.clear();
         couponList.clear();
         for (var element1 in value) {
           for (var element in allNearestRestaurant) {
-            if (element1.vendorID == element.id && element1.expiresAt!.toDate().isAfter(DateTime.now())) {
+            if (element1.vendorID == element.id &&
+                element1.expiresAt!.toDate().isAfter(DateTime.now())) {
               couponList.add(element1);
               couponRestaurantList.add(element);
             }
@@ -109,7 +124,7 @@ class FoodHomeController extends GetxController {
         print("nearestIds: $nearestIds");
         // Filter stories whose vendorID exists in nearestIds
         storyList.addAll(
-            stories.where((story) => nearestIds.contains(story.vendorID))
+          stories.where((story) => nearestIds.contains(story.vendorID)),
         );
         print("Filtered storyList length: ${storyList.length}");
       });
@@ -147,8 +162,16 @@ class FoodHomeController extends GetxController {
     await FireStoreUtils.getHomeVendorCategory().then((value) {
       vendorCategoryModel.value = value;
       if (Constant.restaurantList != null) {
-        List<String> usedCategoryIds = Constant.restaurantList!.expand((vendor) => vendor.categoryID ?? []).whereType<String>().toSet().toList();
-        vendorCategoryModel.value = vendorCategoryModel.where((category) => usedCategoryIds.contains(category.id)).toList();
+        List<String> usedCategoryIds =
+            Constant.restaurantList!
+                .expand((vendor) => vendor.categoryID ?? [])
+                .whereType<String>()
+                .toSet()
+                .toList();
+        vendorCategoryModel.value =
+            vendorCategoryModel
+                .where((category) => usedCategoryIds.contains(category.id))
+                .toList();
       }
     });
 
@@ -176,7 +199,13 @@ class FoodHomeController extends GetxController {
     await FireStoreUtils.getZone().then((value) {
       if (value != null) {
         for (int i = 0; i < value.length; i++) {
-          if (Constant.isPointInPolygon(LatLng(Constant.selectedLocation.location?.latitude ?? 0.0, Constant.selectedLocation.location?.longitude ?? 0.0), value[i].area!)) {
+          if (Constant.isPointInPolygon(
+            LatLng(
+              Constant.selectedLocation.location?.latitude ?? 0.0,
+              Constant.selectedLocation.location?.longitude ?? 0.0,
+            ),
+            value[i].area!,
+          )) {
             Constant.selectedZone = value[i];
             Constant.isZoneAvailable = true;
             break;

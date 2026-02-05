@@ -81,7 +81,8 @@ class CabBookingController extends GetxController {
   final RxList<latlong.LatLng> routePoints = <latlong.LatLng>[].obs;
   bool _isMarkersRefreshScheduled = false;
 
-  final Rx<LatLng> currentPosition = LatLng(23.0225, 72.5714).obs;
+  final Rx<LatLng> currentPosition =
+      LatLng(Constant.defaultLocationLat, Constant.defaultLocationLng).obs;
 
   final Rx<LatLng> departureLatLong = const LatLng(0.0, 0.0).obs;
   final Rx<LatLng> destinationLatLong = const LatLng(0.0, 0.0).obs;
@@ -1070,15 +1071,14 @@ class CabBookingController extends GetxController {
   void _setGoogleMarker(double lat, double lng, {required bool isDeparture}) {
     final LatLng pos = LatLng(lat, lng);
     final markerId = MarkerId(isDeparture ? 'Departure' : 'Destination');
-    final icon = isDeparture
-        ? (departureIcon ??
-            BitmapDescriptor.defaultMarkerWithHue(
-              BitmapDescriptor.hueGreen,
-            ))
-        : (destinationIcon ??
-            BitmapDescriptor.defaultMarkerWithHue(
-              BitmapDescriptor.hueRed,
-            ));
+    final icon =
+        isDeparture
+            ? (departureIcon ??
+                BitmapDescriptor.defaultMarkerWithHue(
+                  BitmapDescriptor.hueGreen,
+                ))
+            : (destinationIcon ??
+                BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed));
     final title = isDeparture ? 'Departure'.tr : 'Destination'.tr;
 
     if (isDeparture) {
@@ -1146,7 +1146,10 @@ class CabBookingController extends GetxController {
       await yandexMapController!.moveCamera(
         ym.CameraUpdate.newCameraPosition(
           ym.CameraPosition(
-            target: ym.Point(latitude: target.latitude, longitude: target.longitude),
+            target: ym.Point(
+              latitude: target.latitude,
+              longitude: target.longitude,
+            ),
             zoom: zoom,
           ),
         ),
@@ -1367,9 +1370,7 @@ class CabBookingController extends GetxController {
     if (yandexMapController == null || points.isEmpty) return;
     final bounds = yandexBoundsFromLatLngs(points);
     await yandexMapController!.moveCamera(
-      ym.CameraUpdate.newGeometry(
-        ym.Geometry.fromBoundingBox(bounds),
-      ),
+      ym.CameraUpdate.newGeometry(ym.Geometry.fromBoundingBox(bounds)),
     );
   }
 
@@ -2139,7 +2140,7 @@ class CabBookingController extends GetxController {
   }
 
   void _applyPaymentSettingsFromPreferences() {
-    void _trySet<T>(
+    void trySet<T>(
       String prefKey,
       T Function(Map<String, dynamic>) fromJson,
       void Function(T) setModel,
@@ -2151,67 +2152,67 @@ class CabBookingController extends GetxController {
       } catch (_) {}
     }
 
-    _trySet(
+    trySet(
       Preferences.stripeSettings,
       StripeModel.fromJson,
       (v) => stripeModel.value = v,
     );
-    _trySet(
+    trySet(
       Preferences.paypalSettings,
       PayPalModel.fromJson,
       (v) => payPalModel.value = v,
     );
-    _trySet(
+    trySet(
       Preferences.payStack,
       PayStackModel.fromJson,
       (v) => payStackModel.value = v,
     );
-    _trySet(
+    trySet(
       Preferences.mercadoPago,
       MercadoPagoModel.fromJson,
       (v) => mercadoPagoModel.value = v,
     );
-    _trySet(
+    trySet(
       Preferences.flutterWave,
       FlutterWaveModel.fromJson,
       (v) => flutterWaveModel.value = v,
     );
-    _trySet(
+    trySet(
       Preferences.paytmSettings,
       PaytmModel.fromJson,
       (v) => paytmModel.value = v,
     );
-    _trySet(
+    trySet(
       Preferences.payFastSettings,
       PayFastModel.fromJson,
       (v) => payFastModel.value = v,
     );
-    _trySet(
+    trySet(
       Preferences.razorpaySettings,
       RazorPayModel.fromJson,
       (v) => razorPayModel.value = v,
     );
-    _trySet(
+    trySet(
       Preferences.midTransSettings,
       MidTrans.fromJson,
       (v) => midTransModel.value = v,
     );
-    _trySet(
+    trySet(
       Preferences.orangeMoneySettings,
       OrangeMoney.fromJson,
       (v) => orangeMoneyModel.value = v,
     );
-    _trySet(
+    trySet(
       Preferences.xenditSettings,
       Xendit.fromJson,
       (v) => xenditModel.value = v,
     );
-    _trySet(
+    trySet(
       Preferences.paymeSettings,
       PaymeModel.fromJson,
       (v) => paymeModel.value = v,
     );
-    _trySet(
+    trySet(
       Preferences.walletSettings,
       WalletSettingModel.fromJson,
       (v) => walletSettingModel.value = v,
@@ -3067,7 +3068,7 @@ class CabBookingController extends GetxController {
       }
     } catch (e) {
       ShowToastDialog.closeLoader();
-      ShowToastDialog.showToast("Payment error: ${e.toString()}".tr);
+      ShowToastDialog.showToast("${'Payment error'.tr}: ${e.toString()}");
       log('❌ [PaymePayment] Exception: $e');
     }
   }

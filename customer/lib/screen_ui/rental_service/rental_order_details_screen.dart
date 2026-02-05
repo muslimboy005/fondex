@@ -423,7 +423,7 @@ class RentalOrderDetailsScreen extends StatelessWidget {
                                                 ),
                                               ),
                                               Text(
-                                                "${controller.order.value.rentalPackageModel!.includedDistance.toString()} ${Constant.distanceType}".tr,
+                                                "${controller.order.value.rentalPackageModel!.includedDistance.toString()} ${Constant.distanceType}",
                                                 textAlign: TextAlign.start,
                                                 style: AppThemeData.boldTextStyle(fontSize: 14, color: isDark ? AppThemeData.greyDark900 : AppThemeData.grey900),
                                               ),
@@ -442,7 +442,7 @@ class RentalOrderDetailsScreen extends StatelessWidget {
                                                 ),
                                               ),
                                               Text(
-                                                "${controller.order.value.rentalPackageModel!.includedHours.toString()} ${'Hr'.tr}".tr,
+                                                "${controller.order.value.rentalPackageModel!.includedHours.toString()} ${'Hr'.tr}",
                                                 textAlign: TextAlign.start,
                                                 style: AppThemeData.boldTextStyle(fontSize: 14, color: isDark ? AppThemeData.greyDark900 : AppThemeData.grey900),
                                               ),

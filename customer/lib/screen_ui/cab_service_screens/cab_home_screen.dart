@@ -4,11 +4,6 @@ import 'package:customer/controllers/cab_booking_controller.dart';
 import 'package:customer/controllers/theme_controller.dart';
 import 'package:customer/themes/app_them_data.dart';
 import 'package:customer/themes/text_field_widget.dart';
-import 'package:customer/utils/utils.dart';
-import 'package:customer/widget/osm_map/map_picker_page.dart';
-import 'package:customer/widget/place_picker/location_picker_screen.dart';
-import 'package:customer/widget/place_picker/selected_location_model.dart';
-import 'package:customer/themes/show_toast_dialog.dart';
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
@@ -19,7 +14,6 @@ import 'package:latlong2/latlong.dart' as latlong;
 import 'package:yandex_mapkit/yandex_mapkit.dart' as ym;
 import 'package:customer/utils/yandex_map_utils.dart';
 
-import 'Intercity_home_screen.dart';
 import 'cab_booking_screen.dart';
 
 class CabHomeScreen extends StatefulWidget {

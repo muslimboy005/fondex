@@ -10,7 +10,7 @@ class ShowToastDialog {
     EasyLoading.showToast(message, toastPosition: position);
   }
 
-  /// Show a loading indicator with a status message.
+  /// Show a loading indicator with a status message (yorugʻ mask)
   static void showLoader(String message) {
     EasyLoading.show(
       status: message,

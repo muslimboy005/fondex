@@ -21,7 +21,7 @@ class MobileLoginController extends GetxController {
     final requiredLength = countryCode == '+998' ? 9 : 10;
     
     if (mobile.isEmpty || mobile.length != requiredLength) {
-      ShowToastDialog.showToast("Please enter a valid $requiredLength-digit mobile number".tr);
+      ShowToastDialog.showToast("Please enter a valid @length-digit mobile number".trParams({"length": requiredLength.toString()}));
       return;
     }
 

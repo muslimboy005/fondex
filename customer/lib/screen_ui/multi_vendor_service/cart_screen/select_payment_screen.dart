@@ -182,7 +182,7 @@ class SelectPaymentScreen extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.only(bottom: 20),
               child: RoundedButtonFill(
-                title: "${'Pay Now'.tr} | ${Constant.amountShow(amount: controller.totalAmount.value.toString())}".tr,
+                title: "${'Pay Now'.tr} | ${Constant.amountShow(amount: controller.totalAmount.value.toString())}",
                 height: 5,
                 color: AppThemeData.primary300,
                 textColor: AppThemeData.grey50,

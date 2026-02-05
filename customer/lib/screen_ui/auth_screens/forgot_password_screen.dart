@@ -53,7 +53,7 @@ class ForgotPasswordScreen extends StatelessWidget {
                             style: AppThemeData.boldTextStyle(fontSize: 24, color: isDark ? AppThemeData.greyDark900 : AppThemeData.grey900),
                           ),
                           const SizedBox(height: 24),
-                          TextFieldWidget(title: "Email Address*".tr, hintText: "jerome014@gmail.com", controller: controller.emailEditingController.value),
+                          TextFieldWidget(title: "Email Address*".tr, hintText: "jerome014@gmail.com".tr, controller: controller.emailEditingController.value),
                           const SizedBox(height: 30),
                           RoundedButtonFill(
                             title: "Send Link".tr,

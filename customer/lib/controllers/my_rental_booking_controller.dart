@@ -214,7 +214,7 @@ class MyRentalBookingController extends GetxController {
       }
       ShowToastDialog.showToast("Booking cancelled successfully".tr);
     } catch (e) {
-      ShowToastDialog.showToast("Failed to cancel booking: $e".tr);
+      ShowToastDialog.showToast("${'Failed to cancel booking'.tr}: $e");
     } finally {
       isLoading.value = false;
     }

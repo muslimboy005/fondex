@@ -27,8 +27,10 @@ class HomeECommerceController extends GetxController {
   RxBool isListView = true.obs;
   RxBool isPopular = true.obs;
 
-  Rx<PageController> pageController = PageController(viewportFraction: 0.877).obs;
-  Rx<PageController> pageBottomController = PageController(viewportFraction: 0.877).obs;
+  Rx<PageController> pageController =
+      PageController(viewportFraction: 0.877).obs;
+  Rx<PageController> pageBottomController =
+      PageController(viewportFraction: 0.877).obs;
   RxInt currentPage = 0.obs;
   RxInt currentBottomPage = 0.obs;
 
@@ -41,7 +43,8 @@ class HomeECommerceController extends GetxController {
   }
 
   RxList<VendorCategoryModel> vendorCategoryModel = <VendorCategoryModel>[].obs;
-  RxList<VendorCategoryModel> categoryWiseProductList = <VendorCategoryModel>[].obs;
+  RxList<VendorCategoryModel> categoryWiseProductList =
+      <VendorCategoryModel>[].obs;
 
   RxList<VendorModel> allNearestRestaurant = <VendorModel>[].obs;
   RxList<VendorModel> newArrivalRestaurantList = <VendorModel>[].obs;
@@ -55,8 +58,6 @@ class HomeECommerceController extends GetxController {
     isLoading.value = true;
     getCartData();
     FireStoreUtils.getAllNearestRestaurant().listen((event) async {
-      print("=====>${event.length}");
-
       newArrivalRestaurantList.clear();
       allNearestRestaurant.clear();
       advertisementList.clear();
@@ -64,10 +65,22 @@ class HomeECommerceController extends GetxController {
       allNearestRestaurant.addAll(event);
       newArrivalRestaurantList.addAll(event);
       Constant.restaurantList = allNearestRestaurant;
-      List<String> usedCategoryIds = allNearestRestaurant.expand((vendor) => vendor.categoryID ?? []).whereType<String>().toSet().toList();
-      vendorCategoryModel.value = vendorCategoryModel.where((category) => usedCategoryIds.contains(category.id)).toList();
+      List<String> usedCategoryIds =
+          allNearestRestaurant
+              .expand((vendor) => vendor.categoryID ?? [])
+              .whereType<String>()
+              .toSet()
+              .toList();
+      vendorCategoryModel.value =
+          vendorCategoryModel
+              .where((category) => usedCategoryIds.contains(category.id))
+              .toList();
 
-      newArrivalRestaurantList.sort((a, b) => (b.createdAt ?? Timestamp.now()).toDate().compareTo((a.createdAt ?? Timestamp.now()).toDate()));
+      newArrivalRestaurantList.sort(
+        (a, b) => (b.createdAt ?? Timestamp.now()).toDate().compareTo(
+          (a.createdAt ?? Timestamp.now()).toDate(),
+        ),
+      );
 
       if (Constant.isEnableAdsFeature == true) {
         await FireStoreUtils.getAllAdvertisement().then((value) {
@@ -81,20 +94,15 @@ class HomeECommerceController extends GetxController {
           }
         });
       }
-    });
-    setLoading();
-  }
-
-  Future<void> setLoading() async {
-    await Future.delayed(Duration(seconds: 1), () async {
-      if (allNearestRestaurant.isEmpty) {
-        await Future.delayed(Duration(seconds: 2), () {
-          isLoading.value = false;
-        });
-      } else {
-        isLoading.value = false;
-      }
+      isLoading.value = false;
       update();
+    });
+    // Agar ma'lumot kelmasa qisqa timeout
+    Future.delayed(const Duration(milliseconds: 1200), () {
+      if (isLoading.value) {
+        isLoading.value = false;
+        update();
+      }
     });
   }
 

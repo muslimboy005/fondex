@@ -51,7 +51,7 @@ class RateProductScreen extends StatelessWidget {
                                 children: [
                                   Text("Rate for".tr, style: TextStyle(color: isDark ? AppThemeData.grey400 : AppThemeData.grey500, fontSize: 16, fontFamily: AppThemeData.medium)),
                                   Text(
-                                    "${controller.productModel.value.name}".tr,
+                                    controller.productModel.value.name ?? '',
                                     style: TextStyle(color: isDark ? AppThemeData.grey100 : AppThemeData.grey800, fontSize: 18, fontFamily: AppThemeData.semiBold),
                                   ),
                                   const SizedBox(height: 10),

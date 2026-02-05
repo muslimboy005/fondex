@@ -19,10 +19,19 @@ class MapPickerPage extends StatelessWidget {
     final isDark = themeController.isDark.value;
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: isDark ? AppThemeData.surfaceDark : AppThemeData.surface,
+        backgroundColor:
+            isDark ? AppThemeData.surfaceDark : AppThemeData.surface,
         centerTitle: false,
         titleSpacing: 0,
-        title: Text("PickUp Location".tr, textAlign: TextAlign.start, style: TextStyle(fontFamily: AppThemeData.medium, fontSize: 16, color: isDark ? AppThemeData.grey50 : AppThemeData.grey900)),
+        title: Text(
+          "PickUp Location".tr,
+          textAlign: TextAlign.start,
+          style: TextStyle(
+            fontFamily: AppThemeData.medium,
+            fontSize: 16,
+            color: isDark ? AppThemeData.grey50 : AppThemeData.grey900,
+          ),
+        ),
       ),
       body: Stack(
         children: [
@@ -30,19 +39,40 @@ class MapPickerPage extends StatelessWidget {
             () => FlutterMap(
               mapController: controller.mapController,
               options: MapOptions(
-                initialCenter: controller.pickedPlace.value?.coordinates ?? LatLng(20.5937, 78.9629), // Default India center
+                initialCenter:
+                    controller.pickedPlace.value?.coordinates ??
+                    LatLng(20.5937, 78.9629), // Default India center
                 initialZoom: 13,
                 onTap: (tapPos, latlng) {
                   controller.addLatLngOnly(latlng);
-                  controller.mapController.move(latlng, controller.mapController.camera.zoom);
+                  controller.mapController.move(
+                    latlng,
+                    controller.mapController.camera.zoom,
+                  );
                 },
               ),
               children: [
-                TileLayer(urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', subdomains: const ['a', 'b', 'c'], userAgentPackageName: 'com.emart.app'),
+                TileLayer(
+                  urlTemplate:
+                      'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                  subdomains: const ['a', 'b', 'c'],
+                  userAgentPackageName: 'com.emart.app',
+                ),
                 MarkerLayer(
                   markers:
                       controller.pickedPlace.value != null
-                          ? [Marker(point: controller.pickedPlace.value!.coordinates, width: 40, height: 40, child: const Icon(Icons.location_pin, size: 36, color: Colors.red))]
+                          ? [
+                            Marker(
+                              point: controller.pickedPlace.value!.coordinates,
+                              width: 40,
+                              height: 40,
+                              child: const Icon(
+                                Icons.location_pin,
+                                size: 36,
+                                color: Colors.red,
+                              ),
+                            ),
+                          ]
                           : [],
                 ),
               ],
@@ -59,10 +89,18 @@ class MapPickerPage extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8),
                   child: TextField(
                     controller: searchController,
-                    style: TextStyle(color: isDark ? AppThemeData.grey900 : AppThemeData.grey900),
+                    style: TextStyle(
+                      color:
+                          isDark ? AppThemeData.grey900 : AppThemeData.grey900,
+                    ),
                     decoration: InputDecoration(
                       hintText: 'Search location...'.tr,
-                      hintStyle: TextStyle(color: isDark ? AppThemeData.grey900 : AppThemeData.grey900),
+                      hintStyle: TextStyle(
+                        color:
+                            isDark
+                                ? AppThemeData.grey900
+                                : AppThemeData.grey900,
+                      ),
                       contentPadding: EdgeInsets.all(12),
                       border: InputBorder.none,
                       prefixIcon: Icon(Icons.search),
@@ -76,7 +114,10 @@ class MapPickerPage extends StatelessWidget {
                   }
                   return Container(
                     margin: const EdgeInsets.only(top: 4),
-                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                     child: ListView.builder(
                       shrinkWrap: true,
                       itemCount: controller.searchResults.length,
@@ -111,8 +152,17 @@ class MapPickerPage extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                controller.pickedPlace.value != null ? "Picked Location:".tr : "No Location Picked".tr,
-                style: TextStyle(color: isDark ? AppThemeData.primary300 : AppThemeData.primary300, fontFamily: AppThemeData.semiBold, fontWeight: FontWeight.w600),
+                controller.pickedPlace.value != null
+                    ? "Picked Location:".tr
+                    : "No Location Picked".tr,
+                style: TextStyle(
+                  color:
+                      isDark
+                          ? AppThemeData.primary300
+                          : AppThemeData.primary300,
+                  fontFamily: AppThemeData.semiBold,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               const SizedBox(height: 4),
               if (controller.pickedPlace.value != null)
@@ -135,14 +185,19 @@ class MapPickerPage extends StatelessWidget {
                       onPress: () async {
                         final selected = controller.pickedPlace.value;
                         if (selected != null) {
-                          Get.back(result: selected); // ✅ Return the selected place
+                          Get.back(
+                            result: selected,
+                          ); // ✅ Return the selected place
                           print("Selected location: $selected");
                         }
                       },
                     ),
                   ),
                   const SizedBox(width: 10),
-                  IconButton(icon: const Icon(Icons.delete_forever, color: Colors.red), onPressed: controller.clearAll),
+                  IconButton(
+                    icon: const Icon(Icons.delete_forever, color: Colors.red),
+                    onPressed: controller.clearAll,
+                  ),
                 ],
               ),
             ],

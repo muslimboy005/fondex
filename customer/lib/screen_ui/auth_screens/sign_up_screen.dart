@@ -1,4 +1,5 @@
 import 'package:country_code_picker/country_code_picker.dart';
+import 'package:customer/screen_ui/auth_screens/phone_registration_screen.dart';
 import 'package:customer/screen_ui/location_enable_screens/location_permission_screen.dart';
 import 'package:customer/themes/show_toast_dialog.dart';
 import 'package:flutter/gestures.dart';
@@ -88,7 +89,7 @@ class SignUpScreen extends StatelessWidget {
                     const SizedBox(height: 15),
                     TextFieldWidget(
                       title: "Email Address*".tr,
-                      hintText: "jerome014@gmail.com",
+                      hintText: "jerome014@gmail.com".tr,
                       enable: controller.type.value == "google" || controller.type.value == "apple" ? false : true,
                       controller: controller.emailEditingController.value,
                       focusNode: controller.emailFocusNode,
@@ -239,7 +240,7 @@ class SignUpScreen extends StatelessWidget {
                           } else if (controller.conformPasswordEditingController.value.text.trim().isEmpty) {
                             ShowToastDialog.showToast("Please enter Confirm password".tr);
                           } else if (controller.passwordEditingController.value.text.trim() != controller.conformPasswordEditingController.value.text.trim()) {
-                            ShowToastDialog.showToast("Password and Confirm password doesn't match".tr);
+                            ShowToastDialog.showToast("Password and Confirm password do not match".tr);
                           } else {
                             controller.signUpWithEmailAndPassword();
                           }
@@ -265,7 +266,7 @@ class SignUpScreen extends StatelessWidget {
                     const SizedBox(height: 25),
                     RoundedButtonFill(
                       title: "Mobile number".tr,
-                      onPress: () => Get.to(() => const MobileLoginScreen()),
+                      onPress: () => Get.to(() => const PhoneRegistrationScreen()),
                       isRight: false,
                       isCenter: true,
                       icon: Icon(Icons.mobile_friendly_outlined, size: 20, color: isDark ? AppThemeData.greyDark900 : null),

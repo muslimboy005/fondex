@@ -131,7 +131,7 @@ class MyCabBookingScreen extends StatelessWidget {
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          "${'Booking Date:'.tr} ${controller.formatDate(order.scheduleDateTime!)}".tr,
+                                          "${'Booking Date:'.tr} ${controller.formatDate(order.scheduleDateTime!)}",
                                           textAlign: TextAlign.start,
                                           style: TextStyle(fontFamily: AppThemeData.semiBold, fontSize: 18, color: isDark ? AppThemeData.grey50 : AppThemeData.grey900),
                                         ),

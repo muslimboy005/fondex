@@ -1828,8 +1828,7 @@ class IntercityHomeScreen extends StatelessWidget {
                                           children: [
                                             Expanded(
                                               child: Text(
-                                                '${taxModel.title} (${taxModel.tax} ${taxModel.type == "Fixed" ? Constant.currencyData!.code : "%"})'
-                                                    .tr,
+                                                '${taxModel.title} (${taxModel.tax} ${taxModel.type == "Fixed" ? Constant.currencyData!.code : "%"})',
                                                 textAlign: TextAlign.start,
                                                 style:
                                                     AppThemeData.mediumTextStyle(
@@ -2584,8 +2583,7 @@ class IntercityHomeScreen extends StatelessWidget {
                                       children: [
                                         Expanded(
                                           child: Text(
-                                            '${taxModel.title} (${taxModel.tax} ${taxModel.type == "Fixed" ? Constant.currencyData!.code : "%"})'
-                                                .tr,
+                                            '${taxModel.title} (${taxModel.tax} ${taxModel.type == "Fixed" ? Constant.currencyData!.code : "%"})',
                                             textAlign: TextAlign.start,
                                             style: AppThemeData.mediumTextStyle(
                                               fontSize: 14,

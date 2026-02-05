@@ -1022,7 +1022,7 @@ class WalletController extends GetxController {
       }
     } catch (e) {
       ShowToastDialog.closeLoader();
-      ShowToastDialog.showToast("Payment error: ${e.toString()}".tr);
+      ShowToastDialog.showToast("${'Payment error'.tr}: ${e.toString()}");
       log('❌ [PaymePayment] Exception: $e');
     }
   }

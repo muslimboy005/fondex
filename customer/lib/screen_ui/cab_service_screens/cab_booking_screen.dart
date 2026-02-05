@@ -2387,8 +2387,7 @@ class CabBookingScreen extends StatelessWidget {
                                           children: [
                                             Expanded(
                                               child: Text(
-                                                '${taxModel.title} (${taxModel.tax} ${taxModel.type == "Fixed" ? Constant.currencyData!.code : "%"})'
-                                                    .tr,
+                                                '${taxModel.title} (${taxModel.tax} ${taxModel.type == "Fixed" ? Constant.currencyData!.code : "%"})',
                                                 textAlign: TextAlign.start,
                                                 style:
                                                     AppThemeData.mediumTextStyle(
@@ -3477,8 +3476,7 @@ class CabBookingScreen extends StatelessWidget {
                                       children: [
                                         Expanded(
                                           child: Text(
-                                            '${taxModel.title} (${taxModel.tax} ${taxModel.type == "Fixed" ? Constant.currencyData!.code : "%"})'
-                                                .tr,
+                                            '${taxModel.title} (${taxModel.tax} ${taxModel.type == "Fixed" ? Constant.currencyData!.code : "%"})',
                                             textAlign: TextAlign.start,
                                             style: AppThemeData.mediumTextStyle(
                                               fontSize: 14,

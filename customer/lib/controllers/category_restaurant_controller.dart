@@ -33,9 +33,10 @@ class CategoryRestaurantController extends GetxController {
   }
 
   Future getRestaurant() async {
-    FireStoreUtils.getAllNearestRestaurantByCategoryId(categoryId: vendorCategoryModel.value.id.toString(), isDining: dineIn.value).listen((
-      event,
-    ) async {
+    FireStoreUtils.getAllNearestRestaurantByCategoryId(
+      categoryId: vendorCategoryModel.value.id.toString(),
+      isDining: dineIn.value,
+    ).listen((event) async {
       allNearestRestaurant.clear();
       allNearestRestaurant.addAll(event);
     });
@@ -46,7 +47,10 @@ class CategoryRestaurantController extends GetxController {
       if (value != null) {
         for (int i = 0; i < value.length; i++) {
           if (Constant.isPointInPolygon(
-            LatLng(Constant.selectedLocation.location!.latitude ?? 0.0, Constant.selectedLocation.location!.longitude ?? 0.0),
+            LatLng(
+              Constant.selectedLocation.location!.latitude ?? 0.0,
+              Constant.selectedLocation.location!.longitude ?? 0.0,
+            ),
             value[i].area!,
           )) {
             Constant.selectedZone = value[i];

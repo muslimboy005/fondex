@@ -112,9 +112,9 @@ class HomeParcelScreen extends StatelessWidget {
                                       });
                                     }
                                   } catch (e) {
-                                    await placemarkFromCoordinates(19.228825, 72.854118).then((valuePlaceMaker) {
+                                    await placemarkFromCoordinates(Constant.defaultLocationLat, Constant.defaultLocationLng).then((valuePlaceMaker) {
                                       Placemark placeMark = valuePlaceMaker[0];
-                                      shippingAddress.location = UserLocation(latitude: 19.228825, longitude: 72.854118);
+                                      shippingAddress.location = UserLocation(latitude: Constant.defaultLocationLat, longitude: Constant.defaultLocationLng);
                                       String currentLocation =
                                           "${placeMark.name}, ${placeMark.subLocality}, ${placeMark.locality}, ${placeMark.administrativeArea}, ${placeMark.postalCode}, ${placeMark.country}";
                                       shippingAddress.locality = currentLocation;

@@ -439,7 +439,7 @@ class CartController extends GetxController {
       _sendNotificationAndEmailInBackground(orderModel);
     } catch (e) {
       ShowToastDialog.closeLoader();
-      ShowToastDialog.showToast("Error placing order: ${e.toString()}".tr);
+      ShowToastDialog.showToast("${'Error placing order'.tr}: ${e.toString()}");
     }
   }
 
@@ -1151,7 +1151,7 @@ class CartController extends GetxController {
       }
     } catch (e) {
       ShowToastDialog.closeLoader();
-      ShowToastDialog.showToast("Payment error: ${e.toString()}".tr);
+      ShowToastDialog.showToast("${'Payment error'.tr}: ${e.toString()}");
       log('❌ [PaymePayment] Exception: $e');
     }
   }

@@ -47,10 +47,15 @@ const Map<String, String> enUS = {
   'Please enter first name': 'Please enter first name',
   'Please enter last name': 'Please enter last name',
   'Please enter a valid phone number': 'Please enter a valid phone number',
+  'Please enter Phone number': 'Please enter Phone number',
   'Password must be at least 6 characters':
       'Password must be at least 6 characters',
+  'Please enter minimum 6 characters password':
+      'Please enter minimum 6 characters password',
   'Password and Confirm password do not match':
       'Password and Confirm password do not match',
+  'Please enter password': 'Please enter password',
+  'Please enter Confirm password': 'Please enter Confirm password',
   'Email already in use': 'Email already in use',
   'Password is too weak': 'Password is too weak',
   'Invalid email address': 'Invalid email address',
@@ -74,6 +79,7 @@ const Map<String, String> enUS = {
   'Something went wrong. Please try again.':
       'Something went wrong. Please try again.',
   'Enter the OTP sent to your mobile': 'Enter the OTP sent to your mobile',
+  'Resend OTP in': 'Resend OTP in',
   'Resend OTP': 'Resend OTP',
   'Verify': 'Verify',
   'OTP sent': 'OTP sent',

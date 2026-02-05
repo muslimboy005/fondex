@@ -1342,7 +1342,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       }
       ShowToastDialog.showToast("Added to cart".tr);
     } catch (e) {
-      ShowToastDialog.showToast("Error adding to cart: ${e.toString()}".tr);
+      ShowToastDialog.showToast("${'Error adding to cart'.tr}: ${e.toString()}");
     }
   }
 }

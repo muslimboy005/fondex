@@ -294,7 +294,7 @@ class GiftCardScreen extends StatelessWidget {
                             const SizedBox(height: 20),
                             Center(
                               child: Text(
-                                "${'Gift Card expire'.tr} ${controller.selectedGiftCard.value.expiryDay} ${'days after purchase'.tr}".tr,
+                                "${'Gift Card expire'.tr} ${controller.selectedGiftCard.value.expiryDay} ${'days after purchase'.tr}",
                                 textAlign: TextAlign.center,
                                 style: TextStyle(fontFamily: AppThemeData.medium, fontSize: 16, color: isDark ? AppThemeData.grey500 : AppThemeData.grey400),
                               ),

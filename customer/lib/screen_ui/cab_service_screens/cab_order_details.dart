@@ -45,12 +45,30 @@ class CabOrderDetails extends StatelessWidget {
                     child: Container(
                       height: 42,
                       width: 42,
-                      decoration: BoxDecoration(shape: BoxShape.circle, color: AppThemeData.grey50),
-                      child: Center(child: Padding(padding: const EdgeInsets.only(left: 5), child: Icon(Icons.arrow_back_ios, color: AppThemeData.grey900, size: 20))),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: AppThemeData.grey50,
+                      ),
+                      child: Center(
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 5),
+                          child: Icon(
+                            Icons.arrow_back_ios,
+                            color: AppThemeData.grey900,
+                            size: 20,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 10),
-                  Text("Ride Details".tr, style: AppThemeData.boldTextStyle(fontSize: 18, color: AppThemeData.grey900)),
+                  Text(
+                    "Ride Details".tr,
+                    style: AppThemeData.boldTextStyle(
+                      fontSize: 18,
+                      color: AppThemeData.grey900,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -65,15 +83,30 @@ class CabOrderDetails extends StatelessWidget {
                         Container(
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(15),
-                            color: isDark ? AppThemeData.greyDark50 : AppThemeData.grey50,
-                            border: Border.all(color: isDark ? AppThemeData.greyDark200 : AppThemeData.grey200),
+                            color:
+                                isDark
+                                    ? AppThemeData.greyDark50
+                                    : AppThemeData.grey50,
+                            border: Border.all(
+                              color:
+                                  isDark
+                                      ? AppThemeData.greyDark200
+                                      : AppThemeData.grey200,
+                            ),
                           ),
                           width: double.infinity,
                           padding: const EdgeInsets.all(16),
                           child: Text(
-                            "${'Order Id:'.tr} ${Constant.orderId(orderId: controller.cabOrder.value.id.toString())}".tr,
+                            "${'Order Id:'.tr} ${Constant.orderId(orderId: controller.cabOrder.value.id.toString())}",
                             textAlign: TextAlign.start,
-                            style: TextStyle(fontFamily: AppThemeData.semiBold, fontSize: 18, color: isDark ? AppThemeData.grey50 : AppThemeData.grey900),
+                            style: TextStyle(
+                              fontFamily: AppThemeData.semiBold,
+                              fontSize: 18,
+                              color:
+                                  isDark
+                                      ? AppThemeData.grey50
+                                      : AppThemeData.grey900,
+                            ),
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -81,24 +114,42 @@ class CabOrderDetails extends StatelessWidget {
                           margin: const EdgeInsets.only(bottom: 16),
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: isDark ? AppThemeData.greyDark50 : AppThemeData.grey50,
+                            color:
+                                isDark
+                                    ? AppThemeData.greyDark50
+                                    : AppThemeData.grey50,
                             borderRadius: BorderRadius.circular(15),
-                            border: Border.all(color: isDark ? AppThemeData.greyDark200 : AppThemeData.grey200),
+                            border: Border.all(
+                              color:
+                                  isDark
+                                      ? AppThemeData.greyDark200
+                                      : AppThemeData.grey200,
+                            ),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                "${'Booking Date:'.tr} ${controller.formatDate(controller.cabOrder.value.scheduleDateTime!)}".tr,
+                                "${'Booking Date:'.tr} ${controller.formatDate(controller.cabOrder.value.scheduleDateTime!)}",
                                 textAlign: TextAlign.start,
-                                style: TextStyle(fontFamily: AppThemeData.semiBold, fontSize: 18, color: isDark ? AppThemeData.grey50 : AppThemeData.grey900),
+                                style: TextStyle(
+                                  fontFamily: AppThemeData.semiBold,
+                                  fontSize: 18,
+                                  color:
+                                      isDark
+                                          ? AppThemeData.grey50
+                                          : AppThemeData.grey900,
+                                ),
                               ),
                               Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Column(
                                     children: [
-                                      Icon(Icons.stop_circle_outlined, color: Colors.green),
+                                      Icon(
+                                        Icons.stop_circle_outlined,
+                                        color: Colors.green,
+                                      ),
                                       DottedBorder(
                                         options: CustomPathDottedBorderOptions(
                                           color: Colors.grey.shade400,
@@ -108,25 +159,48 @@ class CabOrderDetails extends StatelessWidget {
                                               (size) =>
                                                   Path()
                                                     ..moveTo(size.width / 2, 0)
-                                                    ..lineTo(size.width / 2, size.height),
+                                                    ..lineTo(
+                                                      size.width / 2,
+                                                      size.height,
+                                                    ),
                                         ),
-                                        child: const SizedBox(width: 20, height: 55),
+                                        child: const SizedBox(
+                                          width: 20,
+                                          height: 55,
+                                        ),
                                       ),
-                                      Icon(Icons.radio_button_checked, color: Colors.red),
+                                      Icon(
+                                        Icons.radio_button_checked,
+                                        color: Colors.red,
+                                      ),
                                     ],
                                   ),
                                   const SizedBox(width: 12),
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Row(
                                           children: [
                                             // Source Location Name
                                             Expanded(
                                               child: Text(
-                                                controller.cabOrder.value.sourceLocationName.toString(),
-                                                style: AppThemeData.semiBoldTextStyle(fontSize: 16, color: isDark ? AppThemeData.greyDark900 : AppThemeData.grey900),
+                                                controller
+                                                    .cabOrder
+                                                    .value
+                                                    .sourceLocationName
+                                                    .toString(),
+                                                style:
+                                                    AppThemeData.semiBoldTextStyle(
+                                                      fontSize: 16,
+                                                      color:
+                                                          isDark
+                                                              ? AppThemeData
+                                                                  .greyDark900
+                                                              : AppThemeData
+                                                                  .grey900,
+                                                    ),
                                                 maxLines: 2,
                                                 overflow: TextOverflow.ellipsis,
                                               ),
@@ -134,14 +208,30 @@ class CabOrderDetails extends StatelessWidget {
                                             const SizedBox(width: 8),
                                             Container(
                                               decoration: BoxDecoration(
-                                                borderRadius: BorderRadius.circular(10),
-                                                border: Border.all(color: AppThemeData.warning300, width: 1),
+                                                borderRadius:
+                                                    BorderRadius.circular(10),
+                                                border: Border.all(
+                                                  color:
+                                                      AppThemeData.warning300,
+                                                  width: 1,
+                                                ),
                                                 color: AppThemeData.warning50,
                                               ),
-                                              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    vertical: 8,
+                                                    horizontal: 12,
+                                                  ),
                                               child: Text(
-                                                controller.cabOrder.value.status.toString(),
-                                                style: AppThemeData.boldTextStyle(fontSize: 14, color: AppThemeData.warning500),
+                                                controller.cabOrder.value.status
+                                                    .toString(),
+                                                style:
+                                                    AppThemeData.boldTextStyle(
+                                                      fontSize: 14,
+                                                      color:
+                                                          AppThemeData
+                                                              .warning500,
+                                                    ),
                                                 overflow: TextOverflow.ellipsis,
                                               ),
                                             ),
@@ -156,15 +246,34 @@ class CabOrderDetails extends StatelessWidget {
                                             customPath:
                                                 (size) =>
                                                     Path()
-                                                      ..moveTo(0, size.height / 2) // start from left center
-                                                      ..lineTo(size.width, size.height / 2), // draw to right center
+                                                      ..moveTo(
+                                                        0,
+                                                        size.height / 2,
+                                                      ) // start from left center
+                                                      ..lineTo(
+                                                        size.width,
+                                                        size.height / 2,
+                                                      ), // draw to right center
                                           ),
-                                          child: const SizedBox(width: 295, height: 3),
+                                          child: const SizedBox(
+                                            width: 295,
+                                            height: 3,
+                                          ),
                                         ),
                                         SizedBox(height: 15),
                                         Text(
-                                          controller.cabOrder.value.destinationLocationName.toString(),
-                                          style: AppThemeData.semiBoldTextStyle(fontSize: 16, color: isDark ? AppThemeData.greyDark900 : AppThemeData.grey900),
+                                          controller
+                                              .cabOrder
+                                              .value
+                                              .destinationLocationName
+                                              .toString(),
+                                          style: AppThemeData.semiBoldTextStyle(
+                                            fontSize: 16,
+                                            color:
+                                                isDark
+                                                    ? AppThemeData.greyDark900
+                                                    : AppThemeData.grey900,
+                                          ),
                                         ),
                                       ],
                                     ),
@@ -179,8 +288,16 @@ class CabOrderDetails extends StatelessWidget {
                           height: 180,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(15),
-                            color: isDark ? AppThemeData.greyDark50 : AppThemeData.grey50,
-                            border: Border.all(color: isDark ? AppThemeData.greyDark200 : AppThemeData.grey200),
+                            color:
+                                isDark
+                                    ? AppThemeData.greyDark50
+                                    : AppThemeData.grey50,
+                            border: Border.all(
+                              color:
+                                  isDark
+                                      ? AppThemeData.greyDark200
+                                      : AppThemeData.grey200,
+                            ),
                           ),
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(15),
@@ -188,62 +305,141 @@ class CabOrderDetails extends StatelessWidget {
                                 Constant.isOsmMap
                                     ? fm.FlutterMap(
                                       options: fm.MapOptions(
-                                        initialCenter: osm.LatLng(controller.cabOrder.value.sourceLocation!.latitude!, controller.cabOrder.value.sourceLocation!.longitude!),
+                                        initialCenter: osm.LatLng(
+                                          controller
+                                              .cabOrder
+                                              .value
+                                              .sourceLocation!
+                                              .latitude!,
+                                          controller
+                                              .cabOrder
+                                              .value
+                                              .sourceLocation!
+                                              .longitude!,
+                                        ),
                                         initialZoom: 13,
                                       ),
                                       children: [
-                                        fm.TileLayer(urlTemplate: "https://tile.openstreetmap.org/{z}/{x}/{y}.png"),
+                                        fm.TileLayer(
+                                          urlTemplate:
+                                              "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                                        ),
 
                                         // Only show polyline if points exist
-                                        if (controller.osmPolyline.isNotEmpty) fm.PolylineLayer(polylines: [fm.Polyline(points: controller.osmPolyline.toList(), color: Colors.blue, strokeWidth: 4)]),
+                                        if (controller.osmPolyline.isNotEmpty)
+                                          fm.PolylineLayer(
+                                            polylines: [
+                                              fm.Polyline(
+                                                points:
+                                                    controller.osmPolyline
+                                                        .toList(),
+                                                color: Colors.blue,
+                                                strokeWidth: 4,
+                                              ),
+                                            ],
+                                          ),
 
                                         fm.MarkerLayer(
                                           markers: [
                                             fm.Marker(
-                                              point: osm.LatLng(controller.cabOrder.value.sourceLocation!.latitude!, controller.cabOrder.value.sourceLocation!.longitude!),
+                                              point: osm.LatLng(
+                                                controller
+                                                    .cabOrder
+                                                    .value
+                                                    .sourceLocation!
+                                                    .latitude!,
+                                                controller
+                                                    .cabOrder
+                                                    .value
+                                                    .sourceLocation!
+                                                    .longitude!,
+                                              ),
                                               width: 20,
                                               height: 20,
-                                              child: Image.asset('assets/icons/ic_cab_pickup.png', width: 10, height: 10),
+                                              child: Image.asset(
+                                                'assets/icons/ic_cab_pickup.png',
+                                                width: 10,
+                                                height: 10,
+                                              ),
                                             ),
                                             fm.Marker(
-                                              point: osm.LatLng(controller.cabOrder.value.destinationLocation!.latitude!, controller.cabOrder.value.destinationLocation!.longitude!),
+                                              point: osm.LatLng(
+                                                controller
+                                                    .cabOrder
+                                                    .value
+                                                    .destinationLocation!
+                                                    .latitude!,
+                                                controller
+                                                    .cabOrder
+                                                    .value
+                                                    .destinationLocation!
+                                                    .longitude!,
+                                              ),
                                               width: 20,
                                               height: 20,
-                                              child: Image.asset('assets/icons/ic_cab_destination.png', width: 10, height: 10),
+                                              child: Image.asset(
+                                                'assets/icons/ic_cab_destination.png',
+                                                width: 10,
+                                                height: 10,
+                                              ),
                                             ),
                                           ],
                                         ),
                                       ],
                                     )
                                     : Constant.isYandexMap
-                                        ? ym.YandexMap(
-                                          onMapCreated:
-                                              (ym.YandexMapController mapController) async {
-                                            await mapController.moveCamera(
-                                              ym.CameraUpdate.newCameraPosition(
-                                                ym.CameraPosition(
-                                                  target: ym.Point(
-                                                    latitude: controller.cabOrder.value.sourceLocation!.latitude!,
-                                                    longitude: controller.cabOrder.value.sourceLocation!.longitude!,
-                                                  ),
-                                                  zoom: 13,
-                                                ),
+                                    ? ym.YandexMap(
+                                      onMapCreated: (
+                                        ym.YandexMapController mapController,
+                                      ) async {
+                                        await mapController.moveCamera(
+                                          ym.CameraUpdate.newCameraPosition(
+                                            ym.CameraPosition(
+                                              target: ym.Point(
+                                                latitude:
+                                                    controller
+                                                        .cabOrder
+                                                        .value
+                                                        .sourceLocation!
+                                                        .latitude!,
+                                                longitude:
+                                                    controller
+                                                        .cabOrder
+                                                        .value
+                                                        .sourceLocation!
+                                                        .longitude!,
                                               ),
-                                            );
-                                          },
-                                          mapObjects: yandexMapObjectsFromGoogle(
-                                            markers: controller.googleMarkers,
-                                            polylines: controller.googlePolylines,
+                                              zoom: 13,
+                                            ),
                                           ),
-                                        )
-                                        : gmap.GoogleMap(
-                                          initialCameraPosition: gmap.CameraPosition(
-                                            target: gmap.LatLng(controller.cabOrder.value.sourceLocation!.latitude!, controller.cabOrder.value.sourceLocation!.longitude!),
+                                        );
+                                      },
+                                      mapObjects: yandexMapObjectsFromGoogle(
+                                        markers: controller.googleMarkers,
+                                        polylines: controller.googlePolylines,
+                                      ),
+                                    )
+                                    : gmap.GoogleMap(
+                                      initialCameraPosition:
+                                          gmap.CameraPosition(
+                                            target: gmap.LatLng(
+                                              controller
+                                                  .cabOrder
+                                                  .value
+                                                  .sourceLocation!
+                                                  .latitude!,
+                                              controller
+                                                  .cabOrder
+                                                  .value
+                                                  .sourceLocation!
+                                                  .longitude!,
+                                            ),
                                             zoom: 13,
                                           ),
-                                          polylines: controller.googlePolylines.toSet(),
-                                          markers: controller.googleMarkers.toSet(),
-                                        ),
+                                      polylines:
+                                          controller.googlePolylines.toSet(),
+                                      markers: controller.googleMarkers.toSet(),
+                                    ),
                           ),
                         ),
                         controller.cabOrder.value.driver != null
@@ -253,18 +449,38 @@ class CabOrderDetails extends StatelessWidget {
                                 Container(
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(15),
-                                    color: isDark ? AppThemeData.greyDark50 : AppThemeData.grey50,
-                                    border: Border.all(color: isDark ? AppThemeData.greyDark200 : AppThemeData.grey200),
+                                    color:
+                                        isDark
+                                            ? AppThemeData.greyDark50
+                                            : AppThemeData.grey50,
+                                    border: Border.all(
+                                      color:
+                                          isDark
+                                              ? AppThemeData.greyDark200
+                                              : AppThemeData.grey200,
+                                    ),
                                   ),
                                   padding: const EdgeInsets.all(16),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-                                      Text("Ride & Fare Summary".tr, style: AppThemeData.boldTextStyle(fontSize: 14, color: isDark ? AppThemeData.greyDark500 : AppThemeData.grey500)),
+                                      Text(
+                                        "Ride & Fare Summary".tr,
+                                        style: AppThemeData.boldTextStyle(
+                                          fontSize: 14,
+                                          color:
+                                              isDark
+                                                  ? AppThemeData.greyDark500
+                                                  : AppThemeData.grey500,
+                                        ),
+                                      ),
                                       const SizedBox(height: 8),
                                       Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Row(
                                             children: [
@@ -272,41 +488,103 @@ class CabOrderDetails extends StatelessWidget {
                                                 width: 52,
                                                 height: 52,
                                                 child: ClipRRect(
-                                                  borderRadius: BorderRadiusGeometry.circular(10),
-                                                  child: NetworkImageWidget(imageUrl: controller.cabOrder.value.driver?.profilePictureURL ?? '', height: 70, width: 70, borderRadius: 35),
+                                                  borderRadius:
+                                                      BorderRadiusGeometry.circular(
+                                                        10,
+                                                      ),
+                                                  child: NetworkImageWidget(
+                                                    imageUrl:
+                                                        controller
+                                                            .cabOrder
+                                                            .value
+                                                            .driver
+                                                            ?.profilePictureURL ??
+                                                        '',
+                                                    height: 70,
+                                                    width: 70,
+                                                    borderRadius: 35,
+                                                  ),
                                                 ),
                                               ),
                                               SizedBox(width: 20),
                                               Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                    controller.cabOrder.value.driver?.fullName() ?? '',
-                                                    style: AppThemeData.boldTextStyle(color: isDark ? AppThemeData.greyDark900 : AppThemeData.grey900, fontSize: 18),
+                                                    controller
+                                                            .cabOrder
+                                                            .value
+                                                            .driver
+                                                            ?.fullName() ??
+                                                        '',
+                                                    style:
+                                                        AppThemeData.boldTextStyle(
+                                                          color:
+                                                              isDark
+                                                                  ? AppThemeData
+                                                                      .greyDark900
+                                                                  : AppThemeData
+                                                                      .grey900,
+                                                          fontSize: 18,
+                                                        ),
                                                   ),
                                                   Text(
                                                     "${controller.cabOrder.value.driver?.vehicleType ?? ''} | ${controller.cabOrder.value.driver?.carMakes.toString()}",
-                                                    style: TextStyle(fontFamily: AppThemeData.medium, color: isDark ? AppThemeData.greyDark700 : AppThemeData.grey700, fontSize: 14),
+                                                    style: TextStyle(
+                                                      fontFamily:
+                                                          AppThemeData.medium,
+                                                      color:
+                                                          isDark
+                                                              ? AppThemeData
+                                                                  .greyDark700
+                                                              : AppThemeData
+                                                                  .grey700,
+                                                      fontSize: 14,
+                                                    ),
                                                   ),
                                                   Text(
-                                                    controller.cabOrder.value.driver?.carNumber ?? '',
-                                                    style: AppThemeData.boldTextStyle(color: isDark ? AppThemeData.greyDark700 : AppThemeData.grey700, fontSize: 16),
+                                                    controller
+                                                            .cabOrder
+                                                            .value
+                                                            .driver
+                                                            ?.carNumber ??
+                                                        '',
+                                                    style:
+                                                        AppThemeData.boldTextStyle(
+                                                          color:
+                                                              isDark
+                                                                  ? AppThemeData
+                                                                      .greyDark700
+                                                                  : AppThemeData
+                                                                      .grey700,
+                                                          fontSize: 16,
+                                                        ),
                                                   ),
                                                 ],
                                               ),
                                             ],
                                           ),
                                           RoundedButtonBorder(
-                                            title: controller.driverUser.value.averageRating.toStringAsFixed(1) ?? '',
+                                            title:
+                                                controller
+                                                    .driverUser
+                                                    .value
+                                                    .averageRating
+                                                    .toStringAsFixed(1) ??
+                                                '',
                                             width: 20,
                                             height: 3.5,
                                             radius: 10,
                                             isRight: false,
                                             isCenter: true,
                                             textColor: AppThemeData.warning400,
-                                            borderColor: AppThemeData.warning400,
+                                            borderColor:
+                                                AppThemeData.warning400,
                                             color: AppThemeData.warning50,
-                                            icon: SvgPicture.asset("assets/icons/ic_start.svg"),
+                                            icon: SvgPicture.asset(
+                                              "assets/icons/ic_start.svg",
+                                            ),
                                             onPress: () {},
                                           ),
                                         ],
@@ -315,23 +593,60 @@ class CabOrderDetails extends StatelessWidget {
                                         children: [
                                           Expanded(
                                             child: Visibility(
-                                              visible: controller.cabOrder.value.status == Constant.orderCompleted ? true : false,
+                                              visible:
+                                                  controller
+                                                              .cabOrder
+                                                              .value
+                                                              .status ==
+                                                          Constant
+                                                              .orderCompleted
+                                                      ? true
+                                                      : false,
                                               child: Padding(
-                                                padding: const EdgeInsets.symmetric(vertical: 10),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      vertical: 10,
+                                                    ),
                                                 child: RoundedButtonFill(
-                                                  title: controller.ratingModel.value.id != null && controller.ratingModel.value.id!.isNotEmpty ? 'Update Review'.tr : 'Add Review'.tr,
+                                                  title:
+                                                      controller
+                                                                      .ratingModel
+                                                                      .value
+                                                                      .id !=
+                                                                  null &&
+                                                              controller
+                                                                  .ratingModel
+                                                                  .value
+                                                                  .id!
+                                                                  .isNotEmpty
+                                                          ? 'Update Review'.tr
+                                                          : 'Add Review'.tr,
                                                   onPress: () async {
-                                                    final result = await Get.to(() => CabReviewScreen(), arguments: {'order': controller.cabOrder.value});
+                                                    final result = await Get.to(
+                                                      () => CabReviewScreen(),
+                                                      arguments: {
+                                                        'order':
+                                                            controller
+                                                                .cabOrder
+                                                                .value,
+                                                      },
+                                                    );
 
                                                     // If review was submitted successfully
                                                     if (result == true) {
-                                                      await controller.fetchDriverDetails();
+                                                      await controller
+                                                          .fetchDriverDetails();
                                                     }
                                                   },
                                                   height: 5,
                                                   borderRadius: 15,
                                                   color: Colors.orange,
-                                                  textColor: isDark ? AppThemeData.greyDark900 : AppThemeData.grey900,
+                                                  textColor:
+                                                      isDark
+                                                          ? AppThemeData
+                                                              .greyDark900
+                                                          : AppThemeData
+                                                              .grey900,
                                                 ),
                                               ),
                                             ),
@@ -339,65 +654,144 @@ class CabOrderDetails extends StatelessWidget {
                                           SizedBox(width: 5),
                                           Expanded(
                                             child: Visibility(
-                                              visible: controller.cabOrder.value.status == Constant.orderCompleted ? true : false,
+                                              visible:
+                                                  controller
+                                                              .cabOrder
+                                                              .value
+                                                              .status ==
+                                                          Constant
+                                                              .orderCompleted
+                                                      ? true
+                                                      : false,
                                               child: Padding(
-                                                padding: const EdgeInsets.symmetric(vertical: 10),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      vertical: 10,
+                                                    ),
                                                 child: RoundedButtonFill(
                                                   title: 'Complain'.tr,
                                                   onPress: () async {
-                                                    Get.to(() => ComplainScreen(), arguments: {'order': controller.cabOrder.value});
+                                                    Get.to(
+                                                      () => ComplainScreen(),
+                                                      arguments: {
+                                                        'order':
+                                                            controller
+                                                                .cabOrder
+                                                                .value,
+                                                      },
+                                                    );
                                                   },
                                                   height: 5,
                                                   borderRadius: 15,
                                                   color: Colors.orange,
-                                                  textColor: isDark ? AppThemeData.greyDark900 : AppThemeData.grey900,
+                                                  textColor:
+                                                      isDark
+                                                          ? AppThemeData
+                                                              .greyDark900
+                                                          : AppThemeData
+                                                              .grey900,
                                                 ),
                                               ),
                                             ),
                                           ),
                                         ],
                                       ),
-                                      if (controller.cabOrder.value.status != Constant.orderCompleted)
+                                      if (controller.cabOrder.value.status !=
+                                          Constant.orderCompleted)
                                         Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
                                           children: [
                                             InkWell(
                                               onTap: () {
-                                                Constant.makePhoneCall(controller.cabOrder.value.driver!.phoneNumber.toString());
+                                                Constant.makePhoneCall(
+                                                  controller
+                                                      .cabOrder
+                                                      .value
+                                                      .driver!
+                                                      .phoneNumber
+                                                      .toString(),
+                                                );
                                               },
                                               child: Container(
                                                 width: 150,
                                                 height: 42,
                                                 decoration: ShapeDecoration(
                                                   shape: RoundedRectangleBorder(
-                                                    side: BorderSide(width: 1, color: isDark ? AppThemeData.grey700 : AppThemeData.grey200),
-                                                    borderRadius: BorderRadius.circular(120),
+                                                    side: BorderSide(
+                                                      width: 1,
+                                                      color:
+                                                          isDark
+                                                              ? AppThemeData
+                                                                  .grey700
+                                                              : AppThemeData
+                                                                  .grey200,
+                                                    ),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          120,
+                                                        ),
                                                   ),
                                                 ),
-                                                child: Padding(padding: const EdgeInsets.all(8.0), child: SvgPicture.asset("assets/icons/ic_phone_call.svg")),
+                                                child: Padding(
+                                                  padding: const EdgeInsets.all(
+                                                    8.0,
+                                                  ),
+                                                  child: SvgPicture.asset(
+                                                    "assets/icons/ic_phone_call.svg",
+                                                  ),
+                                                ),
                                               ),
                                             ),
                                             const SizedBox(width: 10),
                                             InkWell(
                                               onTap: () async {
-                                                ShowToastDialog.showLoader("Please wait...".tr);
+                                                ShowToastDialog.showLoader(
+                                                  "Please wait...".tr,
+                                                );
 
-                                                UserModel? customer = await FireStoreUtils.getUserProfile(controller.cabOrder.value.authorID ?? '');
-                                                UserModel? driverUser = await FireStoreUtils.getUserProfile(controller.cabOrder.value.driverId ?? '');
+                                                UserModel? customer =
+                                                    await FireStoreUtils.getUserProfile(
+                                                      controller
+                                                              .cabOrder
+                                                              .value
+                                                              .authorID ??
+                                                          '',
+                                                    );
+                                                UserModel? driverUser =
+                                                    await FireStoreUtils.getUserProfile(
+                                                      controller
+                                                              .cabOrder
+                                                              .value
+                                                              .driverId ??
+                                                          '',
+                                                    );
 
                                                 ShowToastDialog.closeLoader();
 
                                                 Get.to(
                                                   const ChatScreen(),
                                                   arguments: {
-                                                    "customerName": customer?.fullName(),
-                                                    "restaurantName": driverUser?.fullName(),
-                                                    "orderId": controller.cabOrder.value.id,
-                                                    "restaurantId": driverUser?.id,
+                                                    "customerName":
+                                                        customer?.fullName(),
+                                                    "restaurantName":
+                                                        driverUser?.fullName(),
+                                                    "orderId":
+                                                        controller
+                                                            .cabOrder
+                                                            .value
+                                                            .id,
+                                                    "restaurantId":
+                                                        driverUser?.id,
                                                     "customerId": customer?.id,
-                                                    "customerProfileImage": customer?.profilePictureURL,
-                                                    "restaurantProfileImage": driverUser?.profilePictureURL,
-                                                    "token": driverUser?.fcmToken,
+                                                    "customerProfileImage":
+                                                        customer
+                                                            ?.profilePictureURL,
+                                                    "restaurantProfileImage":
+                                                        driverUser
+                                                            ?.profilePictureURL,
+                                                    "token":
+                                                        driverUser?.fcmToken,
                                                     "chatType": "Driver",
                                                   },
                                                 );
@@ -407,11 +801,29 @@ class CabOrderDetails extends StatelessWidget {
                                                 height: 42,
                                                 decoration: ShapeDecoration(
                                                   shape: RoundedRectangleBorder(
-                                                    side: BorderSide(width: 1, color: isDark ? AppThemeData.grey700 : AppThemeData.grey200),
-                                                    borderRadius: BorderRadius.circular(120),
+                                                    side: BorderSide(
+                                                      width: 1,
+                                                      color:
+                                                          isDark
+                                                              ? AppThemeData
+                                                                  .grey700
+                                                              : AppThemeData
+                                                                  .grey200,
+                                                    ),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          120,
+                                                        ),
                                                   ),
                                                 ),
-                                                child: Padding(padding: const EdgeInsets.all(8.0), child: SvgPicture.asset("assets/icons/ic_wechat.svg")),
+                                                child: Padding(
+                                                  padding: const EdgeInsets.all(
+                                                    8.0,
+                                                  ),
+                                                  child: SvgPicture.asset(
+                                                    "assets/icons/ic_wechat.svg",
+                                                  ),
+                                                ),
                                               ),
                                             ),
                                           ],
@@ -426,16 +838,41 @@ class CabOrderDetails extends StatelessWidget {
                         Container(
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(15),
-                            color: isDark ? AppThemeData.greyDark50 : AppThemeData.grey50,
-                            border: Border.all(color: isDark ? AppThemeData.greyDark200 : AppThemeData.grey200),
+                            color:
+                                isDark
+                                    ? AppThemeData.greyDark50
+                                    : AppThemeData.grey50,
+                            border: Border.all(
+                              color:
+                                  isDark
+                                      ? AppThemeData.greyDark200
+                                      : AppThemeData.grey200,
+                            ),
                           ),
                           padding: EdgeInsets.all(16),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: [
-                              _iconTile("${double.parse(controller.cabOrder.value.distance.toString()).toStringAsFixed(2)} ${'KM'.tr}", "Distance".tr, "assets/icons/ic_distance_parcel.svg", isDark),
-                              _iconTile(controller.cabOrder.value.duration ?? '--', "Duration".tr, "assets/icons/ic_duration.svg", isDark),
-                              _iconTile(Constant.amountShow(amount: controller.cabOrder.value.subTotal), "${controller.cabOrder.value.paymentMethod}".tr, "assets/icons/ic_rate_parcel.svg", isDark),
+                              _iconTile(
+                                "${double.parse(controller.cabOrder.value.distance.toString()).toStringAsFixed(2)} ${'KM'.tr}",
+                                "Distance".tr,
+                                "assets/icons/ic_distance_parcel.svg",
+                                isDark,
+                              ),
+                              _iconTile(
+                                controller.cabOrder.value.duration ?? '--',
+                                "Duration".tr,
+                                "assets/icons/ic_duration.svg",
+                                isDark,
+                              ),
+                              _iconTile(
+                                Constant.amountShow(
+                                  amount: controller.cabOrder.value.subTotal,
+                                ),
+                                controller.cabOrder.value.paymentMethod ?? '',
+                                "assets/icons/ic_rate_parcel.svg",
+                                isDark,
+                              ),
                             ],
                           ),
                         ),
@@ -443,43 +880,98 @@ class CabOrderDetails extends StatelessWidget {
                         Container(
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(15),
-                            color: isDark ? AppThemeData.greyDark50 : AppThemeData.grey50,
-                            border: Border.all(color: isDark ? AppThemeData.greyDark200 : AppThemeData.grey200),
+                            color:
+                                isDark
+                                    ? AppThemeData.greyDark50
+                                    : AppThemeData.grey50,
+                            border: Border.all(
+                              color:
+                                  isDark
+                                      ? AppThemeData.greyDark200
+                                      : AppThemeData.grey200,
+                            ),
                           ),
                           padding: const EdgeInsets.all(16),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text("Order Summary".tr, style: AppThemeData.boldTextStyle(fontSize: 14, color: AppThemeData.grey500)),
+                              Text(
+                                "Order Summary".tr,
+                                style: AppThemeData.boldTextStyle(
+                                  fontSize: 14,
+                                  color: AppThemeData.grey500,
+                                ),
+                              ),
                               const SizedBox(height: 8),
 
                               // Subtotal
-                              _summaryTile("Subtotal", Constant.amountShow(amount: controller.subTotal.value.toString()), isDark),
+                              _summaryTile(
+                                "Subtotal",
+                                Constant.amountShow(
+                                  amount: controller.subTotal.value.toString(),
+                                ),
+                                isDark,
+                              ),
 
                               // Discount
-                              _summaryTile("Discount", Constant.amountShow(amount: controller.discount.value.toString()), isDark),
+                              _summaryTile(
+                                "Discount",
+                                Constant.amountShow(
+                                  amount: controller.discount.value.toString(),
+                                ),
+                                isDark,
+                              ),
 
                               // Tax List
-                              ...List.generate(controller.cabOrder.value.taxSetting!.length, (index) {
-                                return _summaryTile(
-                                  "${controller.cabOrder.value.taxSetting![index].title} ${controller.cabOrder.value.taxSetting![index].type == 'fix' ? '' : '(${controller.cabOrder.value.taxSetting![index].tax}%)'}",
-                                  Constant.amountShow(
-                                    amount:
-                                        Constant.getTaxValue(
-                                          amount:
-                                              ((double.tryParse(controller.cabOrder.value.subTotal.toString()) ?? 0.0) - (double.tryParse(controller.cabOrder.value.discount.toString()) ?? 0.0))
-                                                  .toString(),
-                                          taxModel: controller.cabOrder.value.taxSetting![index],
-                                        ).toString(),
-                                  ),
-                                  isDark,
-                                );
-                              }),
+                              ...List.generate(
+                                controller.cabOrder.value.taxSetting!.length,
+                                (index) {
+                                  return _summaryTile(
+                                    "${controller.cabOrder.value.taxSetting![index].title} ${controller.cabOrder.value.taxSetting![index].type == 'fix' ? '' : '(${controller.cabOrder.value.taxSetting![index].tax}%)'}",
+                                    Constant.amountShow(
+                                      amount:
+                                          Constant.getTaxValue(
+                                            amount:
+                                                ((double.tryParse(
+                                                              controller
+                                                                  .cabOrder
+                                                                  .value
+                                                                  .subTotal
+                                                                  .toString(),
+                                                            ) ??
+                                                            0.0) -
+                                                        (double.tryParse(
+                                                              controller
+                                                                  .cabOrder
+                                                                  .value
+                                                                  .discount
+                                                                  .toString(),
+                                                            ) ??
+                                                            0.0))
+                                                    .toString(),
+                                            taxModel:
+                                                controller
+                                                    .cabOrder
+                                                    .value
+                                                    .taxSetting![index],
+                                          ).toString(),
+                                    ),
+                                    isDark,
+                                  );
+                                },
+                              ),
 
                               const Divider(),
 
                               // Total
-                              _summaryTile("Order Total", Constant.amountShow(amount: controller.totalAmount.value.toString()), isDark),
+                              _summaryTile(
+                                "Order Total",
+                                Constant.amountShow(
+                                  amount:
+                                      controller.totalAmount.value.toString(),
+                                ),
+                                isDark,
+                              ),
                             ],
                           ),
                         ),
@@ -496,11 +988,28 @@ class CabOrderDetails extends StatelessWidget {
     return Column(
       children: [
         // Icon(icon, color: AppThemeData.primary300),
-        SvgPicture.asset(icon, height: 28, width: 28, color: isDark ? AppThemeData.greyDark800 : AppThemeData.grey800),
+        SvgPicture.asset(
+          icon,
+          height: 28,
+          width: 28,
+          color: isDark ? AppThemeData.greyDark800 : AppThemeData.grey800,
+        ),
         const SizedBox(height: 6),
-        Text(value, style: AppThemeData.semiBoldTextStyle(fontSize: 16, color: isDark ? AppThemeData.greyDark800 : AppThemeData.grey800)),
+        Text(
+          value,
+          style: AppThemeData.semiBoldTextStyle(
+            fontSize: 16,
+            color: isDark ? AppThemeData.greyDark800 : AppThemeData.grey800,
+          ),
+        ),
         const SizedBox(height: 6),
-        Text(title, style: AppThemeData.semiBoldTextStyle(fontSize: 12, color: isDark ? AppThemeData.greyDark900 : AppThemeData.grey900)),
+        Text(
+          title,
+          style: AppThemeData.semiBoldTextStyle(
+            fontSize: 12,
+            color: isDark ? AppThemeData.greyDark900 : AppThemeData.grey900,
+          ),
+        ),
       ],
     );
   }
@@ -511,8 +1020,20 @@ class CabOrderDetails extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(title.tr, style: AppThemeData.mediumTextStyle(fontSize: 16, color: isDark ? AppThemeData.greyDark800 : AppThemeData.grey800)),
-          Text(value, style: AppThemeData.semiBoldTextStyle(fontSize: title == "Order Total" ? 18 : 16, color: isDark ? AppThemeData.greyDark900 : AppThemeData.grey900)),
+          Text(
+            title.tr,
+            style: AppThemeData.mediumTextStyle(
+              fontSize: 16,
+              color: isDark ? AppThemeData.greyDark800 : AppThemeData.grey800,
+            ),
+          ),
+          Text(
+            value,
+            style: AppThemeData.semiBoldTextStyle(
+              fontSize: title == "Order Total" ? 18 : 16,
+              color: isDark ? AppThemeData.greyDark900 : AppThemeData.grey900,
+            ),
+          ),
         ],
       ),
     );

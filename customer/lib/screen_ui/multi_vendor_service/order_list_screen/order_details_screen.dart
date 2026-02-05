@@ -66,8 +66,7 @@ class OrderDetailsScreen extends StatelessWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      "${'Order'.tr} ${Constant.orderId(orderId: controller.orderModel.value.id.toString())}"
-                                          .tr,
+                                      "${'Order'.tr} ${Constant.orderId(orderId: controller.orderModel.value.id.toString())}",
                                       textAlign: TextAlign.start,
                                       style: TextStyle(
                                         fontFamily: AppThemeData.semiBold,
@@ -803,8 +802,7 @@ class OrderDetailsScreen extends StatelessWidget {
                                                       const SizedBox(width: 5),
                                                       Expanded(
                                                         child: Text(
-                                                          "${'Your Order has been Preparing and assign to the driver'.tr}\n${'Preparation Time'.tr} ${controller.orderModel.value.estimatedTimeToPrepare}"
-                                                              .tr,
+                                                          "${'Your Order has been Preparing and assign to the driver'.tr}\n${'Preparation Time'.tr} ${controller.orderModel.value.estimatedTimeToPrepare}",
                                                           textAlign:
                                                               TextAlign.start,
                                                           style: TextStyle(

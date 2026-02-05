@@ -126,7 +126,7 @@ class ParcelMyBookingController extends GetxController {
 
       ShowToastDialog.showToast("Order cancelled successfully".tr);
     } catch (e) {
-      ShowToastDialog.showToast("${'Failed to cancel order:'.tr} $e".tr);
+      ShowToastDialog.showToast("${'Failed to cancel order'.tr}: $e");
     } finally {
       isLoading.value = false;
     }

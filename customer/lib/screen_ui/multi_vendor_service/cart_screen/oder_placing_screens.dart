@@ -166,12 +166,12 @@ class OrderPlacingScreen extends StatelessWidget {
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          "${cartProductModel.quantity} x".tr,
+                                          "${cartProductModel.quantity} x",
                                           textAlign: TextAlign.start,
                                           style: TextStyle(color: isDark ? AppThemeData.grey100 : AppThemeData.grey900, fontSize: 14, fontFamily: AppThemeData.regular, fontWeight: FontWeight.w400),
                                         ),
                                         Text(
-                                          "${cartProductModel.name}".tr,
+                                          cartProductModel.name ?? '',
                                           textAlign: TextAlign.start,
                                           style: TextStyle(color: isDark ? AppThemeData.grey100 : AppThemeData.grey900, fontSize: 14, fontFamily: AppThemeData.regular, fontWeight: FontWeight.w400),
                                         ),

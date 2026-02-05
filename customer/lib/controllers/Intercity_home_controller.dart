@@ -82,7 +82,8 @@ class IntercityHomeController extends GetxController {
   final RxList<latlong.LatLng> routePoints = <latlong.LatLng>[].obs;
   bool _isMarkersRefreshScheduled = false;
 
-  final Rx<LatLng> currentPosition = LatLng(23.0225, 72.5714).obs;
+  final Rx<LatLng> currentPosition =
+      LatLng(Constant.defaultLocationLat, Constant.defaultLocationLng).obs;
 
   final Rx<LatLng> departureLatLong = const LatLng(0.0, 0.0).obs;
   final Rx<LatLng> destinationLatLong = const LatLng(0.0, 0.0).obs;
@@ -746,15 +747,14 @@ class IntercityHomeController extends GetxController {
   void _setGoogleMarker(double lat, double lng, {required bool isDeparture}) {
     final LatLng pos = LatLng(lat, lng);
     final markerId = MarkerId(isDeparture ? 'Departure' : 'Destination');
-    final icon = isDeparture
-        ? (departureIcon ??
-            BitmapDescriptor.defaultMarkerWithHue(
-              BitmapDescriptor.hueGreen,
-            ))
-        : (destinationIcon ??
-            BitmapDescriptor.defaultMarkerWithHue(
-              BitmapDescriptor.hueRed,
-            ));
+    final icon =
+        isDeparture
+            ? (departureIcon ??
+                BitmapDescriptor.defaultMarkerWithHue(
+                  BitmapDescriptor.hueGreen,
+                ))
+            : (destinationIcon ??
+                BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed));
     final title = isDeparture ? 'Departure'.tr : 'Destination'.tr;
 
     if (isDeparture) {
@@ -815,7 +815,10 @@ class IntercityHomeController extends GetxController {
       await yandexMapController!.moveCamera(
         ym.CameraUpdate.newCameraPosition(
           ym.CameraPosition(
-            target: ym.Point(latitude: target.latitude, longitude: target.longitude),
+            target: ym.Point(
+              latitude: target.latitude,
+              longitude: target.longitude,
+            ),
             zoom: zoom,
           ),
         ),
@@ -878,8 +881,9 @@ class IntercityHomeController extends GetxController {
 
   Future<void> fetchGoogleRouteWithWaypoints() async {
     if (departureLatLong.value.latitude == 0.0 ||
-        destinationLatLong.value.latitude == 0.0)
+        destinationLatLong.value.latitude == 0.0) {
       return;
+    }
 
     final origin =
         '${departureLatLong.value.latitude},${departureLatLong.value.longitude}';
@@ -1035,9 +1039,7 @@ class IntercityHomeController extends GetxController {
     if (yandexMapController == null || points.isEmpty) return;
     final bounds = yandexBoundsFromLatLngs(points);
     await yandexMapController!.moveCamera(
-      ym.CameraUpdate.newGeometry(
-        ym.Geometry.fromBoundingBox(bounds),
-      ),
+      ym.CameraUpdate.newGeometry(ym.Geometry.fromBoundingBox(bounds)),
     );
   }
 

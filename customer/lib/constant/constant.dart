@@ -101,6 +101,10 @@ class Constant {
   static String defaultCountryCode = "";
   static String defaultCountry = "";
 
+  /// Buxoro (Bukhara) – default location when user lokatsiya tanlamasa (shofirkor uchun ham)
+  static const double defaultLocationLat = 39.7681;
+  static const double defaultLocationLng = 64.4556;
+
   static bool isCashbackActive = false;
   static bool isEnableOTPTripStart = false;
   static bool isEnableOTPTripStartForRental = false;

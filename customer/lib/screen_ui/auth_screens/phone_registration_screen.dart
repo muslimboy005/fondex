@@ -1,4 +1,5 @@
 import 'package:country_code_picker/country_code_picker.dart';
+import 'package:customer/screen_ui/auth_screens/login_screen.dart';
 import 'package:customer/screen_ui/auth_screens/sign_up_screen.dart';
 import 'package:customer/screen_ui/location_enable_screens/location_permission_screen.dart';
 import 'package:flutter/gestures.dart';
@@ -190,93 +191,68 @@ class PhoneRegistrationScreen extends StatelessWidget {
                                     : Colors.white,
                           ),
                           const SizedBox(height: 25),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Container(
-                                width: 52,
-                                height: 1,
-                                color:
-                                    isDark
-                                        ? AppThemeData.greyDark300
-                                        : AppThemeData.grey300,
-                              ),
-                              const SizedBox(width: 15),
-                              Text(
-                                "or continue with".tr,
-                                style: AppThemeData.regularTextStyle(
-                                  color:
-                                      isDark
-                                          ? AppThemeData.greyDark400
-                                          : AppThemeData.grey400,
-                                ),
-                              ),
-                              const SizedBox(width: 15),
-                              Container(
-                                width: 52,
-                                height: 1,
-                                color:
-                                    isDark
-                                        ? AppThemeData.greyDark400
-                                        : AppThemeData.grey400,
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 25),
-                          RoundedButtonFill(
-                            title: "Email address".tr,
-                            onPress: () => Get.to(() => const SignUpScreen()),
-                            isRight: false,
-                            isCenter: true,
-                            icon: Image.asset(
-                              AppAssets.icMessage,
-                              width: 20,
-                              height: 18,
-                              color: isDark ? AppThemeData.greyDark900 : null,
-                            ),
-                            color:
-                                isDark
-                                    ? AppThemeData.greyDark200
-                                    : AppThemeData.grey200,
-                            textColor:
-                                isDark
-                                    ? AppThemeData.greyDark900
-                                    : AppThemeData.grey900,
-                          ),
                         ],
                       ),
                     ),
                   ),
                   Padding(
                     padding: const EdgeInsets.only(bottom: 10),
-                    child: Center(
-                      child: Text.rich(
-                        TextSpan(
-                          text: "Didn't have an account?".tr,
-                          style: AppThemeData.mediumTextStyle(
-                            color:
-                                isDark
-                                    ? AppThemeData.greyDark800
-                                    : AppThemeData.grey800,
-                          ),
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            TextSpan(
-                              text: "Sign up".tr,
-                              style: AppThemeData.mediumTextStyle(
-                                color: AppThemeData.ecommerce300,
-                                decoration: TextDecoration.underline,
-                                decorationColor: AppThemeData.ecommerce300,
-                                decorationStyle: TextDecorationStyle.solid,
+                            Container(
+                              width: 52,
+                              height: 1,
+                              color:
+                                  isDark
+                                      ? AppThemeData.greyDark300
+                                      : AppThemeData.grey300,
+                            ),
+                            const SizedBox(width: 15),
+                            Text(
+                              "or continue with".tr,
+                              style: AppThemeData.regularTextStyle(
+                                color:
+                                    isDark
+                                        ? AppThemeData.greyDark400
+                                        : AppThemeData.grey400,
                               ),
-                              recognizer:
-                                  TapGestureRecognizer()
-                                    ..onTap = () {
-                                      Get.to(() => const SignUpScreen());
-                                    },
+                            ),
+                            const SizedBox(width: 15),
+                            Container(
+                              width: 52,
+                              height: 1,
+                              color:
+                                  isDark
+                                      ? AppThemeData.greyDark400
+                                      : AppThemeData.grey400,
                             ),
                           ],
                         ),
-                      ),
+                        const SizedBox(height: 25),
+                        RoundedButtonFill(
+                          title: "Email address".tr,
+                          onPress: () => Get.to(() => const LoginScreen()),
+                          isRight: false,
+                          isCenter: true,
+                          icon: Image.asset(
+                            AppAssets.icMessage,
+                            width: 20,
+                            height: 18,
+                            color: isDark ? AppThemeData.greyDark900 : null,
+                          ),
+                          color:
+                              isDark
+                                  ? AppThemeData.greyDark200
+                                  : AppThemeData.grey200,
+                          textColor:
+                              isDark
+                                  ? AppThemeData.greyDark900
+                                  : AppThemeData.grey900,
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -288,4 +264,3 @@ class PhoneRegistrationScreen extends StatelessWidget {
     );
   }
 }
-

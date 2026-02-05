@@ -115,7 +115,7 @@ class ServiceListController extends GetxController {
   Future<void> _navigate(SectionModel sectionModel) async {
     // Optimizatsiya: getTaxList ni keyinroq yuklash - navigation'dan keyin
     // Bu loading vaqtini kamaytiradi
-    
+
     // Navigation birinchi bo'lib bajariladi
     if (sectionModel.serviceTypeFlag == "ecommerce-service" ||
         sectionModel.serviceTypeFlag == "delivery-service") {
@@ -164,14 +164,16 @@ class ServiceListController extends GetxController {
   // Tax list ni background'da yuklash
   Future<void> _loadTaxListInBackground(String sectionId) async {
     if (sectionId.isEmpty) return;
-    
-    FireStoreUtils.getTaxList(sectionId).then((value) {
-      if (value != null) {
-        Constant.taxList = value;
-      }
-    }).catchError((e) {
-      print("Error loading tax list: $e");
-    });
+
+    FireStoreUtils.getTaxList(sectionId)
+        .then((value) {
+          if (value != null) {
+            Constant.taxList = value;
+          }
+        })
+        .catchError((e) {
+          print("Error loading tax list: $e");
+        });
   }
 
   final CartProvider cartProvider = CartProvider();
