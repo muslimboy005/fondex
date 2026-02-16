@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:driver/app/auth_screen/phone_number_screen.dart';
+import 'package:driver/app/auth_screen/phone_registration_screen.dart';
 import 'package:driver/app/auth_screen/signup_screen.dart';
 import 'package:driver/app/forgot_password_screen/forgot_password_screen.dart';
 import 'package:driver/constant/show_toast_dialog.dart';
@@ -27,7 +27,8 @@ class LoginScreen extends StatelessWidget {
         builder: (controller) {
           return Scaffold(
             appBar: AppBar(
-              backgroundColor: isDark ? AppThemeData.surfaceDark : AppThemeData.surface,
+              backgroundColor:
+                  isDark ? AppThemeData.surfaceDark : AppThemeData.surface,
             ),
             body: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -36,11 +37,19 @@ class LoginScreen extends StatelessWidget {
                 children: [
                   Text(
                     "Log In to Your Account".tr,
-                    style: TextStyle(color: isDark ? AppThemeData.grey50 : AppThemeData.grey900, fontSize: 22, fontFamily: AppThemeData.semiBold),
+                    style: TextStyle(
+                        color:
+                            isDark ? AppThemeData.grey50 : AppThemeData.grey900,
+                        fontSize: 22,
+                        fontFamily: AppThemeData.semiBold),
                   ),
                   Text(
-                    "Sign in to access your eMart account and manage your deliveries seamlessly.".tr,
-                    style: TextStyle(color: isDark ? AppThemeData.grey50 : AppThemeData.grey500, fontFamily: AppThemeData.regular),
+                    "Sign in to access your eMart account and manage your deliveries seamlessly."
+                        .tr,
+                    style: TextStyle(
+                        color:
+                            isDark ? AppThemeData.grey50 : AppThemeData.grey500,
+                        fontFamily: AppThemeData.regular),
                   ),
                   const SizedBox(
                     height: 10,
@@ -49,9 +58,11 @@ class LoginScreen extends StatelessWidget {
                     TextSpan(
                       children: [
                         TextSpan(
-                            text: "Didn’t Have an account?".tr,
+                            text: "Didn't Have an account?".tr,
                             style: TextStyle(
-                              color: isDark ? AppThemeData.grey50 : AppThemeData.grey900,
+                              color: isDark
+                                  ? AppThemeData.grey50
+                                  : AppThemeData.grey900,
                               fontFamily: AppThemeData.medium,
                               fontWeight: FontWeight.w500,
                             )),
@@ -112,20 +123,25 @@ class LoginScreen extends StatelessWidget {
                       padding: const EdgeInsets.all(12),
                       child: InkWell(
                           onTap: () {
-                            controller.passwordVisible.value = !controller.passwordVisible.value;
+                            controller.passwordVisible.value =
+                                !controller.passwordVisible.value;
                           },
                           child: controller.passwordVisible.value
                               ? SvgPicture.asset(
                                   "assets/icons/ic_password_show.svg",
                                   colorFilter: ColorFilter.mode(
-                                    isDark ? AppThemeData.grey300 : AppThemeData.grey600,
+                                    isDark
+                                        ? AppThemeData.grey300
+                                        : AppThemeData.grey600,
                                     BlendMode.srcIn,
                                   ),
                                 )
                               : SvgPicture.asset(
                                   "assets/icons/ic_password_close.svg",
                                   colorFilter: ColorFilter.mode(
-                                    isDark ? AppThemeData.grey300 : AppThemeData.grey600,
+                                    isDark
+                                        ? AppThemeData.grey300
+                                        : AppThemeData.grey600,
                                     BlendMode.srcIn,
                                   ),
                                 )),
@@ -143,7 +159,9 @@ class LoginScreen extends StatelessWidget {
                         style: TextStyle(
                             decoration: TextDecoration.underline,
                             decorationColor: AppThemeData.primary300,
-                            color: isDark ? AppThemeData.primary300 : AppThemeData.primary300,
+                            color: isDark
+                                ? AppThemeData.primary300
+                                : AppThemeData.primary300,
                             fontSize: 14,
                             fontFamily: AppThemeData.medium),
                       ),
@@ -159,68 +177,43 @@ class LoginScreen extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Padding(
-                  padding: EdgeInsets.symmetric(vertical: Platform.isAndroid ? 10 : 30, horizontal: 16),
+                  padding: EdgeInsets.symmetric(
+                      vertical: Platform.isAndroid ? 10 : 30, horizontal: 16),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       RoundedButtonFill(
                         title: "Continue with Mobile Number".tr,
-                        textColor: isDark ? AppThemeData.grey100 : AppThemeData.grey900,
-                        color: isDark ? AppThemeData.grey900 : AppThemeData.grey100,
+                        textColor: isDark
+                            ? AppThemeData.grey100
+                            : AppThemeData.grey900,
+                        color: isDark
+                            ? AppThemeData.grey900
+                            : AppThemeData.grey100,
                         icon: SvgPicture.asset(
                           "assets/icons/ic_phone.svg",
-                          colorFilter: const ColorFilter.mode(AppThemeData.grey900, BlendMode.srcIn),
+                          colorFilter: const ColorFilter.mode(
+                              AppThemeData.grey900, BlendMode.srcIn),
                         ),
                         isRight: false,
                         onPress: () async {
-                          Get.to(const PhoneNumberScreen());
+                          Get.to(const PhoneRegistrationScreen());
                         },
-                      ),
-                      const SizedBox(
-                        height: 12,
-                      ),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: RoundedButtonFill(
-                              title: "with Google".tr,
-                              textColor: isDark ? AppThemeData.grey100 : AppThemeData.grey900,
-                              color: isDark ? AppThemeData.grey900 : AppThemeData.grey100,
-                              icon: SvgPicture.asset("assets/icons/ic_google.svg"),
-                              isRight: false,
-                              onPress: () async {
-                                controller.loginWithGoogle();
-                              },
-                            ),
-                          ),
-                          const SizedBox(
-                            width: 10,
-                          ),
-                          Platform.isIOS
-                              ? Expanded(
-                                  child: RoundedButtonFill(
-                                    title: "with Apple".tr,
-                                    textColor: isDark ? AppThemeData.grey100 : AppThemeData.grey900,
-                                    color: isDark ? AppThemeData.grey900 : AppThemeData.grey100,
-                                    icon: SvgPicture.asset("assets/icons/ic_apple.svg"),
-                                    isRight: false,
-                                    onPress: () async {
-                                      controller.loginWithApple();
-                                    },
-                                  ),
-                                )
-                              : const SizedBox(),
-                        ],
                       ),
                     ],
                   ),
                 ),
                 InkWell(
                   onTap: () {
-                    if (controller.emailEditingController.value.text.trim().isEmpty) {
+                    if (controller.emailEditingController.value.text
+                        .trim()
+                        .isEmpty) {
                       ShowToastDialog.showToast("Please enter valid email".tr);
-                    } else if (controller.passwordEditingController.value.text.trim().isEmpty) {
-                      ShowToastDialog.showToast("Please enter valid password".tr);
+                    } else if (controller.passwordEditingController.value.text
+                        .trim()
+                        .isEmpty) {
+                      ShowToastDialog.showToast(
+                          "Please enter valid password".tr);
                     } else {
                       controller.loginWithEmailAndPassword();
                     }
@@ -235,7 +228,9 @@ class LoginScreen extends StatelessWidget {
                         "Log in".tr,
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          color: isDark ? AppThemeData.grey50 : AppThemeData.grey50,
+                          color: isDark
+                              ? AppThemeData.grey50
+                              : AppThemeData.grey50,
                           fontSize: 16,
                           fontFamily: AppThemeData.medium,
                           fontWeight: FontWeight.w400,

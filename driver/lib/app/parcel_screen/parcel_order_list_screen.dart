@@ -20,7 +20,8 @@ class ParcelOrderListScreen extends StatelessWidget {
         builder: (controller) {
           return DefaultTabController(
             length: controller.tabTitles.length,
-            initialIndex: controller.tabTitles.indexOf(controller.selectedTab.value),
+            initialIndex:
+                controller.tabTitles.indexOf(controller.selectedTab.value),
             child: Scaffold(
               body: Column(
                 children: [
@@ -34,8 +35,11 @@ class ParcelOrderListScreen extends StatelessWidget {
                     dividerColor: Colors.transparent,
                     unselectedLabelColor: AppThemeData.grey500,
                     labelStyle: AppThemeData.boldTextStyle(fontSize: 16),
-                    unselectedLabelStyle: AppThemeData.mediumTextStyle(fontSize: 16),
-                    tabs: controller.tabTitles.map((title) => Tab(child: Text(title))).toList(),
+                    unselectedLabelStyle:
+                        AppThemeData.mediumTextStyle(fontSize: 16),
+                    tabs: controller.tabTitles
+                        .map((title) => Tab(child: Text(title.tr)))
+                        .toList(),
                   ),
 
                   // Body: loader or TabBarView
@@ -51,7 +55,10 @@ class ParcelOrderListScreen extends StatelessWidget {
                                 return Center(
                                   child: Text(
                                     "No orders found".tr,
-                                    style: AppThemeData.mediumTextStyle(color: isDark ? AppThemeData.greyDark900 : AppThemeData.grey900),
+                                    style: AppThemeData.mediumTextStyle(
+                                        color: isDark
+                                            ? AppThemeData.greyDark900
+                                            : AppThemeData.grey900),
                                   ),
                                 );
                               }
@@ -63,57 +70,86 @@ class ParcelOrderListScreen extends StatelessWidget {
                                   final order = orders[index];
                                   return GestureDetector(
                                     onTap: () {
-                                      Get.to(() => const ParcelOrderDetails(), arguments: order);
+                                      Get.to(() => const ParcelOrderDetails(),
+                                          arguments: order);
                                     },
                                     child: Container(
                                       margin: const EdgeInsets.only(bottom: 16),
                                       padding: const EdgeInsets.all(16),
                                       decoration: BoxDecoration(
-                                        color: isDark ? AppThemeData.greyDark50 : AppThemeData.grey50,
+                                        color: isDark
+                                            ? AppThemeData.greyDark50
+                                            : AppThemeData.grey50,
                                         borderRadius: BorderRadius.circular(15),
                                         border: Border.all(
-                                          color: isDark ? AppThemeData.greyDark200 : AppThemeData.grey200,
+                                          color: isDark
+                                              ? AppThemeData.greyDark200
+                                              : AppThemeData.grey200,
                                         ),
                                       ),
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Padding(
-                                            padding: const EdgeInsets.only(bottom: 8.0),
+                                            padding: const EdgeInsets.only(
+                                                bottom: 8.0),
                                             child: Text(
-                                              "Order Date:${order.isSchedule == true ? controller.formatDate(order.createdAt!) : controller.formatDate(order.senderPickupDateTime!)}",
-                                              style: AppThemeData.mediumTextStyle(fontSize: 14, color: AppThemeData.info400),
+                                              "${'Order Date:'.tr}${order.isSchedule == true ? controller.formatDate(order.createdAt!) : controller.formatDate(order.senderPickupDateTime!)}",
+                                              style:
+                                                  AppThemeData.mediumTextStyle(
+                                                      fontSize: 14,
+                                                      color:
+                                                          AppThemeData.info400),
                                             ),
                                           ),
                                           Row(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
                                             children: [
                                               Column(
                                                 children: [
-                                                  Image.asset("assets/images/image_parcel.png", height: 32, width: 32),
+                                                  Image.asset(
+                                                      "assets/images/image_parcel.png",
+                                                      height: 32,
+                                                      width: 32),
                                                   DottedBorder(
-                                                    options: CustomPathDottedBorderOptions(
-                                                      color: Colors.grey.shade400,
+                                                    options:
+                                                        CustomPathDottedBorderOptions(
+                                                      color:
+                                                          Colors.grey.shade400,
                                                       strokeWidth: 2,
                                                       dashPattern: [4, 4],
-                                                      customPath: (size) => Path()
-                                                        ..moveTo(size.width / 2, 0)
-                                                        ..lineTo(size.width / 2, size.height),
+                                                      customPath: (size) =>
+                                                          Path()
+                                                            ..moveTo(
+                                                                size.width / 2,
+                                                                0)
+                                                            ..lineTo(
+                                                                size.width / 2,
+                                                                size.height),
                                                     ),
-                                                    child: const SizedBox(width: 20, height: 95),
+                                                    child: const SizedBox(
+                                                        width: 20, height: 95),
                                                   ),
-                                                  Image.asset("assets/images/image_parcel.png", height: 32, width: 32),
+                                                  Image.asset(
+                                                      "assets/images/image_parcel.png",
+                                                      height: 32,
+                                                      width: 32),
                                                 ],
                                               ),
                                               const SizedBox(width: 12),
                                               Expanded(
                                                 child: Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
                                                   children: [
                                                     _infoSection(
-                                                      "Pickup Address (Sender):".tr,
+                                                      "Pickup Address (Sender):"
+                                                          .tr,
                                                       order.sender?.name ?? '',
-                                                      order.sender?.address ?? '',
+                                                      order.sender?.address ??
+                                                          '',
                                                       order.sender?.phone ?? '',
                                                       // order.senderPickupDateTime != null
                                                       //     ? "Pickup Time: ${controller.formatDate(order.senderPickupDateTime!)}"
@@ -123,10 +159,14 @@ class ParcelOrderListScreen extends StatelessWidget {
                                                     ),
                                                     const SizedBox(height: 16),
                                                     _infoSection(
-                                                      "Delivery Address (Receiver):".tr,
-                                                      order.receiver?.name ?? '',
-                                                      order.receiver?.address ?? '',
-                                                      order.receiver?.phone ?? '',
+                                                      "Delivery Address (Receiver):"
+                                                          .tr,
+                                                      order.receiver?.name ??
+                                                          '',
+                                                      order.receiver?.address ??
+                                                          '',
+                                                      order.receiver?.phone ??
+                                                          '',
                                                       // order.receiverPickupDateTime != null
                                                       //     ? "Delivery Time: ${controller.formatDate(order.receiverPickupDateTime!)}"
                                                       //     : '',
@@ -156,7 +196,8 @@ class ParcelOrderListScreen extends StatelessWidget {
     });
   }
 
-  Widget _infoSection(String title, String name, String address, String phone, String? status, bool isDark) {
+  Widget _infoSection(String title, String name, String address, String phone,
+      String? status, bool isDark) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -165,27 +206,46 @@ class ParcelOrderListScreen extends StatelessWidget {
             Expanded(
               child: Text(
                 title,
-                style: AppThemeData.semiBoldTextStyle(fontSize: 16, color: isDark ? AppThemeData.greyDark900 : AppThemeData.grey900),
+                style: AppThemeData.semiBoldTextStyle(
+                    fontSize: 16,
+                    color: isDark
+                        ? AppThemeData.greyDark900
+                        : AppThemeData.grey900),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
             if (status != null) ...[
               Container(
-                padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
                 decoration: BoxDecoration(
                   color: AppThemeData.info50,
                   border: Border.all(color: AppThemeData.info300),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Text(status, style: AppThemeData.boldTextStyle(fontSize: 14, color: AppThemeData.info500)),
+                child: Text(status.tr,
+                    style: AppThemeData.boldTextStyle(
+                        fontSize: 14, color: AppThemeData.info500)),
               ),
             ],
           ],
         ),
-        Text(name, style: AppThemeData.semiBoldTextStyle(fontSize: 14, color: isDark ? AppThemeData.greyDark900 : AppThemeData.grey900)),
-        Text(address, style: AppThemeData.mediumTextStyle(fontSize: 14, color: isDark ? AppThemeData.greyDark900 : AppThemeData.grey900)),
-        Text(phone, style: AppThemeData.mediumTextStyle(fontSize: 14, color: isDark ? AppThemeData.greyDark900 : AppThemeData.grey900)),
+        Text(name,
+            style: AppThemeData.semiBoldTextStyle(
+                fontSize: 14,
+                color:
+                    isDark ? AppThemeData.greyDark900 : AppThemeData.grey900)),
+        Text(address,
+            style: AppThemeData.mediumTextStyle(
+                fontSize: 14,
+                color:
+                    isDark ? AppThemeData.greyDark900 : AppThemeData.grey900)),
+        Text(phone,
+            style: AppThemeData.mediumTextStyle(
+                fontSize: 14,
+                color:
+                    isDark ? AppThemeData.greyDark900 : AppThemeData.grey900)),
         //Text(time, style: AppThemeData.semiBoldTextStyle(fontSize: 14, color: isDark ? AppThemeData.greyDark900 : AppThemeData.grey900)),
       ],
     );

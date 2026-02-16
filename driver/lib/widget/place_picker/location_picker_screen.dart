@@ -9,6 +9,8 @@ import 'package:flutter_google_places_hoc081098/flutter_google_places_hoc081098.
 import 'package:flutter_google_places_hoc081098/google_maps_webservice_places.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:yandex_mapkit/yandex_mapkit.dart' as ym;
+import 'package:driver/utils/yandex_map_utils.dart';
 
 final GoogleMapsPlaces _places = GoogleMapsPlaces(apiKey: Constant.mapAPIKey);
 
@@ -27,36 +29,97 @@ class LocationPickerScreen extends StatelessWidget {
               children: [
                 controller.selectedLocation.value == null
                     ? const Center(child: CircularProgressIndicator())
-                    : GoogleMap(
-                        onMapCreated: (controllers) {
-                          controller.mapController = controllers;
-                        },
-                        initialCameraPosition: CameraPosition(
-                          target: controller.selectedLocation.value!,
-                          zoom: 15,
-                        ),
-                        onTap: (LatLng tappedPosition) {
-                          controller.selectedLocation.value = tappedPosition;
-                          controller.getAddressFromLatLng(tappedPosition);
-                        },
-                        markers: controller.selectedLocation.value == null
-                            ? {}
-                            : {
-                                Marker(
-                                  markerId: const MarkerId("selected-location"),
-                                  position: controller.selectedLocation.value!,
-                                  onTap: () {
-                                    controller.getAddressFromLatLng(controller.selectedLocation.value!);
+                    : Constant.isYandexMap
+                        ? ym.YandexMap(
+                            onMapCreated:
+                                (ym.YandexMapController mapController) async {
+                              controller.yandexMapController = mapController;
+                              await mapController.toggleUserLayer(visible: true);
+                              await mapController.moveCamera(
+                                ym.CameraUpdate.newCameraPosition(
+                                  ym.CameraPosition(
+                                    target: ym.Point(
+                                      latitude:
+                                          controller.selectedLocation.value!.latitude,
+                                      longitude:
+                                          controller.selectedLocation.value!.longitude,
+                                    ),
+                                    zoom: 15,
+                                  ),
+                                ),
+                              );
+                            },
+                            onMapTap: (ym.Point point) {
+                              final tapped = LatLng(
+                                point.latitude,
+                                point.longitude,
+                              );
+                              controller.selectedLocation.value = tapped;
+                              controller.getAddressFromLatLng(tapped);
+                            },
+                            onCameraPositionChanged:
+                                (ym.CameraPosition position, ym.CameraUpdateReason _, bool finished) {
+                              controller.selectedLocation.value = LatLng(
+                                position.target.latitude,
+                                position.target.longitude,
+                              );
+                              if (finished) {
+                                controller.getAddressFromLatLng(
+                                  controller.selectedLocation.value!,
+                                );
+                              }
+                            },
+                            mapObjects: controller.selectedLocation.value == null
+                                ? const []
+                                : [
+                                    ym.PlacemarkMapObject(
+                                      mapId:
+                                          const ym.MapObjectId("selected-location"),
+                                      point: ym.Point(
+                                        latitude:
+                                            controller.selectedLocation.value!.latitude,
+                                        longitude:
+                                            controller.selectedLocation.value!.longitude,
+                                      ),
+                                      icon: yandexPlacemarkIconFromAsset(
+                                        'assets/icons/ic_cab_pickup.png',
+                                      ),
+                                      opacity: 1.0,
+                                    ),
+                                  ],
+                          )
+                        : GoogleMap(
+                            onMapCreated: (controllers) {
+                              controller.mapController = controllers;
+                            },
+                            initialCameraPosition: CameraPosition(
+                              target: controller.selectedLocation.value!,
+                              zoom: 15,
+                            ),
+                            onTap: (LatLng tappedPosition) {
+                              controller.selectedLocation.value = tappedPosition;
+                              controller.getAddressFromLatLng(tappedPosition);
+                            },
+                            markers: controller.selectedLocation.value == null
+                                ? {}
+                                : {
+                                    Marker(
+                                      markerId: const MarkerId("selected-location"),
+                                      position: controller.selectedLocation.value!,
+                                      onTap: () {
+                                        controller.getAddressFromLatLng(
+                                            controller.selectedLocation.value!);
+                                      },
+                                    )
                                   },
-                                )
-                              },
-                        onCameraMove: controller.onMapMoved,
-                        onCameraIdle: () {
-                          if (controller.selectedLocation.value != null) {
-                            controller.getAddressFromLatLng(controller.selectedLocation.value!);
-                          }
-                        },
-                      ),
+                            onCameraMove: controller.onMapMoved,
+                            onCameraIdle: () {
+                              if (controller.selectedLocation.value != null) {
+                                controller.getAddressFromLatLng(
+                                    controller.selectedLocation.value!);
+                              }
+                            },
+                          ),
                 Positioned(
                   top: 60,
                   left: 16,
@@ -99,9 +162,23 @@ class LocationPickerScreen extends StatelessWidget {
                             final lng = detail.result.geometry!.location.lng;
                             final LatLng pos = LatLng(lat, lng);
                             controller.selectedLocation.value = pos;
-                            controller.mapController?.animateCamera(
-                              CameraUpdate.newLatLngZoom(pos, 15),
-                            );
+                            if (Constant.isYandexMap) {
+                              final yandexController = controller.yandexMapController;
+                              if (yandexController != null) {
+                                await yandexController.moveCamera(
+                                  ym.CameraUpdate.newCameraPosition(
+                                    ym.CameraPosition(
+                                      target: ym.Point(latitude: lat, longitude: lng),
+                                      zoom: 15,
+                                    ),
+                                  ),
+                                );
+                              }
+                            } else {
+                              controller.mapController?.animateCamera(
+                                CameraUpdate.newLatLngZoom(pos, 15),
+                              );
+                            }
                             controller.getAddressFromLatLng(pos);
                           }
                         },

@@ -70,6 +70,11 @@ class SplashController extends GetxController {
                 log("🚀 [SPLASH] User role to'g'ri (driver)");
 
                 if (userModel.active == true) {
+                  // Force driver home to open with in-app Yandex map for auto orders
+                  Constant.selectedMapType = 'yandexMaps';
+                  Constant.mapType = 'inappmap';
+                  Constant.singleOrderReceive = true;
+
                   log("🚀 [SPLASH] User active - FCM token olinmoqda...");
                   try {
                     userModel.fcmToken = await NotificationService.getToken();

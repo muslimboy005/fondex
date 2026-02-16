@@ -39,7 +39,6 @@ class RentalOrderModel {
   String? zoneId;
   G? sourcePoint;
 
-
   RentalOrderModel({
     this.status,
     this.rejectedByDrivers,
@@ -73,7 +72,6 @@ class RentalOrderModel {
     this.endKitoMetersReading,
     this.zoneId,
     this.sourcePoint,
-
   });
 
   RentalOrderModel.fromJson(Map<String, dynamic> json) {
@@ -100,10 +98,19 @@ class RentalOrderModel {
     tipAmount = json['tip_amount'];
     vehicleId = json['vehicleId'];
     paymentMethod = json['paymentMethod'];
-    rentalVehicleType = json['rentalVehicleType'] != null ? RentalVehicleType.fromJson(json['rentalVehicleType']) : null;
-    rentalPackageModel = json['rentalPackageModel'] != null ? RentalPackageModel.fromJson(json['rentalPackageModel']) : null;
+    rentalVehicleType =
+        json['rentalVehicleType'] != null
+            ? RentalVehicleType.fromJson(json['rentalVehicleType'])
+            : null;
+    rentalPackageModel =
+        json['rentalPackageModel'] != null
+            ? RentalPackageModel.fromJson(json['rentalPackageModel'])
+            : null;
     otpCode = json['otpCode'];
-    sourceLocation = json['sourceLocation'] != null ? DestinationLocation.fromJson(json['sourceLocation']) : null;
+    sourceLocation =
+        json['sourceLocation'] != null
+            ? DestinationLocation.fromJson(json['sourceLocation'])
+            : null;
     author = json['author'] != null ? UserModel.fromJson(json['author']) : null;
     subTotal = json['subTotal'];
     driver = json['driver'] != null ? UserModel.fromJson(json['driver']) : null;
@@ -113,15 +120,16 @@ class RentalOrderModel {
     startKitoMetersReading = json['startKitoMetersReading'] ?? "0.0";
     endKitoMetersReading = json['endKitoMetersReading'] ?? "0.0";
     zoneId = json['zoneId'];
-    sourcePoint = json['sourcePoint'] != null ? G.fromJson(json['sourcePoint']) : null;
-
+    sourcePoint =
+        json['sourcePoint'] != null ? G.fromJson(json['sourcePoint']) : null;
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['status'] = status;
     if (rejectedByDrivers != null) {
-      data['rejectedByDrivers'] = rejectedByDrivers!.map((v) => v.toJson()).toList();
+      data['rejectedByDrivers'] =
+          rejectedByDrivers!.map((v) => v.toJson()).toList();
     }
     data['couponId'] = couponId;
     data['bookingDateTime'] = bookingDateTime;
@@ -172,7 +180,6 @@ class RentalOrderModel {
     return data;
   }
 }
-
 
 class DestinationLocation {
   double? longitude;

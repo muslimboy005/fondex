@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:yandex_mapkit/yandex_mapkit.dart' as ym;
 import 'package:flutter_map/flutter_map.dart' as flutterMap;
 import 'package:latlong2/latlong.dart' as latLng2;
 
@@ -22,10 +23,11 @@ class DriverLocationController extends GetxController {
   /// OSM map data
   final flutterMap.MapController osmMapController = flutterMap.MapController();
   RxList<flutterMap.Marker> osmMarkers = <flutterMap.Marker>[].obs;
-  Rx<latLng2.LatLng> current = const latLng2.LatLng(12.9716, 77.5946).obs;
+  Rx<latLng2.LatLng> current = const latLng2.LatLng(41.3111, 69.2797).obs;
 
   BitmapDescriptor? driverIcon;
   final Completer<GoogleMapController> mapController = Completer();
+  ym.YandexMapController? yandexMapController;
 
   @override
   void onInit() {

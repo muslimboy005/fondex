@@ -114,6 +114,22 @@ class Constant {
 
   static String googlePlayLink = "";
   static String appStoreLink = "";
+
+  /// Fondex (customer) ilova store linklari – ulashish va baholash uchun
+  static const String defaultCustomerGooglePlayUrl =
+      'https://play.google.com/store/apps/details?id=felix.fondex.uz';
+  static const String defaultCustomerAppStoreUrl =
+      'https://apps.apple.com/us/app/fondex/id6756119215';
+
+  /// Fondex Driver ilova (ulashish matnida ixtiyoriy)
+  static const String driverGooglePlayUrl =
+      'https://play.google.com/store/apps/details?id=felix.fondex.driver';
+
+  static String get customerGooglePlayUrl =>
+      googlePlayLink.isEmpty ? defaultCustomerGooglePlayUrl : googlePlayLink;
+  static String get customerAppStoreUrl =>
+      appStoreLink.isEmpty ? defaultCustomerAppStoreUrl : appStoreLink;
+
   static String termsAndConditions = "";
   static String privacyPolicy = "";
   static String supportURL = "";

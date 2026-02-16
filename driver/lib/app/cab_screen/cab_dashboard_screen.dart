@@ -24,8 +24,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-import 'package:in_app_review/in_app_review.dart';
-import 'package:share_plus/share_plus.dart';
 
 import '../vehicle_information_screen/vehicle_information_screen.dart';
 import 'cab_home_screen.dart';
@@ -862,7 +860,7 @@ class DrawerView extends StatelessWidget {
               ),
               const SizedBox(width: 10),
               Text(
-                'Log Out'.tr,
+                'Log out'.tr,
                 style: TextStyle(
                   color: AppThemeData.danger300,
                   fontSize: 15,

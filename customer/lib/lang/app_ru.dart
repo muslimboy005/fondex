@@ -149,6 +149,7 @@ const Map<String, String> ruRU = {
       'Ваш запрос SOS отправлен администратору',
   'Your SOS request is already submitted': 'Ваш запрос SOS уже отправлен',
   'Pay Now': 'Оплатить сейчас',
+  'Cash on Delivery': 'Оплата наличными',
   'Something went wrong, please contact admin.':
       'Что-то пошло не так, пожалуйста, свяжитесь с администратором.',
   'Please select payment method': 'Пожалуйста, выберите способ оплаты',
@@ -170,6 +171,7 @@ const Map<String, String> ruRU = {
   'Login': 'Вход',
   'Where are you going for?': 'Куда вы направляетесь?',
   'Ride': 'Поездка',
+  'ride': 'Поездка',
   'City rides, 24x7 availability': 'Городские      поездки',
   'Intercity/Outstation': 'Междугородние/Выездные',
   'Long trips, prepaid options': 'Дальние поездки, предоплата',
@@ -541,7 +543,7 @@ const Map<String, String> ruRU = {
   'Refer a Friend': 'Пригласить друга',
   'Share app': 'Поделиться приложением',
   'Check out Foodie, your ultimate food delivery application!':
-      'Ознакомьтесь с Foodie, вашим лучшим приложением для доставки еды!',
+      'Ознакомьтесь с Fondex, вашим лучшим приложением для доставки еды!',
   'Google Play:': 'Google Play:',
   'App Store:': 'App Store:',
   'Look what I made!': 'Посмотрите, что я сделал!',
@@ -578,18 +580,25 @@ const Map<String, String> ruRU = {
   'Refer your friend and earn': 'Пригласите друга и заработайте',
   'Invite Friends & Businesses': 'Пригласить друзей и компании',
   'Invite your friends to sign up with Foodie using your code, and you\'ll earn':
-      'Пригласите друзей зарегистрироваться в Foodie, используя ваш код, и вы заработаете',
+      'Пригласите друзей зарегистрироваться в Fondex по вашему коду, и вы заработаете',
   'after their Success the first order!': 'после их первого успешного заказа!',
   'Copied': 'Скопировано',
   'or': 'или',
   'Share Code': 'Поделиться кодом',
   'Hey there, thanks for choosing Foodie. Hope you love our product. If you do, share it with your friends using code':
-      'Привет, спасибо за выбор Foodie. Надеемся, вам нравится наш продукт. Если да, поделитесь им с друзьями, используя код',
+      'Привет, спасибо за выбор Fondex. Надеемся, вам нравится наш продукт. Если да, поделитесь им с друзьями, используя код',
   'and get': 'и получите',
   'when order completed': 'когда заказ будет выполнен',
   'items': 'товары',
   'View Cart': 'Посмотреть корзину',
   'Timing is not added by store': 'Время работы не добавлено магазином',
+  'Monday': 'Понедельник',
+  'Tuesday': 'Вторник',
+  'Wednesday': 'Среда',
+  'Thursday': 'Четверг',
+  'Friday': 'Пятница',
+  'Saturday': 'Суббота',
+  'Sunday': 'Воскресенье',
   'Also applicable on table booking': 'Также применимо к бронированию столика',
   'Additional Offers': 'Дополнительные предложения',
   'Search the item and more...': 'Поиск товара и многое другое...',
@@ -630,6 +639,7 @@ const Map<String, String> ruRU = {
   'Store': 'Магазин',
   'Select Top up Options': 'Выберите вариант пополнения',
   'Top-up': 'Пополнить',
+  'Wallet Top-up': 'Пополнение кошелька',
   'Please Enter minimum amount of': 'Пожалуйста, введите минимальную сумму',
   'My Wallet': 'Мой кошелек',
   'Keep track of your balance, transactions, and payment methods all in one place.':
@@ -797,9 +807,16 @@ const Map<String, String> ruRU = {
       'Пожалуйста, выберите местоположения отправителя и получателя',
   "Sender's location to receiver's location should be more than 1 km.":
       "Расстояние от местоположения отправителя до местоположения получателя должно быть более 1 км.",
+  'Admin commission refund': 'Возврат комиссии администратора',
+
+  "Bron qo'shimcha to'lovi yechib olindi":
+      'Дополнительная плата за бронирование списана',
+  'Parcel Amount debited': 'Сумма посылки списана',
+  'Posilka summasi yechib olindi': 'Сумма посылки списана',
   "Something went wrong while booking.":
       "Что-то пошло не так при бронировании.",
   "Cab Amount debited": "Сумма такси списана",
+  "Taksi summasi yechib olindi": "Сумма такси списана",
   "Stop": "Остановка",
   'Departure': 'Отправление',
   'Destination': 'Назначение',
@@ -814,12 +831,12 @@ const Map<String, String> ruRU = {
   'Driver Rejected': 'Водитель отклонил',
   'You can only cancel before pickup.':
       'Вы можете отменить только до отправления.',
-  'Refund for cancelled parcel order':
-      'Возврат средств за отмененный заказ посылки',
+  'Refund for cancelled parcel order': 'Возврат за отмененный заказ посылки',
+  'Contact us for any questions on your order.':
+      'Свяжитесь с нами по любым вопросам по вашему заказу.',
   'success': 'успешно',
   'Order cancelled successfully': 'Заказ успешно отменен',
   'Failed to cancel order:': 'Не удалось отменить заказ:',
-  'Parcel Amount debited': 'Сумма посылки списана',
   'Order placed successfully': 'Заказ успешно размещен',
   'Initializing payment...': 'Инициализация оплаты...',
   'Payment Unsuccessful!!': 'Оплата не удалась!!',
@@ -830,6 +847,7 @@ const Map<String, String> ruRU = {
       'Не удалось получить текущее местоположение',
   'Failed to calculate total:': 'Не удалось рассчитать итог:',
   'Rental Amount debited': 'Сумма аренды списана',
+  'Ijaraga olish summasi yechib olindi': 'Сумма аренды списана',
   'Refund for cancelled booking': 'Возврат средств за отмененное бронирование',
   'Success': 'Успешно',
   'Booking cancelled successfully': 'Бронирование успешно отменено',
@@ -894,21 +912,25 @@ const Map<String, String> ruRU = {
   'Ko\'proq o\'qish': 'Читать далее',
   'Qisqartirish': 'Свернуть',
 
-  'API endpoint not found. Please contact support.': 'API endpoint not found. Please contact support.',
+  'API endpoint not found. Please contact support.':
+      'API endpoint not found. Please contact support.',
   'Account create successfully': 'Account create successfully',
   'Book now': 'Book now',
-  'Booking Amount debited': 'Booking Amount debited',
+  'Booking Amount debited': 'Сумма бронирования списана',
+  'Bron summasi yechildi': 'Сумма бронирования списана',
+  'Booking Amount Refund': 'Возврат суммы бронирования',
   'Boradigan joy': 'Boradigan joy',
   'Boradigan manzil': 'Boradigan manzil',
   'Boshlang\'ich joy': 'Boshlang\'ich joy',
-  'Bu raqam bilan boshqa ilovada ro\'yxatdan o\'tgansiz': 'Bu raqam bilan boshqa ilovada ro\'yxatdan o\'tgansiz',
+  'Bu raqam bilan boshqa ilovada ro\'yxatdan o\'tgansiz':
+      'Bu raqam bilan boshqa ilovada ro\'yxatdan o\'tgansiz',
   'Buyurtma berish': 'Buyurtma berish',
   'Cancelling order...': 'Cancelling order...',
   'Couldn\'t review': 'Couldn\'t review',
   'Davom etish': 'Davom etish',
   'Delivery Man': 'Delivery Man',
   'Delivery type': 'Delivery type',
-  'Each🎉': 'Each🎉',
+  'Each🎉': 'каждый 🎉',
   'Enter email is Invalid': 'Enter email is Invalid',
   'Enter your name': 'Enter your name',
   'Error adding to cart': 'Error adding to cart',
@@ -918,7 +940,9 @@ const Map<String, String> ruRU = {
   'Failed to cancel order': 'Failed to cancel order',
   'Failed to get payment link': 'Failed to get payment link',
   'Failed to parse server response': 'Failed to parse server response',
-  'Gift card purchase amount debited': 'Gift card purchase amount debited',
+  'Gift card purchase amount debited': 'Сумма покупки подарочной карты списана',
+  "Sovg'a karta xaridi summasi yechildi":
+      'Сумма покупки подарочной карты списана',
   'Ha': 'Ha',
   'Hotel': 'Hotel',
   'Ikkala joyni tanlang': 'Ikkala joyni tanlang',
@@ -926,23 +950,38 @@ const Map<String, String> ruRU = {
   'Invalid email address.': 'Invalid email address.',
   'Invalid password.': 'Invalid password.',
   'Invalid response from server': 'Invalid response from server',
-  'Invalid server response. Please try again.': 'Invalid server response. Please try again.',
-  'Invite your friends to sign up with Foodie using your code, and you’ll earn': 'Invite your friends to sign up with Foodie using your code, and you’ll earn',
+  'Invalid server response. Please try again.':
+      'Invalid server response. Please try again.',
+  'Invite your friends to sign up with Foodie using your code, and you’ll earn':
+      'Пригласите друзей зарегистрироваться в Fondex по вашему коду, и вы заработаете',
   'Items': 'Items',
   'Joriy manzil': 'Joriy manzil',
   'Kamida 3 ta belgi kiriting': 'Kamida 3 ta belgi kiriting',
   'Let’s Get Started': 'Let’s Get Started',
   'Log In': 'Log In',
-  'Login timeout. Please check your internet connection.': 'Login timeout. Please check your internet connection.',
+  'Login timeout. Please check your internet connection.':
+      'Login timeout. Please check your internet connection.',
   'Min': 'Min',
-  'No internet connection. Please check your network.': 'No internet connection. Please check your network.',
+  'No internet connection. Please check your network.':
+      'No internet connection. Please check your network.',
   'No service Found': 'No service Found',
-  'No worries!! We’ll send you reset instructions': 'No worries!! We’ll send you reset instructions',
+  'No worries!! We’ll send you reset instructions':
+      'No worries!! We’ll send you reset instructions',
   'Nothing found here...': 'Nothing found here...',
-  'OTP session expired. Please request a new code.': 'OTP session expired. Please request a new code.',
+  'OTP session expired. Please request a new code.':
+      'OTP session expired. Please request a new code.',
   'OTP timed out. Please try again.': 'OTP timed out. Please try again.',
   'OTP xato': 'OTP xato',
-  'Order Amount debited': 'Order Amount debited',
+  'Order Amount debited': 'Сумма заказа списана',
+  'Buyurtma summasi yechildi': 'Сумма заказа списана',
+  'Order Refund success': 'Возврат оплаты за заказ выполнен',
+  "Buyurtma to'lovi muvaffaqiyatli qaytarildi":
+      'Возврат оплаты за заказ выполнен',
+  'Order amount refunded to customer': 'Сумма заказа возвращена клиенту',
+  'Buyurtma miqdori mijozga qaytarildi': 'Сумма заказа возвращена клиенту',
+  'Order tax refunded to customer': 'Налог по заказу возвращен клиенту',
+  "Buyurtma solig'i mijozga qaytarildi": 'Налог по заказу возвращен клиенту',
+  'tolov qilindin': 'Платеж успешно выполнен',
   'Password and Confirm password doesn\'t match':
       'Пароль и подтверждение пароля не совпадают',
   'Payme Payment': 'Payme Payment',
@@ -950,8 +989,10 @@ const Map<String, String> ruRU = {
   'Please Enter Amount': 'Please Enter Amount',
   'Please enter Confirm password': 'Пожалуйста, введите подтверждение пароля',
   'Please enter Phone number': 'Пожалуйста, введите номер телефона',
-  'Please enter a valid 9-digit phone number': 'Please enter a valid 9-digit phone number',
-  'Please enter a valid @length-digit mobile number': 'Please enter a valid @length-digit mobile number',
+  'Please enter a valid 9-digit phone number':
+      'Please enter a valid 9-digit phone number',
+  'Please enter a valid @length-digit mobile number':
+      'Please enter a valid @length-digit mobile number',
   'Please enter address': 'Please enter address',
   'Please enter minimum 6 characters password':
       'Пожалуйста, введите пароль не короче 6 символов',
@@ -965,33 +1006,43 @@ const Map<String, String> ruRU = {
   'Referral code is Invalid': 'Referral code is Invalid',
   'Registering...': 'Registering...',
   'Registration failed': 'Registration failed',
-  'Registration failed. Please try again.': 'Registration failed. Please try again.',
-  'Request timeout. Please check your internet connection.': 'Request timeout. Please check your internet connection.',
-  'Server authentication error. Please try again.': 'Server authentication error. Please try again.',
-  'Server error. Please try again later.': 'Server error. Please try again later.',
+  'Registration failed. Please try again.':
+      'Registration failed. Please try again.',
+  'Request timeout. Please check your internet connection.':
+      'Request timeout. Please check your internet connection.',
+  'Server authentication error. Please try again.':
+      'Server authentication error. Please try again.',
+  'Server error. Please try again later.':
+      'Server error. Please try again later.',
   'Something went wrong': 'Something went wrong',
   'Tasdiqlash': 'Tasdiqlash',
-  'The account already exists for that email.': 'The account already exists for that email.',
+  'The account already exists for that email.':
+      'The account already exists for that email.',
   'The password provided is too weak.': 'The password provided is too weak.',
   'To\'lov holati tekshirilmoqda...': 'To\'lov holati tekshirilmoqda...',
   'To\'lov usulini tanlang': 'To\'lov usulini tanlang',
   'User account is disabled.': 'User account is disabled.',
   'User not found': 'User not found',
-  'User not found. Please register first.': 'User not found. Please register first.',
+  'User not found. Please register first.':
+      'User not found. Please register first.',
   'Vehicle Type': 'Vehicle Type',
   'Verification failed': 'Verification failed',
-  'We’ve received your parcel booking and it’s now being processed. You can track its status in real time.': 'We’ve received your parcel booking and it’s now being processed. You can track its status in real time.',
+  'We’ve received your parcel booking and it’s now being processed. You can track its status in real time.':
+      'We’ve received your parcel booking and it’s now being processed. You can track its status in real time.',
   'Work': 'Work',
   'Write Coupon Code': 'Write Coupon Code',
   'Xaritadagi joyga bosing': 'Xaritadagi joyga bosing',
   'Xaritadan boradigan joyni tanlang': 'Xaritadan boradigan joyni tanlang',
-  'Xaritadan boshlang\'ich joyni tanlang': 'Xaritadan boshlang\'ich joyni tanlang',
+  'Xaritadan boshlang\'ich joyni tanlang':
+      'Xaritadan boshlang\'ich joyni tanlang',
   'Xaritadan tanlash': 'Xaritadan tanlash',
   'Yo\'q': 'Yo\'q',
-  'You’re not logged in. Please sign in to access your account and explore all features.': 'You’re not logged in. Please sign in to access your account and explore all features.',
+  'You’re not logged in. Please sign in to access your account and explore all features.':
+      'You’re not logged in. Please sign in to access your account and explore all features.',
   'off': 'off',
   'please select': 'please select',
-  'something went wrong, please contact admin.': 'something went wrong, please contact admin.',
+  'something went wrong, please contact admin.':
+      'something went wrong, please contact admin.',
   '→ Qayerga boramiz?': '→ Qayerga boramiz?',
 
   'Error:': 'Error:',

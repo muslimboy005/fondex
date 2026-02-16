@@ -1482,8 +1482,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                                                                               2,
                                                                         ),
                                                                         child: Text(
-                                                                          "${Constant.currencyModel!.symbol}"
-                                                                              .tr,
+                                                                          Constant.currencyModel?.symbol ?? '',
                                                                           style: TextStyle(
                                                                             color:
                                                                                 isDark
@@ -1745,7 +1744,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                                     vertical: 14,
                                   ),
                                   child: Text(
-                                    "${Constant.currencyModel!.symbol}".tr,
+                                    Constant.currencyModel?.symbol ?? '',
                                     style: TextStyle(
                                       color: isDark
                                           ? AppThemeData.grey50
@@ -1781,7 +1780,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                                     vertical: 14,
                                   ),
                                   child: Text(
-                                    "${Constant.currencyModel!.symbol}".tr,
+                                    Constant.currencyModel?.symbol ?? '',
                                     style: TextStyle(
                                       color: isDark
                                           ? AppThemeData.grey50
@@ -2271,8 +2270,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                                           vertical: 14,
                                         ),
                                         child: Text(
-                                          "${Constant.currencyModel!.symbol}"
-                                              .tr,
+                                          Constant.currencyModel?.symbol ?? '',
                                           style: TextStyle(
                                             color: isDark
                                                 ? AppThemeData.grey50

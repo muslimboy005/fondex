@@ -30,8 +30,12 @@ class DashBoardController extends GetxController {
   RxBool canPopNow = false.obs;
 
   Future<void> getUser() async {
+    final uid = FireStoreUtils.getCurrentUidOrNull();
+    if (uid == null || uid.isEmpty) {
+      return;
+    }
     await updateCurrentLocation();
-    FireStoreUtils.fireStore.collection(CollectionName.users).doc(FireStoreUtils.getCurrentUid()).snapshots().listen(
+    FireStoreUtils.fireStore.collection(CollectionName.users).doc(uid).snapshots().listen(
       (event) {
         if (event.exists) {
           userModel.value = UserModel.fromJson(event.data()!);
@@ -94,6 +98,10 @@ class DashBoardController extends GetxController {
   Location location = Location();
 
   Future<void> updateCurrentLocation() async {
+    final uid = FireStoreUtils.getCurrentUidOrNull();
+    if (uid == null || uid.isEmpty) {
+      return;
+    }
     try {
       PermissionStatus permissionStatus = await location.hasPermission();
       if (permissionStatus == PermissionStatus.granted) {
@@ -101,8 +109,12 @@ class DashBoardController extends GetxController {
         location.changeSettings(accuracy: LocationAccuracy.high, distanceFilter: double.parse(Constant.driverLocationUpdate));
 
         location.onLocationChanged.listen((locationData) async {
+          final currentUid = FireStoreUtils.getCurrentUidOrNull();
+          if (currentUid == null || currentUid.isEmpty) {
+            return;
+          }
           Constant.locationDataFinal = locationData;
-          await FireStoreUtils.getUserProfile(FireStoreUtils.getCurrentUid()).then((value) async {
+          await FireStoreUtils.getUserProfile(currentUid).then((value) async {
             if (value != null) {
               userModel.value = value;
               if (userModel.value.isActive == true) {
@@ -119,8 +131,12 @@ class DashBoardController extends GetxController {
             location.enableBackgroundMode(enable: true);
             location.changeSettings(accuracy: LocationAccuracy.high, distanceFilter: double.parse(Constant.driverLocationUpdate));
             location.onLocationChanged.listen((locationData) async {
+              final currentUid = FireStoreUtils.getCurrentUidOrNull();
+              if (currentUid == null || currentUid.isEmpty) {
+                return;
+              }
               Constant.locationDataFinal = locationData;
-              await FireStoreUtils.getUserProfile(FireStoreUtils.getCurrentUid()).then((value) async {
+              await FireStoreUtils.getUserProfile(currentUid).then((value) async {
                 if (value != null) {
                   userModel.value = value;
                   if (userModel.value.isActive == true) {

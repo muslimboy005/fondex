@@ -84,7 +84,7 @@ class PhoneRegistrationController extends GetxController {
           if (data['access'] == true && data['otp'] != null) {
             log("✅ Registration successful, navigating to OTP screen");
             // Navigate to OTP screen with the OTP code
-            Get.to(
+            Get.off(
               () => const OtpVerificationScreen(),
               arguments: {
                 'countryCode': countryCode,
@@ -122,7 +122,7 @@ class PhoneRegistrationController extends GetxController {
           } else if (response.statusCode == 500) {
             errorMessage = "Server error. Please try again later.".tr;
           } else {
-            errorMessage = "Registration failed (${response.statusCode})".tr;
+            errorMessage = "${'Registration failed'.tr} (${response.statusCode})";
           }
           ShowToastDialog.showToast(errorMessage);
         } else {
@@ -132,7 +132,7 @@ class PhoneRegistrationController extends GetxController {
             log("Error data: $errorData");
             final message = errorData['message']?.toString() ??
                 errorData['error']?.toString() ??
-                "Registration failed (${response.statusCode})".tr;
+                "${'Registration failed'.tr} (${response.statusCode})";
             // Limit message length to prevent overflow
             final shortMessage = message.length > 100
                 ? "${message.substring(0, 100)}..."
@@ -147,7 +147,7 @@ class PhoneRegistrationController extends GetxController {
             } else if (response.statusCode == 500) {
               errorMessage = "Server error. Please try again later.".tr;
             } else {
-              errorMessage = "Registration failed (${response.statusCode})".tr;
+              errorMessage = "${'Registration failed'.tr} (${response.statusCode})";
             }
             ShowToastDialog.showToast(errorMessage);
           }
@@ -175,10 +175,4 @@ class PhoneRegistrationController extends GetxController {
     }
   }
 
-  @override
-  void onClose() {
-    phoneController.value.dispose();
-    countryCodeController.value.dispose();
-    super.onClose();
-  }
 }

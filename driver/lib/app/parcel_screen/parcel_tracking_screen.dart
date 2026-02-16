@@ -5,6 +5,8 @@ import 'package:flutter_map/flutter_map.dart' as flutterMap;
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:latlong2/latlong.dart' as location;
+import 'package:yandex_mapkit/yandex_mapkit.dart' as ym;
+import 'package:driver/utils/yandex_map_utils.dart';
 import '../../controllers/parcel_tracking_controller.dart';
 import '../../themes/app_them_data.dart';
 import '../../themes/theme_controller.dart';
@@ -34,12 +36,12 @@ class ParcelTrackingScreen extends StatelessWidget {
           ),
           body: controller.isLoading.value
               ? Constant.loader()
-              : Constant.selectedMapType == 'osm'
+              : Constant.isOsmMap
                   ? flutterMap.FlutterMap(
                       mapController: controller.osmMapController,
                       options: flutterMap.MapOptions(
                         initialCenter: location.LatLng(
-                            Constant.userModel?.location?.latitude ?? 45.521563, Constant.userModel?.location?.longitude ?? -122.677433),
+                            Constant.userModel?.location?.latitude ?? 41.3111, Constant.userModel?.location?.longitude ?? 69.2797),
                         initialZoom: 10,
                       ),
                       children: [
@@ -60,29 +62,55 @@ class ParcelTrackingScreen extends StatelessWidget {
                           ),
                       ],
                     )
-                  : Obx(
-                      () => GoogleMap(
-                        myLocationEnabled: true,
-                        myLocationButtonEnabled: true,
-                        mapType: MapType.terrain,
-                        zoomControlsEnabled: false,
-                        polylines: Set<Polyline>.of(controller.polyLines.values),
-                        padding: const EdgeInsets.only(
-                          top: 22.0,
-                        ),
-                        markers: Set<Marker>.of(controller.markers.values),
-                        onMapCreated: (GoogleMapController mapController) {
-                          controller.mapController = mapController;
-                        },
-                        initialCameraPosition: CameraPosition(
-                          zoom: 15,
-                          target: LatLng(
-                            Constant.userModel?.location?.latitude ?? 45.521563,
-                            Constant.userModel?.location?.longitude ?? -122.677433,
+                  : Constant.isYandexMap
+                      ? Obx(
+                          () => ym.YandexMap(
+                            onMapCreated:
+                                (ym.YandexMapController mapController) async {
+                              controller.yandexMapController = mapController;
+                              await mapController.toggleUserLayer(visible: true);
+                              await mapController.moveCamera(
+                                ym.CameraUpdate.newCameraPosition(
+                                  ym.CameraPosition(
+                                    target: ym.Point(
+                                      latitude: Constant.userModel?.location?.latitude ?? 41.3111,
+                                      longitude: Constant.userModel?.location?.longitude ?? 69.2797,
+                                    ),
+                                    zoom: 15,
+                                  ),
+                                ),
+                              );
+                            },
+                            mapObjects: yandexMapObjectsFromGoogle(
+                              markers: controller.markers.values,
+                              polylines: controller.polyLines.values,
+                            ),
+                          ),
+                        )
+                      : Obx(
+                          () => GoogleMap(
+                            myLocationEnabled: true,
+                            myLocationButtonEnabled: true,
+                            mapType: MapType.terrain,
+                            zoomControlsEnabled: false,
+                            polylines: Set<Polyline>.of(
+                                controller.polyLines.values),
+                            padding: const EdgeInsets.only(
+                              top: 22.0,
+                            ),
+                            markers: Set<Marker>.of(controller.markers.values),
+                            onMapCreated: (GoogleMapController mapController) {
+                              controller.mapController = mapController;
+                            },
+                            initialCameraPosition: CameraPosition(
+                              zoom: 15,
+                              target: LatLng(
+                                Constant.userModel?.location?.latitude ?? 41.3111,
+                                Constant.userModel?.location?.longitude ?? 69.2797,
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                    ),
         );
       },
     );

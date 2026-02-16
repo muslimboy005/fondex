@@ -412,7 +412,7 @@ class NotificationService {
         return;
       }
 
-      ShowToastDialog.showLoader("Loading chat...");
+      ShowToastDialog.showLoader("Loading chat...".tr);
 
       // Fetch the profiles
       UserModel? customer = await FireStoreUtils.getUserProfile(customerId);

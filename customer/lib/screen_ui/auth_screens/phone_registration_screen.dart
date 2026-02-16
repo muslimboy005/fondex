@@ -1,8 +1,6 @@
 import 'package:country_code_picker/country_code_picker.dart';
 import 'package:customer/screen_ui/auth_screens/login_screen.dart';
-import 'package:customer/screen_ui/auth_screens/sign_up_screen.dart';
 import 'package:customer/screen_ui/location_enable_screens/location_permission_screen.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';

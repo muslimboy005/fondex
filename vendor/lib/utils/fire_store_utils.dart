@@ -125,7 +125,10 @@ class FireStoreUtils {
     return userModel;
   }
 
-  static Future<UserModel?> getUserByPhoneNumber(String countryCode, String phoneNumber) async {
+  static Future<UserModel?> getUserByPhoneNumber(
+    String countryCode,
+    String phoneNumber,
+  ) async {
     UserModel? userModel;
     try {
       await fireStore
@@ -286,7 +289,9 @@ class FireStoreUtils {
           .get()
           .then((event) {
             if (event.exists) {
-              Constant.selectedMapType = event.data()!["selectedMapType"];
+              Constant.selectedMapType = Constant.normalizeSelectedMapType(
+                event.data()!["selectedMapType"],
+              );
               Constant.singleOrderReceive = event.data()!['singleOrderReceive'];
               Constant.distanceType = event.data()!["distanceType"];
             }
@@ -794,7 +799,6 @@ class FireStoreUtils {
     await fireStore
         .collection(CollectionName.advertisements)
         .where('vendorId', isEqualTo: Constant.userModel!.vendorID)
-        .orderBy('createdAt', descending: true)
         .get()
         .then((value) {
           for (var element in value.docs) {
@@ -807,6 +811,9 @@ class FireStoreUtils {
         .catchError((error) {
           log(error.toString());
         });
+
+    // Sort by createdAt descending in code to avoid composite index requirement
+    advertisementList.sort((a, b) => b.createdAt!.compareTo(a.createdAt!));
     return advertisementList;
   }
 
@@ -867,7 +874,6 @@ class FireStoreUtils {
     await fireStore
         .collection(CollectionName.wallet)
         .where('user_id', isEqualTo: FireStoreUtils.getCurrentUid())
-        .orderBy('date', descending: true)
         .get()
         .then((value) {
           for (var element in value.docs) {
@@ -879,6 +885,9 @@ class FireStoreUtils {
         .catchError((error) {
           log(error.toString());
         });
+
+    // Sort by date descending in code to avoid composite index requirement
+    walletTransactionList.sort((a, b) => b.date!.compareTo(a.date!));
     return walletTransactionList;
   }
 
@@ -910,7 +919,6 @@ class FireStoreUtils {
         .where('user_id', isEqualTo: FireStoreUtils.getCurrentUid())
         .where('date', isGreaterThanOrEqualTo: startTime)
         .where('date', isLessThanOrEqualTo: endTime)
-        .orderBy('date', descending: true)
         .get()
         .then((value) {
           for (var element in value.docs) {
@@ -922,6 +930,9 @@ class FireStoreUtils {
         .catchError((error) {
           log(error.toString());
         });
+
+    // Sort by date descending in code to avoid composite index requirement
+    walletTransactionList.sort((a, b) => b.date!.compareTo(a.date!));
     return walletTransactionList;
   }
 
@@ -1420,7 +1431,6 @@ class FireStoreUtils {
     await fireStore
         .collection(CollectionName.coupons)
         .where("vendorID", isEqualTo: vendorId)
-        .orderBy("createdAt", descending: true)
         .get()
         .then((value) {
           for (var element in value.docs) {
@@ -1428,6 +1438,9 @@ class FireStoreUtils {
             list.add(taxModel);
           }
         });
+
+    // Sort by createdAt descending in code to avoid composite index requirement
+    list.sort((a, b) => b.createdAt!.compareTo(a.createdAt!));
     return list;
   }
 

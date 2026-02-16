@@ -43,8 +43,20 @@ class RentalHomeScreen extends StatelessWidget {
                     child: Container(
                       height: 42,
                       width: 42,
-                      decoration: BoxDecoration(shape: BoxShape.circle, color: AppThemeData.grey50),
-                      child: Center(child: Padding(padding: const EdgeInsets.only(left: 5), child: Icon(Icons.arrow_back_ios, color: AppThemeData.grey900, size: 20))),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: AppThemeData.grey50,
+                      ),
+                      child: Center(
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 5),
+                          child: Icon(
+                            Icons.arrow_back_ios,
+                            color: AppThemeData.grey900,
+                            size: 20,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -57,9 +69,21 @@ class RentalHomeScreen extends StatelessWidget {
                               onTap: () {
                                 Get.offAll(const LoginScreen());
                               },
-                              child: Text("Login".tr, style: AppThemeData.boldTextStyle(fontSize: 14, color: AppThemeData.grey900)),
+                              child: Text(
+                                "Login".tr,
+                                style: AppThemeData.boldTextStyle(
+                                  fontSize: 14,
+                                  color: AppThemeData.grey900,
+                                ),
+                              ),
                             )
-                            : Text(Constant.userModel!.fullName(), style: AppThemeData.boldTextStyle(fontSize: 14, color: AppThemeData.grey900)),
+                            : Text(
+                              Constant.userModel!.fullName(),
+                              style: AppThemeData.boldTextStyle(
+                                fontSize: 14,
+                                color: AppThemeData.grey900,
+                              ),
+                            ),
                       ],
                     ),
                   ),
@@ -81,30 +105,69 @@ class RentalHomeScreen extends StatelessWidget {
                           InkWell(
                             onTap: () async {
                               if (Constant.selectedMapType == 'osm') {
-                                final result = await Get.to(() => MapPickerPage());
+                                final result = await Get.to(
+                                  () => MapPickerPage(),
+                                );
                                 if (result != null) {
                                   final firstPlace = result;
 
-                                  if (Constant.checkZoneCheck(firstPlace.coordinates.latitude, firstPlace.coordinates.longitude) == true) {
+                                  if (Constant.checkZoneCheck(
+                                        firstPlace.coordinates.latitude,
+                                        firstPlace.coordinates.longitude,
+                                      ) ==
+                                      true) {
                                     final address = firstPlace.address;
                                     final lat = firstPlace.coordinates.latitude;
-                                    final lng = firstPlace.coordinates.longitude;
-                                    controller.sourceTextEditController.value.text = address;
-                                    controller.departureLatLongOsm.value = latlong.LatLng(lat, lng);
+                                    final lng =
+                                        firstPlace.coordinates.longitude;
+                                    controller
+                                        .sourceTextEditController
+                                        .value
+                                        .text = address;
+                                    controller
+                                        .departureLatLongOsm
+                                        .value = latlong.LatLng(lat, lng);
                                   } else {
-                                    ShowToastDialog.showToast("Service is unavailable at the selected address.".tr);
+                                    ShowToastDialog.showToast(
+                                      "Service is unavailable at the selected address."
+                                          .tr,
+                                    );
                                   }
                                 }
                               } else {
-                                Get.to(LocationPickerScreen())!.then((value) async {
+                                Get.to(LocationPickerScreen())!.then((
+                                  value,
+                                ) async {
                                   if (value != null) {
-                                    SelectedLocationModel selectedLocationModel = value;
+                                    SelectedLocationModel
+                                    selectedLocationModel = value;
 
-                                    if (Constant.checkZoneCheck(selectedLocationModel.latLng!.latitude, selectedLocationModel.latLng!.longitude) == true) {
-                                      controller.sourceTextEditController.value.text = Utils.formatAddress(selectedLocation: selectedLocationModel);
-                                      controller.departureLatLong.value = latlong.LatLng(selectedLocationModel.latLng!.latitude, selectedLocationModel.latLng!.longitude);
+                                    if (Constant.checkZoneCheck(
+                                          selectedLocationModel
+                                              .latLng!
+                                              .latitude,
+                                          selectedLocationModel
+                                              .latLng!
+                                              .longitude,
+                                        ) ==
+                                        true) {
+                                      controller
+                                          .sourceTextEditController
+                                          .value
+                                          .text = Utils.formatAddress(
+                                        selectedLocation: selectedLocationModel,
+                                      );
+                                      controller
+                                          .departureLatLong
+                                          .value = latlong.LatLng(
+                                        selectedLocationModel.latLng!.latitude,
+                                        selectedLocationModel.latLng!.longitude,
+                                      );
                                     } else {
-                                      ShowToastDialog.showToast("Service is unavailable at the selected address.".tr);
+                                      ShowToastDialog.showToast(
+                                        "Service is unavailable at the selected address."
+                                            .tr,
+                                      );
                                     }
                                   }
                                 });
@@ -112,11 +175,18 @@ class RentalHomeScreen extends StatelessWidget {
                             },
                             hoverColor: Colors.transparent,
                             child: TextFieldWidget(
-                              controller: controller.sourceTextEditController.value,
+                              controller:
+                                  controller.sourceTextEditController.value,
                               hintText: "Your current location".tr,
                               title: "Pickup Location".tr,
                               enable: false,
-                              prefix: Padding(padding: EdgeInsets.only(left: 10, right: 10), child: Icon(Icons.stop_circle_outlined, color: Colors.green)),
+                              prefix: Padding(
+                                padding: EdgeInsets.only(left: 10, right: 10),
+                                child: Icon(
+                                  Icons.stop_circle_outlined,
+                                  color: Colors.green,
+                                ),
+                              ),
                             ),
                           ),
                           const SizedBox(height: 25),
@@ -124,7 +194,16 @@ class RentalHomeScreen extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              Text("Select Your Vehicle Type".tr, style: AppThemeData.boldTextStyle(fontSize: 18, color: isDark ? AppThemeData.greyDark900 : AppThemeData.grey900)),
+                              Text(
+                                "Select Your Vehicle Type".tr,
+                                style: AppThemeData.boldTextStyle(
+                                  fontSize: 18,
+                                  color:
+                                      isDark
+                                          ? AppThemeData.greyDark900
+                                          : AppThemeData.grey900,
+                                ),
+                              ),
                               const SizedBox(width: 10),
                               GestureDetector(
                                 onTap: () => controller.pickDate(context),
@@ -132,7 +211,13 @@ class RentalHomeScreen extends StatelessWidget {
                                   children: [
                                     Text(
                                       "${controller.selectedDate.value.day}-${controller.selectedDate.value.month}-${controller.selectedDate.value.year}",
-                                      style: AppThemeData.semiBoldTextStyle(fontSize: 18, color: isDark ? AppThemeData.greyDark900 : AppThemeData.grey900),
+                                      style: AppThemeData.semiBoldTextStyle(
+                                        fontSize: 18,
+                                        color:
+                                            isDark
+                                                ? AppThemeData.greyDark900
+                                                : AppThemeData.grey900,
+                                      ),
                                     ),
                                     const SizedBox(width: 5),
                                     const Icon(Icons.date_range, size: 20),
@@ -149,11 +234,13 @@ class RentalHomeScreen extends StatelessWidget {
                             physics: NeverScrollableScrollPhysics(),
                             scrollDirection: Axis.vertical,
                             itemBuilder: (context, index) {
-                              RentalVehicleType vehicleType = controller.vehicleTypes[index];
+                              RentalVehicleType vehicleType =
+                                  controller.vehicleTypes[index];
                               return Obx(
                                 () => InkWell(
                                   onTap: () {
-                                    controller.selectedVehicleType.value = controller.vehicleTypes[index];
+                                    controller.selectedVehicleType.value =
+                                        controller.vehicleTypes[index];
                                   },
                                   child: Padding(
                                     padding: const EdgeInsets.only(bottom: 10),
@@ -163,72 +250,144 @@ class RentalHomeScreen extends StatelessWidget {
                                         border: Border.all(
                                           color:
                                               isDark
-                                                  ? controller.selectedVehicleType.value?.id == vehicleType.id
-                                                      ? AppThemeData.carRentDark300
+                                                  ? controller
+                                                              .selectedVehicleType
+                                                              .value
+                                                              ?.id ==
+                                                          vehicleType.id
+                                                      ? AppThemeData
+                                                          .carRentDark300
                                                       : Colors.transparent
-                                                  : controller.selectedVehicleType.value?.id == vehicleType.id
+                                                  : controller
+                                                          .selectedVehicleType
+                                                          .value
+                                                          ?.id ==
+                                                      vehicleType.id
                                                   ? AppThemeData.carRent300
                                                   : Colors.transparent,
                                           width: 1,
                                         ),
                                         color:
-                                            controller.selectedVehicleType.value?.id == vehicleType.id
+                                            controller
+                                                        .selectedVehicleType
+                                                        .value
+                                                        ?.id ==
+                                                    vehicleType.id
                                                 ? AppThemeData.carRent50
                                                 : isDark
                                                 ? AppThemeData.carRentDark50
                                                 : Colors.white,
                                       ),
                                       child: Padding(
-                                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 10,
+                                          horizontal: 10,
+                                        ),
                                         child: Row(
                                           children: [
                                             ClipRRect(
                                               //borderRadius: BorderRadius.circular(10),
                                               child: CachedNetworkImage(
-                                                imageUrl: vehicleType.rentalVehicleIcon.toString(),
+                                                imageUrl:
+                                                    vehicleType
+                                                        .rentalVehicleIcon
+                                                        .toString(),
                                                 height: 60,
                                                 width: 60,
                                                 imageBuilder:
-                                                    (context, imageProvider) =>
-                                                        Container(decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), image: DecorationImage(image: imageProvider, fit: BoxFit.cover))),
-                                                placeholder: (context, url) => Center(child: CircularProgressIndicator.adaptive(valueColor: AlwaysStoppedAnimation(AppThemeData.primary300))),
-                                                errorWidget: (context, url, error) => Image.network(Constant.placeHolderImage, fit: BoxFit.cover),
+                                                    (
+                                                      context,
+                                                      imageProvider,
+                                                    ) => Container(
+                                                      decoration: BoxDecoration(
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              10,
+                                                            ),
+                                                        image: DecorationImage(
+                                                          image: imageProvider,
+                                                          fit: BoxFit.cover,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                placeholder:
+                                                    (context, url) => Center(
+                                                      child: CircularProgressIndicator.adaptive(
+                                                        valueColor:
+                                                            AlwaysStoppedAnimation(
+                                                              AppThemeData
+                                                                  .primary300,
+                                                            ),
+                                                      ),
+                                                    ),
+                                                errorWidget:
+                                                    (context, url, error) =>
+                                                        Image.network(
+                                                          Constant
+                                                              .placeHolderImage,
+                                                          fit: BoxFit.cover,
+                                                        ),
                                                 fit: BoxFit.cover,
                                               ),
                                             ),
                                             Expanded(
                                               child: Padding(
-                                                padding: const EdgeInsets.symmetric(horizontal: 10),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 10,
+                                                    ),
                                                 child: Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
                                                   children: [
                                                     Text(
                                                       "${vehicleType.name}",
                                                       style: TextStyle(
                                                         fontSize: 16,
-                                                        fontWeight: FontWeight.bold,
+                                                        fontWeight:
+                                                            FontWeight.bold,
                                                         letterSpacing: 1,
                                                         color:
                                                             isDark
-                                                                ? controller.selectedVehicleType.value?.id == vehicleType.id
-                                                                    ? AppThemeData.greyDark50
-                                                                    : AppThemeData.grey50
-                                                                : AppThemeData.greyDark50,
+                                                                ? controller
+                                                                            .selectedVehicleType
+                                                                            .value
+                                                                            ?.id ==
+                                                                        vehicleType
+                                                                            .id
+                                                                    ? AppThemeData
+                                                                        .greyDark50
+                                                                    : AppThemeData
+                                                                        .grey50
+                                                                : AppThemeData
+                                                                    .greyDark50,
                                                       ),
                                                     ),
                                                     Padding(
-                                                      padding: const EdgeInsets.only(top: 2.0),
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                            top: 2.0,
+                                                          ),
                                                       child: Text(
                                                         "${vehicleType.description}",
                                                         style: TextStyle(
-                                                          fontWeight: FontWeight.w400,
+                                                          fontWeight:
+                                                              FontWeight.w400,
                                                           letterSpacing: 1,
                                                           color:
                                                               isDark
-                                                                  ? controller.selectedVehicleType.value?.id == vehicleType.id
-                                                                      ? AppThemeData.greyDark50
-                                                                      : AppThemeData.grey50
-                                                                  : AppThemeData.greyDark50,
+                                                                  ? controller
+                                                                              .selectedVehicleType
+                                                                              .value
+                                                                              ?.id ==
+                                                                          vehicleType
+                                                                              .id
+                                                                      ? AppThemeData
+                                                                          .greyDark50
+                                                                      : AppThemeData
+                                                                          .grey50
+                                                                  : AppThemeData
+                                                                      .greyDark50,
                                                         ),
                                                       ),
                                                     ),
@@ -249,30 +408,46 @@ class RentalHomeScreen extends StatelessWidget {
                           RoundedButtonFill(
                             title: "Continue".tr,
                             onPress: () async {
-                              final sourceText = controller.sourceTextEditController.value.text.trim();
+                              final sourceText =
+                                  controller.sourceTextEditController.value.text
+                                      .trim();
                               if (Constant.userModel == null) {
-                                ShowToastDialog.showToast("Please login to continue".tr);
+                                ShowToastDialog.showToast(
+                                  "Please login to continue".tr,
+                                );
                                 return;
                               }
                               if (sourceText.isEmpty) {
-                                ShowToastDialog.showToast("Please select source location".tr);
+                                ShowToastDialog.showToast(
+                                  "Please select source location".tr,
+                                );
                                 return;
                               }
 
-                              if (controller.selectedVehicleType.value == null) {
-                                ShowToastDialog.showToast("Please select a vehicle type".tr);
+                              if (controller.selectedVehicleType.value ==
+                                  null) {
+                                ShowToastDialog.showToast(
+                                  "Please select a vehicle type".tr,
+                                );
                                 return;
                               }
 
                               await controller.getRentalPackage();
 
                               if (controller.rentalPackages.isEmpty) {
-                                ShowToastDialog.showToast("No preference available for the selected vehicle type".tr);
+                                ShowToastDialog.showToast(
+                                  "No preference available for the selected vehicle type"
+                                      .tr,
+                                );
                                 return;
                               }
 
                               // Open bottom sheet if packages exist
-                              Get.bottomSheet(selectPreferences(context, controller, isDark), isScrollControlled: true, backgroundColor: Colors.transparent);
+                              Get.bottomSheet(
+                                selectPreferences(context, controller, isDark),
+                                isScrollControlled: true,
+                                backgroundColor: Colors.transparent,
+                              );
                             },
                             color: AppThemeData.primary300,
                             textColor: AppThemeData.grey900,
@@ -288,7 +463,11 @@ class RentalHomeScreen extends StatelessWidget {
     );
   }
 
-  Widget selectPreferences(BuildContext context, RentalHomeController controller, bool isDark) {
+  Widget selectPreferences(
+    BuildContext context,
+    RentalHomeController controller,
+    bool isDark,
+  ) {
     return DraggableScrollableSheet(
       initialChildSize: 0.40,
       minChildSize: 0.40,
@@ -296,19 +475,39 @@ class RentalHomeScreen extends StatelessWidget {
       expand: false,
       builder: (context, scrollController) {
         return Container(
-          decoration: BoxDecoration(color: isDark ? Colors.black : Colors.white, borderRadius: const BorderRadius.only(topLeft: Radius.circular(24), topRight: Radius.circular(24))),
+          decoration: BoxDecoration(
+            color: isDark ? Colors.black : Colors.white,
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(24),
+              topRight: Radius.circular(24),
+            ),
+          ),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 10),
             child: Column(
               children: [
                 // handle bar
-                Container(height: 4, width: 33, decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: Colors.grey.shade400)),
+                Container(
+                  height: 4,
+                  width: 33,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    color: Colors.grey.shade400,
+                  ),
+                ),
 
                 Align(
                   alignment: Alignment.topLeft,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 10),
-                    child: Text("Select Preferences".tr, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: isDark ? Colors.white : Colors.black)),
+                    child: Text(
+                      "Select Preferences".tr,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                        color: isDark ? Colors.white : Colors.black,
+                      ),
+                    ),
                   ),
                 ),
 
@@ -320,30 +519,43 @@ class RentalHomeScreen extends StatelessWidget {
                       final package = controller.rentalPackages[index];
                       return Obx(
                         () => InkWell(
-                          onTap: () => controller.selectedPackage.value = package,
+                          onTap:
+                              () => controller.selectedPackage.value = package,
                           child: Container(
                             margin: const EdgeInsets.symmetric(vertical: 6),
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: controller.selectedPackage.value?.id == package.id ? (isDark ? AppThemeData.carRentDark300 : AppThemeData.carRent300) : Colors.transparent,
+                                color:
+                                    controller.selectedPackage.value?.id ==
+                                            package.id
+                                        ? (isDark
+                                            ? AppThemeData.carRentDark300
+                                            : AppThemeData.carRent300)
+                                        : Colors.transparent,
                                 width: 1,
                               ),
                               color:
-                                  controller.selectedPackage.value?.id == package.id
+                                  controller.selectedPackage.value?.id ==
+                                          package.id
                                       ? AppThemeData.carRent50
                                       : isDark
                                       ? AppThemeData.carRentDark50
                                       : Colors.white,
                             ),
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 12),
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 15,
+                                horizontal: 12,
+                              ),
                               child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                           package.name ?? "",
@@ -351,8 +563,13 @@ class RentalHomeScreen extends StatelessWidget {
                                             fontSize: 18,
                                             color:
                                                 isDark
-                                                    ? controller.selectedPackage.value?.id == package.id
-                                                        ? AppThemeData.greyDark50
+                                                    ? controller
+                                                                .selectedPackage
+                                                                .value
+                                                                ?.id ==
+                                                            package.id
+                                                        ? AppThemeData
+                                                            .greyDark50
                                                         : AppThemeData.grey50
                                                     : AppThemeData.greyDark50,
                                           ),
@@ -364,8 +581,13 @@ class RentalHomeScreen extends StatelessWidget {
                                             fontSize: 14,
                                             color:
                                                 isDark
-                                                    ? controller.selectedPackage.value?.id == package.id
-                                                        ? AppThemeData.greyDark50
+                                                    ? controller
+                                                                .selectedPackage
+                                                                .value
+                                                                ?.id ==
+                                                            package.id
+                                                        ? AppThemeData
+                                                            .greyDark50
                                                         : AppThemeData.grey50
                                                     : AppThemeData.greyDark50,
                                           ),
@@ -374,12 +596,18 @@ class RentalHomeScreen extends StatelessWidget {
                                     ),
                                   ),
                                   Text(
-                                    Constant.amountShow(amount: package.baseFare.toString()),
+                                    Constant.amountShow(
+                                      amount: package.baseFare.toString(),
+                                    ),
                                     style: AppThemeData.boldTextStyle(
                                       fontSize: 18,
                                       color:
                                           isDark
-                                              ? controller.selectedPackage.value?.id == package.id
+                                              ? controller
+                                                          .selectedPackage
+                                                          .value
+                                                          ?.id ==
+                                                      package.id
                                                   ? AppThemeData.greyDark50
                                                   : AppThemeData.grey50
                                               : AppThemeData.greyDark50,
@@ -400,7 +628,11 @@ class RentalHomeScreen extends StatelessWidget {
                 RoundedButtonFill(
                   title: "Continue".tr,
                   onPress: () {
-                    Get.bottomSheet(paymentBottomSheet(context, controller, isDark), isScrollControlled: true, backgroundColor: Colors.transparent);
+                    Get.bottomSheet(
+                      paymentBottomSheet(context, controller, isDark),
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                    );
                   },
                   color: AppThemeData.primary300,
                   textColor: AppThemeData.grey900,
@@ -413,7 +645,11 @@ class RentalHomeScreen extends StatelessWidget {
     );
   }
 
-  Widget paymentBottomSheet(BuildContext context, RentalHomeController controller, bool isDark) {
+  Widget paymentBottomSheet(
+    BuildContext context,
+    RentalHomeController controller,
+    bool isDark,
+  ) {
     return DraggableScrollableSheet(
       initialChildSize: 0.70,
       // Start height
@@ -426,7 +662,10 @@ class RentalHomeScreen extends StatelessWidget {
       builder: (context, scrollController) {
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-          decoration: BoxDecoration(color: isDark ? AppThemeData.grey500 : Colors.white, borderRadius: const BorderRadius.vertical(top: Radius.circular(24))),
+          decoration: BoxDecoration(
+            color: isDark ? AppThemeData.grey500 : Colors.white,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -434,8 +673,20 @@ class RentalHomeScreen extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text("Select Payment Method".tr, style: AppThemeData.mediumTextStyle(fontSize: 18, color: isDark ? AppThemeData.greyDark900 : AppThemeData.grey900)),
-                  GestureDetector(onTap: () => Get.back(), child: const Icon(Icons.close)),
+                  Text(
+                    "Select Payment Method".tr,
+                    style: AppThemeData.mediumTextStyle(
+                      fontSize: 18,
+                      color:
+                          isDark
+                              ? AppThemeData.greyDark900
+                              : AppThemeData.grey900,
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () => Get.back(),
+                    child: const Icon(Icons.close),
+                  ),
                 ],
               ),
               const SizedBox(height: 20),
@@ -446,39 +697,89 @@ class RentalHomeScreen extends StatelessWidget {
                   padding: EdgeInsets.zero,
                   controller: scrollController,
                   children: [
-                    Text("Preferred Payment".tr, style: AppThemeData.boldTextStyle(fontSize: 15, color: isDark ? AppThemeData.greyDark500 : AppThemeData.grey500)),
+                    Text(
+                      "Preferred Payment".tr,
+                      style: AppThemeData.boldTextStyle(
+                        fontSize: 15,
+                        color:
+                            isDark
+                                ? AppThemeData.greyDark500
+                                : AppThemeData.grey500,
+                      ),
+                    ),
                     const SizedBox(height: 10),
 
-                    if (controller.walletSettingModel.value.isEnabled == true || controller.cashOnDeliverySettingModel.value.isEnabled == true)
+                    if (controller.walletSettingModel.value.isEnabled == true ||
+                        controller.cashOnDeliverySettingModel.value.isEnabled ==
+                            true)
                       Container(
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(15),
-                          color: isDark ? AppThemeData.greyDark50 : AppThemeData.grey50,
-                          border: Border.all(color: isDark ? AppThemeData.greyDark200 : AppThemeData.grey200),
+                          color:
+                              isDark
+                                  ? AppThemeData.greyDark50
+                                  : AppThemeData.grey50,
+                          border: Border.all(
+                            color:
+                                isDark
+                                    ? AppThemeData.greyDark200
+                                    : AppThemeData.grey200,
+                          ),
                         ),
                         child: Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: Column(
                             children: [
                               Visibility(
-                                visible: controller.walletSettingModel.value.isEnabled == true,
-                                child: cardDecoration(controller, PaymentGateway.wallet, isDark, "assets/images/ic_wallet.png"),
+                                visible:
+                                    controller
+                                        .walletSettingModel
+                                        .value
+                                        .isEnabled ==
+                                    true,
+                                child: cardDecoration(
+                                  controller,
+                                  PaymentGateway.wallet,
+                                  isDark,
+                                  "assets/images/ic_wallet.png",
+                                ),
                               ),
                               Visibility(
-                                visible: controller.cashOnDeliverySettingModel.value.isEnabled == true,
-                                child: cardDecoration(controller, PaymentGateway.cod, isDark, "assets/images/ic_cash.png"),
+                                visible:
+                                    controller
+                                        .cashOnDeliverySettingModel
+                                        .value
+                                        .isEnabled ==
+                                    true,
+                                child: cardDecoration(
+                                  controller,
+                                  PaymentGateway.cod,
+                                  isDark,
+                                  "assets/images/ic_cash.png",
+                                ),
                               ),
                             ],
                           ),
                         ),
                       ),
 
-                    if (controller.walletSettingModel.value.isEnabled == true || controller.cashOnDeliverySettingModel.value.isEnabled == true)
+                    if (controller.walletSettingModel.value.isEnabled == true ||
+                        controller.cashOnDeliverySettingModel.value.isEnabled ==
+                            true)
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const SizedBox(height: 10),
-                          Text("Other Payment Options".tr, style: AppThemeData.boldTextStyle(fontSize: 15, color: isDark ? AppThemeData.greyDark500 : AppThemeData.grey500)),
+                          Text(
+                            "Other Payment Options".tr,
+                            style: AppThemeData.boldTextStyle(
+                              fontSize: 15,
+                              color:
+                                  isDark
+                                      ? AppThemeData.greyDark500
+                                      : AppThemeData.grey500,
+                            ),
+                          ),
                           const SizedBox(height: 10),
                         ],
                       ),
@@ -487,32 +788,129 @@ class RentalHomeScreen extends StatelessWidget {
                     Container(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(15),
-                        color: isDark ? AppThemeData.greyDark50 : AppThemeData.grey50,
-                        border: Border.all(color: isDark ? AppThemeData.greyDark200 : AppThemeData.grey200),
+                        color:
+                            isDark
+                                ? AppThemeData.greyDark50
+                                : AppThemeData.grey50,
+                        border: Border.all(
+                          color:
+                              isDark
+                                  ? AppThemeData.greyDark200
+                                  : AppThemeData.grey200,
+                        ),
                       ),
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: Column(
                           children: [
-                            Visibility(visible: controller.stripeModel.value.isEnabled == true, child: cardDecoration(controller, PaymentGateway.stripe, isDark, "assets/images/stripe.png")),
-                            Visibility(visible: controller.payPalModel.value.isEnabled == true, child: cardDecoration(controller, PaymentGateway.paypal, isDark, "assets/images/paypal.png")),
-                            Visibility(visible: controller.payStackModel.value.isEnable == true, child: cardDecoration(controller, PaymentGateway.payStack, isDark, "assets/images/paystack.png")),
                             Visibility(
-                              visible: controller.mercadoPagoModel.value.isEnabled == true,
-                              child: cardDecoration(controller, PaymentGateway.mercadoPago, isDark, "assets/images/mercado-pago.png"),
+                              visible:
+                                  controller.stripeModel.value.isEnabled ==
+                                  true,
+                              child: cardDecoration(
+                                controller,
+                                PaymentGateway.stripe,
+                                isDark,
+                                "assets/images/stripe.png",
+                              ),
                             ),
                             Visibility(
-                              visible: controller.flutterWaveModel.value.isEnable == true,
-                              child: cardDecoration(controller, PaymentGateway.flutterWave, isDark, "assets/images/flutterwave_logo.png"),
+                              visible:
+                                  controller.payPalModel.value.isEnabled ==
+                                  true,
+                              child: cardDecoration(
+                                controller,
+                                PaymentGateway.paypal,
+                                isDark,
+                                "assets/images/paypal.png",
+                              ),
                             ),
-                            Visibility(visible: controller.payFastModel.value.isEnable == true, child: cardDecoration(controller, PaymentGateway.payFast, isDark, "assets/images/payfast.png")),
-                            Visibility(visible: controller.razorPayModel.value.isEnabled == true, child: cardDecoration(controller, PaymentGateway.razorpay, isDark, "assets/images/razorpay.png")),
-                            Visibility(visible: controller.midTransModel.value.enable == true, child: cardDecoration(controller, PaymentGateway.midTrans, isDark, "assets/images/midtrans.png")),
                             Visibility(
-                              visible: controller.orangeMoneyModel.value.enable == true,
-                              child: cardDecoration(controller, PaymentGateway.orangeMoney, isDark, "assets/images/orange_money.png"),
+                              visible:
+                                  controller.payStackModel.value.isEnable ==
+                                  true,
+                              child: cardDecoration(
+                                controller,
+                                PaymentGateway.payStack,
+                                isDark,
+                                "assets/images/paystack.png",
+                              ),
                             ),
-                            Visibility(visible: controller.xenditModel.value.enable == true, child: cardDecoration(controller, PaymentGateway.xendit, isDark, "assets/images/xendit.png")),
+                            Visibility(
+                              visible:
+                                  controller.mercadoPagoModel.value.isEnabled ==
+                                  true,
+                              child: cardDecoration(
+                                controller,
+                                PaymentGateway.mercadoPago,
+                                isDark,
+                                "assets/images/mercado-pago.png",
+                              ),
+                            ),
+                            Visibility(
+                              visible:
+                                  controller.flutterWaveModel.value.isEnable ==
+                                  true,
+                              child: cardDecoration(
+                                controller,
+                                PaymentGateway.flutterWave,
+                                isDark,
+                                "assets/images/flutterwave_logo.png",
+                              ),
+                            ),
+                            Visibility(
+                              visible:
+                                  controller.payFastModel.value.isEnable ==
+                                  true,
+                              child: cardDecoration(
+                                controller,
+                                PaymentGateway.payFast,
+                                isDark,
+                                "assets/images/payfast.png",
+                              ),
+                            ),
+                            Visibility(
+                              visible:
+                                  controller.razorPayModel.value.isEnabled ==
+                                  true,
+                              child: cardDecoration(
+                                controller,
+                                PaymentGateway.razorpay,
+                                isDark,
+                                "assets/images/razorpay.png",
+                              ),
+                            ),
+                            Visibility(
+                              visible:
+                                  controller.midTransModel.value.enable == true,
+                              child: cardDecoration(
+                                controller,
+                                PaymentGateway.midTrans,
+                                isDark,
+                                "assets/images/midtrans.png",
+                              ),
+                            ),
+                            Visibility(
+                              visible:
+                                  controller.orangeMoneyModel.value.enable ==
+                                  true,
+                              child: cardDecoration(
+                                controller,
+                                PaymentGateway.orangeMoney,
+                                isDark,
+                                "assets/images/orange_money.png",
+                              ),
+                            ),
+                            Visibility(
+                              visible:
+                                  controller.xenditModel.value.enable == true,
+                              child: cardDecoration(
+                                controller,
+                                PaymentGateway.xendit,
+                                isDark,
+                                "assets/images/xendit.png",
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -529,17 +927,28 @@ class RentalHomeScreen extends StatelessWidget {
                 textColor: AppThemeData.grey900,
                 onPress: () async {
                   if (controller.selectedPaymentMethod.value.isEmpty) {
-                    ShowToastDialog.showToast("Please select a payment method".tr);
+                    ShowToastDialog.showToast(
+                      "Please select a payment method".tr,
+                    );
                     return;
                   }
 
                   // Only check wallet if payment method is wallet
                   if (controller.selectedPaymentMethod.value == "wallet") {
-                    num walletAmount = controller.userModel.value.walletAmount ?? 0;
-                    num baseFare = double.tryParse(controller.selectedPackage.value?.baseFare.toString() ?? "0") ?? 0;
+                    num walletAmount =
+                        controller.userModel.value.walletAmount ?? 0;
+                    num baseFare =
+                        double.tryParse(
+                          controller.selectedPackage.value?.baseFare
+                                  .toString() ??
+                              "0",
+                        ) ??
+                        0;
 
                     if (walletAmount < baseFare) {
-                      ShowToastDialog.showToast("You do not have sufficient wallet balance".tr);
+                      ShowToastDialog.showToast(
+                        "You do not have sufficient wallet balance".tr,
+                      );
                       return;
                     }
                   }
@@ -554,7 +963,12 @@ class RentalHomeScreen extends StatelessWidget {
     );
   }
 
-  Obx cardDecoration(RentalHomeController controller, PaymentGateway value, isDark, String image) {
+  Obx cardDecoration(
+    RentalHomeController controller,
+    PaymentGateway value,
+    isDark,
+    String image,
+  ) {
     return Obx(
       () => Padding(
         padding: const EdgeInsets.symmetric(vertical: 5),
@@ -569,8 +983,21 @@ class RentalHomeScreen extends StatelessWidget {
                   Container(
                     width: 50,
                     height: 50,
-                    decoration: ShapeDecoration(shape: RoundedRectangleBorder(side: const BorderSide(width: 1, color: Color(0xFFE5E7EB)), borderRadius: BorderRadius.circular(8))),
-                    child: Padding(padding: EdgeInsets.all(value.name == "payFast" ? 0 : 8.0), child: Image.asset(image)),
+                    decoration: ShapeDecoration(
+                      shape: RoundedRectangleBorder(
+                        side: const BorderSide(
+                          width: 1,
+                          color: Color(0xFFE5E7EB),
+                        ),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.all(
+                        value.name == "payFast" ? 0 : 8.0,
+                      ),
+                      child: Image.asset(image),
+                    ),
                   ),
                   const SizedBox(width: 10),
                   value.name == "wallet"
@@ -579,30 +1006,61 @@ class RentalHomeScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              value.name.capitalizeString(),
+                              value.localizedLabel(),
                               textAlign: TextAlign.start,
-                              style: AppThemeData.semiBoldTextStyle(fontSize: 16, color: isDark ? AppThemeData.grey50 : AppThemeData.grey900),
+                              style: AppThemeData.semiBoldTextStyle(
+                                fontSize: 16,
+                                color:
+                                    isDark
+                                        ? AppThemeData.grey50
+                                        : AppThemeData.grey900,
+                              ),
                             ),
                             Text(
-                              Constant.amountShow(amount: controller.userModel.value.walletAmount == null ? '0.0' : controller.userModel.value.walletAmount.toString()),
+                              Constant.amountShow(
+                                amount:
+                                    controller.userModel.value.walletAmount ==
+                                            null
+                                        ? '0.0'
+                                        : controller
+                                            .userModel
+                                            .value
+                                            .walletAmount
+                                            .toString(),
+                              ),
                               textAlign: TextAlign.start,
-                              style: AppThemeData.semiBoldTextStyle(fontSize: 14, color: isDark ? AppThemeData.primary300 : AppThemeData.primary300),
+                              style: AppThemeData.semiBoldTextStyle(
+                                fontSize: 14,
+                                color:
+                                    isDark
+                                        ? AppThemeData.primary300
+                                        : AppThemeData.primary300,
+                              ),
                             ),
                           ],
                         ),
                       )
                       : Expanded(
                         child: Text(
-                          value.name.capitalizeString(),
+                          value.localizedLabel(),
                           textAlign: TextAlign.start,
-                          style: AppThemeData.semiBoldTextStyle(fontSize: 16, color: isDark ? AppThemeData.grey50 : AppThemeData.grey900),
+                          style: AppThemeData.semiBoldTextStyle(
+                            fontSize: 16,
+                            color:
+                                isDark
+                                    ? AppThemeData.grey50
+                                    : AppThemeData.grey900,
+                          ),
                         ),
                       ),
                   const Expanded(child: SizedBox()),
                   Radio(
                     value: value.name,
                     groupValue: controller.selectedPaymentMethod.value,
-                    activeColor: isDark ? AppThemeData.primary300 : AppThemeData.primary300,
+                    activeColor:
+                        isDark
+                            ? AppThemeData.primary300
+                            : AppThemeData.primary300,
                     onChanged: (value) {
                       controller.selectedPaymentMethod.value = value.toString();
                     },

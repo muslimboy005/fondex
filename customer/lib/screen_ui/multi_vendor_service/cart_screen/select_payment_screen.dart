@@ -235,7 +235,7 @@ class SelectPaymentScreen extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                value.name.capitalizeString(),
+                                value.localizedLabel(),
                                 textAlign: TextAlign.start,
                                 style: TextStyle(
                                   fontFamily: AppThemeData.medium,
@@ -257,7 +257,7 @@ class SelectPaymentScreen extends StatelessWidget {
                         )
                       : Expanded(
                           child: Text(
-                            value.name.capitalizeString(),
+                            value.localizedLabel(),
                             textAlign: TextAlign.start,
                             style: TextStyle(
                               fontFamily: AppThemeData.medium,

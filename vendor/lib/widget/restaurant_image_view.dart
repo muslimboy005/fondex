@@ -26,7 +26,8 @@ class _RestaurantImageViewState extends State<RestaurantImageView> {
   }
 
   void animateSlider() {
-    if (widget.vendorModel.photos != null && widget.vendorModel.photos!.isNotEmpty) {
+    if (widget.vendorModel.photos != null &&
+        widget.vendorModel.photos!.isNotEmpty) {
       Timer.periodic(const Duration(seconds: 2), (Timer timer) {
         if (currentPage < widget.vendorModel.photos!.length) {
           currentPage++;
@@ -35,7 +36,11 @@ class _RestaurantImageViewState extends State<RestaurantImageView> {
         }
 
         if (pageController.hasClients) {
-          pageController.animateToPage(currentPage, duration: const Duration(milliseconds: 300), curve: Curves.easeIn);
+          pageController.animateToPage(
+            currentPage,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeIn,
+          );
         }
         setState(() {});
       });
@@ -46,8 +51,15 @@ class _RestaurantImageViewState extends State<RestaurantImageView> {
   Widget build(BuildContext context) {
     return SizedBox(
       height: Responsive.height(20, context),
-      child: widget.vendorModel.photos == null || widget.vendorModel.photos!.isEmpty
-          ? NetworkImageWidget(imageUrl: widget.vendorModel.photo.toString(), fit: BoxFit.cover, height: Responsive.height(20, context), width: Responsive.width(100, context))
+      child:
+          widget.vendorModel.photos == null ||
+              widget.vendorModel.photos!.isEmpty
+          ? NetworkImageWidget(
+              imageUrl: widget.vendorModel.photo.toString(),
+              fit: BoxFit.cover,
+              height: Responsive.height(20, context),
+              width: Responsive.width(100, context),
+            )
           : PageView.builder(
               physics: const BouncingScrollPhysics(),
               controller: pageController,
@@ -62,7 +74,12 @@ class _RestaurantImageViewState extends State<RestaurantImageView> {
               },
               itemBuilder: (BuildContext context, int index) {
                 String image = widget.vendorModel.photos![index];
-                return NetworkImageWidget(imageUrl: image.toString(), fit: BoxFit.cover, height: Responsive.height(20, context), width: Responsive.width(100, context));
+                return NetworkImageWidget(
+                  imageUrl: image.toString(),
+                  fit: BoxFit.cover,
+                  height: Responsive.height(20, context),
+                  width: Responsive.width(100, context),
+                );
               },
             ),
     );

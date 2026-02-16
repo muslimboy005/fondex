@@ -25,7 +25,11 @@ class LoginScreen extends StatelessWidget {
       init: LoginController(),
       builder: (controller) {
         return Scaffold(
-          appBar: AppBar(backgroundColor: isDark ? AppThemeData.surfaceDark : AppThemeData.surface),
+          appBar: AppBar(
+            backgroundColor: isDark
+                ? AppThemeData.surfaceDark
+                : AppThemeData.surface,
+          ),
           body: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: SingleChildScrollView(
@@ -34,11 +38,24 @@ class LoginScreen extends StatelessWidget {
                 children: [
                   Text(
                     "Welcome Back! 👋".tr,
-                    style: TextStyle(color: isDark ? AppThemeData.grey50 : AppThemeData.grey900, fontSize: 22, fontFamily: AppThemeData.semiBold),
+                    style: TextStyle(
+                      color: isDark
+                          ? AppThemeData.grey50
+                          : AppThemeData.grey900,
+                      fontSize: 22,
+                      fontFamily: AppThemeData.semiBold,
+                    ),
                   ),
                   Text(
-                    "Log in to continue managing your Store’s orders and reservations seamlessly.".tr,
-                    style: TextStyle(color: isDark ? AppThemeData.grey400 : AppThemeData.grey500, fontSize: 16, fontFamily: AppThemeData.regular),
+                    "Log in to continue managing your Store’s orders and reservations seamlessly."
+                        .tr,
+                    style: TextStyle(
+                      color: isDark
+                          ? AppThemeData.grey400
+                          : AppThemeData.grey500,
+                      fontSize: 16,
+                      fontFamily: AppThemeData.regular,
+                    ),
                   ),
                   const SizedBox(height: 32),
                   TextFieldWidget(
@@ -47,7 +64,13 @@ class LoginScreen extends StatelessWidget {
                     hintText: 'Enter email address'.tr,
                     prefix: Padding(
                       padding: const EdgeInsets.all(12),
-                      child: SvgPicture.asset("assets/icons/ic_mail.svg", colorFilter: ColorFilter.mode(isDark ? AppThemeData.grey300 : AppThemeData.grey600, BlendMode.srcIn)),
+                      child: SvgPicture.asset(
+                        "assets/icons/ic_mail.svg",
+                        colorFilter: ColorFilter.mode(
+                          isDark ? AppThemeData.grey300 : AppThemeData.grey600,
+                          BlendMode.srcIn,
+                        ),
+                      ),
                     ),
                   ),
                   TextFieldWidget(
@@ -57,17 +80,40 @@ class LoginScreen extends StatelessWidget {
                     obscureText: controller.passwordVisible.value,
                     prefix: Padding(
                       padding: const EdgeInsets.all(12),
-                      child: SvgPicture.asset("assets/icons/ic_lock.svg", colorFilter: ColorFilter.mode(isDark ? AppThemeData.grey300 : AppThemeData.grey600, BlendMode.srcIn)),
+                      child: SvgPicture.asset(
+                        "assets/icons/ic_lock.svg",
+                        colorFilter: ColorFilter.mode(
+                          isDark ? AppThemeData.grey300 : AppThemeData.grey600,
+                          BlendMode.srcIn,
+                        ),
+                      ),
                     ),
                     suffix: Padding(
                       padding: const EdgeInsets.all(12),
                       child: InkWell(
                         onTap: () {
-                          controller.passwordVisible.value = !controller.passwordVisible.value;
+                          controller.passwordVisible.value =
+                              !controller.passwordVisible.value;
                         },
                         child: controller.passwordVisible.value
-                            ? SvgPicture.asset("assets/icons/ic_password_show.svg", colorFilter: ColorFilter.mode(isDark ? AppThemeData.grey300 : AppThemeData.grey600, BlendMode.srcIn))
-                            : SvgPicture.asset("assets/icons/ic_password_close.svg", colorFilter: ColorFilter.mode(isDark ? AppThemeData.grey300 : AppThemeData.grey600, BlendMode.srcIn)),
+                            ? SvgPicture.asset(
+                                "assets/icons/ic_password_show.svg",
+                                colorFilter: ColorFilter.mode(
+                                  isDark
+                                      ? AppThemeData.grey300
+                                      : AppThemeData.grey600,
+                                  BlendMode.srcIn,
+                                ),
+                              )
+                            : SvgPicture.asset(
+                                "assets/icons/ic_password_close.svg",
+                                colorFilter: ColorFilter.mode(
+                                  isDark
+                                      ? AppThemeData.grey300
+                                      : AppThemeData.grey600,
+                                  BlendMode.srcIn,
+                                ),
+                              ),
                       ),
                     ),
                   ),
@@ -82,7 +128,9 @@ class LoginScreen extends StatelessWidget {
                         style: TextStyle(
                           decoration: TextDecoration.underline,
                           decorationColor: AppThemeData.primary300,
-                          color: isDark ? AppThemeData.primary300 : AppThemeData.primary300,
+                          color: isDark
+                              ? AppThemeData.primary300
+                              : AppThemeData.primary300,
                           fontSize: 14,
                           fontFamily: AppThemeData.regular,
                         ),
@@ -95,83 +143,32 @@ class LoginScreen extends StatelessWidget {
                     color: AppThemeData.primary300,
                     textColor: AppThemeData.grey50,
                     onPress: () async {
-                      if (controller.emailEditingController.value.text.trim().isEmpty) {
-                        ShowToastDialog.showToast("Please enter valid email".tr);
-                      } else if (controller.passwordEditingController.value.text.trim().isEmpty) {
-                        ShowToastDialog.showToast("Please enter valid password".tr);
+                      if (controller.emailEditingController.value.text
+                          .trim()
+                          .isEmpty) {
+                        ShowToastDialog.showToast(
+                          "Please enter valid email".tr,
+                        );
+                      } else if (controller.passwordEditingController.value.text
+                          .trim()
+                          .isEmpty) {
+                        ShowToastDialog.showToast(
+                          "Please enter valid password".tr,
+                        );
                       } else {
                         controller.loginWithEmailAndPassword();
                       }
                     },
                   ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 40),
-                    child: Row(
-                      children: [
-                        const Expanded(child: Divider(thickness: 1)),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
-                          child: Text(
-                            "or".tr,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(color: isDark ? AppThemeData.grey500 : AppThemeData.grey400, fontSize: 16, fontFamily: AppThemeData.medium, fontWeight: FontWeight.w500),
-                          ),
-                        ),
-                        const Expanded(child: Divider()),
-                      ],
-                    ),
-                  ),
-                  RoundedButtonFill(
-                    title: "Continue with Mobile Number".tr,
-                    textColor: isDark ? AppThemeData.grey100 : AppThemeData.grey900,
-                    color: isDark ? AppThemeData.grey900 : AppThemeData.grey100,
-                    icon: SvgPicture.asset("assets/icons/ic_phone.svg", colorFilter: const ColorFilter.mode(AppThemeData.grey900, BlendMode.srcIn)),
-                    isRight: false,
-                    isCenter: true,
-                    onPress: () async {
-                      Get.to(const PhoneNumberScreen());
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: RoundedButtonFill(
-                          title: "with Google".tr,
-                          textColor: isDark ? AppThemeData.grey100 : AppThemeData.grey900,
-                          color: isDark ? AppThemeData.grey900 : AppThemeData.grey100,
-                          icon: SvgPicture.asset("assets/icons/ic_google.svg"),
-                          isRight: false,
-                          isCenter: true,
-                          onPress: () async {
-                            controller.loginWithGoogle();
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Platform.isIOS
-                          ? Expanded(
-                              child: RoundedButtonFill(
-                                title: "with Apple".tr,
-                                isCenter: true,
-                                textColor: isDark ? AppThemeData.grey100 : AppThemeData.grey900,
-                                color: isDark ? AppThemeData.grey900 : AppThemeData.grey100,
-                                icon: SvgPicture.asset("assets/icons/ic_apple.svg"),
-                                isRight: false,
-                                onPress: () async {
-                                  controller.loginWithApple();
-                                },
-                              ),
-                            )
-                          : const SizedBox(),
-                    ],
-                  ),
+                  // Social login removed per request: Google/Apple buttons and divider were here.
                 ],
               ),
             ),
           ),
           bottomNavigationBar: Padding(
-            padding: EdgeInsets.symmetric(vertical: Platform.isAndroid ? 10 : 30),
+            padding: EdgeInsets.symmetric(
+              vertical: Platform.isAndroid ? 10 : 30,
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -180,7 +177,13 @@ class LoginScreen extends StatelessWidget {
                     children: [
                       TextSpan(
                         text: 'Didn’t have an account?'.tr,
-                        style: TextStyle(color: isDark ? AppThemeData.grey50 : AppThemeData.grey900, fontFamily: AppThemeData.medium, fontWeight: FontWeight.w500),
+                        style: TextStyle(
+                          color: isDark
+                              ? AppThemeData.grey50
+                              : AppThemeData.grey900,
+                          fontFamily: AppThemeData.medium,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                       const WidgetSpan(child: SizedBox(width: 10)),
                       TextSpan(

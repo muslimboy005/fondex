@@ -54,7 +54,7 @@ class WorkingHoursScreen extends StatelessWidget {
                                 children: [
                                   Expanded(
                                     child: Text(
-                                      "${controller.workingHours[index].day}".tr,
+                                      controller.workingHours[index].day ?? '',
                                       style: TextStyle(color: isDark ? AppThemeData.grey100 : AppThemeData.grey800, fontSize: 18, fontFamily: AppThemeData.medium),
                                     ),
                                   ),

@@ -19,11 +19,12 @@ class RentalHomeController extends GetxController {
 
   RxBool isLoading = true.obs;
 
-  Rx<TextEditingController> currentKilometerController = TextEditingController().obs;
-  Rx<TextEditingController> completeKilometerController = TextEditingController().obs;
+  Rx<TextEditingController> currentKilometerController =
+      TextEditingController().obs;
+  Rx<TextEditingController> completeKilometerController =
+      TextEditingController().obs;
   Rx<UserModel> userModel = UserModel().obs;
   Rx<UserModel> ownerModel = UserModel().obs;
-
 
   @override
   void onInit() {
@@ -32,20 +33,22 @@ class RentalHomeController extends GetxController {
     super.onInit();
   }
 
-
   Future<void> getBookingData() async {
     isLoading.value = true;
     rentalBookingData.clear();
 
-    // Driver’s active rental bookings
+    // Driver's active rental bookings
     FireStoreUtils.fireStore
         .collection(CollectionName.rentalOrders)
         .where("driverId", isEqualTo: FireStoreUtils.getCurrentUid())
-        .where("status", whereIn: [
-          Constant.driverAccepted,
-          Constant.orderInTransit,
-          Constant.orderShipped,
-        ])
+        .where(
+          "status",
+          whereIn: [
+            Constant.driverAccepted,
+            Constant.orderInTransit,
+            Constant.orderShipped,
+          ],
+        )
         .snapshots()
         .listen((event) {
           rentalBookingData.clear();
@@ -60,32 +63,48 @@ class RentalHomeController extends GetxController {
         });
 
     // Driver user data listener
-    FireStoreUtils.fireStore.collection(CollectionName.users).doc(FireStoreUtils.getCurrentUid()).snapshots().listen((event) {
-      if (event.exists) {
-        userModel.value = UserModel.fromJson(event.data()!);
-      }
-    });
-
-    if (Constant.userModel!.ownerId != null && Constant.userModel!.ownerId!.isNotEmpty) {
-      FireStoreUtils.fireStore.collection(CollectionName.users).doc(Constant.userModel!.ownerId).snapshots().listen(
-            (event) async {
+    FireStoreUtils.fireStore
+        .collection(CollectionName.users)
+        .doc(FireStoreUtils.getCurrentUid())
+        .snapshots()
+        .listen((event) {
           if (event.exists) {
-            ownerModel.value = UserModel.fromJson(event.data()!);
+            userModel.value = UserModel.fromJson(event.data()!);
           }
-        },
-      );
+        });
+
+    if (Constant.userModel!.ownerId != null &&
+        Constant.userModel!.ownerId!.isNotEmpty) {
+      FireStoreUtils.fireStore
+          .collection(CollectionName.users)
+          .doc(Constant.userModel!.ownerId)
+          .snapshots()
+          .listen((event) async {
+            if (event.exists) {
+              ownerModel.value = UserModel.fromJson(event.data()!);
+            }
+          });
     }
   }
 
   Future<void> completeParcel(RentalOrderModel parcelBookingData) async {
-    ShowToastDialog.showLoader("Please wait");
+    ShowToastDialog.showLoader("Please wait".tr);
     parcelBookingData.status = Constant.orderCompleted;
 
     await updateCabWalletAmount(parcelBookingData);
     await FireStoreUtils.rentalOrderPlace(parcelBookingData);
-    Map<String, dynamic> payLoad = <String, dynamic>{"type": "rental_order", "orderId": parcelBookingData.id};
-    SendNotification.sendFcmMessage(Constant.rentalCompleted, parcelBookingData.author!.fcmToken.toString(), payLoad);
-    FireStoreUtils.getRentalFirstOrderOrNOt(parcelBookingData).then((value) async {
+    Map<String, dynamic> payLoad = <String, dynamic>{
+      "type": "rental_order",
+      "orderId": parcelBookingData.id,
+    };
+    SendNotification.sendFcmMessage(
+      Constant.rentalCompleted,
+      parcelBookingData.author!.fcmToken.toString(),
+      payLoad,
+    );
+    FireStoreUtils.getRentalFirstOrderOrNOt(parcelBookingData).then((
+      value,
+    ) async {
       if (value == true) {
         await FireStoreUtils.updateRentalReferralAmount(parcelBookingData);
       }
@@ -110,37 +129,64 @@ class RentalHomeController extends GetxController {
     extraKilometerCharge.value = 0.0;
     extraMinutesCharge.value = 0.0;
     adminComm.value = 0.0;
-    subTotal.value = double.tryParse(orderModel.subTotal?.toString() ?? "0") ?? 0.0;
-    discount.value = double.tryParse(orderModel.discount?.toString() ?? "0") ?? 0.0;
+    subTotal.value =
+        double.tryParse(orderModel.subTotal?.toString() ?? "0") ?? 0.0;
+    discount.value =
+        double.tryParse(orderModel.discount?.toString() ?? "0") ?? 0.0;
 
     if (orderModel.endTime != null) {
       DateTime start = orderModel.startTime!.toDate();
       DateTime end = orderModel.endTime!.toDate();
       int hours = end.difference(start).inHours;
-      if (hours >= int.parse(orderModel.rentalPackageModel!.includedHours.toString())) {
-        hours = hours - int.parse(orderModel.rentalPackageModel!.includedHours.toString());
-        double hourlyRate = double.tryParse(orderModel.rentalPackageModel?.extraMinuteFare?.toString() ?? "0") ?? 0.0;
+      if (hours >=
+          int.parse(orderModel.rentalPackageModel!.includedHours.toString())) {
+        hours =
+            hours -
+            int.parse(orderModel.rentalPackageModel!.includedHours.toString());
+        double hourlyRate =
+            double.tryParse(
+              orderModel.rentalPackageModel?.extraMinuteFare?.toString() ?? "0",
+            ) ??
+            0.0;
         extraMinutesCharge.value = (hours * 60) * hourlyRate;
       }
     }
 
-    if (orderModel.startKitoMetersReading != null && orderModel.endKitoMetersReading != null) {
-      double startKm = double.tryParse(orderModel.startKitoMetersReading?.toString() ?? "0") ?? 0.0;
-      double endKm = double.tryParse(orderModel.endKitoMetersReading?.toString() ?? "0") ?? 0.0;
+    if (orderModel.startKitoMetersReading != null &&
+        orderModel.endKitoMetersReading != null) {
+      double startKm =
+          double.tryParse(
+            orderModel.startKitoMetersReading?.toString() ?? "0",
+          ) ??
+          0.0;
+      double endKm =
+          double.tryParse(orderModel.endKitoMetersReading?.toString() ?? "0") ??
+          0.0;
       if (endKm > startKm) {
         double totalKm = endKm - startKm;
-        if (totalKm > double.parse(orderModel.rentalPackageModel!.includedDistance!)) {
-          totalKm = totalKm - double.parse(orderModel.rentalPackageModel!.includedDistance!);
-          double extraKmRate = double.tryParse(orderModel.rentalPackageModel?.extraKmFare?.toString() ?? "0") ?? 0.0;
+        if (totalKm >
+            double.parse(orderModel.rentalPackageModel!.includedDistance!)) {
+          totalKm =
+              totalKm -
+              double.parse(orderModel.rentalPackageModel!.includedDistance!);
+          double extraKmRate =
+              double.tryParse(
+                orderModel.rentalPackageModel?.extraKmFare?.toString() ?? "0",
+              ) ??
+              0.0;
           extraKilometerCharge.value = totalKm * extraKmRate;
         }
       }
     }
-    subTotal.value = subTotal.value + extraKilometerCharge.value + extraMinutesCharge.value;
+    subTotal.value =
+        subTotal.value + extraKilometerCharge.value + extraMinutesCharge.value;
 
     if (orderModel.taxSetting != null) {
       for (var element in orderModel.taxSetting!) {
-        taxAmount.value += Constant.calculateTax(amount: (subTotal.value - discount.value).toString(), taxModel: element);
+        taxAmount.value += Constant.calculateTax(
+          amount: (subTotal.value - discount.value).toString(),
+          taxModel: element,
+        );
       }
     }
 
@@ -148,52 +194,80 @@ class RentalHomeController extends GetxController {
 
     if (orderModel.adminCommission!.isNotEmpty) {
       adminComm.value = Constant.calculateAdminCommission(
-          amount: (subTotal.value - discount.value).toString(), adminCommissionType: orderModel.adminCommissionType.toString(), adminCommission: orderModel.adminCommission ?? '0');
+        amount: (subTotal.value - discount.value).toString(),
+        adminCommissionType: orderModel.adminCommissionType.toString(),
+        adminCommission: orderModel.adminCommission ?? '0',
+      );
     }
 
     if (orderModel.paymentMethod.toString() != PaymentGateway.cod.name) {
       WalletTransactionModel transactionModel = WalletTransactionModel(
-          id: Constant.getUuid(),
-          amount: totalAmount.value,
-          date: Timestamp.now(),
-          paymentMethod: orderModel.paymentMethod!,
-          transactionUser: "driver",
-          userId: orderModel.driver!.ownerId != null && orderModel.driver!.ownerId!.isNotEmpty ? orderModel.driver!.ownerId.toString() : FireStoreUtils.getCurrentUid(),
-          isTopup: true,
-          orderId: orderModel.id,
-          note: "Booking amount credited",
-          paymentStatus: "success");
+        id: Constant.getUuid(),
+        amount: totalAmount.value,
+        date: Timestamp.now(),
+        paymentMethod: orderModel.paymentMethod!,
+        transactionUser: "driver",
+        userId:
+            orderModel.driver!.ownerId != null &&
+                orderModel.driver!.ownerId!.isNotEmpty
+            ? orderModel.driver!.ownerId.toString()
+            : FireStoreUtils.getCurrentUid(),
+        isTopup: true,
+        orderId: orderModel.id,
+        note: "Booking amount credited",
+        paymentStatus: "success",
+      );
 
-      await FireStoreUtils.setWalletTransaction(transactionModel).then((value) async {
+      await FireStoreUtils.setWalletTransaction(transactionModel).then((
+        value,
+      ) async {
         if (value == true) {
           await FireStoreUtils.updateUserWallet(
-              amount: totalAmount.value.toString(),
-              userId: orderModel.driver!.ownerId != null && orderModel.driver!.ownerId!.isNotEmpty ? orderModel.driver!.ownerId.toString() : FireStoreUtils.getCurrentUid());
+            amount: totalAmount.value.toString(),
+            userId:
+                orderModel.driver!.ownerId != null &&
+                    orderModel.driver!.ownerId!.isNotEmpty
+                ? orderModel.driver!.ownerId.toString()
+                : FireStoreUtils.getCurrentUid(),
+          );
         }
       });
     }
 
     WalletTransactionModel adminCommissionTrancation = WalletTransactionModel(
-        id: Constant.getUuid(),
-        amount: adminComm.value,
-        date: Timestamp.now(),
-        paymentMethod: orderModel.paymentMethod!,
-        transactionUser: "driver",
-        userId: orderModel.driver!.ownerId != null && orderModel.driver!.ownerId!.isNotEmpty ? orderModel.driver!.ownerId.toString() : FireStoreUtils.getCurrentUid(),
-        isTopup: false,
-        orderId: orderModel.id,
-        note: "Admin commission deducted",
-        paymentStatus: "success");
+      id: Constant.getUuid(),
+      amount: adminComm.value,
+      date: Timestamp.now(),
+      paymentMethod: orderModel.paymentMethod!,
+      transactionUser: "driver",
+      userId:
+          orderModel.driver!.ownerId != null &&
+              orderModel.driver!.ownerId!.isNotEmpty
+          ? orderModel.driver!.ownerId.toString()
+          : FireStoreUtils.getCurrentUid(),
+      isTopup: false,
+      orderId: orderModel.id,
+      note: "Admin commission deducted",
+      paymentStatus: "success",
+    );
 
-    print("=================== Admin Commission: ${adminComm.value} ==================");
+    print(
+      "=================== Admin Commission: ${adminComm.value} ==================",
+    );
     log("=========${adminCommissionTrancation.toJson().toString()}=========}");
-    await FireStoreUtils.setWalletTransaction(adminCommissionTrancation).then((value) async {
+    await FireStoreUtils.setWalletTransaction(adminCommissionTrancation).then((
+      value,
+    ) async {
       if (value == true) {
         await FireStoreUtils.updateUserWallet(
-            amount: "-${adminComm.value.toString()}",
-            userId: orderModel.driver!.ownerId != null && orderModel.driver!.ownerId!.isNotEmpty ? orderModel.driver!.ownerId.toString() : FireStoreUtils.getCurrentUid());
+          amount: "-${adminComm.value.toString()}",
+          userId:
+              orderModel.driver!.ownerId != null &&
+                  orderModel.driver!.ownerId!.isNotEmpty
+              ? orderModel.driver!.ownerId.toString()
+              : FireStoreUtils.getCurrentUid(),
+        );
       }
     });
-
   }
 }

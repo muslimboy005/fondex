@@ -1,5 +1,3 @@
-import 'package:bottom_picker/bottom_picker.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:customer/constant/constant.dart';
 import 'package:customer/controllers/cart_controller.dart';
 import 'package:customer/models/cart_product_model.dart';
@@ -134,11 +132,17 @@ class CartScreen extends StatelessWidget {
                                                 SvgPicture.asset(
                                                   "assets/icons/ic_down.svg",
                                                   colorFilter: ColorFilter.mode(
-                                                    controller.selectedFoodType.value == 'Delivery'
-                                                        ? AppThemeData.primary300
+                                                    controller
+                                                                .selectedFoodType
+                                                                .value ==
+                                                            'Delivery'
+                                                        ? AppThemeData
+                                                            .primary300
                                                         : (isDark
-                                                            ? AppThemeData.grey400
-                                                            : AppThemeData.grey500),
+                                                            ? AppThemeData
+                                                                .grey400
+                                                            : AppThemeData
+                                                                .grey500),
                                                     BlendMode.srcIn,
                                                   ),
                                                 ),
@@ -823,203 +827,203 @@ class CartScreen extends StatelessWidget {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 20),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "${'Delivery Type'.tr} (${controller.selectedFoodType.value})",
-                                textAlign: TextAlign.start,
-                                style: TextStyle(
-                                  fontFamily: AppThemeData.semiBold,
-                                  color:
-                                      isDark
-                                          ? AppThemeData.grey50
-                                          : AppThemeData.grey900,
-                                  fontSize: 16,
-                                ),
-                              ),
-                              const SizedBox(height: 10),
-                              controller.selectedFoodType.value == 'TakeAway'
-                                  ? const SizedBox()
-                                  : Container(
-                                    width: Responsive.width(100, context),
-                                    decoration: ShapeDecoration(
-                                      color:
-                                          isDark
-                                              ? AppThemeData.grey900
-                                              : AppThemeData.grey50,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                    ),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(10),
-                                      child: Row(
-                                        children: [
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  "Instant Delivery".tr,
-                                                  textAlign: TextAlign.start,
-                                                  style: TextStyle(
-                                                    fontFamily:
-                                                        AppThemeData.medium,
-                                                    color:
-                                                        isDark
-                                                            ? AppThemeData
-                                                                .primary300
-                                                            : AppThemeData
-                                                                .primary300,
-                                                    fontSize: 16,
-                                                  ),
-                                                ),
-                                                const SizedBox(height: 5),
-                                                Text(
-                                                  "Standard".tr,
-                                                  textAlign: TextAlign.start,
-                                                  style: TextStyle(
-                                                    fontFamily:
-                                                        AppThemeData.medium,
-                                                    fontSize: 12,
-                                                    color:
-                                                        isDark
-                                                            ? AppThemeData
-                                                                .grey400
-                                                            : AppThemeData
-                                                                .grey500,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          Radio(
-                                            value:
-                                                controller.deliveryType.value,
-                                            groupValue: "instant".tr,
-                                            activeColor:
-                                                AppThemeData.primary300,
-                                            onChanged: (value) {
-                                              controller.deliveryType.value =
-                                                  "instant";
-                                            },
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                              const SizedBox(height: 10),
-                              Container(
-                                width: Responsive.width(100, context),
-                                decoration: ShapeDecoration(
-                                  color:
-                                      isDark
-                                          ? AppThemeData.grey900
-                                          : AppThemeData.grey50,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                ),
-                                child: InkWell(
-                                  onTap: () {
-                                    controller.deliveryType.value = "schedule";
-                                    BottomPicker.dateTime(
-                                      onSubmit: (index) {
-                                        controller.scheduleDateTime.value =
-                                            index;
-                                      },
-                                      minDateTime: DateTime.now(),
-                                      displaySubmitButton: true,
-                                      pickerTitle: Text('Schedule Time'.tr),
-                                      buttonSingleColor:
-                                          AppThemeData.primary300,
-                                    ).show(context);
-                                  },
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(10),
-                                    child: Row(
-                                      children: [
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                "Schedule Time".tr,
-                                                textAlign: TextAlign.start,
-                                                style: TextStyle(
-                                                  fontFamily:
-                                                      AppThemeData.medium,
-                                                  color:
-                                                      isDark
-                                                          ? AppThemeData
-                                                              .primary300
-                                                          : AppThemeData
-                                                              .primary300,
-                                                  fontSize: 16,
-                                                ),
-                                              ),
-                                              const SizedBox(height: 5),
-                                              Text(
-                                                "${'Your preferred time'.tr} ${controller.deliveryType.value == "schedule" ? Constant.timestampToDateTime(Timestamp.fromDate(controller.scheduleDateTime.value)) : ""}",
-                                                textAlign: TextAlign.start,
-                                                style: TextStyle(
-                                                  fontFamily:
-                                                      AppThemeData.medium,
-                                                  fontSize: 12,
-                                                  color:
-                                                      isDark
-                                                          ? AppThemeData.grey400
-                                                          : AppThemeData
-                                                              .grey500,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        Radio(
-                                          value: controller.deliveryType.value,
-                                          groupValue: "schedule".tr,
-                                          activeColor: AppThemeData.primary300,
-                                          onChanged: (value) {
-                                            controller.deliveryType.value =
-                                                "schedule";
-                                            BottomPicker.dateTime(
-                                              initialDateTime:
-                                                  controller
-                                                      .scheduleDateTime
-                                                      .value,
-                                              onSubmit: (index) {
-                                                controller
-                                                    .scheduleDateTime
-                                                    .value = index;
-                                              },
-                                              minDateTime:
-                                                  controller
-                                                      .scheduleDateTime
-                                                      .value,
-                                              displaySubmitButton: true,
-                                              pickerTitle: Text(
-                                                'Schedule Time'.tr,
-                                              ),
-                                              buttonSingleColor:
-                                                  AppThemeData.primary300,
-                                            ).show(context);
-                                          },
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+                        // const SizedBox(height: 20),
+                        // Padding(
+                        //   padding: const EdgeInsets.symmetric(horizontal: 16),
+                        //   child: Column(
+                        //     crossAxisAlignment: CrossAxisAlignment.start,
+                        //     children: [
+                        //       Text(
+                        //         "${'Delivery Type'.tr} (${controller.selectedFoodType.value})",
+                        //         textAlign: TextAlign.start,
+                        //         style: TextStyle(
+                        //           fontFamily: AppThemeData.semiBold,
+                        //           color:
+                        //               isDark
+                        //                   ? AppThemeData.grey50
+                        //                   : AppThemeData.grey900,
+                        //           fontSize: 16,
+                        //         ),
+                        //       ),
+                        //       const SizedBox(height: 10),
+                        //       controller.selectedFoodType.value == 'TakeAway'
+                        //           ? const SizedBox()
+                        //           : Container(
+                        //             width: Responsive.width(100, context),
+                        //             decoration: ShapeDecoration(
+                        //               color:
+                        //                   isDark
+                        //                       ? AppThemeData.grey900
+                        //                       : AppThemeData.grey50,
+                        //               shape: RoundedRectangleBorder(
+                        //                 borderRadius: BorderRadius.circular(8),
+                        //               ),
+                        //             ),
+                        //             child: Padding(
+                        //               padding: const EdgeInsets.all(10),
+                        //               child: Row(
+                        //                 children: [
+                        //                   Expanded(
+                        //                     child: Column(
+                        //                       crossAxisAlignment:
+                        //                           CrossAxisAlignment.start,
+                        //                       children: [
+                        //                         Text(
+                        //                           "Instant Delivery".tr,
+                        //                           textAlign: TextAlign.start,
+                        //                           style: TextStyle(
+                        //                             fontFamily:
+                        //                                 AppThemeData.medium,
+                        //                             color:
+                        //                                 isDark
+                        //                                     ? AppThemeData
+                        //                                         .primary300
+                        //                                     : AppThemeData
+                        //                                         .primary300,
+                        //                             fontSize: 16,
+                        //                           ),
+                        //                         ),
+                        //                         const SizedBox(height: 5),
+                        //                         Text(
+                        //                           "Standard".tr,
+                        //                           textAlign: TextAlign.start,
+                        //                           style: TextStyle(
+                        //                             fontFamily:
+                        //                                 AppThemeData.medium,
+                        //                             fontSize: 12,
+                        //                             color:
+                        //                                 isDark
+                        //                                     ? AppThemeData
+                        //                                         .grey400
+                        //                                     : AppThemeData
+                        //                                         .grey500,
+                        //                           ),
+                        //                         ),
+                        //                       ],
+                        //                     ),
+                        //                   ),
+                        //                   Radio(
+                        //                     value:
+                        //                         controller.deliveryType.value,
+                        //                     groupValue: "instant".tr,
+                        //                     activeColor:
+                        //                         AppThemeData.primary300,
+                        //                     onChanged: (value) {
+                        //                       controller.deliveryType.value =
+                        //                           "instant";
+                        //                     },
+                        //                   ),
+                        //                 ],
+                        //               ),
+                        //             ),
+                        //           ),
+                        //       const SizedBox(height: 10),
+                        //       Container(
+                        //         width: Responsive.width(100, context),
+                        //         decoration: ShapeDecoration(
+                        //           color:
+                        //               isDark
+                        //                   ? AppThemeData.grey900
+                        //                   : AppThemeData.grey50,
+                        //           shape: RoundedRectangleBorder(
+                        //             borderRadius: BorderRadius.circular(8),
+                        //           ),
+                        //         ),
+                        //         child: InkWell(
+                        //           onTap: () {
+                        //             controller.deliveryType.value = "schedule";
+                        //             BottomPicker.dateTime(
+                        //               onSubmit: (index) {
+                        //                 controller.scheduleDateTime.value =
+                        //                     index;
+                        //               },
+                        //               minDateTime: DateTime.now(),
+                        //               displaySubmitButton: true,
+                        //               pickerTitle: Text('Schedule Time'.tr),
+                        //               buttonSingleColor:
+                        //                   AppThemeData.primary300,
+                        //             ).show(context);
+                        //           },
+                        //           child: Padding(
+                        //             padding: const EdgeInsets.all(10),
+                        //             child: Row(
+                        //               children: [
+                        //                 Expanded(
+                        //                   child: Column(
+                        //                     crossAxisAlignment:
+                        //                         CrossAxisAlignment.start,
+                        //                     children: [
+                        //                       Text(
+                        //                         "Schedule Time".tr,
+                        //                         textAlign: TextAlign.start,
+                        //                         style: TextStyle(
+                        //                           fontFamily:
+                        //                               AppThemeData.medium,
+                        //                           color:
+                        //                               isDark
+                        //                                   ? AppThemeData
+                        //                                       .primary300
+                        //                                   : AppThemeData
+                        //                                       .primary300,
+                        //                           fontSize: 16,
+                        //                         ),
+                        //                       ),
+                        //                       const SizedBox(height: 5),
+                        //                       Text(
+                        //                         "${'Your preferred time'.tr} ${controller.deliveryType.value == "schedule" ? Constant.timestampToDateTime(Timestamp.fromDate(controller.scheduleDateTime.value)) : ""}",
+                        //                         textAlign: TextAlign.start,
+                        //                         style: TextStyle(
+                        //                           fontFamily:
+                        //                               AppThemeData.medium,
+                        //                           fontSize: 12,
+                        //                           color:
+                        //                               isDark
+                        //                                   ? AppThemeData.grey400
+                        //                                   : AppThemeData
+                        //                                       .grey500,
+                        //                         ),
+                        //                       ),
+                        //                     ],
+                        //                   ),
+                        //                 ),
+                        //                 Radio(
+                        //                   value: controller.deliveryType.value,
+                        //                   groupValue: "schedule".tr,
+                        //                   activeColor: AppThemeData.primary300,
+                        //                   onChanged: (value) {
+                        //                     controller.deliveryType.value =
+                        //                         "schedule";
+                        //                     BottomPicker.dateTime(
+                        //                       initialDateTime:
+                        //                           controller
+                        //                               .scheduleDateTime
+                        //                               .value,
+                        //                       onSubmit: (index) {
+                        //                         controller
+                        //                             .scheduleDateTime
+                        //                             .value = index;
+                        //                       },
+                        //                       minDateTime:
+                        //                           controller
+                        //                               .scheduleDateTime
+                        //                               .value,
+                        //                       displaySubmitButton: true,
+                        //                       pickerTitle: Text(
+                        //                         'Schedule Time'.tr,
+                        //                       ),
+                        //                       buttonSingleColor:
+                        //                           AppThemeData.primary300,
+                        //                     ).show(context);
+                        //                   },
+                        //                 ),
+                        //               ],
+                        //             ),
+                        //           ),
+                        //         ),
+                        //       ),
+                        //     ],
+                        //   ),
+                        // ),
                         const SizedBox(height: 20),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -1484,486 +1488,509 @@ class CartScreen extends StatelessWidget {
           bottomNavigationBar:
               cartItem.isEmpty
                   ? null
-                  : Container(
-                    decoration: BoxDecoration(
-                      color:
-                          isDark ? AppThemeData.grey900 : AppThemeData.grey50,
-                    ),
-                    height:
-                        controller.isCashbackApply.value == true ? 150 : 100,
-                    child: Column(
-                      children: [
-                        if (controller.isCashbackApply.value == true)
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 8),
-                                  child: Text(
-                                    "Cashback Offer".tr,
+                  : SafeArea(
+                    top: false,
+                    left: false,
+                    right: false,
+                    bottom: true,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color:
+                            isDark ? AppThemeData.grey900 : AppThemeData.grey50,
+                      ),
+                      height:
+                          controller.isCashbackApply.value == true ? 150 : 100,
+                      child: Column(
+                        children: [
+                          if (controller.isCashbackApply.value == true)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 8),
+                                    child: Text(
+                                      "Cashback Offer".tr,
+                                      style: TextStyle(
+                                        color:
+                                            isDark
+                                                ? AppThemeData.grey50
+                                                : AppThemeData.grey900,
+                                        fontFamily: AppThemeData.semiBold,
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                  ),
+                                  Text(
+                                    "${"Cashback Name :".tr} ${controller.bestCashback.value.title ?? ''}",
                                     style: TextStyle(
-                                      color:
-                                          isDark
-                                              ? AppThemeData.grey50
-                                              : AppThemeData.grey900,
+                                      color: AppThemeData.success300,
                                       fontFamily: AppThemeData.semiBold,
                                       fontSize: 13,
                                     ),
                                   ),
-                                ),
-                                Text(
-                                  "${"Cashback Name :".tr} ${controller.bestCashback.value.title ?? ''}",
-                                  style: TextStyle(
-                                    color: AppThemeData.success300,
-                                    fontFamily: AppThemeData.semiBold,
-                                    fontSize: 13,
+                                  Text(
+                                    "${"You will get".tr} ${Constant.amountShow(amount: controller.bestCashback.value.cashbackValue?.toStringAsFixed(2))} ${"cashback after completing the order.".tr}",
+                                    style: TextStyle(
+                                      color: AppThemeData.success300,
+                                      fontFamily: AppThemeData.semiBold,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          Padding(
+                            padding: EdgeInsets.only(
+                              left: 16,
+                              right: 16,
+                              top:
+                                  controller.isCashbackApply.value == false
+                                      ? 16
+                                      : 12,
+                              bottom: 20,
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  flex: 2,
+                                  child: InkWell(
+                                    onTap: () {
+                                      Get.to(const SelectPaymentScreen())?.then(
+                                        (v) {
+                                          controller.getCashback();
+                                        },
+                                      );
+                                    },
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        controller
+                                                    .selectedPaymentMethod
+                                                    .value ==
+                                                ''
+                                            ? cardDecoration(
+                                              controller,
+                                              PaymentGateway.wallet,
+                                              isDark,
+                                              "",
+                                            )
+                                            : controller
+                                                    .selectedPaymentMethod
+                                                    .value ==
+                                                PaymentGateway.wallet.name
+                                            ? cardDecoration(
+                                              controller,
+                                              PaymentGateway.wallet,
+                                              isDark,
+                                              "assets/images/ic_wallet.png",
+                                            )
+                                            : controller
+                                                    .selectedPaymentMethod
+                                                    .value ==
+                                                PaymentGateway.cod.name
+                                            ? cardDecoration(
+                                              controller,
+                                              PaymentGateway.cod,
+                                              isDark,
+                                              "assets/images/ic_cash.png",
+                                            )
+                                            : controller
+                                                    .selectedPaymentMethod
+                                                    .value ==
+                                                PaymentGateway.stripe.name
+                                            ? cardDecoration(
+                                              controller,
+                                              PaymentGateway.stripe,
+                                              isDark,
+                                              "assets/images/stripe.png",
+                                            )
+                                            : controller
+                                                    .selectedPaymentMethod
+                                                    .value ==
+                                                PaymentGateway.paypal.name
+                                            ? cardDecoration(
+                                              controller,
+                                              PaymentGateway.paypal,
+                                              isDark,
+                                              "assets/images/paypal.png",
+                                            )
+                                            : controller
+                                                    .selectedPaymentMethod
+                                                    .value ==
+                                                PaymentGateway.payStack.name
+                                            ? cardDecoration(
+                                              controller,
+                                              PaymentGateway.payStack,
+                                              isDark,
+                                              "assets/images/paystack.png",
+                                            )
+                                            : controller
+                                                    .selectedPaymentMethod
+                                                    .value ==
+                                                PaymentGateway.mercadoPago.name
+                                            ? cardDecoration(
+                                              controller,
+                                              PaymentGateway.mercadoPago,
+                                              isDark,
+                                              "assets/images/mercado-pago.png",
+                                            )
+                                            : controller
+                                                    .selectedPaymentMethod
+                                                    .value ==
+                                                PaymentGateway.flutterWave.name
+                                            ? cardDecoration(
+                                              controller,
+                                              PaymentGateway.flutterWave,
+                                              isDark,
+                                              "assets/images/flutterwave_logo.png",
+                                            )
+                                            : controller
+                                                    .selectedPaymentMethod
+                                                    .value ==
+                                                PaymentGateway.payFast.name
+                                            ? cardDecoration(
+                                              controller,
+                                              PaymentGateway.payFast,
+                                              isDark,
+                                              "assets/images/payfast.png",
+                                            )
+                                            : controller
+                                                    .selectedPaymentMethod
+                                                    .value ==
+                                                PaymentGateway.midTrans.name
+                                            ? cardDecoration(
+                                              controller,
+                                              PaymentGateway.midTrans,
+                                              isDark,
+                                              "assets/images/midtrans.png",
+                                            )
+                                            : controller
+                                                    .selectedPaymentMethod
+                                                    .value ==
+                                                PaymentGateway.orangeMoney.name
+                                            ? cardDecoration(
+                                              controller,
+                                              PaymentGateway.orangeMoney,
+                                              isDark,
+                                              "assets/images/orange_money.png",
+                                            )
+                                            : controller
+                                                    .selectedPaymentMethod
+                                                    .value ==
+                                                PaymentGateway.xendit.name
+                                            ? cardDecoration(
+                                              controller,
+                                              PaymentGateway.xendit,
+                                              isDark,
+                                              "assets/images/xendit.png",
+                                            )
+                                            : controller
+                                                    .selectedPaymentMethod
+                                                    .value ==
+                                                PaymentGateway.payme.name
+                                            ? cardDecoration(
+                                              controller,
+                                              PaymentGateway.payme,
+                                              isDark,
+                                              "assets/images/payme.png",
+                                            )
+                                            : controller
+                                                    .selectedPaymentMethod
+                                                    .value ==
+                                                PaymentGateway.razorpay.name
+                                            ? cardDecoration(
+                                              controller,
+                                              PaymentGateway.razorpay,
+                                              isDark,
+                                              "assets/images/razorpay.png",
+                                            )
+                                            : cardDecoration(
+                                              controller,
+                                              PaymentGateway.wallet,
+                                              isDark,
+                                              "",
+                                            ),
+                                        const SizedBox(width: 10),
+                                        Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              "Pay Via".tr,
+                                              textAlign: TextAlign.start,
+                                              style: TextStyle(
+                                                fontFamily:
+                                                    AppThemeData.semiBold,
+                                                color:
+                                                    isDark
+                                                        ? AppThemeData.grey400
+                                                        : AppThemeData.grey500,
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                            controller
+                                                        .selectedPaymentMethod
+                                                        .value ==
+                                                    ''
+                                                ? Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                        top: 4,
+                                                      ),
+                                                  child: Container(
+                                                    width: 60,
+                                                    height: 12,
+                                                    color:
+                                                        isDark
+                                                            ? AppThemeData
+                                                                .grey800
+                                                            : AppThemeData
+                                                                .grey100,
+                                                  ),
+                                                )
+                                                : Text(
+                                                  _paymentLabel(
+                                                    controller
+                                                        .selectedPaymentMethod
+                                                        .value,
+                                                  ),
+                                                  textAlign: TextAlign.start,
+                                                  style: TextStyle(
+                                                    fontFamily:
+                                                        AppThemeData.semiBold,
+                                                    color:
+                                                        isDark
+                                                            ? AppThemeData
+                                                                .grey50
+                                                            : AppThemeData
+                                                                .grey900,
+                                                    fontSize: 16,
+                                                  ),
+                                                ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
-                                Text(
-                                  "${"You will get".tr} ${Constant.amountShow(amount: controller.bestCashback.value.cashbackValue?.toStringAsFixed(2))} ${"cashback after completing the order.".tr}",
-                                  style: TextStyle(
-                                    color: AppThemeData.success300,
-                                    fontFamily: AppThemeData.semiBold,
-                                    fontSize: 13,
+                                Expanded(
+                                  child: RoundedButtonFill(
+                                    textColor:
+                                        controller
+                                                    .selectedPaymentMethod
+                                                    .value !=
+                                                ''
+                                            ? AppThemeData.surface
+                                            : isDark
+                                            ? AppThemeData.grey800
+                                            : AppThemeData.grey100,
+                                    title: "Pay Now".tr,
+                                    height: 6,
+                                    color:
+                                        controller
+                                                    .selectedPaymentMethod
+                                                    .value !=
+                                                ''
+                                            ? AppThemeData.primary300
+                                            : isDark
+                                            ? AppThemeData.grey800
+                                            : AppThemeData.grey100,
+                                    fontSizes: 16,
+                                    onPress: () async {
+                                      if ((controller.couponAmount.value >=
+                                              1) &&
+                                          (controller.couponAmount.value >
+                                              controller.totalAmount.value)) {
+                                        ShowToastDialog.showToast(
+                                          "The total price must be greater than or equal to the coupon discount value for the code to apply. Please review your cart total."
+                                              .tr,
+                                        );
+                                        return;
+                                      }
+                                      if ((controller
+                                                  .specialDiscountAmount
+                                                  .value >=
+                                              1) &&
+                                          (controller
+                                                  .specialDiscountAmount
+                                                  .value >
+                                              controller.totalAmount.value)) {
+                                        ShowToastDialog.showToast(
+                                          "The total price must be greater than or equal to the special discount value for the code to apply. Please review your cart total."
+                                              .tr,
+                                        );
+                                        return;
+                                      }
+                                      if (controller.isOrderPlaced.value ==
+                                          false) {
+                                        controller.isOrderPlaced.value = true;
+                                        await controller.getCashback();
+                                        if (controller
+                                                .selectedPaymentMethod
+                                                .value ==
+                                            PaymentGateway.stripe.name) {
+                                          controller.stripeMakePayment(
+                                            amount:
+                                                controller.totalAmount.value
+                                                    .toString(),
+                                          );
+                                        } else if (controller
+                                                .selectedPaymentMethod
+                                                .value ==
+                                            PaymentGateway.paypal.name) {
+                                          controller.paypalPaymentSheet(
+                                            controller.totalAmount.value
+                                                .toString(),
+                                            context,
+                                          );
+                                        } else if (controller
+                                                .selectedPaymentMethod
+                                                .value ==
+                                            PaymentGateway.payStack.name) {
+                                          controller.payStackPayment(
+                                            controller.totalAmount.value
+                                                .toString(),
+                                          );
+                                        } else if (controller
+                                                .selectedPaymentMethod
+                                                .value ==
+                                            PaymentGateway.mercadoPago.name) {
+                                          controller.mercadoPagoMakePayment(
+                                            context: context,
+                                            amount:
+                                                controller.totalAmount.value
+                                                    .toString(),
+                                          );
+                                        } else if (controller
+                                                .selectedPaymentMethod
+                                                .value ==
+                                            PaymentGateway.flutterWave.name) {
+                                          controller.flutterWaveInitiatePayment(
+                                            context: context,
+                                            amount:
+                                                controller.totalAmount.value
+                                                    .toString(),
+                                          );
+                                        } else if (controller
+                                                .selectedPaymentMethod
+                                                .value ==
+                                            PaymentGateway.payFast.name) {
+                                          controller.payFastPayment(
+                                            context: context,
+                                            amount:
+                                                controller.totalAmount.value
+                                                    .toString(),
+                                          );
+                                        } else if (controller
+                                                .selectedPaymentMethod
+                                                .value ==
+                                            PaymentGateway.cod.name) {
+                                          controller.placeOrder();
+                                        } else if (controller
+                                                .selectedPaymentMethod
+                                                .value ==
+                                            PaymentGateway.wallet.name) {
+                                          controller.placeOrder();
+                                        } else if (controller
+                                                .selectedPaymentMethod
+                                                .value ==
+                                            PaymentGateway.midTrans.name) {
+                                          controller.midtransMakePayment(
+                                            context: context,
+                                            amount:
+                                                controller.totalAmount.value
+                                                    .toString(),
+                                          );
+                                        } else if (controller
+                                                .selectedPaymentMethod
+                                                .value ==
+                                            PaymentGateway.orangeMoney.name) {
+                                          controller.orangeMakePayment(
+                                            context: context,
+                                            amount:
+                                                controller.totalAmount.value
+                                                    .toString(),
+                                          );
+                                        } else if (controller
+                                                .selectedPaymentMethod
+                                                .value ==
+                                            PaymentGateway.xendit.name) {
+                                          controller.xenditPayment(
+                                            context,
+                                            controller.totalAmount.value
+                                                .toString(),
+                                          );
+                                        } else if (controller
+                                                .selectedPaymentMethod
+                                                .value ==
+                                            PaymentGateway.payme.name) {
+                                          controller.paymeMakePayment(
+                                            context: context,
+                                            amount:
+                                                controller.totalAmount.value
+                                                    .toString(),
+                                          );
+                                        } else if (controller
+                                                .selectedPaymentMethod
+                                                .value ==
+                                            PaymentGateway.razorpay.name) {
+                                          RazorPayController()
+                                              .createOrderRazorPay(
+                                                amount: double.parse(
+                                                  controller.totalAmount.value
+                                                      .toString(),
+                                                ),
+                                                razorpayModel:
+                                                    controller
+                                                        .razorPayModel
+                                                        .value,
+                                              )
+                                              .then((value) {
+                                                if (value == null) {
+                                                  Get.back();
+                                                  ShowToastDialog.showToast(
+                                                    "Something went wrong, please contact admin."
+                                                        .tr,
+                                                  );
+                                                } else {
+                                                  CreateRazorPayOrderModel
+                                                  result = value;
+                                                  controller.openCheckout(
+                                                    amount:
+                                                        controller
+                                                            .totalAmount
+                                                            .value
+                                                            .toString(),
+                                                    orderId: result.id,
+                                                  );
+                                                }
+                                              });
+                                        } else {
+                                          controller.isOrderPlaced.value =
+                                              false;
+                                          ShowToastDialog.showToast(
+                                            "Please select payment method".tr,
+                                          );
+                                        }
+                                        controller.isOrderPlaced.value = false;
+                                      }
+                                    },
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                        Padding(
-                          padding: EdgeInsets.only(
-                            left: 16,
-                            right: 16,
-                            top:
-                                controller.isCashbackApply.value == false
-                                    ? 16
-                                    : 12,
-                            bottom: 20,
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                flex: 2,
-                                child: InkWell(
-                                  onTap: () {
-                                    Get.to(const SelectPaymentScreen())?.then((
-                                      v,
-                                    ) {
-                                      controller.getCashback();
-                                    });
-                                  },
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      controller.selectedPaymentMethod.value ==
-                                              ''
-                                          ? cardDecoration(
-                                            controller,
-                                            PaymentGateway.wallet,
-                                            isDark,
-                                            "",
-                                          )
-                                          : controller
-                                                  .selectedPaymentMethod
-                                                  .value ==
-                                              PaymentGateway.wallet.name
-                                          ? cardDecoration(
-                                            controller,
-                                            PaymentGateway.wallet,
-                                            isDark,
-                                            "assets/images/ic_wallet.png",
-                                          )
-                                          : controller
-                                                  .selectedPaymentMethod
-                                                  .value ==
-                                              PaymentGateway.cod.name
-                                          ? cardDecoration(
-                                            controller,
-                                            PaymentGateway.cod,
-                                            isDark,
-                                            "assets/images/ic_cash.png",
-                                          )
-                                          : controller
-                                                  .selectedPaymentMethod
-                                                  .value ==
-                                              PaymentGateway.stripe.name
-                                          ? cardDecoration(
-                                            controller,
-                                            PaymentGateway.stripe,
-                                            isDark,
-                                            "assets/images/stripe.png",
-                                          )
-                                          : controller
-                                                  .selectedPaymentMethod
-                                                  .value ==
-                                              PaymentGateway.paypal.name
-                                          ? cardDecoration(
-                                            controller,
-                                            PaymentGateway.paypal,
-                                            isDark,
-                                            "assets/images/paypal.png",
-                                          )
-                                          : controller
-                                                  .selectedPaymentMethod
-                                                  .value ==
-                                              PaymentGateway.payStack.name
-                                          ? cardDecoration(
-                                            controller,
-                                            PaymentGateway.payStack,
-                                            isDark,
-                                            "assets/images/paystack.png",
-                                          )
-                                          : controller
-                                                  .selectedPaymentMethod
-                                                  .value ==
-                                              PaymentGateway.mercadoPago.name
-                                          ? cardDecoration(
-                                            controller,
-                                            PaymentGateway.mercadoPago,
-                                            isDark,
-                                            "assets/images/mercado-pago.png",
-                                          )
-                                          : controller
-                                                  .selectedPaymentMethod
-                                                  .value ==
-                                              PaymentGateway.flutterWave.name
-                                          ? cardDecoration(
-                                            controller,
-                                            PaymentGateway.flutterWave,
-                                            isDark,
-                                            "assets/images/flutterwave_logo.png",
-                                          )
-                                          : controller
-                                                  .selectedPaymentMethod
-                                                  .value ==
-                                              PaymentGateway.payFast.name
-                                          ? cardDecoration(
-                                            controller,
-                                            PaymentGateway.payFast,
-                                            isDark,
-                                            "assets/images/payfast.png",
-                                          )
-                                          : controller
-                                                  .selectedPaymentMethod
-                                                  .value ==
-                                              PaymentGateway.midTrans.name
-                                          ? cardDecoration(
-                                            controller,
-                                            PaymentGateway.midTrans,
-                                            isDark,
-                                            "assets/images/midtrans.png",
-                                          )
-                                          : controller
-                                                  .selectedPaymentMethod
-                                                  .value ==
-                                              PaymentGateway.orangeMoney.name
-                                          ? cardDecoration(
-                                            controller,
-                                            PaymentGateway.orangeMoney,
-                                            isDark,
-                                            "assets/images/orange_money.png",
-                                          )
-                                          : controller
-                                                  .selectedPaymentMethod
-                                                  .value ==
-                                              PaymentGateway.xendit.name
-                                          ? cardDecoration(
-                                            controller,
-                                            PaymentGateway.xendit,
-                                            isDark,
-                                            "assets/images/xendit.png",
-                                          )
-                                          : controller
-                                                  .selectedPaymentMethod
-                                                  .value ==
-                                              PaymentGateway.payme.name
-                                          ? cardDecoration(
-                                            controller,
-                                            PaymentGateway.payme,
-                                            isDark,
-                                            "assets/images/payme.png",
-                                          )
-                                          : controller
-                                                  .selectedPaymentMethod
-                                                  .value ==
-                                              PaymentGateway.razorpay.name
-                                          ? cardDecoration(
-                                            controller,
-                                            PaymentGateway.razorpay,
-                                            isDark,
-                                            "assets/images/razorpay.png",
-                                          )
-                                          : cardDecoration(
-                                            controller,
-                                            PaymentGateway.wallet,
-                                            isDark,
-                                            "",
-                                          ),
-                                      const SizedBox(width: 10),
-                                      Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            "Pay Via".tr,
-                                            textAlign: TextAlign.start,
-                                            style: TextStyle(
-                                              fontFamily: AppThemeData.semiBold,
-                                              color:
-                                                  isDark
-                                                      ? AppThemeData.grey400
-                                                      : AppThemeData.grey500,
-                                              fontSize: 12,
-                                            ),
-                                          ),
-                                          controller
-                                                      .selectedPaymentMethod
-                                                      .value ==
-                                                  ''
-                                              ? Padding(
-                                                padding: const EdgeInsets.only(
-                                                  top: 4,
-                                                ),
-                                                child: Container(
-                                                  width: 60,
-                                                  height: 12,
-                                                  color:
-                                                      isDark
-                                                          ? AppThemeData.grey800
-                                                          : AppThemeData
-                                                              .grey100,
-                                                ),
-                                              )
-                                              : Text(
-                                                controller
-                                                    .selectedPaymentMethod
-                                                    .value,
-                                                textAlign: TextAlign.start,
-                                                style: TextStyle(
-                                                  fontFamily:
-                                                      AppThemeData.semiBold,
-                                                  color:
-                                                      isDark
-                                                          ? AppThemeData.grey50
-                                                          : AppThemeData
-                                                              .grey900,
-                                                  fontSize: 16,
-                                                ),
-                                              ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              Expanded(
-                                child: RoundedButtonFill(
-                                  textColor:
-                                      controller.selectedPaymentMethod.value !=
-                                              ''
-                                          ? AppThemeData.surface
-                                          : isDark
-                                          ? AppThemeData.grey800
-                                          : AppThemeData.grey100,
-                                  title: "Pay Now".tr,
-                                  height: 5,
-                                  color:
-                                      controller.selectedPaymentMethod.value !=
-                                              ''
-                                          ? AppThemeData.primary300
-                                          : isDark
-                                          ? AppThemeData.grey800
-                                          : AppThemeData.grey100,
-                                  fontSizes: 16,
-                                  onPress: () async {
-                                    if ((controller.couponAmount.value >= 1) &&
-                                        (controller.couponAmount.value >
-                                            controller.totalAmount.value)) {
-                                      ShowToastDialog.showToast(
-                                        "The total price must be greater than or equal to the coupon discount value for the code to apply. Please review your cart total."
-                                            .tr,
-                                      );
-                                      return;
-                                    }
-                                    if ((controller
-                                                .specialDiscountAmount
-                                                .value >=
-                                            1) &&
-                                        (controller
-                                                .specialDiscountAmount
-                                                .value >
-                                            controller.totalAmount.value)) {
-                                      ShowToastDialog.showToast(
-                                        "The total price must be greater than or equal to the special discount value for the code to apply. Please review your cart total."
-                                            .tr,
-                                      );
-                                      return;
-                                    }
-                                    if (controller.isOrderPlaced.value ==
-                                        false) {
-                                      controller.isOrderPlaced.value = true;
-                                      await controller.getCashback();
-                                      if (controller
-                                              .selectedPaymentMethod
-                                              .value ==
-                                          PaymentGateway.stripe.name) {
-                                        controller.stripeMakePayment(
-                                          amount:
-                                              controller.totalAmount.value
-                                                  .toString(),
-                                        );
-                                      } else if (controller
-                                              .selectedPaymentMethod
-                                              .value ==
-                                          PaymentGateway.paypal.name) {
-                                        controller.paypalPaymentSheet(
-                                          controller.totalAmount.value
-                                              .toString(),
-                                          context,
-                                        );
-                                      } else if (controller
-                                              .selectedPaymentMethod
-                                              .value ==
-                                          PaymentGateway.payStack.name) {
-                                        controller.payStackPayment(
-                                          controller.totalAmount.value
-                                              .toString(),
-                                        );
-                                      } else if (controller
-                                              .selectedPaymentMethod
-                                              .value ==
-                                          PaymentGateway.mercadoPago.name) {
-                                        controller.mercadoPagoMakePayment(
-                                          context: context,
-                                          amount:
-                                              controller.totalAmount.value
-                                                  .toString(),
-                                        );
-                                      } else if (controller
-                                              .selectedPaymentMethod
-                                              .value ==
-                                          PaymentGateway.flutterWave.name) {
-                                        controller.flutterWaveInitiatePayment(
-                                          context: context,
-                                          amount:
-                                              controller.totalAmount.value
-                                                  .toString(),
-                                        );
-                                      } else if (controller
-                                              .selectedPaymentMethod
-                                              .value ==
-                                          PaymentGateway.payFast.name) {
-                                        controller.payFastPayment(
-                                          context: context,
-                                          amount:
-                                              controller.totalAmount.value
-                                                  .toString(),
-                                        );
-                                      } else if (controller
-                                              .selectedPaymentMethod
-                                              .value ==
-                                          PaymentGateway.cod.name) {
-                                        controller.placeOrder();
-                                      } else if (controller
-                                              .selectedPaymentMethod
-                                              .value ==
-                                          PaymentGateway.wallet.name) {
-                                        controller.placeOrder();
-                                      } else if (controller
-                                              .selectedPaymentMethod
-                                              .value ==
-                                          PaymentGateway.midTrans.name) {
-                                        controller.midtransMakePayment(
-                                          context: context,
-                                          amount:
-                                              controller.totalAmount.value
-                                                  .toString(),
-                                        );
-                                      } else if (controller
-                                              .selectedPaymentMethod
-                                              .value ==
-                                          PaymentGateway.orangeMoney.name) {
-                                        controller.orangeMakePayment(
-                                          context: context,
-                                          amount:
-                                              controller.totalAmount.value
-                                                  .toString(),
-                                        );
-                                      } else if (controller
-                                              .selectedPaymentMethod
-                                              .value ==
-                                          PaymentGateway.xendit.name) {
-                                        controller.xenditPayment(
-                                          context,
-                                          controller.totalAmount.value
-                                              .toString(),
-                                        );
-                                      } else if (controller
-                                              .selectedPaymentMethod
-                                              .value ==
-                                          PaymentGateway.payme.name) {
-                                        controller.paymeMakePayment(
-                                          context: context,
-                                          amount:
-                                              controller.totalAmount.value
-                                                  .toString(),
-                                        );
-                                      } else if (controller
-                                              .selectedPaymentMethod
-                                              .value ==
-                                          PaymentGateway.razorpay.name) {
-                                        RazorPayController()
-                                            .createOrderRazorPay(
-                                              amount: double.parse(
-                                                controller.totalAmount.value
-                                                    .toString(),
-                                              ),
-                                              razorpayModel:
-                                                  controller
-                                                      .razorPayModel
-                                                      .value,
-                                            )
-                                            .then((value) {
-                                              if (value == null) {
-                                                Get.back();
-                                                ShowToastDialog.showToast(
-                                                  "Something went wrong, please contact admin."
-                                                      .tr,
-                                                );
-                                              } else {
-                                                CreateRazorPayOrderModel
-                                                result = value;
-                                                controller.openCheckout(
-                                                  amount:
-                                                      controller
-                                                          .totalAmount
-                                                          .value
-                                                          .toString(),
-                                                  orderId: result.id,
-                                                );
-                                              }
-                                            });
-                                      } else {
-                                        controller.isOrderPlaced.value = false;
-                                        ShowToastDialog.showToast(
-                                          "Please select payment method".tr,
-                                        );
-                                      }
-                                      controller.isOrderPlaced.value = false;
-                                    }
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
         );
@@ -2001,4 +2028,10 @@ class CartScreen extends StatelessWidget {
     );
   }
 
+  String _paymentLabel(String selected) {
+    for (final gateway in PaymentGateway.values) {
+      if (gateway.name == selected) return gateway.localizedLabel();
+    }
+    return selected.isEmpty ? '' : selected.capitalizeString();
+  }
 }

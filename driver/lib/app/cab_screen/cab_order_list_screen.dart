@@ -41,7 +41,8 @@ class CabOrderListScreen extends StatelessWidget {
                     unselectedLabelStyle:
                         AppThemeData.mediumTextStyle(fontSize: 14),
                     tabs: controller.tabTitles
-                        .map((title) => Tab(child: Center(child: Text(title))))
+                        .map((title) =>
+                            Tab(child: Center(child: Text(title.tr))))
                         .toList(),
                   ),
 
@@ -57,7 +58,7 @@ class CabOrderListScreen extends StatelessWidget {
                               if (orders.isEmpty) {
                                 return Center(
                                   child: Text(
-                                    "No orders found",
+                                    "No orders found".tr,
                                     style: AppThemeData.mediumTextStyle(
                                         color: isDark
                                             ? AppThemeData.greyDark900
@@ -94,8 +95,7 @@ class CabOrderListScreen extends StatelessWidget {
                                             CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            "${'Booking Date:'.tr} ${controller.formatDate(order.scheduleDateTime!)}"
-                                                .tr,
+                                            "${'Booking Date:'.tr} ${controller.formatDate(order.scheduleDateTime!)}",
                                             textAlign: TextAlign.start,
                                             style: TextStyle(
                                               fontFamily: AppThemeData.semiBold,
@@ -115,7 +115,8 @@ class CabOrderListScreen extends StatelessWidget {
                                                   Icon(
                                                       Icons
                                                           .stop_circle_outlined,
-                                                      color: AppThemeData.primary300),
+                                                      color: AppThemeData
+                                                          .primary300),
                                                   DottedBorder(
                                                     options:
                                                         CustomPathDottedBorderOptions(
@@ -192,7 +193,8 @@ class CabOrderListScreen extends StatelessWidget {
                                                                       12),
                                                           child: Text(
                                                             order.status
-                                                                .toString(),
+                                                                .toString()
+                                                                .tr,
                                                             style: AppThemeData
                                                                 .boldTextStyle(
                                                                     fontSize:

@@ -52,7 +52,7 @@ class OwnerOrderListScreen extends StatelessWidget {
                     return DropdownMenuItem<String>(
                       value: service,
                       child: Text(
-                        service,
+                        service.tr,
                         style: TextStyle(
                           color: themeController.isDark.value
                               ? AppThemeData.grey50
@@ -115,7 +115,7 @@ class OwnerOrderListScreen extends StatelessWidget {
 
                 // --- Search Button ---
                 RoundedButtonFill(
-                  title: "Search",
+                  title: "Search".tr,
                   height: 5.5,
                   color: AppThemeData.primary300,
                   textColor: AppThemeData.grey50,
@@ -189,7 +189,7 @@ class OwnerOrderListScreen extends StatelessWidget {
             labelStyle: AppThemeData.boldTextStyle(fontSize: 14),
             unselectedLabelStyle: AppThemeData.mediumTextStyle(fontSize: 14),
             tabs: controller.cabTabTitles
-                .map((title) => Tab(child: Center(child: Text(title))))
+                .map((title) => Tab(child: Center(child: Text(title.tr))))
                 .toList(),
           ),
 
@@ -301,7 +301,7 @@ class OwnerOrderListScreen extends StatelessWidget {
                                                       vertical: 8,
                                                       horizontal: 12),
                                               child: Text(
-                                                order.status.toString(),
+                                              order.status.toString().tr,
                                                 style:
                                                     AppThemeData.boldTextStyle(
                                                         fontSize: 14,
@@ -379,7 +379,7 @@ class OwnerOrderListScreen extends StatelessWidget {
             labelStyle: AppThemeData.boldTextStyle(fontSize: 16),
             unselectedLabelStyle: AppThemeData.mediumTextStyle(fontSize: 16),
             tabs: controller.parcelTabTitles
-                .map((title) => Tab(child: Text(title)))
+                .map((title) => Tab(child: Text(title.tr)))
                 .toList(),
           ),
 
@@ -546,7 +546,7 @@ class OwnerOrderListScreen extends StatelessWidget {
                   border: Border.all(color: AppThemeData.info300),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Text(status,
+                child: Text(status.tr,
                     style: AppThemeData.boldTextStyle(
                         fontSize: 14, color: AppThemeData.info500)),
               ),
@@ -593,7 +593,7 @@ class OwnerOrderListScreen extends StatelessWidget {
             labelStyle: AppThemeData.boldTextStyle(fontSize: 16),
             unselectedLabelStyle: AppThemeData.mediumTextStyle(fontSize: 16),
             tabs: controller.rentalTabTitles
-                .map((title) => Tab(child: Text(title)))
+                .map((title) => Tab(child: Text(title.tr)))
                 .toList(),
           ),
 
@@ -702,7 +702,7 @@ class OwnerOrderListScreen extends StatelessWidget {
                                                               12),
                                                     ),
                                                     child: Text(
-                                                        order.status ?? '',
+                                                        (order.status ?? '').tr,
                                                         style: AppThemeData
                                                             .boldTextStyle(
                                                                 fontSize: 14,

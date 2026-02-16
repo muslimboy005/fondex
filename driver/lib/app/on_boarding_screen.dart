@@ -7,7 +7,7 @@ import '../../themes/app_them_data.dart';
 import '../../utils/network_image_widget.dart';
 import '../../utils/preferences.dart';
 import '../themes/round_button_fill.dart';
-import 'auth_screen/login_screen.dart';
+import 'auth_screen/auth_screen.dart';
 
 class OnboardingScreen extends StatelessWidget {
   const OnboardingScreen({super.key});
@@ -94,7 +94,7 @@ class OnboardingScreen extends StatelessWidget {
                       const SizedBox(height: 20),
                       controller.currentPage.value == controller.onboardingList.length - 1
                           ? RoundedButtonFill(
-                              title: "Let’s Get Started".tr,
+                              title: "Let's Get Started".tr,
                               onPress: () {
                                 _finish();
                               },
@@ -135,6 +135,6 @@ class OnboardingScreen extends StatelessWidget {
 
   Future<void> _finish() async {
     await Preferences.setBoolean(Preferences.isFinishOnBoardingKey, true);
-    Get.offAll(() => const LoginScreen());
+    Get.offAll(() => const AuthScreen());
   }
 }

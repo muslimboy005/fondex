@@ -148,6 +148,7 @@ const Map<String, String> enUS = {
   'Your SOS request is already submitted':
       'Your SOS request is already submitted',
   'Pay Now': 'Pay Now',
+  'Cash on Delivery': 'Cash on Delivery',
   'Something went wrong, please contact admin.':
       'Something went wrong, please contact admin.',
   'Please select payment method': 'Please select payment method',
@@ -538,7 +539,7 @@ const Map<String, String> enUS = {
   'Refer a Friend': 'Refer a Friend',
   'Share app': 'Share app',
   'Check out Foodie, your ultimate food delivery application!':
-      'Check out Foodie, your ultimate food delivery application!',
+      'Check out Fondex, your ultimate food delivery application!',
   'Google Play:': 'Google Play:',
   'App Store:': 'App Store:',
   'Look what I made!': 'Look what I made!',
@@ -575,14 +576,14 @@ const Map<String, String> enUS = {
   'Refer your friend and earn': 'Refer your friend and earn',
   'Invite Friends & Businesses': 'Invite Friends & Businesses',
   'Invite your friends to sign up with Foodie using your code, and you’ll earn':
-      'Invite your friends to sign up with Foodie using your code, and you’ll earn',
+      'Invite your friends to sign up with Fondex using your code, and you’ll earn',
   'after their Success the first order!':
       'after their Success the first order!',
   'Copied': 'Copied',
   'or': 'or',
   'Share Code': 'Share Code',
   'Hey there, thanks for choosing Foodie. Hope you love our product. If you do, share it with your friends using code':
-      'Hey there, thanks for choosing Foodie. Hope you love our product. If you do, share it with your friends using code',
+      'Hey there, thanks for choosing Fondex. Hope you love our product. If you do, share it with your friends using code',
   'and get': 'and get',
   'when order completed': 'when order completed',
   'items': 'items',

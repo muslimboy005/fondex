@@ -178,7 +178,7 @@ class DrawerView extends StatelessWidget {
                                 ),
                               ),
                               Text(
-                                '${Constant.userModel!.email}'.tr,
+                                Constant.userModel!.email ?? '',
                                 style: TextStyle(
                                   color: isDark ? AppThemeData.grey50 : AppThemeData.grey900,
                                   fontSize: 14,
@@ -676,21 +676,7 @@ class DrawerView extends StatelessWidget {
                     const SizedBox(
                       height: 10,
                     ),
-                    Center(
-                      child: Text(
-                        "V : ${Constant.appVersion}",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontFamily: AppThemeData.medium,
-                          fontSize: 14,
-                          color: isDark ? AppThemeData.grey50 : AppThemeData.grey900,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                  ],
+                    ],
                 ),
               ),
             );

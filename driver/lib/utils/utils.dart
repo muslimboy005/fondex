@@ -1,6 +1,7 @@
 import 'package:driver/constant/constant.dart';
 import 'package:driver/constant/show_toast_dialog.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:get/get.dart';
 import 'package:location/location.dart';
 import 'package:map_launcher/map_launcher.dart' hide MapType;
 import 'package:map_launcher/map_launcher.dart' as map_launcher show MapType;
@@ -34,7 +35,7 @@ class Utils {
 
     if (permission == LocationPermission.deniedForever) {
       // Permissions are denied forever, handle appropriately.
-      return Future.error('Location permissions are permanently denied, we cannot request permissions.');
+      return Future.error('Location permissions are permanently denied, we cannot request permissions.'.tr);
     }
 
     // When we reach here, permissions are granted and we can
@@ -43,7 +44,8 @@ class Utils {
   }
 
   static Future<void> redirectMap({required String name, required double latitude, required double longLatitude}) async {
-    if (Constant.mapType == "google") {
+    final mapType = Constant.normalizeMapType(Constant.mapType);
+    if (mapType == "google") {
       bool? isAvailable = await MapLauncher.isMapAvailable(map_launcher.MapType.google);
       if (isAvailable == true) {
         await MapLauncher.showDirections(
@@ -53,9 +55,9 @@ class Utils {
           destination: Coords(latitude, longLatitude),
         );
       } else {
-        ShowToastDialog.showToast("Google map is not installed");
+        ShowToastDialog.showToast("Google map is not installed".tr);
       }
-    } else if (Constant.mapType == "googleGo") {
+    } else if (mapType == "googleGo") {
       bool? isAvailable = await MapLauncher.isMapAvailable(map_launcher.MapType.googleGo);
       if (isAvailable == true) {
         await MapLauncher.showDirections(
@@ -65,9 +67,9 @@ class Utils {
           destination: Coords(latitude, longLatitude),
         );
       } else {
-        ShowToastDialog.showToast("Google Go map is not installed");
+        ShowToastDialog.showToast("Google Go map is not installed".tr);
       }
-    } else if (Constant.mapType == "waze") {
+    } else if (mapType == "waze") {
       bool? isAvailable = await MapLauncher.isMapAvailable(map_launcher.MapType.waze);
       if (isAvailable == true) {
         await MapLauncher.showDirections(
@@ -77,9 +79,9 @@ class Utils {
           destination: Coords(latitude, longLatitude),
         );
       } else {
-        ShowToastDialog.showToast("Waze is not installed");
+        ShowToastDialog.showToast("Waze is not installed".tr);
       }
-    } else if (Constant.mapType == "mapswithme") {
+    } else if (mapType == "mapswithme") {
       bool? isAvailable = await MapLauncher.isMapAvailable(map_launcher.MapType.mapswithme);
       if (isAvailable == true) {
         await MapLauncher.showDirections(
@@ -89,9 +91,9 @@ class Utils {
           destination: Coords(latitude, longLatitude),
         );
       } else {
-        ShowToastDialog.showToast("Mapswithme is not installed");
+        ShowToastDialog.showToast("Mapswithme is not installed".tr);
       }
-    } else if (Constant.mapType == "yandexNavi") {
+    } else if (mapType == "yandexNavi") {
       bool? isAvailable = await MapLauncher.isMapAvailable(map_launcher.MapType.yandexNavi);
       if (isAvailable == true) {
         await MapLauncher.showDirections(
@@ -101,9 +103,9 @@ class Utils {
           destination: Coords(latitude, longLatitude),
         );
       } else {
-        ShowToastDialog.showToast("YandexNavi is not installed");
+        ShowToastDialog.showToast("YandexNavi is not installed".tr);
       }
-    } else if (Constant.mapType == "yandexMaps") {
+    } else if (mapType == "yandexMaps") {
       bool? isAvailable = await MapLauncher.isMapAvailable(map_launcher.MapType.yandexMaps);
       if (isAvailable == true) {
         await MapLauncher.showDirections(
@@ -113,7 +115,7 @@ class Utils {
           destination: Coords(latitude, longLatitude),
         );
       } else {
-        ShowToastDialog.showToast("yandexMaps map is not installed");
+        ShowToastDialog.showToast("yandexMaps map is not installed".tr);
       }
     }
   }

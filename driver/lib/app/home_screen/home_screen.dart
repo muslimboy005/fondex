@@ -21,8 +21,10 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart' as google_maps;
+import 'package:yandex_mapkit/yandex_mapkit.dart' as ym;
 import 'package:latlong2/latlong.dart' as location;
 import 'package:timelines_plus/timelines_plus.dart';
+import 'package:driver/utils/yandex_map_utils.dart';
 
 class HomeScreen extends StatelessWidget {
   final bool? isAppBarShow;
@@ -180,7 +182,7 @@ class HomeScreen extends StatelessWidget {
                             child: Constant.mapType == "inappmap"
                                 ? Stack(
                                     children: [
-                                      Constant.selectedMapType == "osm"
+                                      Constant.isOsmMap
                                               ? Obx(() {
                                                   // Get current location or use default (Tashkent)
                                                   final currentLocation =
@@ -255,23 +257,8 @@ class HomeScreen extends StatelessWidget {
                                                     ],
                                                   );
                                                 })
-                                              : Obx(() {
-                                                  final isDark = themeController.isDark.value;
-                                                  return google_maps.GoogleMap(
-                                                    key: ValueKey('google_map_${isDark ? 'dark' : 'light'}'),
-                                                    onMapCreated: (google_maps
-                                                        .GoogleMapController
-                                                        mapController) {
-                                                      controller.mapController =
-                                                          mapController;
-                                                      
-                                                      // Apply dark mode style if needed
-                                                      if (isDark) {
-                                                        mapController.setMapStyle(
-                                                            Utils.getGoogleMapDarkStyle());
-                                                      }
-                                                      
-                                                      // Use driver location or fallback to Constant.locationDataFinal or default location
+                                              : Constant.isYandexMap
+                                                  ? Obx(() {
                                                       final driverLat =
                                                           controller
                                                                   .driverModel
@@ -295,124 +282,200 @@ class HomeScreen extends StatelessWidget {
                                                               ?.longitude ??
                                                           driverLng;
 
-                                                      // If location is valid (not 0,0), animate to it
-                                                      if (finalLat != 0.0 ||
-                                                          finalLng != 0.0) {
-                                                        controller
-                                                            .mapController!
-                                                            .animateCamera(
-                                                          google_maps
-                                                                  .CameraUpdate
-                                                              .newCameraPosition(
-                                                            google_maps.CameraPosition(
-                                                                target: google_maps
-                                                                    .LatLng(
-                                                                        finalLat,
-                                                                        finalLng),
+                                                      return ym.YandexMap(
+                                                        onMapCreated:
+                                                            (ym.YandexMapController
+                                                                mapController) async {
+                                                          controller.yandexMapController =
+                                                              mapController;
+                                                          await mapController
+                                                              .toggleUserLayer(
+                                                                  visible: true);
+                                                          await mapController
+                                                              .moveCamera(
+                                                            ym.CameraUpdate
+                                                                .newCameraPosition(
+                                                              ym.CameraPosition(
+                                                                target: ym.Point(
+                                                                  latitude: finalLat != 0.0
+                                                                      ? finalLat
+                                                                      : 41.3111,
+                                                                  longitude: finalLng != 0.0
+                                                                      ? finalLng
+                                                                      : 69.2797,
+                                                                ),
                                                                 zoom: 15,
-                                                                bearing: double
-                                                                    .parse(
-                                                                        '${controller.driverModel.value.rotation ?? '0.0'}')),
-                                                          ),
-                                                        );
-                                                      }
-                                                    },
-                                                    myLocationEnabled: true,
-                                                    myLocationButtonEnabled:
-                                                        true,
-                                                    mapType: google_maps
-                                                        .MapType.normal,
-                                                    zoomControlsEnabled: true,
-                                                    polylines: Set<
+                                                              ),
+                                                            ),
+                                                          );
+                                                        },
+                                                        mapObjects:
+                                                            yandexMapObjectsFromGoogle(
+                                                          markers: controller
+                                                              .markers.values,
+                                                          polylines: controller
+                                                              .polyLines.values,
+                                                        ),
+                                                      );
+                                                    })
+                                                  : Obx(() {
+                                                      final isDark = themeController.isDark.value;
+                                                      return google_maps.GoogleMap(
+                                                        key: ValueKey('google_map_${isDark ? 'dark' : 'light'}'),
+                                                        onMapCreated: (google_maps
+                                                            .GoogleMapController
+                                                            mapController) {
+                                                          controller.mapController =
+                                                              mapController;
+                                                          
+                                                          // Apply dark mode style if needed
+                                                          if (isDark) {
+                                                            mapController.setMapStyle(
+                                                                Utils.getGoogleMapDarkStyle());
+                                                          }
+                                                          
+                                                          // Use driver location or fallback to Constant.locationDataFinal or default location
+                                                          final driverLat =
+                                                              controller
+                                                                      .driverModel
+                                                                      .value
+                                                                      .location
+                                                                      ?.latitude ??
+                                                                  0.0;
+                                                          final driverLng =
+                                                              controller
+                                                                      .driverModel
+                                                                      .value
+                                                                      .location
+                                                                      ?.longitude ??
+                                                                  0.0;
+                                                          final finalLat = Constant
+                                                                  .locationDataFinal
+                                                                  ?.latitude ??
+                                                              driverLat;
+                                                          final finalLng = Constant
+                                                                  .locationDataFinal
+                                                                  ?.longitude ??
+                                                              driverLng;
+
+                                                          // If location is valid (not 0,0), animate to it
+                                                          if (finalLat != 0.0 ||
+                                                              finalLng != 0.0) {
+                                                            controller
+                                                                .mapController!
+                                                                .animateCamera(
+                                                              google_maps
+                                                                      .CameraUpdate
+                                                                  .newCameraPosition(
+                                                                google_maps.CameraPosition(
+                                                                    target: google_maps
+                                                                        .LatLng(
+                                                                            finalLat,
+                                                                            finalLng),
+                                                                    zoom: 15,
+                                                                    bearing: double
+                                                                        .parse(
+                                                                            '${controller.driverModel.value.rotation ?? '0.0'}')),
+                                                              ),
+                                                            );
+                                                          }
+                                                        },
+                                                        myLocationEnabled: true,
+                                                        myLocationButtonEnabled:
+                                                            true,
+                                                        mapType: google_maps
+                                                            .MapType.normal,
+                                                        zoomControlsEnabled: true,
+                                                        polylines: Set<
+                                                                google_maps
+                                                                .Polyline>.of(
+                                                            controller
+                                                                .polyLines.values),
+                                                        markers: controller
+                                                            .markers.values
+                                                            .toSet(),
+                                                        initialCameraPosition:
                                                             google_maps
-                                                            .Polyline>.of(
-                                                        controller
-                                                            .polyLines.values),
-                                                    markers: controller
-                                                        .markers.values
-                                                        .toSet(),
-                                                    initialCameraPosition:
-                                                        google_maps
-                                                            .CameraPosition(
-                                                      zoom: 15,
-                                                      target:
-                                                          google_maps.LatLng(
-                                                        (controller
-                                                                        .driverModel
-                                                                        .value
-                                                                        .location
-                                                                        ?.latitude !=
-                                                                    null &&
-                                                                controller
-                                                                        .driverModel
-                                                                        .value
-                                                                        .location!
-                                                                        .latitude !=
-                                                                    0.0)
-                                                            ? controller
-                                                                .driverModel
-                                                                .value
-                                                                .location!
-                                                                .latitude!
-                                                            : (Constant.locationDataFinal
+                                                                .CameraPosition(
+                                                          zoom: 15,
+                                                          target:
+                                                              google_maps.LatLng(
+                                                            (controller
+                                                                            .driverModel
+                                                                            .value
+                                                                            .location
                                                                             ?.latitude !=
                                                                         null &&
-                                                                    Constant.locationDataFinal!
+                                                                    controller
+                                                                            .driverModel
+                                                                            .value
+                                                                            .location!
                                                                             .latitude !=
                                                                         0.0)
-                                                                ? Constant
-                                                                    .locationDataFinal!
+                                                                ? controller
+                                                                    .driverModel
+                                                                    .value
+                                                                    .location!
                                                                     .latitude!
-                                                                : (Constant.userModel?.location?.latitude !=
+                                                                : (Constant.locationDataFinal
+                                                                                ?.latitude !=
                                                                             null &&
-                                                                        Constant.userModel!.location!.latitude !=
+                                                                        Constant.locationDataFinal!
+                                                                                .latitude !=
                                                                             0.0)
                                                                     ? Constant
-                                                                        .userModel!
-                                                                        .location!
+                                                                        .locationDataFinal!
                                                                         .latitude!
-                                                                    : 21.1800,
-                                                        (controller
-                                                                        .driverModel
-                                                                        .value
-                                                                        .location
-                                                                        ?.longitude !=
-                                                                    null &&
-                                                                controller
-                                                                        .driverModel
-                                                                        .value
-                                                                        .location!
-                                                                        .longitude !=
-                                                                    0.0)
-                                                            ? controller
-                                                                .driverModel
-                                                                .value
-                                                                .location!
-                                                                .longitude!
-                                                            : (Constant.locationDataFinal
+                                                                    : (Constant.userModel?.location?.latitude !=
+                                                                                null &&
+                                                                            Constant.userModel!.location!.latitude !=
+                                                                                0.0)
+                                                                        ? Constant
+                                                                            .userModel!
+                                                                            .location!
+                                                                            .latitude!
+                                                                        : 41.3111,
+                                                            (controller
+                                                                            .driverModel
+                                                                            .value
+                                                                            .location
                                                                             ?.longitude !=
                                                                         null &&
-                                                                    Constant.locationDataFinal!
+                                                                    controller
+                                                                            .driverModel
+                                                                            .value
+                                                                            .location!
                                                                             .longitude !=
                                                                         0.0)
-                                                                ? Constant
-                                                                    .locationDataFinal!
+                                                                ? controller
+                                                                    .driverModel
+                                                                    .value
+                                                                    .location!
                                                                     .longitude!
-                                                                : (Constant.userModel?.location?.longitude !=
+                                                                : (Constant.locationDataFinal
+                                                                                ?.longitude !=
                                                                             null &&
-                                                                        Constant.userModel!.location!.longitude !=
+                                                                        Constant.locationDataFinal!
+                                                                                .longitude !=
                                                                             0.0)
                                                                     ? Constant
-                                                                        .userModel!
-                                                                        .location!
+                                                                        .locationDataFinal!
                                                                         .longitude!
-                                                                    : 72.8400,
-                                                      ),
-                                                    ),
-                                                  );
-                                                }),
+                                                                    : (Constant.userModel?.location?.longitude !=
+                                                                                null &&
+                                                                            Constant.userModel!.location!.longitude !=
+                                                                                0.0)
+                                                                        ? Constant
+                                                                            .userModel!
+                                                                            .location!
+                                                                            .longitude!
+                                                                        : 69.2797,
+                                                          ),
+                                                        ),
+                                                      );
+                                                    }),
                                       if (Constant.mapType == "inappmap" &&
-                                          Constant.selectedMapType == "osm")
+                                          Constant.isOsmMap)
                                         Positioned(
                                           top: 20,
                                           right: 20,
@@ -471,7 +534,7 @@ class HomeScreen extends StatelessWidget {
                                         RoundedButtonFill(
                                           title:
                                               "${'Redirect'.tr} ${Constant.mapType == "google" ? "Google Map" : Constant.mapType == "googleGo" ? "Google Go" : Constant.mapType == "waze" ? "Waze Map" : Constant.mapType == "mapswithme" ? "MapsWithMe Map" : Constant.mapType == "yandexNavi" ? "VandexNavi Map" : Constant.mapType == "yandexMaps" ? "Vandex Map" : ""}"
-                                                  .tr,
+                                                  ,
                                           width: 55,
                                           height: 5.5,
                                           color: AppThemeData.primary300,

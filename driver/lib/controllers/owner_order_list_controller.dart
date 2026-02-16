@@ -15,8 +15,9 @@ class OwnerOrderListController extends GetxController {
   RxBool isLoadingRental = false.obs;
 
   // Service list
-  RxList<String> serviceList = ['Cab Service', 'Parcel Service', 'Rental Service'].obs;
-  RxString selectedService = 'Cab Service'.obs;
+  RxList<String> serviceList =
+      ['cab_service', 'parcel_service', 'rental_service'].obs;
+  RxString selectedService = 'cab_service'.obs;
   RxString serviceKey = 'cab-service'.obs;
 
   // Driver list
@@ -27,18 +28,18 @@ class OwnerOrderListController extends GetxController {
 
   // Cab Orders
   RxList<CabOrderModel> cabOrders = <CabOrderModel>[].obs;
-  RxString cabSelectedTab = 'On Going'.obs;
-  final List<String> cabTabTitles = ["On Going", "Completed", "Cancelled"];
+  RxString cabSelectedTab = 'on_going'.obs;
+  final List<String> cabTabTitles = ["on_going", "completed", "cancelled"];
 
   // Parcel Orders
   RxList<ParcelOrderModel> parcelOrders = <ParcelOrderModel>[].obs;
-  RxString parcelSelectedTab = 'In Transit'.obs;
-  final List<String> parcelTabTitles = ["In Transit", "Delivered", "Cancelled"];
+  RxString parcelSelectedTab = 'in_transit'.obs;
+  final List<String> parcelTabTitles = ["in_transit", "delivered", "cancelled"];
 
   // Rental Orders
   RxList<RentalOrderModel> rentalOrders = <RentalOrderModel>[].obs;
-  RxString rentalSelectedTab = 'On Going'.obs;
-  final List<String> rentalTabTitles = ["On Going", "Completed", "Cancelled"];
+  RxString rentalSelectedTab = 'on_going'.obs;
+  final List<String> rentalTabTitles = ["on_going", "completed", "cancelled"];
 
   @override
   void onInit() {
@@ -57,14 +58,14 @@ class OwnerOrderListController extends GetxController {
       }
 
       // Default: Cab Service + All drivers
-      selectedService.value = 'Cab Service';
+      selectedService.value = 'cab_service';
       serviceKey.value = 'cab-service';
       selectedDriver.value = null;
       isDriverSelected.value = false;
 
       fetchOrdersByService();
     } catch (e) {
-      ShowToastDialog.showToast("Error fetching drivers: $e");
+      ShowToastDialog.showToast("${'Error fetching drivers'.tr}: $e");
     }
   }
 
@@ -90,9 +91,9 @@ class OwnerOrderListController extends GetxController {
     }
 
     final serviceMap = {
-      'Cab Service': 'cab-service',
-      'Parcel Service': 'parcel_delivery',
-      'Rental Service': 'rental-service',
+      'cab_service': 'cab-service',
+      'parcel_service': 'parcel_delivery',
+      'rental_service': 'rental-service',
     };
     serviceKey.value = serviceMap[selectedService.value] ?? 'cab-service';
 
@@ -114,22 +115,24 @@ class OwnerOrderListController extends GetxController {
     try {
       isLoadingCab.value = true;
 
-      print("Fetching Cab Orders for Driver ID: ${driverId.value}, Is Driver Selected: ${isDriverSelected.value}");
+      print(
+          "Fetching Cab Orders for Driver ID: ${driverId.value}, Is Driver Selected: ${isDriverSelected.value}");
       if (isDriverSelected.value) {
-        cabOrders.value = await FireStoreUtils.getCabDriverOrdersOnce(driverId.value);
+        cabOrders.value =
+            await FireStoreUtils.getCabDriverOrdersOnce(driverId.value);
       } else {
         List<UserModel> drivers = filteredDrivers;
         List<CabOrderModel> allOrders = [];
         for (var driver in drivers) {
           List<CabOrderModel> driverOrders =
-          await FireStoreUtils.getCabDriverOrdersOnce(driver.id ?? '');
+              await FireStoreUtils.getCabDriverOrdersOnce(driver.id ?? '');
           allOrders.addAll(driverOrders);
         }
         cabOrders.value = allOrders;
       }
       print("Total Cab Orders: ${cabOrders.length}");
     } catch (e) {
-      ShowToastDialog.showToast("Error fetching cab orders: $e");
+      ShowToastDialog.showToast("${'Error fetching cab orders'.tr}: $e");
     } finally {
       isLoadingCab.value = false;
     }
@@ -137,22 +140,28 @@ class OwnerOrderListController extends GetxController {
 
   List<CabOrderModel> getCabOrdersForTab(String tab) {
     switch (tab) {
-      case "On Going":
+      case "on_going":
         return cabOrders
             .where((order) => [
-          "Order Placed",
-          "Order Accepted",
-          "Driver Accepted",
-          "Driver Pending",
-          "Order Shipped",
-          "In Transit"
-        ].contains(order.status))
+                  "Order Placed",
+                  "Order Accepted",
+                  "Driver Accepted",
+                  "Driver Pending",
+                  "Order Shipped",
+                  "In Transit"
+                ].contains(order.status))
             .toList();
-      case "Completed":
-        return cabOrders.where((order) => ["Order Completed"].contains(order.status)).toList();
-      case "Cancelled":
+      case "completed":
         return cabOrders
-            .where((order) => ["Order Rejected", "Order Cancelled", "Driver Rejected"].contains(order.status))
+            .where((order) => ["Order Completed"].contains(order.status))
+            .toList();
+      case "cancelled":
+        return cabOrders
+            .where((order) => [
+                  "Order Rejected",
+                  "Order Cancelled",
+                  "Driver Rejected"
+                ].contains(order.status))
             .toList();
       default:
         return [];
@@ -165,19 +174,20 @@ class OwnerOrderListController extends GetxController {
       isLoadingParcel.value = true;
 
       if (isDriverSelected.value) {
-        parcelOrders.value = await FireStoreUtils.getParcelDriverOrdersOnce(driverId.value);
+        parcelOrders.value =
+            await FireStoreUtils.getParcelDriverOrdersOnce(driverId.value);
       } else {
         List<UserModel> drivers = filteredDrivers;
         List<ParcelOrderModel> allOrders = [];
         for (var driver in drivers) {
           List<ParcelOrderModel> driverOrders =
-          await FireStoreUtils.getParcelDriverOrdersOnce(driver.id ?? '');
+              await FireStoreUtils.getParcelDriverOrdersOnce(driver.id ?? '');
           allOrders.addAll(driverOrders);
         }
         parcelOrders.value = allOrders;
       }
     } catch (e) {
-      ShowToastDialog.showToast("Error fetching parcel orders: $e");
+      ShowToastDialog.showToast("${'Error fetching parcel orders'.tr}: $e");
     } finally {
       isLoadingParcel.value = false;
     }
@@ -185,22 +195,28 @@ class OwnerOrderListController extends GetxController {
 
   List<ParcelOrderModel> getParcelOrdersForTab(String tab) {
     switch (tab) {
-      case "In Transit":
+      case "in_transit":
         return parcelOrders
             .where((order) => [
-          "Order Placed",
-          "Order Accepted",
-          "Driver Accepted",
-          "Driver Pending",
-          "Order Shipped",
-          "In Transit"
-        ].contains(order.status))
+                  "Order Placed",
+                  "Order Accepted",
+                  "Driver Accepted",
+                  "Driver Pending",
+                  "Order Shipped",
+                  "In Transit"
+                ].contains(order.status))
             .toList();
-      case "Delivered":
-        return parcelOrders.where((order) => ["Order Completed"].contains(order.status)).toList();
-      case "Cancelled":
+      case "delivered":
         return parcelOrders
-            .where((order) => ["Order Rejected", "Order Cancelled", "Driver Rejected"].contains(order.status))
+            .where((order) => ["Order Completed"].contains(order.status))
+            .toList();
+      case "cancelled":
+        return parcelOrders
+            .where((order) => [
+                  "Order Rejected",
+                  "Order Cancelled",
+                  "Driver Rejected"
+                ].contains(order.status))
             .toList();
       default:
         return [];
@@ -213,19 +229,20 @@ class OwnerOrderListController extends GetxController {
       isLoadingRental.value = true;
 
       if (isDriverSelected.value) {
-        rentalOrders.value = await FireStoreUtils.getRentalDriverOrdersOnce(driverId.value);
+        rentalOrders.value =
+            await FireStoreUtils.getRentalDriverOrdersOnce(driverId.value);
       } else {
         List<UserModel> drivers = filteredDrivers;
         List<RentalOrderModel> allOrders = [];
         for (var driver in drivers) {
           List<RentalOrderModel> driverOrders =
-          await FireStoreUtils.getRentalDriverOrdersOnce(driver.id ?? '');
+              await FireStoreUtils.getRentalDriverOrdersOnce(driver.id ?? '');
           allOrders.addAll(driverOrders);
         }
         rentalOrders.value = allOrders;
       }
     } catch (e) {
-      ShowToastDialog.showToast("Error fetching rental orders: $e");
+      ShowToastDialog.showToast("${'Error fetching rental orders'.tr}: $e");
     } finally {
       isLoadingRental.value = false;
     }
@@ -233,22 +250,28 @@ class OwnerOrderListController extends GetxController {
 
   List<RentalOrderModel> getRentalOrdersForTab(String tab) {
     switch (tab) {
-      case "On Going":
+      case "on_going":
         return rentalOrders
             .where((order) => [
-          "Order Placed",
-          "Order Accepted",
-          "Driver Accepted",
-          "Driver Pending",
-          "Order Shipped",
-          "In Transit"
-        ].contains(order.status))
+                  "Order Placed",
+                  "Order Accepted",
+                  "Driver Accepted",
+                  "Driver Pending",
+                  "Order Shipped",
+                  "In Transit"
+                ].contains(order.status))
             .toList();
-      case "Completed":
-        return rentalOrders.where((order) => ["Order Completed"].contains(order.status)).toList();
-      case "Cancelled":
+      case "completed":
         return rentalOrders
-            .where((order) => ["Order Rejected", "Order Cancelled", "Driver Rejected"].contains(order.status))
+            .where((order) => ["Order Completed"].contains(order.status))
+            .toList();
+      case "cancelled":
+        return rentalOrders
+            .where((order) => [
+                  "Order Rejected",
+                  "Order Cancelled",
+                  "Driver Rejected"
+                ].contains(order.status))
             .toList();
       default:
         return [];

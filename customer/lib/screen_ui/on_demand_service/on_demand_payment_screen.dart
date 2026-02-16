@@ -224,7 +224,7 @@ class OnDemandPaymentScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              value.name.capitalizeString(),
+                              value.localizedLabel(),
                               textAlign: TextAlign.start,
                               style: AppThemeData.semiBoldTextStyle(fontSize: 16, color: isDark ? AppThemeData.grey50 : AppThemeData.grey900),
                             ),
@@ -238,7 +238,7 @@ class OnDemandPaymentScreen extends StatelessWidget {
                       )
                       : Expanded(
                         child: Text(
-                          value.name.capitalizeString(),
+                          value.localizedLabel(),
                           textAlign: TextAlign.start,
                           style: AppThemeData.semiBoldTextStyle(fontSize: 16, color: isDark ? AppThemeData.grey50 : AppThemeData.grey900),
                         ),

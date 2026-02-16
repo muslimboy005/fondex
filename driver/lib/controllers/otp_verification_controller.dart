@@ -643,15 +643,20 @@ class OtpVerifyController extends GetxController {
       final fcmToken = await NotificationService.getToken();
       log("   New FCM Token: $fcmToken");
       log("   Updating user in Firestore...");
-      await FireStoreUtils.updateUser(userModel).timeout(
-        const Duration(seconds: 15),
-        onTimeout: () {
-          log("⏱️ ❌ TIMEOUT: Firestore updateUser timed out after 15 seconds");
-          throw TimeoutException("Firestore updateUser timeout");
-        },
-      );
-      log("✅ FCM token updated in Firestore");
-      log("   Update completed at: ${DateTime.now()}");
+      userModel.fcmToken = fcmToken;
+      try {
+        await FireStoreUtils.updateUser(userModel).timeout(
+          const Duration(seconds: 15),
+          onTimeout: () {
+            log("⏱️ ⚠️ TIMEOUT: Firestore updateUser timed out after 15 seconds");
+            throw TimeoutException("Firestore updateUser timeout");
+          },
+        );
+        log("✅ FCM token updated in Firestore");
+        log("   Update completed at: ${DateTime.now()}");
+      } catch (e) {
+        log("⚠️ updateUser failed, continuing login: $e");
+      }
 
       ShowToastDialog.closeLoader();
 

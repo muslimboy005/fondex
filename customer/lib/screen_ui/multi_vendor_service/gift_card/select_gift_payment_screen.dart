@@ -185,7 +185,7 @@ class SelectGiftPaymentScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          value.name.capitalizeString(),
+                          value.localizedLabel(),
                           textAlign: TextAlign.start,
                           style: TextStyle(fontFamily: AppThemeData.medium, fontSize: 16, color: isDark ? AppThemeData.grey50 : AppThemeData.grey900),
                         ),
@@ -199,7 +199,7 @@ class SelectGiftPaymentScreen extends StatelessWidget {
                   )
                   : Expanded(
                     child: Text(
-                      value.name.capitalizeString(),
+                      value.localizedLabel(),
                       textAlign: TextAlign.start,
                       style: TextStyle(fontFamily: AppThemeData.medium, fontSize: 16, color: isDark ? AppThemeData.grey50 : AppThemeData.grey900),
                     ),

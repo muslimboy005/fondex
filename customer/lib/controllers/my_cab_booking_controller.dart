@@ -206,7 +206,7 @@ class MyCabBookingController extends GetxController {
           userId: FireStoreUtils.getCurrentUid(),
           isTopup: false,
           orderId: selectedOrder.value.id,
-          note: "Cab Amount debited".tr,
+          note: "Cab Amount debited",
           paymentStatus: "success".tr,
           serviceType: Constant.parcelServiceType,
         );

@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
-import 'package:vendor/constant/show_toast_dialog.dart';
 import 'package:vendor/models/SectionModel.dart';
-import 'package:vendor/themes/text_field_widget.dart';
 import 'package:vendor/themes/theme_controller.dart';
 import 'package:vendor/app/subscription_plan_screen/select_payment_screen.dart';
 import 'package:vendor/constant/constant.dart';
@@ -29,7 +27,18 @@ class SubscriptionPlanScreen extends StatelessWidget {
             backgroundColor: AppThemeData.primary300,
             centerTitle: false,
             titleSpacing: 0,
-            iconTheme: const IconThemeData(color: AppThemeData.grey50, size: 20),
+            title: Text(
+              "Subscription Management".tr,
+              style: const TextStyle(
+                color: AppThemeData.grey50,
+                fontSize: 18,
+                fontFamily: AppThemeData.medium,
+              ),
+            ),
+            iconTheme: const IconThemeData(
+              color: AppThemeData.grey50,
+              size: 20,
+            ),
           ),
           body: controller.isLoading.value
               ? Constant.loader()
@@ -45,107 +54,223 @@ class SubscriptionPlanScreen extends StatelessWidget {
                           children: [
                             Text(
                               "Choose Your Business Plan".tr,
-                              style: TextStyle(color: isDark ? AppThemeData.grey50 : AppThemeData.grey900, fontSize: 24, fontFamily: AppThemeData.semiBold),
+                              style: TextStyle(
+                                color: isDark
+                                    ? AppThemeData.grey50
+                                    : AppThemeData.grey900,
+                                fontSize: 24,
+                                fontFamily: AppThemeData.semiBold,
+                              ),
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              "Select the most suitable business plan for your store to maximize your potential and access exclusive features.".tr,
+                              "Select the most suitable business plan for your store to maximize your potential and access exclusive features."
+                                  .tr,
                               textAlign: TextAlign.center,
-                              style: TextStyle(color: isDark ? AppThemeData.grey400 : AppThemeData.grey500, fontSize: 14, fontFamily: AppThemeData.regular),
+                              style: TextStyle(
+                                color: isDark
+                                    ? AppThemeData.grey400
+                                    : AppThemeData.grey500,
+                                fontSize: 14,
+                                fontFamily: AppThemeData.regular,
+                              ),
                             ),
                           ],
                         ),
                         const SizedBox(height: 24),
-                        controller.userModel.value.sectionId != null && controller.userModel.value.sectionId!.isNotEmpty
-                            ? InkWell(
-                                onTap: () {
-                                  ShowToastDialog.showToast("cannot_change_section".trArgs([controller.selectedSectionModel.value.name ?? '']));
-                                },
-                                child: TextFieldWidget(
-                                  readOnly: true,
-                                  title: 'Section'.tr,
-                                  controller: null,
-                                  hintText: 'Section Name'.tr,
-                                  initialValue: controller.selectedSectionModel.value.name,
-                                  enable: false,
-                                ),
-                              )
-                            : Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    "Section".tr,
-                                    style: TextStyle(fontFamily: AppThemeData.semiBold, fontSize: 14, color: isDark ? AppThemeData.grey100 : AppThemeData.grey800),
-                                  ),
-                                  SizedBox(height: 10),
-                                  DropdownButtonFormField<SectionModel>(
-                                    isExpanded: true,
-                                    dropdownColor: isDark ? AppThemeData.greyDark50 : AppThemeData.grey50,
-
-                                    decoration: InputDecoration(
-                                      errorStyle: const TextStyle(color: Colors.red),
-                                      isDense: true,
-                                      filled: true,
-                                      fillColor: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
-                                      disabledBorder: UnderlineInputBorder(
-                                        borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                        borderSide: BorderSide(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50, width: 1),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                        borderSide: BorderSide(color: isDark ? AppThemeData.primary300 : AppThemeData.primary300, width: 1),
-                                      ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                        borderSide: BorderSide(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50, width: 1),
-                                      ),
-                                      errorBorder: OutlineInputBorder(
-                                        borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                        borderSide: BorderSide(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50, width: 1),
-                                      ),
-                                      border: OutlineInputBorder(
-                                        borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                        borderSide: BorderSide(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50, width: 1),
-                                      ),
-                                    ),
-                                    validator: (value) => value == null ? 'field required' : null,
-                                    initialValue: controller.selectedSectionModel.value,
-                                    onChanged: (value) {
-                                      controller.selectedSectionModel.value = value!;
-                                      controller.subscriptionPlanList.clear();
-                                      controller.getSubscriptionPlanList();
-                                    },
-                                    hint: Text('Select Section'.tr),
-                                    items: controller.sectionsList.map((SectionModel item) {
-                                      return DropdownMenuItem<SectionModel>(value: item, child: Text("${item.name} (${item.serviceType})"));
-                                    }).toList(),
-                                  ),
-                                ],
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Section".tr,
+                              style: TextStyle(
+                                fontFamily: AppThemeData.semiBold,
+                                fontSize: 14,
+                                color: isDark
+                                    ? AppThemeData.grey100
+                                    : AppThemeData.grey800,
                               ),
+                            ),
+                            SizedBox(height: 10),
+                            DropdownButtonFormField<SectionModel>(
+                              isExpanded: true,
+                              dropdownColor: isDark
+                                  ? AppThemeData.greyDark50
+                                  : AppThemeData.grey50,
+                              menuMaxHeight: 250,
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: isDark
+                                    ? AppThemeData.grey50
+                                    : AppThemeData.grey900,
+                                fontFamily: AppThemeData.regular,
+                              ),
+                              icon: Icon(
+                                Icons.keyboard_arrow_down,
+                                color: isDark
+                                    ? AppThemeData.grey50
+                                    : AppThemeData.grey800,
+                              ),
+                              decoration: InputDecoration(
+                                errorStyle: const TextStyle(color: Colors.red),
+                                isDense: true,
+                                filled: true,
+                                fillColor: isDark
+                                    ? AppThemeData.grey900
+                                    : AppThemeData.grey50,
+                                disabledBorder: UnderlineInputBorder(
+                                  borderRadius: const BorderRadius.all(
+                                    Radius.circular(10),
+                                  ),
+                                  borderSide: BorderSide(
+                                    color: isDark
+                                        ? AppThemeData.grey900
+                                        : AppThemeData.grey50,
+                                    width: 1,
+                                  ),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: const BorderRadius.all(
+                                    Radius.circular(10),
+                                  ),
+                                  borderSide: BorderSide(
+                                    color: isDark
+                                        ? AppThemeData.primary300
+                                        : AppThemeData.primary300,
+                                    width: 1,
+                                  ),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: const BorderRadius.all(
+                                    Radius.circular(10),
+                                  ),
+                                  borderSide: BorderSide(
+                                    color: isDark
+                                        ? AppThemeData.grey900
+                                        : AppThemeData.grey50,
+                                    width: 1,
+                                  ),
+                                ),
+                                errorBorder: OutlineInputBorder(
+                                  borderRadius: const BorderRadius.all(
+                                    Radius.circular(10),
+                                  ),
+                                  borderSide: BorderSide(
+                                    color: isDark
+                                        ? AppThemeData.grey900
+                                        : AppThemeData.grey50,
+                                    width: 1,
+                                  ),
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: const BorderRadius.all(
+                                    Radius.circular(10),
+                                  ),
+                                  borderSide: BorderSide(
+                                    color: isDark
+                                        ? AppThemeData.grey900
+                                        : AppThemeData.grey50,
+                                    width: 1,
+                                  ),
+                                ),
+                              ),
+                              validator: (value) =>
+                                  value == null ? 'field required' : null,
+                              value:
+                                  controller.selectedSectionModel.value.id !=
+                                      null
+                                  ? controller.selectedSectionModel.value
+                                  : null,
+                              onChanged: (value) {
+                                if (value != null) {
+                                  controller.selectedSectionModel.value = value;
+                                  controller.subscriptionPlanList.clear();
+                                  controller.getSubscriptionPlanList();
+                                }
+                              },
+                              hint: Text(
+                                'Select Section'.tr,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: isDark
+                                      ? AppThemeData.grey400
+                                      : AppThemeData.grey600,
+                                  fontFamily: AppThemeData.regular,
+                                ),
+                              ),
+                              items: controller.sectionsList.map((
+                                SectionModel item,
+                              ) {
+                                return DropdownMenuItem<SectionModel>(
+                                  value: item,
+                                  child: Text(
+                                    "${item.name} (${item.serviceType})",
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: isDark
+                                          ? AppThemeData.grey50
+                                          : AppThemeData.grey900,
+                                      fontFamily: AppThemeData.regular,
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          ],
+                        ),
                         SizedBox(height: 10),
                         controller.subscriptionPlanList.isEmpty
                             ? SizedBox(
                                 width: Responsive.width(100, context),
                                 height: Responsive.height(50, context),
-                                child: Constant.showEmptyView(message: "Subscription plan not found.".tr, isDark: isDark),
+                                child: Constant.showEmptyView(
+                                  message: "Subscription plan not found.".tr,
+                                  isDark: isDark,
+                                ),
                               )
                             : ListView.builder(
                                 physics: const NeverScrollableScrollPhysics(),
                                 shrinkWrap: true,
                                 primary: false,
-                                itemCount: controller.subscriptionPlanList.length,
+                                itemCount:
+                                    controller.subscriptionPlanList.length,
                                 itemBuilder: (context, index) {
-                                  final subscriptionPlanModel = controller.subscriptionPlanList[index];
+                                  final subscriptionPlanModel =
+                                      controller.subscriptionPlanList[index];
                                   return SubscriptionPlanWidget(
                                     onContainClick: () {
-                                      controller.selectedSubscriptionPlan.value = subscriptionPlanModel;
-                                      controller.totalAmount.value = double.parse(subscriptionPlanModel.price ?? '0.0');
+                                      controller
+                                              .selectedSubscriptionPlan
+                                              .value =
+                                          subscriptionPlanModel;
+                                      controller
+                                          .totalAmount
+                                          .value = double.parse(
+                                        subscriptionPlanModel.price ?? '0.0',
+                                      );
                                       controller.update();
                                     },
                                     onClick: () {
-                                      if (controller.selectedSubscriptionPlan.value.id == subscriptionPlanModel.id) {
-                                        if (controller.selectedSubscriptionPlan.value.type == 'free' || controller.selectedSubscriptionPlan.value.id == Constant.commissionSubscriptionID) {
-                                          controller.selectedPaymentMethod.value = 'free';
+                                      if (controller
+                                              .selectedSubscriptionPlan
+                                              .value
+                                              .id ==
+                                          subscriptionPlanModel.id) {
+                                        if (controller
+                                                    .selectedSubscriptionPlan
+                                                    .value
+                                                    .type ==
+                                                'free' ||
+                                            controller
+                                                    .selectedSubscriptionPlan
+                                                    .value
+                                                    .id ==
+                                                Constant
+                                                    .commissionSubscriptionID) {
+                                          controller
+                                                  .selectedPaymentMethod
+                                                  .value =
+                                              'free';
                                           controller.placeOrder();
                                         } else {
                                           Get.to(const SelectPaymentScreen());
@@ -153,7 +278,8 @@ class SubscriptionPlanScreen extends StatelessWidget {
                                       }
                                     },
                                     type: 'Plan',
-                                    subscriptionPlanModel: subscriptionPlanModel,
+                                    subscriptionPlanModel:
+                                        subscriptionPlanModel,
                                   );
                                 },
                               ),
@@ -173,7 +299,12 @@ class FeatureItem extends StatelessWidget {
   final bool isActive;
   final bool selectedPlan;
 
-  const FeatureItem({super.key, required this.title, required this.isActive, required this.selectedPlan});
+  const FeatureItem({
+    super.key,
+    required this.title,
+    required this.isActive,
+    required this.selectedPlan,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -186,7 +317,13 @@ class FeatureItem extends StatelessWidget {
         children: [
           isActive == true
               ? SvgPicture.asset('assets/icons/ic_check.svg')
-              : SvgPicture.asset('assets/icons/ic_close.svg', colorFilter: const ColorFilter.mode(AppThemeData.danger200, BlendMode.srcIn)),
+              : SvgPicture.asset(
+                  'assets/icons/ic_close.svg',
+                  colorFilter: const ColorFilter.mode(
+                    AppThemeData.danger200,
+                    BlendMode.srcIn,
+                  ),
+                ),
           const SizedBox(width: 4),
           Text(
             title == 'chat'
@@ -224,7 +361,13 @@ class SubscriptionPlanWidget extends StatelessWidget {
   final String type;
   final SubscriptionPlanModel subscriptionPlanModel;
 
-  const SubscriptionPlanWidget({super.key, required this.onClick, required this.type, required this.subscriptionPlanModel, required this.onContainClick});
+  const SubscriptionPlanWidget({
+    super.key,
+    required this.onClick,
+    required this.type,
+    required this.subscriptionPlanModel,
+    required this.onContainClick,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -240,8 +383,12 @@ class SubscriptionPlanWidget extends StatelessWidget {
           child: Container(
             margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 4),
             decoration: BoxDecoration(
-              border: Border.all(color: isDark ? AppThemeData.grey800 : AppThemeData.grey200),
-              color: controller.selectedSubscriptionPlan.value.id == subscriptionPlanModel.id
+              border: Border.all(
+                color: isDark ? AppThemeData.grey800 : AppThemeData.grey200,
+              ),
+              color:
+                  controller.selectedSubscriptionPlan.value.id ==
+                      subscriptionPlanModel.id
                   ? isDark
                         ? AppThemeData.grey50
                         : AppThemeData.grey800
@@ -258,7 +405,12 @@ class SubscriptionPlanWidget extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      NetworkImageWidget(imageUrl: subscriptionPlanModel.image ?? '', fit: BoxFit.cover, width: 50, height: 50),
+                      NetworkImageWidget(
+                        imageUrl: subscriptionPlanModel.image ?? '',
+                        fit: BoxFit.cover,
+                        width: 50,
+                        height: 50,
+                      ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Column(
@@ -267,7 +419,12 @@ class SubscriptionPlanWidget extends StatelessWidget {
                             Text(
                               subscriptionPlanModel.name ?? '',
                               style: TextStyle(
-                                color: controller.selectedSubscriptionPlan.value.id == subscriptionPlanModel.id
+                                color:
+                                    controller
+                                            .selectedSubscriptionPlan
+                                            .value
+                                            .id ==
+                                        subscriptionPlanModel.id
                                     ? isDark
                                           ? AppThemeData.grey900
                                           : AppThemeData.grey50
@@ -283,13 +440,25 @@ class SubscriptionPlanWidget extends StatelessWidget {
                               "${subscriptionPlanModel.description}",
                               maxLines: 2,
                               softWrap: true,
-                              style: const TextStyle(fontFamily: AppThemeData.regular, fontSize: 14, color: AppThemeData.grey400),
+                              style: const TextStyle(
+                                fontFamily: AppThemeData.regular,
+                                fontSize: 14,
+                                color: AppThemeData.grey400,
+                              ),
                             ),
                           ],
                         ),
                       ),
-                      controller.userModel.value.subscriptionPlanId == subscriptionPlanModel.id
-                          ? RoundedButtonFill(title: "Active".tr, width: 18, height: 4, color: AppThemeData.success500, textColor: AppThemeData.grey50, onPress: () async {})
+                      controller.userModel.value.subscriptionPlanId ==
+                              subscriptionPlanModel.id
+                          ? RoundedButtonFill(
+                              title: "Active".tr,
+                              width: 18,
+                              height: 4,
+                              color: AppThemeData.success500,
+                              textColor: AppThemeData.grey50,
+                              onPress: () async {},
+                            )
                           : SizedBox(),
                     ],
                   ),
@@ -298,11 +467,19 @@ class SubscriptionPlanWidget extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        subscriptionPlanModel.type == "free" ? "Free".tr : Constant.amountShow(amount: double.parse(subscriptionPlanModel.price ?? '0.0').toString()),
+                        subscriptionPlanModel.type == "free"
+                            ? "Free".tr
+                            : Constant.amountShow(
+                                amount: double.parse(
+                                  subscriptionPlanModel.price ?? '0.0',
+                                ).toString(),
+                              ),
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: controller.selectedSubscriptionPlan.value.id == subscriptionPlanModel.id
+                          color:
+                              controller.selectedSubscriptionPlan.value.id ==
+                                  subscriptionPlanModel.id
                               ? isDark
                                     ? AppThemeData.grey800
                                     : AppThemeData.grey200
@@ -314,11 +491,15 @@ class SubscriptionPlanWidget extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        subscriptionPlanModel.expiryDay == "-1" ? "Lifetime".tr : "${subscriptionPlanModel.expiryDay} ${"Days".tr}",
+                        subscriptionPlanModel.expiryDay == "-1"
+                            ? "Lifetime".tr
+                            : "${subscriptionPlanModel.expiryDay} ${"Days".tr}",
                         style: TextStyle(
                           fontFamily: AppThemeData.medium,
                           fontSize: 14,
-                          color: controller.selectedSubscriptionPlan.value.id == subscriptionPlanModel.id
+                          color:
+                              controller.selectedSubscriptionPlan.value.id ==
+                                  subscriptionPlanModel.id
                               ? isDark
                                     ? AppThemeData.grey500
                                     : AppThemeData.grey500
@@ -331,7 +512,9 @@ class SubscriptionPlanWidget extends StatelessWidget {
                     ],
                   ),
                   Divider(
-                    color: controller.selectedSubscriptionPlan.value.id == subscriptionPlanModel.id
+                    color:
+                        controller.selectedSubscriptionPlan.value.id ==
+                            subscriptionPlanModel.id
                         ? isDark
                               ? AppThemeData.grey200
                               : AppThemeData.grey700
@@ -344,13 +527,22 @@ class SubscriptionPlanWidget extends StatelessWidget {
                     spacing: 0,
                     runSpacing: 12,
                     children:
-                        subscriptionPlanModel.features?.toJson().entries.map((entry) {
-                          return FeatureItem(title: entry.key, isActive: entry.value, selectedPlan: controller.selectedSubscriptionPlan.value.id == subscriptionPlanModel.id);
+                        subscriptionPlanModel.features?.toJson().entries.map((
+                          entry,
+                        ) {
+                          return FeatureItem(
+                            title: entry.key,
+                            isActive: entry.value,
+                            selectedPlan:
+                                controller.selectedSubscriptionPlan.value.id ==
+                                subscriptionPlanModel.id,
+                          );
                         }).toList() ??
                         [],
                   ),
                   SizedBox(height: 10),
-                  if (subscriptionPlanModel.id == Constant.commissionSubscriptionID)
+                  if (subscriptionPlanModel.id ==
+                      Constant.commissionSubscriptionID)
                     Padding(
                       padding: const EdgeInsets.only(bottom: 4),
                       child: Row(
@@ -361,10 +553,18 @@ class SubscriptionPlanWidget extends StatelessWidget {
                               fontSize: 14,
                               fontFamily: AppThemeData.medium,
                               color: isDark
-                                  ? controller.selectedSubscriptionPlan.value.id == subscriptionPlanModel.id
+                                  ? controller
+                                                .selectedSubscriptionPlan
+                                                .value
+                                                .id ==
+                                            subscriptionPlanModel.id
                                         ? AppThemeData.grey800
                                         : AppThemeData.grey200
-                                  : controller.selectedSubscriptionPlan.value.id == subscriptionPlanModel.id
+                                  : controller
+                                            .selectedSubscriptionPlan
+                                            .value
+                                            .id ==
+                                        subscriptionPlanModel.id
                                   ? AppThemeData.grey200
                                   : AppThemeData.grey800,
                             ),
@@ -382,10 +582,18 @@ class SubscriptionPlanWidget extends StatelessWidget {
                                 fontSize: 14,
                                 fontFamily: AppThemeData.regular,
                                 color: isDark
-                                    ? controller.selectedSubscriptionPlan.value.id == subscriptionPlanModel.id
+                                    ? controller
+                                                  .selectedSubscriptionPlan
+                                                  .value
+                                                  .id ==
+                                              subscriptionPlanModel.id
                                           ? AppThemeData.grey800
                                           : AppThemeData.grey200
-                                    : controller.selectedSubscriptionPlan.value.id == subscriptionPlanModel.id
+                                    : controller
+                                              .selectedSubscriptionPlan
+                                              .value
+                                              .id ==
+                                          subscriptionPlanModel.id
                                     ? AppThemeData.grey200
                                     : AppThemeData.grey800,
                               ),
@@ -408,10 +616,18 @@ class SubscriptionPlanWidget extends StatelessWidget {
                                 fontSize: 14,
                                 fontFamily: AppThemeData.medium,
                                 color: isDark
-                                    ? controller.selectedSubscriptionPlan.value.id == subscriptionPlanModel.id
+                                    ? controller
+                                                  .selectedSubscriptionPlan
+                                                  .value
+                                                  .id ==
+                                              subscriptionPlanModel.id
                                           ? AppThemeData.grey800
                                           : AppThemeData.grey200
-                                    : controller.selectedSubscriptionPlan.value.id == subscriptionPlanModel.id
+                                    : controller
+                                              .selectedSubscriptionPlan
+                                              .value
+                                              .id ==
+                                          subscriptionPlanModel.id
                                     ? AppThemeData.grey200
                                     : AppThemeData.grey800,
                               ),
@@ -424,10 +640,18 @@ class SubscriptionPlanWidget extends StatelessWidget {
                                   fontSize: 14,
                                   fontFamily: AppThemeData.regular,
                                   color: isDark
-                                      ? controller.selectedSubscriptionPlan.value.id == subscriptionPlanModel.id
+                                      ? controller
+                                                    .selectedSubscriptionPlan
+                                                    .value
+                                                    .id ==
+                                                subscriptionPlanModel.id
                                             ? AppThemeData.grey800
                                             : AppThemeData.grey200
-                                      : controller.selectedSubscriptionPlan.value.id == subscriptionPlanModel.id
+                                      : controller
+                                                .selectedSubscriptionPlan
+                                                .value
+                                                .id ==
+                                            subscriptionPlanModel.id
                                       ? AppThemeData.grey200
                                       : AppThemeData.grey800,
                                 ),
@@ -440,7 +664,9 @@ class SubscriptionPlanWidget extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
                   Divider(
-                    color: controller.selectedSubscriptionPlan.value.id == subscriptionPlanModel.id
+                    color:
+                        controller.selectedSubscriptionPlan.value.id ==
+                            subscriptionPlanModel.id
                         ? isDark
                               ? AppThemeData.grey200
                               : AppThemeData.grey700
@@ -457,10 +683,12 @@ class SubscriptionPlanWidget extends StatelessWidget {
                       fontSize: 14,
                       fontFamily: AppThemeData.regular,
                       color: isDark
-                          ? controller.selectedSubscriptionPlan.value.id == subscriptionPlanModel.id
+                          ? controller.selectedSubscriptionPlan.value.id ==
+                                    subscriptionPlanModel.id
                                 ? AppThemeData.grey900
                                 : AppThemeData.grey50
-                          : controller.selectedSubscriptionPlan.value.id == subscriptionPlanModel.id
+                          : controller.selectedSubscriptionPlan.value.id ==
+                                subscriptionPlanModel.id
                           ? AppThemeData.grey50
                           : AppThemeData.grey900,
                     ),
@@ -474,10 +702,12 @@ class SubscriptionPlanWidget extends StatelessWidget {
                       fontSize: 14,
                       fontFamily: AppThemeData.regular,
                       color: isDark
-                          ? controller.selectedSubscriptionPlan.value.id == subscriptionPlanModel.id
+                          ? controller.selectedSubscriptionPlan.value.id ==
+                                    subscriptionPlanModel.id
                                 ? AppThemeData.grey900
                                 : AppThemeData.grey50
-                          : controller.selectedSubscriptionPlan.value.id == subscriptionPlanModel.id
+                          : controller.selectedSubscriptionPlan.value.id ==
+                                subscriptionPlanModel.id
                           ? AppThemeData.grey50
                           : AppThemeData.grey900,
                     ),
@@ -485,17 +715,24 @@ class SubscriptionPlanWidget extends StatelessWidget {
                   const SizedBox(height: 20),
                   RoundedButtonFill(
                     radius: 14,
-                    textColor: controller.selectedSubscriptionPlan.value.id == subscriptionPlanModel.id
+                    textColor:
+                        controller.selectedSubscriptionPlan.value.id ==
+                            subscriptionPlanModel.id
                         ? AppThemeData.grey200
                         : isDark
                         ? AppThemeData.grey500
                         : AppThemeData.grey500,
-                    title: controller.userModel.value.subscriptionPlanId == subscriptionPlanModel.id
+                    title:
+                        controller.userModel.value.subscriptionPlanId ==
+                            subscriptionPlanModel.id
                         ? "Renew".tr
-                        : controller.selectedSubscriptionPlan.value.id == subscriptionPlanModel.id
+                        : controller.selectedSubscriptionPlan.value.id ==
+                              subscriptionPlanModel.id
                         ? "Active".tr
                         : "Select Plan".tr,
-                    color: controller.selectedSubscriptionPlan.value.id == subscriptionPlanModel.id
+                    color:
+                        controller.selectedSubscriptionPlan.value.id ==
+                            subscriptionPlanModel.id
                         ? AppThemeData.primary300
                         : isDark
                         ? AppThemeData.grey800

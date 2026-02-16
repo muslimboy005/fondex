@@ -1,3 +1,5 @@
+import 'dart:developer' as developer;
+
 import 'package:customer/constant/constant.dart';
 import 'package:customer/controllers/restaurant_details_controller.dart';
 import 'package:customer/models/cart_product_model.dart';
@@ -887,6 +889,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
         if (similarProducts.isEmpty) return const SizedBox();
 
+        debugPrint(
+          '[SimilarProduct] section built: ${similarProducts.length} items',
+        );
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -930,14 +936,30 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       product.price.toString(),
     );
 
-    return InkWell(
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: () {
-        Get.off(
-          () => ProductDetailScreen(
-            productModel: product,
-            vendorModel: widget.vendorModel,
-          ),
+        debugPrint(
+          '[SimilarProduct] onTap: id=${product.id} name=${product.name}',
         );
+        try {
+          Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder:
+                  (BuildContext context) => ProductDetailScreen(
+                    productModel: product,
+                    vendorModel: widget.vendorModel,
+                  ),
+            ),
+          );
+          debugPrint('[SimilarProduct] Navigator.push done');
+        } catch (e, s) {
+          debugPrint('[SimilarProduct] ERROR: $e');
+          developer.log(
+            'SimilarProductCard navigation error: $e\n$s',
+            name: 'ProductDetailScreen',
+          );
+        }
       },
       child: Container(
         width: 140,
@@ -976,7 +998,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       style: TextStyle(
                         fontSize: 9,
                         color:
-                            isDark ? AppThemeData.grey400 : AppThemeData.grey500,
+                            isDark
+                                ? AppThemeData.grey400
+                                : AppThemeData.grey500,
                         fontFamily: AppThemeData.regular,
                       ),
                       maxLines: 1,
@@ -1077,99 +1101,105 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       }
     }
 
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-      decoration: BoxDecoration(
-        color: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          // Quantity selector (only show if in cart)
-          if (isInCart)
-            Container(
-              height: Responsive.height(5.5, context),
-              decoration: BoxDecoration(
-                color: isDark ? AppThemeData.grey800 : AppThemeData.grey100,
-                borderRadius: BorderRadius.circular(200),
+    return SafeArea(
+      top: false,
+      left: false,
+      right: false,
+      bottom: true,
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+        decoration: BoxDecoration(
+          color: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 10,
+              offset: const Offset(0, -2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            // Quantity selector (only show if in cart)
+            if (isInCart)
+              Container(
+                height: Responsive.height(5.5, context),
+                decoration: BoxDecoration(
+                  color: isDark ? AppThemeData.grey800 : AppThemeData.grey100,
+                  borderRadius: BorderRadius.circular(200),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    InkWell(
+                      onTap: () {
+                        _decrementQuantity(controller, price, disPrice);
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: Icon(
+                          Icons.remove,
+                          color:
+                              isDark
+                                  ? AppThemeData.grey100
+                                  : AppThemeData.grey800,
+                        ),
+                      ),
+                    ),
+                    Obx(
+                      () => Text(
+                        "${controller.quantity.value} ${"pcs".tr}",
+                        style: TextStyle(
+                          fontSize: 14,
+                          color:
+                              isDark
+                                  ? AppThemeData.grey100
+                                  : AppThemeData.grey800,
+                          fontFamily: AppThemeData.semiBold,
+                        ),
+                      ),
+                    ),
+                    InkWell(
+                      onTap: () {
+                        _incrementQuantity(controller);
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: Icon(
+                          Icons.add,
+                          color:
+                              isDark
+                                  ? AppThemeData.grey100
+                                  : AppThemeData.grey800,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  InkWell(
-                    onTap: () {
-                      _decrementQuantity(controller, price, disPrice);
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      child: Icon(
-                        Icons.remove,
-                        color:
-                            isDark
-                                ? AppThemeData.grey100
-                                : AppThemeData.grey800,
-                      ),
-                    ),
-                  ),
-                  Obx(
-                    () => Text(
-                      "${controller.quantity.value} ${"pcs".tr}",
-                      style: TextStyle(
-                        fontSize: 14,
-                        color:
-                            isDark
-                                ? AppThemeData.grey100
-                                : AppThemeData.grey800,
-                        fontFamily: AppThemeData.semiBold,
-                      ),
-                    ),
-                  ),
-                  InkWell(
-                    onTap: () {
-                      _incrementQuantity(controller);
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      child: Icon(
-                        Icons.add,
-                        color:
-                            isDark
-                                ? AppThemeData.grey100
-                                : AppThemeData.grey800,
-                      ),
-                    ),
-                  ),
-                ],
+            if (isInCart) const SizedBox(width: 12),
+            // Add to cart or View cart button
+            Expanded(
+              flex: 2,
+              child: RoundedButtonFill(
+                title: isInCart ? "View Cart".tr : "Add to Cart".tr,
+                height: 5.5,
+                color: AppThemeData.primary300,
+                textColor: AppThemeData.grey50,
+                fontSizes: 16,
+                onPress: () {
+                  if (isInCart) {
+                    // Navigate to cart screen
+                    Get.to(() => const CartScreen());
+                  } else {
+                    // Add to cart
+                    _addToCart(context, controller, price, disPrice);
+                  }
+                },
               ),
             ),
-          if (isInCart) const SizedBox(width: 12),
-          // Add to cart or View cart button
-          Expanded(
-            flex: 2,
-            child: RoundedButtonFill(
-              title: isInCart ? "View Cart".tr : "Add to Cart".tr,
-              height: 5.5,
-              color: AppThemeData.primary300,
-              textColor: AppThemeData.grey50,
-              fontSizes: 16,
-              onPress: () {
-                if (isInCart) {
-                  // Navigate to cart screen
-                  Get.to(() => const CartScreen());
-                } else {
-                  // Add to cart
-                  _addToCart(context, controller, price, disPrice);
-                }
-              },
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -1342,7 +1372,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       }
       ShowToastDialog.showToast("Added to cart".tr);
     } catch (e) {
-      ShowToastDialog.showToast("${'Error adding to cart'.tr}: ${e.toString()}");
+      ShowToastDialog.showToast(
+        "${'Error adding to cart'.tr}: ${e.toString()}",
+      );
     }
   }
 }

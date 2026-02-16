@@ -9,8 +9,8 @@ class ParcelOrderListController extends GetxController {
   RxBool isLoading = true.obs;
   RxList<ParcelOrderModel> parcelOrder = <ParcelOrderModel>[].obs;
 
-  RxString selectedTab = "In Transit".obs;
-  RxList<String> tabTitles = ["In Transit", "Delivered", "Cancelled"].obs;
+  RxString selectedTab = "in_transit".obs;
+  RxList<String> tabTitles = ["in_transit", "delivered", "cancelled"].obs;
 
   StreamSubscription<List<ParcelOrderModel>>? _parcelSubscription;
 
@@ -33,7 +33,8 @@ class ParcelOrderListController extends GetxController {
   void listenParcelOrders() {
     isLoading.value = true;
     _parcelSubscription?.cancel();
-    _parcelSubscription = FireStoreUtils.listenParcelOrders(driverId.value).listen(
+    _parcelSubscription =
+        FireStoreUtils.listenParcelOrders(driverId.value).listen(
       (orders) {
         parcelOrder.assignAll(orders);
         isLoading.value = false;
@@ -48,14 +49,31 @@ class ParcelOrderListController extends GetxController {
   /// Return filtered list for a specific tab title
   List<ParcelOrderModel> getOrdersForTab(String tab) {
     switch (tab) {
-      case "In Transit":
-        return parcelOrder.where((order) => ["Order Placed", "Order Accepted", "Driver Accepted", "Driver Pending", "Order Shipped", "In Transit"].contains(order.status)).toList();
+      case "in_transit":
+        return parcelOrder
+            .where((order) => [
+                  "Order Placed",
+                  "Order Accepted",
+                  "Driver Accepted",
+                  "Driver Pending",
+                  "Order Shipped",
+                  "In Transit"
+                ].contains(order.status))
+            .toList();
 
-      case "Delivered":
-        return parcelOrder.where((order) => ["Order Completed"].contains(order.status)).toList();
+      case "delivered":
+        return parcelOrder
+            .where((order) => ["Order Completed"].contains(order.status))
+            .toList();
 
-      case "Cancelled":
-        return parcelOrder.where((order) => ["Order Rejected", "Order Cancelled", "Driver Rejected"].contains(order.status)).toList();
+      case "cancelled":
+        return parcelOrder
+            .where((order) => [
+                  "Order Rejected",
+                  "Order Cancelled",
+                  "Driver Rejected"
+                ].contains(order.status))
+            .toList();
 
       default:
         return [];

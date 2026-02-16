@@ -404,8 +404,9 @@ class ServiceListScreen extends StatelessWidget {
                                           onTap:
                                               () =>
                                                   controller
-                                                          .sectionList
-                                                          .isNotEmpty
+                                                              .sectionList
+                                                              .length >
+                                                          1
                                                       ? controller.onServiceTap(
                                                         context,
                                                         controller

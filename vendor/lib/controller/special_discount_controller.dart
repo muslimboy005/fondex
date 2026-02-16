@@ -23,11 +23,14 @@ class SpecialDiscountController extends GetxController {
   RxBool isSpecialSwitched = false.obs;
 
   Future<void> getVendor() async {
-    await FireStoreUtils.getVendorById(Constant.userModel!.vendorID.toString()).then((value) {
+    await FireStoreUtils.getVendorById(
+      Constant.userModel!.vendorID.toString(),
+    ).then((value) {
       if (value != null) {
         vendorModel.value = value;
 
-        if (vendorModel.value.specialDiscount == null || vendorModel.value.specialDiscount!.isEmpty) {
+        if (vendorModel.value.specialDiscount == null ||
+            vendorModel.value.specialDiscount!.isEmpty) {
           specialDiscount.value = [
             SpecialDiscount(day: 'Monday', timeslot: []),
             SpecialDiscount(day: 'Tuesday', timeslot: []),
@@ -40,7 +43,8 @@ class SpecialDiscountController extends GetxController {
         } else {
           specialDiscount.value = vendorModel.value.specialDiscount!;
         }
-        isSpecialSwitched.value = vendorModel.value.specialDiscountEnable ?? false;
+        isSpecialSwitched.value =
+            vendorModel.value.specialDiscountEnable ?? false;
       }
     });
 
@@ -62,7 +66,15 @@ class SpecialDiscountController extends GetxController {
 
   void addValue(int index) {
     SpecialDiscount specialDiscountModel = specialDiscount[index];
-    specialDiscountModel.timeslot!.add(SpecialDiscountTimeslot(from: '', to: '', discount: '', type: 'percentage', discountType: 'delivery'));
+    specialDiscountModel.timeslot!.add(
+      SpecialDiscountTimeslot(
+        from: '',
+        to: '',
+        discount: '',
+        type: 'percentage',
+        discountType: 'delivery',
+      ),
+    );
     specialDiscount.removeAt(index);
     specialDiscount.insert(index, specialDiscountModel);
     update();

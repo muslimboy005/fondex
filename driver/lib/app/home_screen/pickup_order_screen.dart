@@ -50,7 +50,7 @@ class PickupOrderScreen extends StatelessWidget {
                             height: 5,
                           ),
                           Text(
-                            "Your order has been ready pickup the order and deliver to the customer’s locations.".tr,
+                            "Your order has been ready pickup the order and deliver to the customer's locations.".tr,
                             style: TextStyle(color: isDark ? AppThemeData.grey50 : AppThemeData.grey500, fontFamily: AppThemeData.regular),
                           ),
                           const SizedBox(

@@ -67,7 +67,7 @@ class AddressListScreen extends StatelessWidget {
                                                         child: Padding(
                                                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                                                           child: Text(
-                                                            address.addressAs.toString(),
+                                                            address.addressAs.toString().tr,
                                                             style: AppThemeData.semiBoldTextStyle(fontSize: 12, color: isDark ? AppThemeData.greyDark600 : AppThemeData.grey600),
                                                           ),
                                                         ),

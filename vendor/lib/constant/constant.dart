@@ -68,6 +68,21 @@ class Constant {
   static String? selectedMapType = "google";
   static bool? storyEnable = true;
 
+  static String normalizeSelectedMapType(String? value) {
+    final raw = (value ?? '').toLowerCase().trim();
+    if (raw.isEmpty) return 'google';
+    if (raw.contains('osm') || raw.contains('openstreet')) return 'osm';
+    if (raw.contains('yandex')) return 'yandexMaps';
+    if (raw.contains('google')) return 'google';
+    return value!;
+  }
+
+  static bool get isOsmMap =>
+      normalizeSelectedMapType(selectedMapType) == 'osm';
+
+  static bool get isYandexMap =>
+      normalizeSelectedMapType(selectedMapType) == 'yandexMaps';
+
   static bool? autoApproveVendor = true;
   static bool? autoApproveStore = true;
   static bool isSubscriptionModelApplied = false; //Check SubscriptionModel is Active or Not in the Admin Panel.

@@ -94,31 +94,31 @@ class VehicleInformationController extends GetxController {
 
   Future<void> saveVehicleInformation() async {
     if (userModel.value.isOwner == true) {
-      ShowToastDialog.showToast("Update not allowed for Owner type users.");
+      ShowToastDialog.showToast("Update not allowed for Owner type users.".tr);
       return;
     }
 
     if (carPlatNumberEditingController.value.text.trim().isEmpty) {
-      ShowToastDialog.showToast("Please enter car plate number");
+      ShowToastDialog.showToast("Please enter car plate number".tr);
       return;
     }
 
     if (selectedVehicleType.value.id == null) {
-      ShowToastDialog.showToast("Please select a vehicle type");
+      ShowToastDialog.showToast("Please select a vehicle type".tr);
       return;
     }
 
     if (selectedCarMakes.value.id == null) {
-      ShowToastDialog.showToast("Please select a car brand");
+      ShowToastDialog.showToast("Please select a car brand".tr);
       return;
     }
 
     if (selectedCarModel.value.id == null) {
-      ShowToastDialog.showToast("Please select a car model");
+      ShowToastDialog.showToast("Please select a car model".tr);
       return;
     }
 
-    ShowToastDialog.showLoader("Updating vehicle information...");
+    ShowToastDialog.showLoader("Updating vehicle information...".tr);
 
     try {
       userModel.value.carNumber = carPlatNumberEditingController.value.text.trim();
@@ -135,13 +135,13 @@ class VehicleInformationController extends GetxController {
       ShowToastDialog.closeLoader();
 
       if (success) {
-        ShowToastDialog.showToast("Vehicle information updated successfully.");
+        ShowToastDialog.showToast("Vehicle information updated successfully.".tr);
       } else {
-        ShowToastDialog.showToast("Failed to update. Please try again.");
+        ShowToastDialog.showToast("Failed to update. Please try again.".tr);
       }
     } catch (e) {
       ShowToastDialog.closeLoader();
-      ShowToastDialog.showToast("Error updating vehicle info: $e");
+      ShowToastDialog.showToast("${'Error updating vehicle info'.tr}: $e");
       log("Error updating vehicle info: $e");
     }
   }

@@ -996,7 +996,7 @@ class RestaurantDetailsScreen extends StatelessWidget {
                                   productModel
                                       .vendorModel
                                       .value
-                                      .workingHours![dayIndex];
+                                    .workingHours![dayIndex];
                               return Padding(
                                 padding: const EdgeInsets.symmetric(
                                   vertical: 10,
@@ -1005,7 +1005,7 @@ class RestaurantDetailsScreen extends StatelessWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      "${workingHours.day}",
+                                      "${workingHours.day?.tr ?? workingHours.day}",
                                       textAlign: TextAlign.start,
                                       maxLines: 1,
                                       style: TextStyle(

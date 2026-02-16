@@ -9,7 +9,7 @@ class EnterManuallyLocationController extends GetxController {
 
   RxList<ShippingAddress> shippingAddressList = <ShippingAddress>[].obs;
 
-  List saveAsList = ['Home', 'Work', 'Hotel', 'other'].obs;
+  List saveAsList = ['Home', 'Work', 'Hotel', 'Other'].obs;
   RxString selectedSaveAs = "Home".obs;
 
   Rx<TextEditingController> houseBuildingTextEditingController = TextEditingController().obs;
@@ -75,6 +75,8 @@ class EnterManuallyLocationController extends GetxController {
       case 'Hotel':
         return 'Hotel'.tr;
       case 'Other':
+        return 'Other'.tr;
+      case 'other':
         return 'Other'.tr;
       default:
         return key;

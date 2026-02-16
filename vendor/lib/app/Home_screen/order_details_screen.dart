@@ -145,7 +145,7 @@ class OrderDetailsScreen extends StatelessWidget {
                                           children: [
                                             Expanded(
                                               child: Text(
-                                                "${product.quantity}x ${product.name}".tr,
+                                                "${product.quantity}x ${product.name}",
                                                 style: TextStyle(
                                                   color: isDark ? AppThemeData.grey100 : AppThemeData.grey800,
                                                   fontSize: 16,

@@ -182,7 +182,7 @@ class OwnerHomeController extends GetxController {
       }
     }).catchError((error) {
       ShowToastDialog.closeLoader();
-      ShowToastDialog.showToast("An error occurred while deleting driver: $error".tr);
+      ShowToastDialog.showToast("${'An error occurred while deleting driver'.tr}: $error");
     });
   }
 }

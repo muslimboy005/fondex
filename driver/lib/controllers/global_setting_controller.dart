@@ -28,6 +28,10 @@ class GlobalSettingController extends GetxController {
       }
     });
     await FireStoreUtils().getSettings();
+    // Force driver app to use in-app Yandex map and single-order home
+    Constant.selectedMapType = 'yandexMaps';
+    Constant.mapType = 'inappmap';
+    Constant.singleOrderReceive = true;
   }
 
   NotificationService notificationService = NotificationService();

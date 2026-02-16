@@ -6,10 +6,10 @@ import '../utils/fire_store_utils.dart';
 
 class CabOrderListController extends GetxController {
   RxBool isLoading = true.obs;
-  RxString selectedTab = "On Going".obs;
+  RxString selectedTab = "on_going".obs;
   RxList<CabOrderModel> cabOrder = <CabOrderModel>[].obs;
 
-  RxList<String> tabTitles = ["On Going", "Completed", "Cancelled"].obs;
+  RxList<String> tabTitles = ["on_going", "completed", "cancelled"].obs;
 
   RxString driverId = ''.obs;
 
@@ -39,14 +39,31 @@ class CabOrderListController extends GetxController {
   /// Return filtered list for a specific tab title
   List<CabOrderModel> getOrdersForTab(String tab) {
     switch (tab) {
-      case "On Going":
-        return cabOrder.where((order) => ["Order Placed", "Order Accepted", "Driver Accepted", "Driver Pending", "Order Shipped", "In Transit"].contains(order.status)).toList();
+      case "on_going":
+        return cabOrder
+            .where((order) => [
+                  "Order Placed",
+                  "Order Accepted",
+                  "Driver Accepted",
+                  "Driver Pending",
+                  "Order Shipped",
+                  "In Transit"
+                ].contains(order.status))
+            .toList();
 
-      case "Completed":
-        return cabOrder.where((order) => ["Order Completed"].contains(order.status)).toList();
+      case "completed":
+        return cabOrder
+            .where((order) => ["Order Completed"].contains(order.status))
+            .toList();
 
-      case "Cancelled":
-        return cabOrder.where((order) => ["Order Rejected", "Order Cancelled", "Driver Rejected"].contains(order.status)).toList();
+      case "cancelled":
+        return cabOrder
+            .where((order) => [
+                  "Order Rejected",
+                  "Order Cancelled",
+                  "Driver Rejected"
+                ].contains(order.status))
+            .toList();
 
       default:
         return [];

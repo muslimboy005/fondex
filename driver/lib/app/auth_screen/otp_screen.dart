@@ -133,7 +133,7 @@ class OtpScreen extends StatelessWidget {
                             child: Text.rich(
                               textAlign: TextAlign.center,
                               TextSpan(
-                                text: "${'Did’t receive any code? '.tr} ",
+                                text: " ${'Didn\'t receive any code?'.tr} ",
                                 style: TextStyle(
                                   fontWeight: FontWeight.w500,
                                   fontSize: 14,

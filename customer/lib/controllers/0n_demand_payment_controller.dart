@@ -102,7 +102,7 @@ class OnDemandPaymentController extends GetxController {
           userId: FireStoreUtils.getCurrentUid(),
           isTopup: false,
           orderId: onDemandOrderModel.value!.id,
-          note: "Booking Amount debited".tr,
+          note: "Booking Amount debited",
           paymentStatus: "success".tr,
         );
 

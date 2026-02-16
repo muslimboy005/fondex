@@ -269,8 +269,7 @@ class DineInOrderScreen extends StatelessWidget {
                               ),
                               const SizedBox(height: 5),
                               Text(
-                                "Please add your store's dine-in details to start accepting reservations."
-                                    .tr,
+                                "Bronlarni qabul qilishni boshlash uchun iltimos, restoraningizning restoranda iste'mol qilish tafsilotlarini qo'shing.",
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   color: isDark
@@ -422,7 +421,7 @@ class DineInOrderScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            orderModel.status.toString(),
+                            orderModel.status.toString().tr,
                             textAlign: TextAlign.right,
                             style: TextStyle(
                               color: Constant.statusColor(

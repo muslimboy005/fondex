@@ -125,7 +125,7 @@ class VerificationScreen extends StatelessWidget {
                                                 height: 5,
                                               ),
                                               Text(
-                                                "${documentModel.frontSide == true ? "Front" : ""} ${documentModel.backSide == true ? "And Back" : ""} ${'Photo'.tr}",
+                                                "${documentModel.frontSide == true ? "Front".tr : ""} ${documentModel.backSide == true ? "And Back".tr : ""} ${'Photo'.tr}",
                                                 style: TextStyle(
                                                   color: isDark
                                                       ? AppThemeData.grey300

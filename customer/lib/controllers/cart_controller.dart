@@ -115,7 +115,9 @@ class CartController extends GetxController {
       cartItem.addAll(event);
 
       if (cartItem.isNotEmpty) {
-        await FireStoreUtils.getVendorById(cartItem.first.vendorID.toString()).then((value) {
+        await FireStoreUtils.getVendorById(
+          cartItem.first.vendorID.toString(),
+        ).then((value) {
           if (value != null) {
             vendorModel.value = value;
           }
@@ -123,9 +125,14 @@ class CartController extends GetxController {
       }
       calculatePrice();
     });
-    selectedFoodType.value = Preferences.getString(Preferences.foodDeliveryType, defaultValue: "Delivery");
+    selectedFoodType.value = Preferences.getString(
+      Preferences.foodDeliveryType,
+      defaultValue: "Delivery",
+    );
 
-    await FireStoreUtils.getUserProfile(FireStoreUtils.getCurrentUid()).then((value) {
+    await FireStoreUtils.getUserProfile(FireStoreUtils.getCurrentUid()).then((
+      value,
+    ) {
       if (value != null) {
         userModel.value = value;
       }
@@ -134,16 +141,22 @@ class CartController extends GetxController {
     await FireStoreUtils.getDeliveryCharge().then((value) {
       if (value != null) {
         deliveryChargeModel.value = value;
-        print("===> Delivery Charge Model: ${deliveryChargeModel.value.toJson()}");
+        print(
+          "===> Delivery Charge Model: ${deliveryChargeModel.value.toJson()}",
+        );
         calculatePrice();
       }
     });
 
-    await FireStoreUtils.getAllVendorPublicCoupons(vendorModel.value.id.toString()).then((value) {
+    await FireStoreUtils.getAllVendorPublicCoupons(
+      vendorModel.value.id.toString(),
+    ).then((value) {
       couponList.value = value;
     });
 
-    await FireStoreUtils.getAllVendorCoupons(vendorModel.value.id.toString()).then((value) {
+    await FireStoreUtils.getAllVendorCoupons(
+      vendorModel.value.id.toString(),
+    ).then((value) {
       allCouponList.value = value;
     });
   }
@@ -157,8 +170,11 @@ class CartController extends GetxController {
     totalAmount.value = 0.0;
 
     if (cartItem.isNotEmpty) {
-      if (Constant.sectionConstantModel!.serviceTypeFlag == "ecommerce-service") {
-        deliveryCharges.value = double.parse(Constant.sectionConstantModel!.delivery_charge ?? "0");
+      if (Constant.sectionConstantModel!.serviceTypeFlag ==
+          "ecommerce-service") {
+        deliveryCharges.value = double.parse(
+          Constant.sectionConstantModel!.delivery_charge ?? "0",
+        );
       } else {
         if (selectedFoodType.value == "Delivery") {
           totalDistance.value = double.parse(
@@ -169,27 +185,59 @@ class CartController extends GetxController {
               lng2: vendorModel.value.longitude.toString(),
             ),
           );
-          if (vendorModel.value.isSelfDelivery == true && Constant.isSelfDeliveryFeature == true) {
+          if (vendorModel.value.isSelfDelivery == true &&
+              Constant.isSelfDeliveryFeature == true) {
             deliveryCharges.value = 0.0;
-          } else if (deliveryChargeModel.value.minimumDeliveryChargesWithinKm != null && 
-                     deliveryChargeModel.value.vendorCanModify == false) {
-            if (totalDistance.value > deliveryChargeModel.value.minimumDeliveryChargesWithinKm!) {
-              deliveryCharges.value = totalDistance.value * (deliveryChargeModel.value.deliveryChargesPerKm ?? 0.0);
+          } else if (deliveryChargeModel.value.minimumDeliveryChargesWithinKm !=
+                  null &&
+              deliveryChargeModel.value.vendorCanModify == false) {
+            if (totalDistance.value >
+                deliveryChargeModel.value.minimumDeliveryChargesWithinKm!) {
+              deliveryCharges.value =
+                  totalDistance.value *
+                  (deliveryChargeModel.value.deliveryChargesPerKm ?? 0.0);
             } else {
-              deliveryCharges.value = (deliveryChargeModel.value.minimumDeliveryCharges ?? 0).toDouble();
+              deliveryCharges.value =
+                  (deliveryChargeModel.value.minimumDeliveryCharges ?? 0)
+                      .toDouble();
             }
           } else {
             if (vendorModel.value.deliveryCharge != null) {
-              if (totalDistance.value > (vendorModel.value.deliveryCharge!.minimumDeliveryChargesWithinKm ?? 0)) {
-                deliveryCharges.value = (totalDistance.value * (vendorModel.value.deliveryCharge!.deliveryChargesPerKm ?? 0.0)).toDouble();
+              if (totalDistance.value >
+                  (vendorModel
+                          .value
+                          .deliveryCharge!
+                          .minimumDeliveryChargesWithinKm ??
+                      0)) {
+                deliveryCharges.value =
+                    (totalDistance.value *
+                            (vendorModel
+                                    .value
+                                    .deliveryCharge!
+                                    .deliveryChargesPerKm ??
+                                0.0))
+                        .toDouble();
               } else {
-                deliveryCharges.value = (vendorModel.value.deliveryCharge!.minimumDeliveryCharges ?? 0).toDouble();
+                deliveryCharges.value =
+                    (vendorModel.value.deliveryCharge!.minimumDeliveryCharges ??
+                            0)
+                        .toDouble();
               }
-            } else if (deliveryChargeModel.value.minimumDeliveryChargesWithinKm != null) {
-              if (totalDistance.value > deliveryChargeModel.value.minimumDeliveryChargesWithinKm!) {
-                deliveryCharges.value = (totalDistance.value * (deliveryChargeModel.value.deliveryChargesPerKm ?? 0.0)).toDouble();
+            } else if (deliveryChargeModel
+                    .value
+                    .minimumDeliveryChargesWithinKm !=
+                null) {
+              if (totalDistance.value >
+                  deliveryChargeModel.value.minimumDeliveryChargesWithinKm!) {
+                deliveryCharges.value =
+                    (totalDistance.value *
+                            (deliveryChargeModel.value.deliveryChargesPerKm ??
+                                0.0))
+                        .toDouble();
               } else {
-                deliveryCharges.value = (deliveryChargeModel.value.minimumDeliveryCharges ?? 0).toDouble();
+                deliveryCharges.value =
+                    (deliveryChargeModel.value.minimumDeliveryCharges ?? 0)
+                        .toDouble();
               }
             }
           }
@@ -203,21 +251,29 @@ class CartController extends GetxController {
       if (double.parse(element.discountPrice.toString()) <= 0) {
         subTotal.value =
             subTotal.value +
-            double.parse(element.price.toString()) * double.parse(element.quantity.toString()) +
-            (double.parse(element.extrasPrice.toString()) * double.parse(element.quantity.toString()));
+            double.parse(element.price.toString()) *
+                double.parse(element.quantity.toString()) +
+            (double.parse(element.extrasPrice.toString()) *
+                double.parse(element.quantity.toString()));
       } else {
         subTotal.value =
             subTotal.value +
-            double.parse(element.discountPrice.toString()) * double.parse(element.quantity.toString()) +
-            (double.parse(element.extrasPrice.toString()) * double.parse(element.quantity.toString()));
+            double.parse(element.discountPrice.toString()) *
+                double.parse(element.quantity.toString()) +
+            (double.parse(element.extrasPrice.toString()) *
+                double.parse(element.quantity.toString()));
       }
     }
 
     if (selectedCouponModel.value.id != null) {
-      couponAmount.value = Constant.calculateDiscount(amount: subTotal.value.toString(), offerModel: selectedCouponModel.value);
+      couponAmount.value = Constant.calculateDiscount(
+        amount: subTotal.value.toString(),
+        offerModel: selectedCouponModel.value,
+      );
     }
 
-    if (vendorModel.value.specialDiscountEnable == true && Constant.specialDiscountOffer == true) {
+    if (vendorModel.value.specialDiscountEnable == true &&
+        Constant.specialDiscountOffer == true) {
       final now = DateTime.now();
       var day = DateFormat('EEEE', 'en_US').format(now);
       var date = DateFormat('dd-MM-yyyy').format(now);
@@ -226,13 +282,20 @@ class CartController extends GetxController {
           if (element.timeslot!.isNotEmpty) {
             for (var element in element.timeslot!) {
               if (element.discountType == "delivery") {
-                var start = DateFormat("dd-MM-yyyy HH:mm").parse("$date ${element.from}");
-                var end = DateFormat("dd-MM-yyyy HH:mm").parse("$date ${element.to}");
+                var start = DateFormat(
+                  "dd-MM-yyyy HH:mm",
+                ).parse("$date ${element.from}");
+                var end = DateFormat(
+                  "dd-MM-yyyy HH:mm",
+                ).parse("$date ${element.to}");
                 if (isCurrentDateInRange(start, end)) {
-                  specialDiscount.value = double.parse(element.discount.toString());
+                  specialDiscount.value = double.parse(
+                    element.discount.toString(),
+                  );
                   specialType.value = element.type.toString();
                   if (element.type == "percentage") {
-                    specialDiscountAmount.value = subTotal * specialDiscount.value / 100;
+                    specialDiscountAmount.value =
+                        subTotal * specialDiscount.value / 100;
                   } else {
                     specialDiscountAmount.value = specialDiscount.value;
                   }
@@ -248,10 +311,23 @@ class CartController extends GetxController {
     }
 
     for (var element in Constant.taxList) {
-      taxAmount.value = taxAmount.value + Constant.calculateTax(amount: (subTotal.value - couponAmount.value - specialDiscountAmount.value).toString(), taxModel: element);
+      taxAmount.value =
+          taxAmount.value +
+          Constant.calculateTax(
+            amount:
+                (subTotal.value -
+                        couponAmount.value -
+                        specialDiscountAmount.value)
+                    .toString(),
+            taxModel: element,
+          );
     }
 
-    totalAmount.value = (subTotal.value - couponAmount.value - specialDiscountAmount.value) + taxAmount.value + deliveryCharges.value + deliveryTips.value;
+    totalAmount.value =
+        (subTotal.value - couponAmount.value - specialDiscountAmount.value) +
+        taxAmount.value +
+        deliveryCharges.value +
+        deliveryTips.value;
     getCashback();
   }
 
@@ -272,17 +348,31 @@ class CartController extends GetxController {
 
         if (startDate == null || endDate == null) continue;
 
-        final withinDateRange = startDate.toDate().isBefore(now) && endDate.toDate().isAfter(now);
-        final meetsMinAmount = orderTotal >= (cashback.minimumPurchaseAmount ?? 0);
+        final withinDateRange =
+            startDate.toDate().isBefore(now) && endDate.toDate().isAfter(now);
+        final meetsMinAmount =
+            orderTotal >= (cashback.minimumPurchaseAmount ?? 0);
         final allPayment = cashback.allPayment ?? false;
-        final paymentMatch = allPayment || (cashback.paymentMethods ?? []).contains(paymentMethod);
+        final paymentMatch =
+            allPayment ||
+            (cashback.paymentMethods ?? []).contains(paymentMethod);
         final allCustomer = cashback.allCustomer ?? false;
-        final customerMatch = allCustomer || (cashback.customerIds ?? []).contains(FireStoreUtils.getCurrentUid());
+        final customerMatch =
+            allCustomer ||
+            (cashback.customerIds ?? []).contains(
+              FireStoreUtils.getCurrentUid(),
+            );
 
-        final redeemData = await FireStoreUtils.getRedeemedCashbacks(cashback.id ?? '');
+        final redeemData = await FireStoreUtils.getRedeemedCashbacks(
+          cashback.id ?? '',
+        );
         final underLimit = redeemData.length < (cashback.redeemLimit ?? 0);
 
-        if (withinDateRange && meetsMinAmount && paymentMatch && customerMatch && underLimit) {
+        if (withinDateRange &&
+            meetsMinAmount &&
+            paymentMatch &&
+            customerMatch &&
+            underLimit) {
           eligibleCashbacks.add(cashback);
         }
       }
@@ -320,7 +410,11 @@ class CartController extends GetxController {
     }
   }
 
-  Future<void> addToCart({required CartProductModel cartProductModel, required bool isIncrement, required int quantity}) async {
+  Future<void> addToCart({
+    required CartProductModel cartProductModel,
+    required bool isIncrement,
+    required int quantity,
+  }) async {
     if (isIncrement) {
       cartProvider.addToCart(Get.context!, cartProductModel, quantity);
     } else {
@@ -333,10 +427,13 @@ class CartController extends GetxController {
 
   Future<void> placeOrder() async {
     if (selectedPaymentMethod.value == PaymentGateway.wallet.name) {
-      if (double.parse(userModel.value.walletAmount.toString()) >= totalAmount.value) {
+      if (double.parse(userModel.value.walletAmount.toString()) >=
+          totalAmount.value) {
         setOrder();
       } else {
-        ShowToastDialog.showToast("You don't have sufficient wallet balance to place order".tr);
+        ShowToastDialog.showToast(
+          "You don't have sufficient wallet balance to place order".tr,
+        );
       }
     } else {
       setOrder();
@@ -348,66 +445,91 @@ class CartController extends GetxController {
 
     try {
       // 1. Vendor tekshiruvi - birinchi bo'lib (early return)
-      if ((Constant.isSubscriptionModelApplied == true || Constant.sectionConstantModel?.adminCommision?.isEnabled == true) && vendorModel.value.subscriptionPlan != null) {
-        final vender = await FireStoreUtils.getVendorById(vendorModel.value.id!);
-        if (vender?.subscriptionTotalOrders == '0' || vender?.subscriptionTotalOrders == null) {
+      if ((Constant.isSubscriptionModelApplied == true ||
+              Constant.sectionConstantModel?.adminCommision?.isEnabled ==
+                  true) &&
+          vendorModel.value.subscriptionPlan != null) {
+        final vender = await FireStoreUtils.getVendorById(
+          vendorModel.value.id!,
+        );
+        if (vender?.subscriptionTotalOrders == '0' ||
+            vender?.subscriptionTotalOrders == null) {
           ShowToastDialog.closeLoader();
-          ShowToastDialog.showToast("This vendor has reached their maximum order capacity. Please select a different vendor or try again later.".tr);
+          ShowToastDialog.showToast(
+            "This vendor has reached their maximum order capacity. Please select a different vendor or try again later."
+                .tr,
+          );
           return;
         }
       }
 
       // 2. Cart product'larni tayyorlash - optimizatsiya qilingan
       tempProduc.clear();
-      tempProduc.addAll(cartItem.map((cartProduct) {
-        CartProductModel tempCart = cartProduct;
-        if (cartProduct.extrasPrice == '0') {
-          tempCart.extras = [];
-        }
-        return tempCart;
-      }));
+      tempProduc.addAll(
+        cartItem.map((cartProduct) {
+          CartProductModel tempCart = cartProduct;
+          if (cartProduct.extrasPrice == '0') {
+            tempCart.extras = [];
+          }
+          return tempCart;
+        }),
+      );
 
       Map<String, dynamic> specialDiscountMap = {
         'special_discount': specialDiscountAmount.value,
         'special_discount_label': specialDiscount.value,
-        'specialType': specialType.value
+        'specialType': specialType.value,
       };
 
       // 3. Order model yaratish - optimizatsiya qilingan (bitta joyda)
       final orderId = Constant.getUuid();
       final now = Timestamp.now();
-      final adminCommissionEnabled = Constant.sectionConstantModel?.adminCommision?.isEnabled ?? false;
+      final adminCommissionEnabled =
+          Constant.sectionConstantModel?.adminCommision?.isEnabled ?? false;
       final vendorAdminCommission = vendorModel.value.adminCommission;
-      
-      OrderModel orderModel = OrderModel()
-        ..id = orderId
-        ..address = selectedAddress.value
-        ..authorID = FireStoreUtils.getCurrentUid()
-        ..author = userModel.value
-        ..vendorID = vendorModel.value.id
-        ..vendor = vendorModel.value
-        ..adminCommission = adminCommissionEnabled
-            ? '0'
-            : (vendorAdminCommission?.amount.toString() ?? Constant.sectionConstantModel?.adminCommision?.amount.toString())
-        ..adminCommissionType = adminCommissionEnabled
-            ? 'fixed'
-            : (vendorAdminCommission?.commissionType ?? Constant.sectionConstantModel?.adminCommision?.commissionType)
-        ..status = Constant.orderPlaced
-        ..discount = couponAmount.value
-        ..couponId = selectedCouponModel.value.id
-        ..taxSetting = Constant.taxList
-        ..paymentMethod = selectedPaymentMethod.value
-        ..products = cartItem
-        ..sectionId = Constant.sectionConstantModel?.id
-        ..specialDiscount = specialDiscountMap
-        ..couponCode = selectedCouponModel.value.code
-        ..deliveryCharge = deliveryCharges.value.toString()
-        ..tipAmount = deliveryTips.value.toString()
-        ..notes = reMarkController.value.text
-        ..takeAway = selectedFoodType.value != "Delivery"
-        ..createdAt = now
-        ..scheduleTime = deliveryType.value == "schedule" ? Timestamp.fromDate(scheduleDateTime.value) : null
-        ..cashback = bestCashback.value.id == null ? null : bestCashback.value;
+
+      OrderModel orderModel =
+          OrderModel()
+            ..id = orderId
+            ..address = selectedAddress.value
+            ..authorID = FireStoreUtils.getCurrentUid()
+            ..author = userModel.value
+            ..vendorID = vendorModel.value.id
+            ..vendor = vendorModel.value
+            ..adminCommission =
+                adminCommissionEnabled
+                    ? '0'
+                    : (vendorAdminCommission?.amount.toString() ??
+                        Constant.sectionConstantModel?.adminCommision?.amount
+                            .toString())
+            ..adminCommissionType =
+                adminCommissionEnabled
+                    ? 'fixed'
+                    : (vendorAdminCommission?.commissionType ??
+                        Constant
+                            .sectionConstantModel
+                            ?.adminCommision
+                            ?.commissionType)
+            ..status = Constant.orderPlaced
+            ..discount = couponAmount.value
+            ..couponId = selectedCouponModel.value.id
+            ..taxSetting = Constant.taxList
+            ..paymentMethod = selectedPaymentMethod.value
+            ..products = cartItem
+            ..sectionId = Constant.sectionConstantModel?.id
+            ..specialDiscount = specialDiscountMap
+            ..couponCode = selectedCouponModel.value.code
+            ..deliveryCharge = deliveryCharges.value.toString()
+            ..tipAmount = deliveryTips.value.toString()
+            ..notes = reMarkController.value.text
+            ..takeAway = selectedFoodType.value != "Delivery"
+            ..createdAt = now
+            ..scheduleTime =
+                deliveryType.value == "schedule"
+                    ? Timestamp.fromDate(scheduleDateTime.value)
+                    : null
+            ..cashback =
+                bestCashback.value.id == null ? null : bestCashback.value;
 
       // 4. Parallel operatsiyalar - Wallet transaction va Product updates
       final futures = <Future>[];
@@ -433,7 +555,10 @@ class CartController extends GetxController {
 
       // 7. Loading tugadi - UI tez ko'rinadi
       ShowToastDialog.closeLoader();
-      Get.off(const OrderPlacingScreen(), arguments: {"orderModel": orderModel});
+      Get.off(
+        const OrderPlacingScreen(),
+        arguments: {"orderModel": orderModel},
+      );
 
       // 8. Background operatsiyalar - Notification va Email
       _sendNotificationAndEmailInBackground(orderModel);
@@ -454,11 +579,13 @@ class CartController extends GetxController {
       userId: FireStoreUtils.getCurrentUid(),
       isTopup: false,
       orderId: orderModel.id,
-      note: "Order Amount debited".tr,
+      note: "Order Amount debited",
       paymentStatus: "success".tr,
     );
 
-    await FireStoreUtils.setWalletTransaction(transactionModel).then((value) async {
+    await FireStoreUtils.setWalletTransaction(transactionModel).then((
+      value,
+    ) async {
       if (value == true) {
         await FireStoreUtils.updateUserWallet(
           amount: "-${totalAmount.value.toString()}",
@@ -473,15 +600,16 @@ class CartController extends GetxController {
     try {
       // 1. Barcha product'larni parallel olish (cache bilan)
       final productFutures = <Future<ProductModel?>>[];
-      final productIds = tempProduc.map((p) => p.id!.split('~').first).toSet().toList();
-      
+      final productIds =
+          tempProduc.map((p) => p.id!.split('~').first).toSet().toList();
+
       for (final productId in productIds) {
         productFutures.add(_getProductWithCache(productId));
       }
-      
+
       final products = await Future.wait(productFutures);
       final productMap = <String, ProductModel>{};
-      
+
       for (int i = 0; i < productIds.length; i++) {
         if (products[i] != null) {
           productMap[productIds[i]] = products[i]!;
@@ -496,22 +624,38 @@ class CartController extends GetxController {
 
         if (tempProduc[i].variantInfo != null) {
           if (productModel.itemAttribute != null) {
-            for (int j = 0; j < productModel.itemAttribute!.variants!.length; j++) {
-              if (productModel.itemAttribute!.variants![j].variantId == tempProduc[i].id!.split('~').last) {
-                if (productModel.itemAttribute!.variants![j].variantQuantity != "-1") {
-                  productModel.itemAttribute!.variants![j].variantQuantity = 
-                      (int.parse(productModel.itemAttribute!.variants![j].variantQuantity.toString()) - tempProduc[i].quantity!).toString();
+            for (
+              int j = 0;
+              j < productModel.itemAttribute!.variants!.length;
+              j++
+            ) {
+              if (productModel.itemAttribute!.variants![j].variantId ==
+                  tempProduc[i].id!.split('~').last) {
+                if (productModel.itemAttribute!.variants![j].variantQuantity !=
+                    "-1") {
+                  productModel.itemAttribute!.variants![j].variantQuantity =
+                      (int.parse(
+                                productModel
+                                    .itemAttribute!
+                                    .variants![j]
+                                    .variantQuantity
+                                    .toString(),
+                              ) -
+                              tempProduc[i].quantity!)
+                          .toString();
                 }
               }
             }
           } else {
             if (productModel.quantity != -1) {
-              productModel.quantity = (productModel.quantity! - tempProduc[i].quantity!);
+              productModel.quantity =
+                  (productModel.quantity! - tempProduc[i].quantity!);
             }
           }
         } else {
           if (productModel.quantity != -1) {
-            productModel.quantity = (productModel.quantity! - tempProduc[i].quantity!);
+            productModel.quantity =
+                (productModel.quantity! - tempProduc[i].quantity!);
           }
         }
       }
@@ -534,7 +678,8 @@ class CartController extends GetxController {
     // Cache'dan tekshirish
     if (_productCache.containsKey(productId)) {
       final cacheTime = _productCacheTime[productId];
-      if (cacheTime != null && DateTime.now().difference(cacheTime) < _cacheExpiry) {
+      if (cacheTime != null &&
+          DateTime.now().difference(cacheTime) < _cacheExpiry) {
         return _productCache[productId];
       }
     }
@@ -555,12 +700,15 @@ class CartController extends GetxController {
     try {
       final firestore = FirebaseFirestore.instance;
       const maxBatchSize = 500; // Firestore batch limit
-      
+
       // Batch'larni guruhlash
       for (int i = 0; i < products.length; i += maxBatchSize) {
         final batch = firestore.batch();
-        final endIndex = (i + maxBatchSize < products.length) ? i + maxBatchSize : products.length;
-        
+        final endIndex =
+            (i + maxBatchSize < products.length)
+                ? i + maxBatchSize
+                : products.length;
+
         for (int j = i; j < endIndex; j++) {
           final product = products[j];
           final productRef = firestore
@@ -568,7 +716,7 @@ class CartController extends GetxController {
               .doc(product.id);
           batch.set(productRef, product.toJson());
         }
-        
+
         // Batch'ni yuborish
         await batch.commit();
       }
@@ -590,22 +738,38 @@ class CartController extends GetxController {
 
       if (tempProduc[index].variantInfo != null) {
         if (productModel.itemAttribute != null) {
-          for (int j = 0; j < productModel.itemAttribute!.variants!.length; j++) {
-            if (productModel.itemAttribute!.variants![j].variantId == tempProduc[index].id!.split('~').last) {
-              if (productModel.itemAttribute!.variants![j].variantQuantity != "-1") {
-                productModel.itemAttribute!.variants![j].variantQuantity = 
-                    (int.parse(productModel.itemAttribute!.variants![j].variantQuantity.toString()) - tempProduc[index].quantity!).toString();
+          for (
+            int j = 0;
+            j < productModel.itemAttribute!.variants!.length;
+            j++
+          ) {
+            if (productModel.itemAttribute!.variants![j].variantId ==
+                tempProduc[index].id!.split('~').last) {
+              if (productModel.itemAttribute!.variants![j].variantQuantity !=
+                  "-1") {
+                productModel.itemAttribute!.variants![j].variantQuantity =
+                    (int.parse(
+                              productModel
+                                  .itemAttribute!
+                                  .variants![j]
+                                  .variantQuantity
+                                  .toString(),
+                            ) -
+                            tempProduc[index].quantity!)
+                        .toString();
               }
             }
           }
         } else {
           if (productModel.quantity != -1) {
-            productModel.quantity = (productModel.quantity! - tempProduc[index].quantity!);
+            productModel.quantity =
+                (productModel.quantity! - tempProduc[index].quantity!);
           }
         }
       } else {
         if (productModel.quantity != -1) {
-          productModel.quantity = (productModel.quantity! - tempProduc[index].quantity!);
+          productModel.quantity =
+              (productModel.quantity! - tempProduc[index].quantity!);
         }
       }
 
@@ -628,15 +792,27 @@ class CartController extends GetxController {
   }
 
   // Notification va Email'ni background'da yuborish
-  Future<void> _sendNotificationAndEmailInBackground(OrderModel orderModel) async {
+  Future<void> _sendNotificationAndEmailInBackground(
+    OrderModel orderModel,
+  ) async {
     try {
       // Notification
-      await FireStoreUtils.getUserProfile(orderModel.vendor!.author.toString()).then((value) async {
+      await FireStoreUtils.getUserProfile(
+        orderModel.vendor!.author.toString(),
+      ).then((value) async {
         if (value != null) {
           if (orderModel.scheduleTime != null) {
-            await SendNotification.sendFcmMessage(Constant.scheduleOrder, value.fcmToken ?? '', {});
+            await SendNotification.sendFcmMessage(
+              Constant.scheduleOrder,
+              value.fcmToken ?? '',
+              {},
+            );
           } else {
-            await SendNotification.sendFcmMessage(Constant.newOrderPlaced, value.fcmToken ?? '', {});
+            await SendNotification.sendFcmMessage(
+              Constant.newOrderPlaced,
+              value.fcmToken ?? '',
+              {},
+            );
           }
         }
       });
@@ -667,121 +843,195 @@ class CartController extends GetxController {
   Future<void> getPaymentSettings() async {
     print("🔵 [CartController.getPaymentSettings] Boshlandi");
     await FireStoreUtils.getPaymentSettingsData().then((value) {
-      print("🔵 [CartController.getPaymentSettings] FireStoreUtils.getPaymentSettingsData tugadi");
-      
+      print(
+        "🔵 [CartController.getPaymentSettings] FireStoreUtils.getPaymentSettingsData tugadi",
+      );
+
       // Stripe
       try {
-        stripeModel.value = StripeModel.fromJson(jsonDecode(Preferences.getString(Preferences.stripeSettings)));
-        print("🔵 [CartController.getPaymentSettings] Stripe: isEnabled=${stripeModel.value.isEnabled}");
+        stripeModel.value = StripeModel.fromJson(
+          jsonDecode(Preferences.getString(Preferences.stripeSettings)),
+        );
+        print(
+          "🔵 [CartController.getPaymentSettings] Stripe: isEnabled=${stripeModel.value.isEnabled}",
+        );
       } catch (e) {
         print("❌ [CartController.getPaymentSettings] Stripe o'qish xatosi: $e");
       }
-      
+
       // PayPal
       try {
-        payPalModel.value = PayPalModel.fromJson(jsonDecode(Preferences.getString(Preferences.paypalSettings)));
-        print("🔵 [CartController.getPaymentSettings] PayPal: isEnabled=${payPalModel.value.isEnabled}");
+        payPalModel.value = PayPalModel.fromJson(
+          jsonDecode(Preferences.getString(Preferences.paypalSettings)),
+        );
+        print(
+          "🔵 [CartController.getPaymentSettings] PayPal: isEnabled=${payPalModel.value.isEnabled}",
+        );
       } catch (e) {
         print("❌ [CartController.getPaymentSettings] PayPal o'qish xatosi: $e");
       }
-      
+
       // PayStack
       try {
-        payStackModel.value = PayStackModel.fromJson(jsonDecode(Preferences.getString(Preferences.payStack)));
-        print("🔵 [CartController.getPaymentSettings] PayStack: isEnable=${payStackModel.value.isEnable}");
+        payStackModel.value = PayStackModel.fromJson(
+          jsonDecode(Preferences.getString(Preferences.payStack)),
+        );
+        print(
+          "🔵 [CartController.getPaymentSettings] PayStack: isEnable=${payStackModel.value.isEnable}",
+        );
       } catch (e) {
-        print("❌ [CartController.getPaymentSettings] PayStack o'qish xatosi: $e");
+        print(
+          "❌ [CartController.getPaymentSettings] PayStack o'qish xatosi: $e",
+        );
       }
-      
+
       // MercadoPago
       try {
-        mercadoPagoModel.value = MercadoPagoModel.fromJson(jsonDecode(Preferences.getString(Preferences.mercadoPago)));
-        print("🔵 [CartController.getPaymentSettings] MercadoPago: isEnabled=${mercadoPagoModel.value.isEnabled}");
+        mercadoPagoModel.value = MercadoPagoModel.fromJson(
+          jsonDecode(Preferences.getString(Preferences.mercadoPago)),
+        );
+        print(
+          "🔵 [CartController.getPaymentSettings] MercadoPago: isEnabled=${mercadoPagoModel.value.isEnabled}",
+        );
       } catch (e) {
-        print("❌ [CartController.getPaymentSettings] MercadoPago o'qish xatosi: $e");
+        print(
+          "❌ [CartController.getPaymentSettings] MercadoPago o'qish xatosi: $e",
+        );
       }
-      
+
       // FlutterWave
       try {
-        flutterWaveModel.value = FlutterWaveModel.fromJson(jsonDecode(Preferences.getString(Preferences.flutterWave)));
-        print("🔵 [CartController.getPaymentSettings] FlutterWave: isEnable=${flutterWaveModel.value.isEnable}");
+        flutterWaveModel.value = FlutterWaveModel.fromJson(
+          jsonDecode(Preferences.getString(Preferences.flutterWave)),
+        );
+        print(
+          "🔵 [CartController.getPaymentSettings] FlutterWave: isEnable=${flutterWaveModel.value.isEnable}",
+        );
       } catch (e) {
-        print("❌ [CartController.getPaymentSettings] FlutterWave o'qish xatosi: $e");
+        print(
+          "❌ [CartController.getPaymentSettings] FlutterWave o'qish xatosi: $e",
+        );
       }
-      
+
       // Paytm
       try {
-        paytmModel.value = PaytmModel.fromJson(jsonDecode(Preferences.getString(Preferences.paytmSettings)));
-        print("🔵 [CartController.getPaymentSettings] Paytm: isEnabled=${paytmModel.value.isEnabled}");
+        paytmModel.value = PaytmModel.fromJson(
+          jsonDecode(Preferences.getString(Preferences.paytmSettings)),
+        );
+        print(
+          "🔵 [CartController.getPaymentSettings] Paytm: isEnabled=${paytmModel.value.isEnabled}",
+        );
       } catch (e) {
         print("❌ [CartController.getPaymentSettings] Paytm o'qish xatosi: $e");
       }
-      
+
       // Payme
       try {
-        paymeModel.value = PaymeModel.fromJson(jsonDecode(Preferences.getString(Preferences.paymeSettings)));
-        print("🔵 [CartController.getPaymentSettings] Payme: isEnabled=${paymeModel.value.isEnabled ?? paymeModel.value.enable}");
+        paymeModel.value = PaymeModel.fromJson(
+          jsonDecode(Preferences.getString(Preferences.paymeSettings)),
+        );
+        print(
+          "🔵 [CartController.getPaymentSettings] Payme: isEnabled=${paymeModel.value.isEnabled ?? paymeModel.value.enable}",
+        );
       } catch (e) {
         print("❌ [CartController.getPaymentSettings] Payme o'qish xatosi: $e");
       }
-      
+
       // PayFast
       try {
-        payFastModel.value = PayFastModel.fromJson(jsonDecode(Preferences.getString(Preferences.payFastSettings)));
-        print("🔵 [CartController.getPaymentSettings] PayFast: isEnable=${payFastModel.value.isEnable}");
+        payFastModel.value = PayFastModel.fromJson(
+          jsonDecode(Preferences.getString(Preferences.payFastSettings)),
+        );
+        print(
+          "🔵 [CartController.getPaymentSettings] PayFast: isEnable=${payFastModel.value.isEnable}",
+        );
       } catch (e) {
-        print("❌ [CartController.getPaymentSettings] PayFast o'qish xatosi: $e");
+        print(
+          "❌ [CartController.getPaymentSettings] PayFast o'qish xatosi: $e",
+        );
       }
-      
+
       // RazorPay
       try {
-        razorPayModel.value = RazorPayModel.fromJson(jsonDecode(Preferences.getString(Preferences.razorpaySettings)));
-        print("🔵 [CartController.getPaymentSettings] RazorPay: isEnabled=${razorPayModel.value.isEnabled}");
+        razorPayModel.value = RazorPayModel.fromJson(
+          jsonDecode(Preferences.getString(Preferences.razorpaySettings)),
+        );
+        print(
+          "🔵 [CartController.getPaymentSettings] RazorPay: isEnabled=${razorPayModel.value.isEnabled}",
+        );
       } catch (e) {
-        print("❌ [CartController.getPaymentSettings] RazorPay o'qish xatosi: $e");
+        print(
+          "❌ [CartController.getPaymentSettings] RazorPay o'qish xatosi: $e",
+        );
       }
-      
+
       // MidTrans
       try {
-        midTransModel.value = MidTrans.fromJson(jsonDecode(Preferences.getString(Preferences.midTransSettings)));
-        print("🔵 [CartController.getPaymentSettings] MidTrans: enable=${midTransModel.value.enable}");
+        midTransModel.value = MidTrans.fromJson(
+          jsonDecode(Preferences.getString(Preferences.midTransSettings)),
+        );
+        print(
+          "🔵 [CartController.getPaymentSettings] MidTrans: enable=${midTransModel.value.enable}",
+        );
       } catch (e) {
-        print("❌ [CartController.getPaymentSettings] MidTrans o'qish xatosi: $e");
+        print(
+          "❌ [CartController.getPaymentSettings] MidTrans o'qish xatosi: $e",
+        );
       }
-      
+
       // OrangeMoney
       try {
-        orangeMoneyModel.value = OrangeMoney.fromJson(jsonDecode(Preferences.getString(Preferences.orangeMoneySettings)));
-        print("🔵 [CartController.getPaymentSettings] OrangeMoney: enable=${orangeMoneyModel.value.enable}");
+        orangeMoneyModel.value = OrangeMoney.fromJson(
+          jsonDecode(Preferences.getString(Preferences.orangeMoneySettings)),
+        );
+        print(
+          "🔵 [CartController.getPaymentSettings] OrangeMoney: enable=${orangeMoneyModel.value.enable}",
+        );
       } catch (e) {
-        print("❌ [CartController.getPaymentSettings] OrangeMoney o'qish xatosi: $e");
+        print(
+          "❌ [CartController.getPaymentSettings] OrangeMoney o'qish xatosi: $e",
+        );
       }
-      
+
       // Xendit
       try {
-        xenditModel.value = Xendit.fromJson(jsonDecode(Preferences.getString(Preferences.xenditSettings)));
-        print("🔵 [CartController.getPaymentSettings] Xendit: enable=${xenditModel.value.enable}");
+        xenditModel.value = Xendit.fromJson(
+          jsonDecode(Preferences.getString(Preferences.xenditSettings)),
+        );
+        print(
+          "🔵 [CartController.getPaymentSettings] Xendit: enable=${xenditModel.value.enable}",
+        );
       } catch (e) {
         print("❌ [CartController.getPaymentSettings] Xendit o'qish xatosi: $e");
       }
-      
+
       // Wallet
       try {
-        walletSettingModel.value = WalletSettingModel.fromJson(jsonDecode(Preferences.getString(Preferences.walletSettings)));
-        print("🔵 [CartController.getPaymentSettings] Wallet: isEnabled=${walletSettingModel.value.isEnabled}");
+        walletSettingModel.value = WalletSettingModel.fromJson(
+          jsonDecode(Preferences.getString(Preferences.walletSettings)),
+        );
+        print(
+          "🔵 [CartController.getPaymentSettings] Wallet: isEnabled=${walletSettingModel.value.isEnabled}",
+        );
       } catch (e) {
         print("❌ [CartController.getPaymentSettings] Wallet o'qish xatosi: $e");
       }
-      
+
       // COD
       try {
-        cashOnDeliverySettingModel.value = CodSettingModel.fromJson(jsonDecode(Preferences.getString(Preferences.codSettings)));
-        print("🔵 [CartController.getPaymentSettings] COD: isEnabled=${cashOnDeliverySettingModel.value.isEnabled}");
+        cashOnDeliverySettingModel.value = CodSettingModel.fromJson(
+          jsonDecode(Preferences.getString(Preferences.codSettings)),
+        );
+        print(
+          "🔵 [CartController.getPaymentSettings] COD: isEnabled=${cashOnDeliverySettingModel.value.isEnabled}",
+        );
       } catch (e) {
         print("❌ [CartController.getPaymentSettings] COD o'qish xatosi: $e");
       }
 
-      print("🔵 [CartController.getPaymentSettings] Payment method tanlash boshlandi");
+      print(
+        "🔵 [CartController.getPaymentSettings] Payment method tanlash boshlandi",
+      );
       if (walletSettingModel.value.isEnabled == true) {
         selectedPaymentMethod.value = PaymentGateway.wallet.name;
         print("🔵 [CartController.getPaymentSettings] Tanlangan: Wallet");
@@ -818,15 +1068,20 @@ class CartController extends GetxController {
       } else if (xenditModel.value.enable == true) {
         selectedPaymentMethod.value = PaymentGateway.xendit.name;
         print("🔵 [CartController.getPaymentSettings] Tanlangan: Xendit");
-      } else if (paymeModel.value.isEnabled == true || paymeModel.value.enable == true) {
+      } else if (paymeModel.value.isEnabled == true ||
+          paymeModel.value.enable == true) {
         selectedPaymentMethod.value = PaymentGateway.payme.name;
         print("🔵 [CartController.getPaymentSettings] Tanlangan: Payme");
       } else {
-        print("⚠️ [CartController.getPaymentSettings] Hech qanday payment method active emas!");
+        print(
+          "⚠️ [CartController.getPaymentSettings] Hech qanday payment method active emas!",
+        );
       }
-      print("🔵 [CartController.getPaymentSettings] Tanlangan payment method: ${selectedPaymentMethod.value}");
+      print(
+        "🔵 [CartController.getPaymentSettings] Tanlangan payment method: ${selectedPaymentMethod.value}",
+      );
       Stripe.publishableKey = stripeModel.value.clientpublishableKey.toString();
-      Stripe.merchantIdentifier = 'Foodie Customer';
+      Stripe.merchantIdentifier = 'Fondex Customer';
       Stripe.instance.applySettings();
       setRef();
 
@@ -840,20 +1095,32 @@ class CartController extends GetxController {
   Future<void> stripeMakePayment({required String amount}) async {
     log(double.parse(amount).toStringAsFixed(0));
     try {
-      Map<String, dynamic>? paymentIntentData = await createStripeIntent(amount: amount);
+      Map<String, dynamic>? paymentIntentData = await createStripeIntent(
+        amount: amount,
+      );
       log("stripe Responce====>$paymentIntentData");
       if (paymentIntentData!.containsKey("error")) {
         Get.back();
-        ShowToastDialog.showToast("Something went wrong, please contact admin.".tr);
+        ShowToastDialog.showToast(
+          "Something went wrong, please contact admin.".tr,
+        );
       } else {
         await Stripe.instance.initPaymentSheet(
           paymentSheetParameters: SetupPaymentSheetParameters(
             paymentIntentClientSecret: paymentIntentData['client_secret'],
             allowsDelayedPaymentMethods: false,
-            googlePay: const PaymentSheetGooglePay(merchantCountryCode: 'US', testEnv: true, currencyCode: "USD"),
+            googlePay: const PaymentSheetGooglePay(
+              merchantCountryCode: 'US',
+              testEnv: true,
+              currencyCode: "USD",
+            ),
             customFlow: true,
             style: ThemeMode.system,
-            appearance: PaymentSheetAppearance(colors: PaymentSheetAppearanceColors(primary: AppThemeData.primary300)),
+            appearance: PaymentSheetAppearance(
+              colors: PaymentSheetAppearanceColors(
+                primary: AppThemeData.primary300,
+              ),
+            ),
             merchantDisplayName: 'GoRide',
           ),
         );
@@ -899,7 +1166,10 @@ class CartController extends GetxController {
       var response = await http.post(
         Uri.parse('https://api.stripe.com/v1/payment_intents'),
         body: body,
-        headers: {'Authorization': 'Bearer $stripeSecret', 'Content-Type': 'application/x-www-form-urlencoded'},
+        headers: {
+          'Authorization': 'Bearer $stripeSecret',
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
       );
 
       return jsonDecode(response.body);
@@ -909,8 +1179,14 @@ class CartController extends GetxController {
   }
 
   //mercadoo
-  Future<Null> mercadoPagoMakePayment({required BuildContext context, required String amount}) async {
-    final headers = {'Authorization': 'Bearer ${mercadoPagoModel.value.accessToken}', 'Content-Type': 'application/json'};
+  Future<Null> mercadoPagoMakePayment({
+    required BuildContext context,
+    required String amount,
+  }) async {
+    final headers = {
+      'Authorization': 'Bearer ${mercadoPagoModel.value.accessToken}',
+      'Content-Type': 'application/json',
+    };
 
     final body = jsonEncode({
       "items": [
@@ -923,12 +1199,20 @@ class CartController extends GetxController {
         },
       ],
       "payer": {"email": userModel.value.email},
-      "back_urls": {"failure": "${Constant.globalUrl}payment/failure", "pending": "${Constant.globalUrl}payment/pending", "success": "${Constant.globalUrl}payment/success"},
+      "back_urls": {
+        "failure": "${Constant.globalUrl}payment/failure",
+        "pending": "${Constant.globalUrl}payment/pending",
+        "success": "${Constant.globalUrl}payment/success",
+      },
       "auto_return": "approved",
       // Automatically return after payment is approved
     });
 
-    final response = await http.post(Uri.parse("https://api.mercadopago.com/checkout/preferences"), headers: headers, body: body);
+    final response = await http.post(
+      Uri.parse("https://api.mercadopago.com/checkout/preferences"),
+      headers: headers,
+      body: body,
+    );
 
     if (response.statusCode == 200 || response.statusCode == 201) {
       final data = jsonDecode(response.body);
@@ -986,9 +1270,12 @@ class CartController extends GetxController {
 
   ///PayStack Payment Method
   Future<void> payStackPayment(String totalAmount) async {
-    await PayStackURLGen.payStackURLGen(amount: (double.parse(totalAmount) * 100).toString(), currency: "ZAR", secretKey: payStackModel.value.secretKey.toString(), userModel: userModel.value).then((
-      value,
-    ) async {
+    await PayStackURLGen.payStackURLGen(
+      amount: (double.parse(totalAmount) * 100).toString(),
+      currency: "ZAR",
+      secretKey: payStackModel.value.secretKey.toString(),
+      userModel: userModel.value,
+    ).then((value) async {
       if (value != null) {
         PayStackUrlModel payStackModel0 = value;
         Get.to(
@@ -1008,15 +1295,23 @@ class CartController extends GetxController {
           }
         });
       } else {
-        ShowToastDialog.showToast("Something went wrong, please contact admin.".tr);
+        ShowToastDialog.showToast(
+          "Something went wrong, please contact admin.".tr,
+        );
       }
     });
   }
 
   //flutter wave Payment Method
-  Future<Null> flutterWaveInitiatePayment({required BuildContext context, required String amount}) async {
+  Future<Null> flutterWaveInitiatePayment({
+    required BuildContext context,
+    required String amount,
+  }) async {
     final url = Uri.parse('https://api.flutterwave.com/v3/payments');
-    final headers = {'Authorization': 'Bearer ${flutterWaveModel.value.secretKey}', 'Content-Type': 'application/json'};
+    final headers = {
+      'Authorization': 'Bearer ${flutterWaveModel.value.secretKey}',
+      'Content-Type': 'application/json',
+    };
 
     final body = jsonEncode({
       "tx_ref": _ref,
@@ -1029,14 +1324,19 @@ class CartController extends GetxController {
         "phonenumber": userModel.value.phoneNumber, // Add a real phone number
         "name": userModel.value.fullName(), // Add a real customer name
       },
-      "customizations": {"title": "Payment for Services", "description": "Payment for XYZ services"},
+      "customizations": {
+        "title": "Payment for Services",
+        "description": "Payment for XYZ services",
+      },
     });
 
     final response = await http.post(url, headers: headers, body: body);
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      Get.to(MercadoPagoScreen(initialURl: data['data']['link']))!.then((value) {
+      Get.to(MercadoPagoScreen(initialURl: data['data']['link']))!.then((
+        value,
+      ) {
         if (value) {
           ShowToastDialog.showToast("Payment Successful!!".tr);
           placeOrder();
@@ -1065,8 +1365,14 @@ class CartController extends GetxController {
 
   // payFast
   void payFastPayment({required BuildContext context, required String amount}) {
-    PayStackURLGen.getPayHTML(payFastSettingData: payFastModel.value, amount: amount.toString(), userModel: userModel.value).then((String? value) async {
-      bool isDone = await Get.to(PayFastScreen(htmlData: value!, payFastSettingData: payFastModel.value));
+    PayStackURLGen.getPayHTML(
+      payFastSettingData: payFastModel.value,
+      amount: amount.toString(),
+      userModel: userModel.value,
+    ).then((String? value) async {
+      bool isDone = await Get.to(
+        PayFastScreen(htmlData: value!, payFastSettingData: payFastModel.value),
+      );
       if (isDone) {
         Get.back();
         ShowToastDialog.showToast("Payment successfully".tr);
@@ -1079,16 +1385,22 @@ class CartController extends GetxController {
   }
 
   //PaymePayment
-  Future<void> paymeMakePayment({required BuildContext context, required String amount}) async {
+  Future<void> paymeMakePayment({
+    required BuildContext context,
+    required String amount,
+  }) async {
     log('🔵 [PaymePayment] paymeMakePayment boshlandi, amount: $amount');
     try {
       ShowToastDialog.showLoader("Processing...".tr);
-      
-      final url = Uri.parse('https://emart-web.felix-its.uz/wallet-payme-link/');
+
+      final url = Uri.parse(
+        'https://emart-web.felix-its.uz/wallet-payme-link/',
+      );
       final headers = {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
       };
       final body = jsonEncode({
         'phone': '+998${userModel.value.phoneNumber}',
@@ -1103,16 +1415,22 @@ class CartController extends GetxController {
 
       log('🔵 [PaymePayment] Response Status: ${response.statusCode}');
       log('🔵 [PaymePayment] Response Headers: ${response.headers}');
-      log('🔵 [PaymePayment] Response Body: ${response.body.substring(0, response.body.length > 500 ? 500 : response.body.length)}');
+      log(
+        '🔵 [PaymePayment] Response Body: ${response.body.substring(0, response.body.length > 500 ? 500 : response.body.length)}',
+      );
 
       ShowToastDialog.closeLoader();
 
       // Check if response is HTML (redirect to login)
-      if (response.body.trim().startsWith('<!DOCTYPE html>') || 
+      if (response.body.trim().startsWith('<!DOCTYPE html>') ||
           response.body.trim().startsWith('<html>') ||
           response.body.contains('Redirecting to')) {
-        ShowToastDialog.showToast("Server authentication error. Please try again.".tr);
-        log('❌ [PaymePayment] HTML response received (likely redirect to login)');
+        ShowToastDialog.showToast(
+          "Server authentication error. Please try again.".tr,
+        );
+        log(
+          '❌ [PaymePayment] HTML response received (likely redirect to login)',
+        );
         return;
       }
 
@@ -1121,12 +1439,16 @@ class CartController extends GetxController {
           final data = jsonDecode(response.body);
           if (data['status'] == true && data['link'] != null) {
             final paymentOrderId = data['order_id'] as int?;
-            Get.to(() => PaymeScreen(
-              initialURl: data['link'],
-              orderId: paymentOrderId,
-            ))!.then((value) {
+            Get.to(
+              () => PaymeScreen(
+                initialURl: data['link'],
+                orderId: paymentOrderId,
+              ),
+            )!.then((value) {
               // PaymeScreen qaytganida Map: { success, is_paid, order_id, ... }
-              final isPaid = value is Map && (value['is_paid'] == true || value['success'] == true);
+              final isPaid =
+                  value is Map &&
+                  (value['is_paid'] == true || value['success'] == true);
               if (isPaid) {
                 selectedPaymentMethod.value = PaymentGateway.payme.name;
                 ShowToastDialog.showToast("Payment Successful!!".tr);
@@ -1145,7 +1467,9 @@ class CartController extends GetxController {
           log('❌ [PaymePayment] Response body: ${response.body}');
         }
       } else {
-        ShowToastDialog.showToast("Something went wrong, please contact admin.".tr);
+        ShowToastDialog.showToast(
+          "Something went wrong, please contact admin.".tr,
+        );
         log('❌ [PaymePayment] Error status: ${response.statusCode}');
         log('❌ [PaymePayment] Error body: ${response.body}');
       }
@@ -1164,26 +1488,50 @@ class CartController extends GetxController {
     final response = await http.post(
       Uri.parse(getChecksum),
       headers: {},
-      body: {"mid": paytmModel.value.paytmMID.toString(), "order_id": orderId, "key_secret": paytmModel.value.pAYTMMERCHANTKEY.toString()},
+      body: {
+        "mid": paytmModel.value.paytmMID.toString(),
+        "order_id": orderId,
+        "key_secret": paytmModel.value.pAYTMMERCHANTKEY.toString(),
+      },
     );
 
     final data = jsonDecode(response.body);
-    await verifyCheckSum(checkSum: data["code"], amount: amount, orderId: orderId).then((value) {
+    await verifyCheckSum(
+      checkSum: data["code"],
+      amount: amount,
+      orderId: orderId,
+    ).then((value) {
       initiatePayment(amount: amount, orderId: orderId).then((value) {
         String callback = "";
         if (paytmModel.value.isSandboxEnabled == true) {
-          callback = "${callback}https://securegw-stage.paytm.in/theia/paytmCallback?ORDER_ID=$orderId";
+          callback =
+              "${callback}https://securegw-stage.paytm.in/theia/paytmCallback?ORDER_ID=$orderId";
         } else {
-          callback = "${callback}https://securegw.paytm.in/theia/paytmCallback?ORDER_ID=$orderId";
+          callback =
+              "${callback}https://securegw.paytm.in/theia/paytmCallback?ORDER_ID=$orderId";
         }
 
         GetPaymentTxtTokenModel result = value;
-        startTransaction(context, txnTokenBy: result.body.txnToken ?? '', orderId: orderId, amount: amount, callBackURL: callback, isStaging: paytmModel.value.isSandboxEnabled);
+        startTransaction(
+          context,
+          txnTokenBy: result.body.txnToken ?? '',
+          orderId: orderId,
+          amount: amount,
+          callBackURL: callback,
+          isStaging: paytmModel.value.isSandboxEnabled,
+        );
       });
     });
   }
 
-  Future<void> startTransaction(context, {required String txnTokenBy, required orderId, required double amount, required callBackURL, required isStaging}) async {
+  Future<void> startTransaction(
+    context, {
+    required String txnTokenBy,
+    required orderId,
+    required double amount,
+    required callBackURL,
+    required isStaging,
+  }) async {
     // try {
     //   var response = AllInOneSdk.startTransaction(
     //     paytmModel.value.paytmMID.toString(),
@@ -1219,24 +1567,38 @@ class CartController extends GetxController {
     // }
   }
 
-  Future verifyCheckSum({required String checkSum, required double amount, required orderId}) async {
+  Future verifyCheckSum({
+    required String checkSum,
+    required double amount,
+    required orderId,
+  }) async {
     String getChecksum = "${Constant.globalUrl}payments/validatechecksum";
     final response = await http.post(
       Uri.parse(getChecksum),
       headers: {},
-      body: {"mid": paytmModel.value.paytmMID.toString(), "order_id": orderId, "key_secret": paytmModel.value.pAYTMMERCHANTKEY.toString(), "checksum_value": checkSum},
+      body: {
+        "mid": paytmModel.value.paytmMID.toString(),
+        "order_id": orderId,
+        "key_secret": paytmModel.value.pAYTMMERCHANTKEY.toString(),
+        "checksum_value": checkSum,
+      },
     );
     final data = jsonDecode(response.body);
     return data['status'];
   }
 
-  Future<GetPaymentTxtTokenModel> initiatePayment({required double amount, required orderId}) async {
+  Future<GetPaymentTxtTokenModel> initiatePayment({
+    required double amount,
+    required orderId,
+  }) async {
     String initiateURL = "${Constant.globalUrl}payments/initiatepaytmpayment";
     String callback = "";
     if (paytmModel.value.isSandboxEnabled == true) {
-      callback = "${callback}https://securegw-stage.paytm.in/theia/paytmCallback?ORDER_ID=$orderId";
+      callback =
+          "${callback}https://securegw-stage.paytm.in/theia/paytmCallback?ORDER_ID=$orderId";
     } else {
-      callback = "${callback}https://securegw.paytm.in/theia/paytmCallback?ORDER_ID=$orderId";
+      callback =
+          "${callback}https://securegw.paytm.in/theia/paytmCallback?ORDER_ID=$orderId";
     }
     final response = await http.post(
       Uri.parse(initiateURL),
@@ -1254,9 +1616,12 @@ class CartController extends GetxController {
     );
     log(response.body);
     final data = jsonDecode(response.body);
-    if (data["body"]["txnToken"] == null || data["body"]["txnToken"].toString().isEmpty) {
+    if (data["body"]["txnToken"] == null ||
+        data["body"]["txnToken"].toString().isEmpty) {
       Get.back();
-      ShowToastDialog.showToast("something went wrong, please contact admin.".tr);
+      ShowToastDialog.showToast(
+        "something went wrong, please contact admin.".tr,
+      );
     }
     return GetPaymentTxtTokenModel.fromJson(data);
   }
@@ -1274,7 +1639,10 @@ class CartController extends GetxController {
       'description': 'wallet Topup',
       'retry': {'enabled': true, 'max_count': 1},
       'send_sms_hash': true,
-      'prefill': {'contact': userModel.value.phoneNumber, 'email': userModel.value.email},
+      'prefill': {
+        'contact': userModel.value.phoneNumber,
+        'email': userModel.value.email,
+      },
       'external': {
         'wallets': ['paytm'],
       },
@@ -1308,7 +1676,10 @@ class CartController extends GetxController {
   }
 
   //Midtrans payment
-  Future<void> midtransMakePayment({required String amount, required BuildContext context}) async {
+  Future<void> midtransMakePayment({
+    required String amount,
+    required BuildContext context,
+  }) async {
     await createPaymentLink(amount: amount).then((url) {
       ShowToastDialog.closeLoader();
       if (url != '') {
@@ -1326,15 +1697,30 @@ class CartController extends GetxController {
 
   Future<String> createPaymentLink({required var amount}) async {
     var ordersId = const Uuid().v1();
-    final url = Uri.parse(midTransModel.value.isSandbox! ? 'https://api.sandbox.midtrans.com/v1/payment-links' : 'https://api.midtrans.com/v1/payment-links');
+    final url = Uri.parse(
+      midTransModel.value.isSandbox!
+          ? 'https://api.sandbox.midtrans.com/v1/payment-links'
+          : 'https://api.midtrans.com/v1/payment-links',
+    );
 
     final response = await http.post(
       url,
-      headers: {'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': generateBasicAuthHeader(midTransModel.value.serverKey!)},
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': generateBasicAuthHeader(
+          midTransModel.value.serverKey!,
+        ),
+      },
       body: jsonEncode({
-        'transaction_details': {'order_id': ordersId, 'gross_amount': double.parse(amount.toString()).toInt()},
+        'transaction_details': {
+          'order_id': ordersId,
+          'gross_amount': double.parse(amount.toString()).toInt(),
+        },
         'usage_limit': 2,
-        "callbacks": {"finish": "https://www.google.com?merchant_order_id=$ordersId"},
+        "callbacks": {
+          "finish": "https://www.google.com?merchant_order_id=$ordersId",
+        },
       }),
     );
 
@@ -1342,7 +1728,9 @@ class CartController extends GetxController {
       final responseData = jsonDecode(response.body);
       return responseData['payment_url'];
     } else {
-      ShowToastDialog.showToast("something went wrong, please contact admin.".tr);
+      ShowToastDialog.showToast(
+        "something went wrong, please contact admin.".tr,
+      );
       return '';
     }
   }
@@ -1359,13 +1747,30 @@ class CartController extends GetxController {
   static String orderId = '';
   static String amount = '';
 
-  Future<void> orangeMakePayment({required String amount, required BuildContext context}) async {
+  Future<void> orangeMakePayment({
+    required String amount,
+    required BuildContext context,
+  }) async {
     reset();
     var id = const Uuid().v4();
-    var paymentURL = await fetchToken(context: context, orderId: id, amount: amount, currency: 'USD');
+    var paymentURL = await fetchToken(
+      context: context,
+      orderId: id,
+      amount: amount,
+      currency: 'USD',
+    );
     ShowToastDialog.closeLoader();
     if (paymentURL.toString() != '') {
-      Get.to(() => OrangeMoneyScreen(initialURl: paymentURL, accessToken: accessToken, amount: amount, orangePay: orangeMoneyModel.value, orderId: orderId, payToken: payToken))!.then((value) {
+      Get.to(
+        () => OrangeMoneyScreen(
+          initialURl: paymentURL,
+          accessToken: accessToken,
+          amount: amount,
+          orangePay: orangeMoneyModel.value,
+          orderId: orderId,
+          payToken: payToken,
+        ),
+      )!.then((value) {
         if (value == true) {
           ShowToastDialog.showToast("Payment Successful!!".tr);
           placeOrder();
@@ -1377,13 +1782,22 @@ class CartController extends GetxController {
     }
   }
 
-  Future fetchToken({required String orderId, required String currency, required BuildContext context, required String amount}) async {
+  Future fetchToken({
+    required String orderId,
+    required String currency,
+    required BuildContext context,
+    required String amount,
+  }) async {
     String apiUrl = 'https://api.orange.com/oauth/v3/token';
     Map<String, String> requestBody = {'grant_type': 'client_credentials'};
 
     var response = await http.post(
       Uri.parse(apiUrl),
-      headers: <String, String>{'Authorization': "Basic ${orangeMoneyModel.value.auth!}", 'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'application/json'},
+      headers: <String, String>{
+        'Authorization': "Basic ${orangeMoneyModel.value.auth!}",
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Accept': 'application/json',
+      },
       body: requestBody,
     );
 
@@ -1394,17 +1808,32 @@ class CartController extends GetxController {
 
       accessToken = responseData['access_token'];
       // ignore: use_build_context_synchronously
-      return await webpayment(context: context, amountData: amount, currency: currency, orderIdData: orderId);
+      return await webpayment(
+        context: context,
+        amountData: amount,
+        currency: currency,
+        orderIdData: orderId,
+      );
     } else {
-      ShowToastDialog.showToast("Something went wrong, please contact admin.".tr);
+      ShowToastDialog.showToast(
+        "Something went wrong, please contact admin.".tr,
+      );
       return '';
     }
   }
 
-  Future webpayment({required String orderIdData, required BuildContext context, required String currency, required String amountData}) async {
+  Future webpayment({
+    required String orderIdData,
+    required BuildContext context,
+    required String currency,
+    required String amountData,
+  }) async {
     orderId = orderIdData;
     amount = amountData;
-    String apiUrl = orangeMoneyModel.value.isSandbox! == true ? 'https://api.orange.com/orange-money-webpay/dev/v1/webpayment' : 'https://api.orange.com/orange-money-webpay/cm/v1/webpayment';
+    String apiUrl =
+        orangeMoneyModel.value.isSandbox! == true
+            ? 'https://api.orange.com/orange-money-webpay/dev/v1/webpayment'
+            : 'https://api.orange.com/orange-money-webpay/cm/v1/webpayment';
     Map<String, String> requestBody = {
       "merchant_key": orangeMoneyModel.value.merchantKey ?? '',
       "currency": orangeMoneyModel.value.isSandbox == true ? "OUV" : currency,
@@ -1419,7 +1848,11 @@ class CartController extends GetxController {
 
     var response = await http.post(
       Uri.parse(apiUrl),
-      headers: <String, String>{'Authorization': 'Bearer $accessToken', 'Content-Type': 'application/json', 'Accept': 'application/json'},
+      headers: <String, String>{
+        'Authorization': 'Bearer $accessToken',
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
       body: json.encode(requestBody),
     );
 
@@ -1433,7 +1866,9 @@ class CartController extends GetxController {
         return '';
       }
     } else {
-      ShowToastDialog.showToast("Something went wrong, please contact admin.".tr);
+      ShowToastDialog.showToast(
+        "Something went wrong, please contact admin.".tr,
+      );
       return '';
     }
   }
@@ -1450,7 +1885,13 @@ class CartController extends GetxController {
     await createXenditInvoice(amount: amount).then((model) {
       ShowToastDialog.closeLoader();
       if (model.id != null) {
-        Get.to(() => XenditScreen(initialURl: model.invoiceUrl ?? '', transId: model.id ?? '', apiKey: xenditModel.value.apiKey!.toString()))!.then((value) {
+        Get.to(
+          () => XenditScreen(
+            initialURl: model.invoiceUrl ?? '',
+            transId: model.id ?? '',
+            apiKey: xenditModel.value.apiKey!.toString(),
+          ),
+        )!.then((value) {
           if (value == true) {
             ShowToastDialog.showToast("Payment Successful!!".tr);
             placeOrder();
@@ -1467,7 +1908,9 @@ class CartController extends GetxController {
     const url = 'https://api.xendit.co/v2/invoices';
     var headers = {
       'Content-Type': 'application/json',
-      'Authorization': generateBasicAuthHeader(xenditModel.value.apiKey!.toString()),
+      'Authorization': generateBasicAuthHeader(
+        xenditModel.value.apiKey!.toString(),
+      ),
       // 'Cookie': '__cf_bm=yERkrx3xDITyFGiou0bbKY1bi7xEwovHNwxV1vCNbVc-1724155511-1.0.1.1-jekyYQmPCwY6vIJ524K0V6_CEw6O.dAwOmQnHtwmaXO_MfTrdnmZMka0KZvjukQgXu5B.K_6FJm47SGOPeWviQ',
     };
 
@@ -1480,7 +1923,11 @@ class CartController extends GetxController {
     });
 
     try {
-      final response = await http.post(Uri.parse(url), headers: headers, body: body);
+      final response = await http.post(
+        Uri.parse(url),
+        headers: headers,
+        body: body,
+      );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         XenditModel model = XenditModel.fromJson(jsonDecode(response.body));

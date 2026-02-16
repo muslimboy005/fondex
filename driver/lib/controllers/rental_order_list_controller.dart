@@ -7,8 +7,9 @@ class RentalOrderListController extends GetxController {
   RxBool isLoading = true.obs;
   RxList<RentalOrderModel> rentalOrders = <RentalOrderModel>[].obs;
 
-  RxString selectedTab = "On Going".obs;
-  RxList<String> tabTitles = ["On Going", "Completed", "Cancelled"].obs;
+  // Keep tab identifiers stable keys for translation
+  RxString selectedTab = "on_going".obs;
+  RxList<String> tabTitles = ["on_going", "completed", "cancelled"].obs;
 
   StreamSubscription<List<RentalOrderModel>>? _rentalSubscription;
   final RxString selectedPaymentMethod = ''.obs;
@@ -47,7 +48,7 @@ class RentalOrderListController extends GetxController {
   /// Return filtered list for a specific tab title
   List<RentalOrderModel> getOrdersForTab(String tab) {
     switch (tab) {
-      case "On Going":
+      case "on_going":
         return rentalOrders
             .where(
               (order) => [
@@ -61,11 +62,19 @@ class RentalOrderListController extends GetxController {
             )
             .toList();
 
-      case "Completed":
-        return rentalOrders.where((order) => ["Order Completed"].contains(order.status)).toList();
+      case "completed":
+        return rentalOrders
+            .where((order) => ["Order Completed"].contains(order.status))
+            .toList();
 
-      case "Cancelled":
-        return rentalOrders.where((order) => ["Order Rejected", "Order Cancelled", "Driver Rejected"].contains(order.status)).toList();
+      case "cancelled":
+        return rentalOrders
+            .where((order) => [
+                  "Order Rejected",
+                  "Order Cancelled",
+                  "Driver Rejected"
+                ].contains(order.status))
+            .toList();
 
       default:
         return [];

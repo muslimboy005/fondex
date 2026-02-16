@@ -128,7 +128,7 @@ class MyRentalBookingController extends GetxController {
           userId: FireStoreUtils.getCurrentUid(),
           isTopup: false,
           orderId: selectedOrder.value.id,
-          note: "Rental Amount debited".tr,
+          note: "Rental Amount debited",
           paymentStatus: "success".tr,
           serviceType: Constant.parcelServiceType,
         );
@@ -204,7 +204,7 @@ class MyRentalBookingController extends GetxController {
           isTopup: true,
           // refund
           orderId: order.id,
-          note: "Refund for cancelled booking".tr,
+          note: "Refund for cancelled booking",
           paymentStatus: "success".tr,
           serviceType: Constant.parcelServiceType,
         );

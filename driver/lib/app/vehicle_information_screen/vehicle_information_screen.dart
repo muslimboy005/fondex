@@ -292,7 +292,7 @@ class VehicleInformationScreen extends StatelessWidget {
             ),
             items: items.map((item) {
               String text = '';
-              if (item is String) text = item;
+              if (item is String) text = item.tr;
               if (item is SectionModel) text = item.name ?? '';
               if (item is VehicleType) text = item.name ?? '';
               if (item is CarMakes) text = item.name ?? '';

@@ -3863,7 +3863,7 @@ class CabBookingScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              value.name.capitalizeString(),
+                              value.localizedLabel(),
                               textAlign: TextAlign.start,
                               style: AppThemeData.semiBoldTextStyle(
                                 fontSize: 16,
@@ -3899,7 +3899,7 @@ class CabBookingScreen extends StatelessWidget {
                       )
                       : Expanded(
                         child: Text(
-                          value.name.capitalizeString(),
+                          value.localizedLabel(),
                           textAlign: TextAlign.start,
                           style: AppThemeData.semiBoldTextStyle(
                             fontSize: 16,

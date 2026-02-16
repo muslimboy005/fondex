@@ -27,7 +27,7 @@ class RentalOrderDetailsController extends GetxController {
       fetchOrder(orderId);
     } else {
       isLoading.value = false;
-      ShowToastDialog.showToast("Invalid order details");
+      ShowToastDialog.showToast("Invalid order details".tr);
     }
   }
 
@@ -102,7 +102,7 @@ class RentalOrderDetailsController extends GetxController {
 
       totalAmount.value = (subTotal.value - discount.value) + taxAmount.value;
     } catch (e) {
-      ShowToastDialog.showToast("Failed to calculate total: $e");
+      ShowToastDialog.showToast("${'Failed to calculate total'.tr}: $e");
     }
   }
 
@@ -114,7 +114,7 @@ class RentalOrderDetailsController extends GetxController {
       calculateTotalAmount();
       fetchCustomerDetails();
     } catch (e) {
-      ShowToastDialog.showToast("Failed to fetch order details: $e");
+      ShowToastDialog.showToast("${'Failed to fetch order details'.tr}: $e");
     } finally {
       isLoading.value = false;
     }

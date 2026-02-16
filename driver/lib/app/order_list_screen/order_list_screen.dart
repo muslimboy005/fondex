@@ -140,10 +140,12 @@ class OrderListScreen extends StatelessWidget {
                                                           fontFamily: AppThemeData.regular,
                                                           color: isDark ? AppThemeData.grey300 : AppThemeData.grey600,
                                                         ),
-                                                      ),
                                                     ),
-                                                    Text(
-                                                      orderModel.status.toString(),
+                                                  ),
+                                                  Text(
+                                                      orderModel.status
+                                                          .toString()
+                                                          .tr,
                                                       textAlign: TextAlign.start,
                                                       style: TextStyle(
                                                         fontFamily: AppThemeData.semiBold,

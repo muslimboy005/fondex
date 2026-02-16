@@ -18,6 +18,8 @@ import 'package:get/get.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:timelines_plus/timelines_plus.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart' as google_maps;
+import 'package:yandex_mapkit/yandex_mapkit.dart' as ym;
+import 'package:driver/utils/yandex_map_utils.dart';
 
 class CabHomeScreen extends StatelessWidget {
   const CabHomeScreen({super.key});
@@ -187,60 +189,93 @@ class CabHomeScreen extends StatelessWidget {
                                               currentLocation.longitude == 0.0);
                                       final isDark = themeController.isDark.value;
 
-                                      return google_maps.GoogleMap(
-                                        key: ValueKey('google_map_${isDark ? 'dark' : 'light'}'),
-                                        onMapCreated:
-                                            (google_maps.GoogleMapController
-                                                mapController) {
-                                          // Store controller reference
-                                          controller.mapController =
-                                              mapController;
-
-                                          // Apply dark mode style if needed
-                                          if (isDark) {
-                                            mapController.setMapStyle(
-                                                Utils.getGoogleMapDarkStyle());
-                                          }
-
-                                          // Move to current location
-                                          if (hasValidLocation) {
-                                            mapController.animateCamera(
-                                              google_maps.CameraUpdate
-                                                  .newCameraPosition(
-                                                google_maps.CameraPosition(
-                                                  target: google_maps.LatLng(
-                                                    currentLocation.latitude,
-                                                    currentLocation.longitude,
+                                      return Constant.isYandexMap
+                                          ? ym.YandexMap(
+                                            onMapCreated:
+                                                (ym.YandexMapController mapController) async {
+                                              controller.yandexMapController =
+                                                  mapController;
+                                              await mapController.toggleUserLayer(
+                                                  visible: true);
+                                              await mapController.moveCamera(
+                                                ym.CameraUpdate.newCameraPosition(
+                                                  ym.CameraPosition(
+                                                    target: ym.Point(
+                                                      latitude: hasValidLocation
+                                                          ? currentLocation
+                                                              .latitude
+                                                          : 41.3111,
+                                                      longitude: hasValidLocation
+                                                          ? currentLocation
+                                                              .longitude
+                                                          : 69.2797,
+                                                    ),
+                                                    zoom: hasValidLocation ? 16 : 12,
                                                   ),
-                                                  zoom: 16,
                                                 ),
-                                              ),
-                                            );
-                                          }
+                                              );
+                                              controller.updateGoogleMarkers();
+                                            },
+                                            mapObjects:
+                                                yandexMapObjectsFromGoogle(
+                                              markers: controller.markers.values,
+                                              polylines: controller.polyLines.values,
+                                            ),
+                                          )
+                                          : google_maps.GoogleMap(
+                                            key: ValueKey('google_map_${isDark ? 'dark' : 'light'}'),
+                                            onMapCreated:
+                                                (google_maps.GoogleMapController
+                                                    mapController) {
+                                              // Store controller reference
+                                              controller.mapController =
+                                                  mapController;
 
-                                          // Update markers after map is created
-                                          controller.updateGoogleMarkers();
-                                        },
-                                        myLocationEnabled: true,
-                                        myLocationButtonEnabled: false,
-                                        mapType: google_maps.MapType.normal,
-                                        zoomControlsEnabled: false,
-                                        polylines: Set<google_maps.Polyline>.of(
-                                            controller.polyLines.values),
-                                        markers: controller.markers.values.toSet(),
-                                        initialCameraPosition:
-                                            google_maps.CameraPosition(
-                                          zoom: hasValidLocation ? 16 : 12,
-                                          target: google_maps.LatLng(
-                                            hasValidLocation
-                                                ? currentLocation.latitude
-                                                : 41.3111,
-                                            hasValidLocation
-                                                ? currentLocation.longitude
-                                                : 69.2797,
-                                          ),
-                                        ),
-                                      );
+                                              // Apply dark mode style if needed
+                                              if (isDark) {
+                                                mapController.setMapStyle(
+                                                    Utils.getGoogleMapDarkStyle());
+                                              }
+
+                                              // Move to current location
+                                              if (hasValidLocation) {
+                                                mapController.animateCamera(
+                                                  google_maps.CameraUpdate
+                                                      .newCameraPosition(
+                                                    google_maps.CameraPosition(
+                                                      target: google_maps.LatLng(
+                                                        currentLocation.latitude,
+                                                        currentLocation.longitude,
+                                                      ),
+                                                      zoom: 16,
+                                                    ),
+                                                  ),
+                                                );
+                                              }
+
+                                              // Update markers after map is created
+                                              controller.updateGoogleMarkers();
+                                            },
+                                            myLocationEnabled: true,
+                                            myLocationButtonEnabled: false,
+                                            mapType: google_maps.MapType.normal,
+                                            zoomControlsEnabled: false,
+                                            polylines: Set<google_maps.Polyline>.of(
+                                                controller.polyLines.values),
+                                            markers: controller.markers.values.toSet(),
+                                            initialCameraPosition:
+                                                google_maps.CameraPosition(
+                                              zoom: hasValidLocation ? 16 : 12,
+                                              target: google_maps.LatLng(
+                                                hasValidLocation
+                                                    ? currentLocation.latitude
+                                                    : 41.3111,
+                                                hasValidLocation
+                                                    ? currentLocation.longitude
+                                                    : 69.2797,
+                                              ),
+                                            ),
+                                          );
                                     }),
                                     // Center location button for Google Map
                                     if (Constant.mapType == "inappmap")
@@ -249,22 +284,49 @@ class CabHomeScreen extends StatelessWidget {
                                         right: 20,
                                         child: FloatingActionButton(
                                           heroTag: 'center_google',
-                                          onPressed: () {
+                                          onPressed: () async {
                                             try {
-                                              if (controller.mapController !=
-                                                  null) {
-                                                final currentLocation =
-                                                    controller.current.value;
-                                                if (!(currentLocation.latitude ==
-                                                        0.0 &&
-                                                    currentLocation.longitude ==
-                                                        0.0)) {
+                                              final currentLocation =
+                                                  controller.current.value;
+                                              if (currentLocation.latitude ==
+                                                      0.0 &&
+                                                  currentLocation.longitude ==
+                                                      0.0) {
+                                                return;
+                                              }
+                                              if (Constant.isYandexMap) {
+                                                if (controller
+                                                        .yandexMapController !=
+                                                    null) {
+                                                  await controller
+                                                      .yandexMapController!
+                                                      .moveCamera(
+                                                    ym.CameraUpdate
+                                                        .newCameraPosition(
+                                                      ym.CameraPosition(
+                                                        target: ym.Point(
+                                                          latitude:
+                                                              currentLocation
+                                                                  .latitude,
+                                                          longitude:
+                                                              currentLocation
+                                                                  .longitude,
+                                                        ),
+                                                        zoom: 16,
+                                                      ),
+                                                    ),
+                                                  );
+                                                }
+                                              } else {
+                                                if (controller.mapController !=
+                                                    null) {
                                                   controller.mapController!
                                                       .animateCamera(
                                                     google_maps.CameraUpdate
                                                         .newCameraPosition(
                                                       google_maps.CameraPosition(
-                                                        target: google_maps.LatLng(
+                                                        target:
+                                                            google_maps.LatLng(
                                                           currentLocation
                                                               .latitude,
                                                           currentLocation
@@ -322,8 +384,7 @@ class CabHomeScreen extends StatelessWidget {
                                       ),
                                       RoundedButtonFill(
                                         title:
-                                            "${'Redirect'} ${Constant.mapType == "google" ? "Google Map" : Constant.mapType == "googleGo" ? "Google Go" : Constant.mapType == "waze" ? "Waze Map" : Constant.mapType == "mapswithme" ? "MapsWithMe Map" : Constant.mapType == "yandexNavi" ? "VandexNavi Map" : Constant.mapType == "yandexMaps" ? "Vandex Map" : ""}"
-                                                .tr,
+                                            "${'Redirect'.tr} ${Constant.mapType == "google" ? "Google Map" : Constant.mapType == "googleGo" ? "Google Go" : Constant.mapType == "waze" ? "Waze Map" : Constant.mapType == "mapswithme" ? "MapsWithMe Map" : Constant.mapType == "yandexNavi" ? "VandexNavi Map" : Constant.mapType == "yandexMaps" ? "Vandex Map" : ""}",
                                         width: 55,
                                         height: 5.5,
                                         color: AppThemeData.primary300,
@@ -735,11 +796,11 @@ class CabHomeScreen extends StatelessWidget {
                             controller.acceptOrder();
                           } else {
                             ShowToastDialog.showToast(
-                                "Your owner has to maintain minimum {amount} wallet balance to accept the cab booking. Please contact your owner"
+                                "Your owner has to maintain minimum @amount wallet balance to accept the cab booking. Please contact your owner"
                                     .trParams({
                               "amount": Constant.ownerMinimumDepositToRideAccept
                                   .toString()
-                            }).tr);
+                            }));
                           }
                         } else {
                           if (controller.driverModel.value.walletAmount! >=
@@ -748,7 +809,7 @@ class CabHomeScreen extends StatelessWidget {
                             controller.acceptOrder();
                           } else {
                             ShowToastDialog.showToast(
-                                "You don't have sufficient balance in your wallet.");
+                                "You don't have sufficient balance in your wallet.".tr);
                           }
                         }
                       },

@@ -107,7 +107,7 @@ class DriverCreateScreen extends StatelessWidget {
                                           color: isDark ? AppThemeData.grey50 : AppThemeData.grey900,
                                           fontFamily: AppThemeData.medium),
                                       items: controller.service.map((item) {
-                                        return DropdownMenuItem<String>(value: item, child: Text(item.toString()));
+                                        return DropdownMenuItem<String>(value: item, child: Text(item.toString().tr));
                                       }).toList(),
                                     ),
                                     const SizedBox(height: 10),

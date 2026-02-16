@@ -57,7 +57,7 @@ class RentalOrderDetailsScreen extends StatelessWidget {
                                 children: [
                                   Expanded(
                                     child: Text(
-                                      "Booking Id : ${controller.order.value.id}",
+                                      "${'Booking Id:'.tr} ${controller.order.value.id}",
                                       style: AppThemeData.semiBoldTextStyle(
                                         fontSize: 16,
                                         color: isDark ? AppThemeData.greyDark700 : AppThemeData.grey700,
@@ -398,7 +398,7 @@ class RentalOrderDetailsScreen extends StatelessWidget {
                                       Text(
                                         Constant.amountShow(
                                           amount: controller.order.value.rentalPackageModel!.baseFare.toString(),
-                                        ).tr,
+                                        ),
                                         textAlign: TextAlign.start,
                                         style: AppThemeData.boldTextStyle(
                                           fontSize: 14,
@@ -414,7 +414,7 @@ class RentalOrderDetailsScreen extends StatelessWidget {
                                     children: [
                                       Expanded(
                                         child: Text(
-                                          'Including ${Constant.distanceType.tr}',
+                                          "${'Including'.tr} ${Constant.distanceType.tr}",
                                           textAlign: TextAlign.start,
                                           style: AppThemeData.mediumTextStyle(
                                             fontSize: 14,
@@ -423,8 +423,7 @@ class RentalOrderDetailsScreen extends StatelessWidget {
                                         ),
                                       ),
                                       Text(
-                                        "${controller.order.value.rentalPackageModel!.includedDistance.toString()} ${Constant.distanceType}"
-                                            .tr,
+                                        "${controller.order.value.rentalPackageModel!.includedDistance.toString()} ${Constant.distanceType}",
                                         textAlign: TextAlign.start,
                                         style: AppThemeData.boldTextStyle(
                                           fontSize: 14,
@@ -449,7 +448,7 @@ class RentalOrderDetailsScreen extends StatelessWidget {
                                         ),
                                       ),
                                       Text(
-                                        "${controller.order.value.rentalPackageModel!.includedHours.toString()} Hr".tr,
+                                        "${controller.order.value.rentalPackageModel!.includedHours.toString()} ${'Hr'.tr}",
                                         textAlign: TextAlign.start,
                                         style: AppThemeData.boldTextStyle(
                                           fontSize: 14,
@@ -465,7 +464,7 @@ class RentalOrderDetailsScreen extends StatelessWidget {
                                     children: [
                                       Expanded(
                                         child: Text(
-                                          'Extra ${Constant.distanceType}',
+                                          "${'Extra'.tr} ${Constant.distanceType.tr}",
                                           textAlign: TextAlign.start,
                                           style: AppThemeData.mediumTextStyle(
                                             fontSize: 14,
@@ -521,7 +520,7 @@ class RentalOrderDetailsScreen extends StatelessWidget {
                                               ),
                                             ),
                                             Text(
-                                              "${controller.order.value.endTime == null ? "0" : (((controller.order.value.endTime!.toDate().difference(controller.order.value.startTime!.toDate()).inMinutes) - (int.parse(controller.order.value.rentalPackageModel!.includedHours.toString()) * 60)).clamp(0, double.infinity).toInt().toString())} Min",
+                                              "${controller.order.value.endTime == null ? "0" : (((controller.order.value.endTime!.toDate().difference(controller.order.value.startTime!.toDate()).inMinutes) - (int.parse(controller.order.value.rentalPackageModel!.includedHours.toString()) * 60)).clamp(0, double.infinity).toInt().toString())} ${'Min'.tr}",
                                               textAlign: TextAlign.start,
                                               style: AppThemeData.boldTextStyle(
                                                 fontSize: 14,
@@ -587,8 +586,7 @@ class RentalOrderDetailsScreen extends StatelessWidget {
                                 null,
                               ),
                               _summaryTile(
-                                "Admin Commission (${controller.order.value.adminCommission}${controller.order.value.adminCommissionType == "Percentage" || controller.order.value.adminCommissionType == "percentage" ? "%" : Constant.currencyModel!.symbol})"
-                                    .tr,
+                                "${'Admin Commission'.tr} (${controller.order.value.adminCommission}${controller.order.value.adminCommissionType == "Percentage" || controller.order.value.adminCommissionType == "percentage" ? "%" : Constant.currencyModel!.symbol})",
                                 Constant.amountShow(amount: controller.adminCommission.value.toString()),
                                 isDark,
                                 AppThemeData.danger300,
@@ -613,7 +611,8 @@ class RentalOrderDetailsScreen extends StatelessWidget {
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          "Note : Admin commission will be debited from your wallet balance. \n \nAdmin commission will apply on your booking Amount minus Discount(if applicable).",
+                                          "Note: Admin commission will be debited from your wallet balance.\n\nAdmin commission will apply on your booking amount minus discount (if applicable)."
+                                              .tr,
                                           style: AppThemeData.boldTextStyle(
                                               fontSize: 16, color: isDark ? AppThemeData.danger300 : AppThemeData.danger300),
                                         ),

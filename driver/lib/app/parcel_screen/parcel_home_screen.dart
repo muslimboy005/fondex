@@ -104,7 +104,7 @@ class ParcelHomeScreen extends StatelessWidget {
                                     height: 20,
                                   ),
                                   Text(
-                                    'You’re Currently Offline'.tr,
+                                    "You're Currently Offline".tr,
                                     textAlign: TextAlign.center,
                                     style: AppThemeData.mediumTextStyle(
                                       fontSize: 18,
@@ -418,8 +418,7 @@ class ParcelHomeScreen extends StatelessWidget {
                                                           ),
                                                           Text(
                                                             Constant.amountShow(
-                                                                    amount: controller.calculateParcelTotalAmountBooking(parcelBookingData))
-                                                                .tr,
+                                                                    amount: controller.calculateParcelTotalAmountBooking(parcelBookingData)),
                                                             textAlign: TextAlign.start,
                                                             style: AppThemeData.semiBoldTextStyle(
                                                                 fontSize: 14,
@@ -440,7 +439,7 @@ class ParcelHomeScreen extends StatelessWidget {
                                                             height: 5,
                                                           ),
                                                           Text(
-                                                            '${Constant.timestampToDate(parcelBookingData.senderPickupDateTime!)}  '.tr,
+                                                            '${Constant.timestampToDate(parcelBookingData.senderPickupDateTime!)}  ',
                                                             textAlign: TextAlign.start,
                                                             style: AppThemeData.semiBoldTextStyle(
                                                                 fontSize: 14,
@@ -461,7 +460,7 @@ class ParcelHomeScreen extends StatelessWidget {
                                                             height: 5,
                                                           ),
                                                           Text(
-                                                            '${parcelBookingData.parcelWeight}'.tr,
+                                                            '${parcelBookingData.parcelWeight}',
                                                             textAlign: TextAlign.start,
                                                             style: AppThemeData.semiBoldTextStyle(
                                                                 fontSize: 14,

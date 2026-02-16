@@ -180,7 +180,7 @@ class SignupScreen extends StatelessWidget {
                               fontFamily: AppThemeData.medium),
                           items: controller.service.map((item) {
                             return DropdownMenuItem<String>(
-                                value: item, child: Text(item.toString()));
+                                value: item, child: Text(item.toString().tr));
                           }).toList(),
                         ),
                         const SizedBox(height: 10),
@@ -776,8 +776,7 @@ class SignupScreen extends StatelessWidget {
                             textInputType: TextInputType.emailAddress,
                             controller: controller.emailEditingController.value,
                             hintText: 'Enter Email Address'.tr,
-                            enable: controller.type.value == "google" ||
-                                    controller.type.value == "apple"
+                            enable: controller.type.value != "mobileNumber"
                                 ? false
                                 : true,
                             prefix: Padding(
@@ -958,9 +957,7 @@ class SignupScreen extends StatelessWidget {
                     const SizedBox(
                       height: 10,
                     ),
-                    controller.type.value == "google" ||
-                            controller.type.value == "apple" ||
-                            controller.type.value == "mobileNumber"
+                    controller.type.value == "mobileNumber"
                         ? const SizedBox()
                         : Column(
                             children: [
@@ -1112,9 +1109,7 @@ class SignupScreen extends StatelessWidget {
                 ),
                 InkWell(
                   onTap: () {
-                    if (controller.type.value == "google" ||
-                        controller.type.value == "apple" ||
-                        controller.type.value == "mobileNumber") {
+                    if (controller.type.value == "mobileNumber") {
                       if (controller
                           .firstNameEditingController.value.text.isEmpty) {
                         ShowToastDialog.showToast("Please enter first name".tr);
@@ -1153,7 +1148,7 @@ class SignupScreen extends StatelessWidget {
                             "Please enter Phone number".tr);
                       } else if (controller
                           .passwordEditingController.value.text.isEmpty) {
-                        ShowToastDialog.showToast("Please enter password");
+                        ShowToastDialog.showToast("Please enter password".tr);
                       } else if (controller.conformPasswordEditingController
                           .value.text.isEmpty) {
                         ShowToastDialog.showToast(

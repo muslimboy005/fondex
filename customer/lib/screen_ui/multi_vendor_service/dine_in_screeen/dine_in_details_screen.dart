@@ -689,7 +689,7 @@ class DineInDetailsScreen extends StatelessWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      "${workingHours.day}",
+                                      "${workingHours.day?.tr ?? workingHours.day}",
                                       textAlign: TextAlign.start,
                                       maxLines: 1,
                                       style: TextStyle(

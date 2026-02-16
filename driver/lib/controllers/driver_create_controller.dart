@@ -275,7 +275,7 @@ class DriverCreateController extends GetxController {
   }
 
   Future<void> getSection() async {
-    ShowToastDialog.showLoader("Please wait");
+    ShowToastDialog.showLoader("Please wait".tr);
     await FireStoreUtils.getSections(selectedService.value == "Cab Service"
             ? "cab-service"
             : selectedService.value == "Parcel Service"
@@ -295,7 +295,7 @@ class DriverCreateController extends GetxController {
   }
 
   Future<void> getVehicleType() async {
-    ShowToastDialog.showLoader("Please wait");
+    ShowToastDialog.showLoader("Please wait".tr);
     cabVehicleType.clear();
     if (selectedService.value == "Cab Service") {
       await FireStoreUtils.getCabVehicleType(selectedSection.value.id.toString()).then((value) {
@@ -337,7 +337,7 @@ class DriverCreateController extends GetxController {
   }
 
   Future<void> getCarModel() async {
-    ShowToastDialog.showLoader("Please wait");
+    ShowToastDialog.showLoader("Please wait".tr);
     carModelList.clear();
     selectedCarModel.value = CarModel();
     await FireStoreUtils.getCarModel(selectedCarMakes.value.name.toString()).then((value) {

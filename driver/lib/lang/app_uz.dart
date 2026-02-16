@@ -10,8 +10,6 @@ const Map<String, String> uzUZ = {
   'Enter password': 'Parolni kiriting',
   'Forgot Password': 'Parolni unutdingizmi',
   'Continue with Mobile Number': 'Telefon raqami bilan davom etish',
-  'with Google': 'Google bilan',
-  'with Apple': 'Apple bilan',
   'Please enter valid email':
       'Iltimos, to\'g\'ri elektron pochta manzilini kiriting',
   'Please enter valid password': 'Iltimos, to\'g\'ri parolni kiriting',
@@ -128,8 +126,8 @@ const Map<String, String> uzUZ = {
   "Ride Type": "Sayohat turi",
   "Reject": "Rad etish",
   "Accept": "Qabul qilish",
-  "Your owner has to maintain minimum {amount} wallet balance to accept the cab booking. Please contact your owner":
-      "Egangiz taksi bronini qabul qilish uchun minimal {amount} hamyon balansini saqlashi kerak. Iltimos, egangiz bilan bog'laning",
+  "Your owner has to maintain minimum @amount wallet balance to accept the cab booking. Please contact your owner":
+      "Egangiz taksi bronini qabul qilish uchun minimal @amount hamyon balansini saqlashi kerak. Iltimos, egangiz bilan bog'laning",
   "You don't have sufficient balance in your wallet.":
       "Hamyoningizda yetarli mablag' yo'q.",
   "Payment Type": "To'lov turi",
@@ -143,6 +141,7 @@ const Map<String, String> uzUZ = {
   "Enter the OTP shared by the customer to begin the trip":
       "Sayohatni boshlash uchun mijoz tomonidan berilgan OTP kodini kiriting",
   "Start Ride": "Sayohatni boshlash",
+  "ride": "Sayohat",
   "Please enter valid OTP": "Iltimos, to'g'ri OTP kodini kiriting",
   "Confirm Cash Payment": "Naqd to'lovni tasdiqlash",
   "Are you sure you received the cash from the passenger?":
@@ -193,7 +192,7 @@ const Map<String, String> uzUZ = {
   "view_status": "Holatni ko'rish",
   "New": "Yangi",
   "wallet_minimum_required":
-      "Buyurtma olish uchun hamyoningizda kamida {amount} bo'lishi kerak",
+      "Buyurtma olish uchun hamyoningizda kamida @amount bo'lishi kerak",
   "Active": "Faol",
   "New Order not found.": "Yangi buyurtma topilmadi.",
   "deliver_to_the": "Yetkazib berish",
@@ -271,7 +270,6 @@ const Map<String, String> uzUZ = {
   "Parcel Track": "Paket kuzatuv",
   "Pickup Address (Sender):": "Olish manzili (Yuboruvchi):",
   "Schedule Pickup time:": "Olish vaqti:",
-  "Order Date:": "Buyurtma sanasi:",
   "Parcel Type:": "Paket turi:",
   "Weight": "Og'irlik",
   "Rate": "Narx",
@@ -281,10 +279,10 @@ const Map<String, String> uzUZ = {
   "Where to?": "Qayerga?",
   "Select Date": "Sanani tanlang",
   "Parcel Booking not found": "Paket broni topilmadi",
-  "Your owner has to maintain minimum {amount} wallet balance to accept the parcel booking. Please contact your owner":
-      "Egangiz paket bronini qabul qilish uchun minimal {amount} hamyon balansini saqlashi kerak. Iltimos, egangiz bilan bog'laning",
-  "You have to maintain minimum {amount} wallet balance to accept the parcel booking.":
-      "Paket bronini qabul qilish uchun minimal {amount} hamyon balansini saqlashingiz kerak.",
+  "Your owner has to maintain minimum @amount wallet balance to accept the parcel booking. Please contact your owner":
+      "Egangiz paket bronini qabul qilish uchun minimal @amount hamyon balansini saqlashi kerak. Iltimos, egangiz bilan bog'laning",
+  "You have to maintain minimum @amount wallet balance to accept the parcel booking.":
+      "Paket bronini qabul qilish uchun minimal @amount hamyon balansini saqlashingiz kerak.",
   "No Rental booking available": "Ijaraga olish broni mavjud emas",
   "Package Details:": "Paket tafsilotlari:",
   "Including Distance:": "Masofani o'z ichiga oladi:",
@@ -293,10 +291,10 @@ const Map<String, String> uzUZ = {
   "Booking rejected successfully": "Bron muvaffaqiyatli rad etildi",
   "Accepting booking...": "Bronni qabul qilish...",
   "Booking accepted successfully": "Bron muvaffaqiyatli qabul qilindi",
-  "Your owner has to maintain minimum {{amount}} wallet balance to accept the rental booking. Please contact your owner":
-      "Egangiz ijaraga olish bronini qabul qilish uchun minimal {{amount}} hamyon balansini saqlashi kerak. Iltimos, egangiz bilan bog'laning",
-  "You have to maintain minimum {{amount}} wallet balance to accept the rental booking.":
-      "Ijaraga olish bronini qabul qilish uchun minimal {{amount}} hamyon balansini saqlashingiz kerak.",
+  "Your owner has to maintain minimum @amount wallet balance to accept the rental booking. Please contact your owner":
+      "Egangiz ijaraga olish bronini qabul qilish uchun minimal @amount hamyon balansini saqlashi kerak. Iltimos, egangiz bilan bog'laning",
+  "You have to maintain minimum @amount wallet balance to accept the rental booking.":
+      "Ijaraga olish bronini qabul qilish uchun minimal @amount hamyon balansini saqlashingiz kerak.",
   "Search new ride": "Yangi sayohat qidirish",
   "Reached Location": "Manzilga yetib keldi",
   "Set Final kilometers": "Yakuniy kilometrlarni belgilash",
@@ -451,4 +449,273 @@ const Map<String, String> uzUZ = {
   'Email address': 'Elektron pochta manzili',
   'Already have an account?': 'Allaqachon hisobingiz bormi?',
   'Sign in': 'Kirish',
+  "API endpoint not found. Please contact support.":
+      "API manzili topilmadi. Iltimos, qo'llab-quvvatlash xizmatiga murojaat qiling.",
+  "Amount Top-up successfully": "To'ldirish muvaffaqiyatli",
+  "An error occurred while deleting driver":
+      "Haydovchini o'chirishda xatolik yuz berdi",
+  "An error occurred. Please try again.":
+      "Xatolik yuz berdi. Iltimos, qayta urinib ko'ring.",
+  "Availability Status": "Mavjudlik holati",
+  "Bill Details": "Hisob tafsilotlari",
+  "Bu raqam bilan boshqa ilovada ro'yxatdan o'tgansiz":
+      "Bu raqam bilan boshqa ilovada ro'yxatdan o'tgansiz",
+  "Call": "Qo'ng'iroq",
+  "Cancel Payment?": "To'lovni bekor qilish?",
+  "Check out eMart, your ultimate food delivery application!":
+      "eMart — eng yaxshi ovqat yetkazib berish ilovangizni ko'rib chiqing!",
+  "Choose image from gallery": "Galereyadan rasm tanlash",
+  "Choose video from gallery": "Galereyadan video tanlash",
+  "Confirm Location": "Joylashuvni tasdiqlash",
+  "Continue": "Davom etish",
+  "Continue Payment": "To'lovni davom ettirish",
+  "Could not open Google Maps": "Google Maps ochilmadi",
+  "Could not open Yandex Maps": "Yandex Maps ochilmadi",
+  "Current Kilometer reading": "Joriy kilometr ko'rsatkichi",
+  "Deleting driver...": "Haydovchi o'chirilmoqda...",
+  "Document upload successfully": "Hujjat muvaffaqiyatli yuklandi",
+  "Driver account deleted successfully":
+      "Haydovchi hisobi muvaffaqiyatli o'chirildi",
+  "Driver created successfully": "Haydovchi muvaffaqiyatli yaratildi",
+  "Driver update successfully": "Haydovchi muvaffaqiyatli yangilandi",
+  "Earnings": "Daromadlar",
+  "Enter Current Kilometer reading": "Joriy kilometr ko'rsatkichini kiriting",
+  "Enter email is Invalid": "Kiritilgan elektron pochta noto'g'ri",
+  "Enter the OTP sent to your mobile":
+      "Telefoningizga yuborilgan OTP ni kiriting",
+  "Enter valid 6-digit OTP": "To'g'ri 6 raqamli OTP kiriting",
+  "Error": "Xato",
+  "Error opening Google Maps": "Google Mapsni ochishda xatolik",
+  "Error opening Yandex Maps": "Yandex Mapsni ochishda xatolik",
+  "Exit": "Chiqish",
+  "Extra": "Qo'shimcha",
+  "Failed to delete driver. Please contact administrator.":
+      "Haydovchini o'chirib bo'lmadi. Iltimos, administrator bilan bog'laning.",
+  "Failed to get payment link": "To'lov havolasini olishning iloji bo'lmadi",
+  "Failed to parse server response": "Server javobini tahlil qilib bo'lmadi",
+  "Final kilometer reading cannot be less than starting kilometer reading":
+      "Yakuniy kilometr ko'rsatkichi boshlang'ich ko'rsatkichdan kichik bo'lishi mumkin emas",
+  "Hr": "Soat",
+  "Including": "Jumladan",
+  "Invalid Email.": "Noto'g'ri elektron pochta.",
+  "Invalid OTP": "Noto'g'ri OTP",
+  "Invalid OTP code. Please try again.":
+      "Noto'g'ri OTP kodi. Iltimos, qayta urinib ko'ring.",
+  "Invalid OTP or Verification Failed":
+      "Noto'g'ri OTP yoki tekshiruv muvaffaqiyatsiz",
+  "Invalid email address.": "Noto'g'ri elektron pochta manzili.",
+  "Invalid email or password. Please check your credentials and try again.":
+      "Email yoki parol noto'g'ri. Ma'lumotlarni tekshirib, qayta urinib ko'ring.",
+  "Invalid password.": "Noto'g'ri parol.",
+  "Invalid response from server": "Serverdan noto'g'ri javob",
+  "Invalid server response. Please try again.":
+      "Server javobi noto'g'ri. Iltimos, qayta urinib ko'ring.",
+  "Kilometer updated successfully":
+      "Kilometr ko'rsatkichi muvaffaqiyatli yangilandi",
+  "Ko'rish": "Ko'rish",
+  "Let's Get Started": "Keling, boshlaymiz",
+  "Location information is not available": "Joylashuv ma'lumotlari mavjud emas",
+  "Logging in...": "Kirilmoqda...",
+  "Login failed": "Kirish muvaffaqiyatsiz",
+  "Login failed. Please try again.":
+      "Kirish muvaffaqiyatsiz. Iltimos, qayta urinib ko'ring.",
+  "Login timeout. Please check your internet connection.":
+      "Kirish vaqti tugadi. Internet aloqangizni tekshiring.",
+  "Map view": "Xarita ko'rinishi",
+  "Menu": "Menyu",
+  "Network error. Please check your internet connection.":
+      "Tarmoq xatosi. Internet aloqangizni tekshiring.",
+  "No Location Picked": "Joylashuv tanlanmagan",
+  "No internet connection. Please check your network.":
+      "Internet aloqasi yo'q. Tarmog'ingizni tekshiring.",
+  "No rental requests available in your selected zone.":
+      "Tanlangan zonada ijara so'rovlari mavjud emas.",
+  "No user found for that email.": "Bu email uchun foydalanuvchi topilmadi.",
+  "Note: Admin commission will be debited from your wallet balance.\n\nAdmin commission will apply on your booking amount minus discount (if applicable).":
+      "Eslatma: Administrator komissiyasi hamyon balansingizdan yechib olinadi.\n\nAdministrator komissiyasi (agar mavjud bo'lsa) bron summasidan chegirma ayirilgandan keyin hisoblanadi.",
+  "Nothing found here...": "Bu yerda hech narsa topilmadi",
+  "OTP sent": "OTP yuborildi",
+  "OTP session expired. Please request a new code.":
+      "OTP seansi muddati tugadi. Iltimos, yangi kod so'rang.",
+  "OTP xato": "OTP xato",
+  "Online - Ready for orders": "Onlayn - buyurtmalar uchun tayyor",
+  "Online - Ready for rides": "Onlayn - safarlar uchun tayyor",
+  "Order Delivered": "Buyurtma yetkazildi",
+  "Order ID": "Buyurtma ID",
+  "Payme Payment": "Payme to'lovi",
+  "Payment Failed": "To'lov muvaffaqiyatsiz",
+  "Payment Failed!!": "To'lov muvaffaqiyatsiz!!",
+  "Payment Processing!! via": "To'lov qayta ishlanmoqda!! orqali",
+  "Payment Successful!!": "To'lov muvaffaqiyatli!!",
+  "Payment UnSuccessful!!": "To'lov muvaffaqiyatsiz!!",
+  "Payment Unsuccessful!!": "To'lov muvaffaqiyatsiz!!",
+  "Payment error": "To'lov xatosi",
+  "Payment successfully": "To'lov muvaffaqiyatli",
+  "Phone number is required": "Telefon raqami majburiy",
+  "PickUp Location": "Olish joyi",
+  "Picked Location:": "Tanlangan joylashuv:",
+  "Please confirm that you have received the full cash amount from the customer before continuing.":
+      "Davom etishdan oldin mijozdan to'liq naqd pulni olganingizni tasdiqlang.",
+  "Please enter a valid 9-digit phone number":
+      "Iltimos, to'g'ri 9 xonali telefon raqamini kiriting",
+  "Please enter current kilometer reading":
+      "Iltimos, joriy kilometr ko'rsatkichini kiriting",
+  "Please enter your email address.":
+      "Iltimos, elektron pochta manzilingizni kiriting.",
+  "Please enter your password.": "Iltimos, parolingizni kiriting.",
+  "Please enter your phone number": "Iltimos, telefon raqamingizni kiriting",
+  "Please upload back side of document.":
+      "Iltimos, hujjatning orqa tomonini yuklang.",
+  "Please upload front side of document.":
+      "Iltimos, hujjatning old tomonini yuklang.",
+  "Processing...": "Qayta ishlanmoqda...",
+  "Rate the App": "Ilovani baholang",
+  "Reached store for Pickup": "Olib ketish uchun do'konga yetildi",
+  "Reached the Customers Door Steps": "Mijoz eshigiga yetib kelindi",
+  "Real-time status and earnings summary":
+      "Real vaqt holati va daromadlar bo'yicha qisqacha ma'lumot",
+  "Record video": "Videoni yozib olish",
+  "Registering...": "Ro'yxatdan o'tkazilmoqda...",
+  "Registration failed": "Ro'yxatdan o'tish muvaffaqiyatsiz",
+  "Registration failed. Please try again.":
+      "Ro'yxatdan o'tish muvaffaqiyatsiz. Iltimos, qayta urinib ko'ring.",
+  "Request timeout. Please check your internet connection.":
+      "So'rov vaqti tugadi. Internet aloqangizni tekshiring.",
+  "Resend OTP": "OTP ni qayta yuborish",
+  "Resend OTP in": "OTP ni qayta yuborish",
+  "Reset Password link sent your": "Parolni qayta tiklash havolasi yuborildi",
+  "Ride Completed": "Safar yakunlandi",
+  "Ride completed successfully": "Safar muvaffaqiyatli yakunlandi",
+  "Ride started successfully": "Safar muvaffaqiyatli boshlandi",
+  "Search Rental Booking": "Ijara bronini qidirish",
+  "Search location...": "Joylashuvni qidirish...",
+  "Send Media": "Media yuborish",
+  "Sent a audio": "Audio yubordi",
+  "Sent a video": "Video yubordi",
+  "Server authentication error. Please try again.":
+      "Server autentifikatsiya xatosi. Iltimos, qayta urinib ko'ring.",
+  "Server error. Please try again later.":
+      "Server xatosi. Iltimos, keyinroq qayta urinib ko'ring.",
+  "Share & Support": "Ulashish va qo'llab-quvvatlash",
+  "Share App": "Ilovani ulashish",
+  "Sign in to access your eMart account and manage your deliveries seamlessly.":
+      "Fondex hisobingizga kirib, yetkazib berishlaringizni qulay boshqaring.",
+  "Sign up now to start your journey as a eMart driver and begin earning with every delivery.":
+      "eMart haydovchisi sifatida safaringizni boshlash va har bir yetkazib berishdan daromad olish uchun hozir ro'yxatdan o'ting.",
+  "Something want wrong please contact administrator":
+      "Nimadir noto'g'ri ketdi, iltimos, administrator bilan bog'laning",
+  "Something went wrong. Please try again.":
+      "Nimadir noto'g'ri ketdi. Iltimos, qayta urinib ko'ring.",
+  "Switch to online mode to accept and deliver parcel orders.":
+      "Paket buyurtmalarini qabul qilish va yetkazish uchun onlayn rejimga o'ting.",
+  "Switch to online mode to accept and deliver rental orders.":
+      "Ijara buyurtmalarini qabul qilish va yetkazish uchun onlayn rejimga o'ting.",
+  "Take a picture": "Rasm olish",
+  "Thank you for sign up, your application is under approval so please wait till that approve.":
+      "Ro'yxatdan o'tganingiz uchun rahmat, arizangiz tasdiqlanishni kutmoqda, iltimos tasdiqlanishini kuting.",
+  "The account already exists for that email.":
+      "Bu elektron pochta uchun hisob allaqachon mavjud.",
+  "The password provided is too weak.": "Kiritilgan parol juda zaif.",
+  "This user is disabled": "Bu foydalanuvchi o'chirilgan",
+  "This user is not created in driver application.":
+      "Bu foydalanuvchi haydovchi ilovasida yaratilmagan.",
+  "Too many failed login attempts. Please try again later.":
+      "Juda ko'p muvaffaqiyatsiz urinishlar. Iltimos, keyinroq qayta urinib ko'ring.",
+  "Total Bookings": "Jami bronlar",
+  "Total Drivers": "Jami haydovchilar",
+  "Updating...": "Yangilanmoqda...",
+  "Upload Document": "Hujjatni yuklash",
+  "Updating vehicle information...": "Transport ma'lumotlari yangilanmoqda...",
+  "Update not allowed for Owner type users.":
+      "Egalik turidagi foydalanuvchilar uchun yangilashga ruxsat berilmagan.",
+  "Uploading video...": "Video yuklanmoqda...",
+  "Generating thumbnail...": "Miniatyura yaratilmoqda...",
+  "Loading chat...": "Chat yuklanmoqda...",
+  "Vehicle information updated successfully.":
+      "Transport ma'lumotlari muvaffaqiyatli yangilandi.",
+  "Failed to update. Please try again.":
+      "Yangilab bo'lmadi. Iltimos, yana urinib ko'ring.",
+  "Error updating vehicle info": "Transport ma'lumotlarini yangilashda xato",
+  "Please enter car plate number": "Iltimos, avtomobil raqamini kiriting",
+  "Please select a vehicle type": "Iltimos, transport turini tanlang",
+  "Please select a car brand": "Iltimos, avtomobil brendini tanlang",
+  "Please select a car model": "Iltimos, avtomobil modelini tanlang",
+  "Please provide rating and comment": "Iltimos, baho va fikr bildiring",
+  "Submitting...": "Yuborilmoqda...",
+  "Camera permission denied. Please allow access to take a photo.":
+      "Kamera ruxsati rad etildi. Suratga olish uchun ruxsat bering.",
+  "Gallery permission denied. Please allow access to select an image.":
+      "Galereyaga ruxsat rad etildi. Tasvir tanlash uchun ruxsat bering.",
+  "Trip Start": "Safarni boshlash",
+  "Booking Id:": "Bron ID:",
+  "Min": "daq",
+  "Error fetching drivers": "Haydovchilarni olishda xato",
+  "Error fetching cab orders": "Taksi buyurtmalarini olishda xato",
+  "Error fetching parcel orders": "Posilka buyurtmalarini olishda xato",
+  "Error fetching rental orders": "Ijara buyurtmalarini olishda xato",
+  "Failed to calculate total": "Umumiy summani hisoblashda xato",
+  "Failed to fetch order details": "Buyurtma tafsilotlarini olishda xato",
+  "Location permissions are permanently denied, we cannot request permissions.":
+      "Joylashuv ruxsatlari doimiy rad etilgan, ruxsat so'ray olmaymiz.",
+  "Google map is not installed": "Google xarita o'rnatilmagan",
+  "Google Go map is not installed": "Google Go xaritasi o'rnatilmagan",
+  "Waze is not installed": "Waze o'rnatilmagan",
+  "Mapswithme is not installed": "Mapswithme o'rnatilmagan",
+  "YandexNavi is not installed": "YandexNavi o'rnatilmagan",
+  "yandexMaps map is not installed": "YandexMaps o'rnatilmagan",
+  "Order data not found": "Buyurtma ma'lumoti topilmadi",
+  "Exception": "Istisno",
+  "on_going": "Jarayonda",
+  "completed": "Yakunlangan",
+  "On Going": "Jarayonda",
+  "Completed": "Yakunlangan",
+  "Cancelled": "Bekor qilingan",
+  "Order Placed": "Buyurtma joylandi",
+  "Order Accepted": "Buyurtma qabul qilindi",
+  "Driver Accepted": "Haydovchi qabul qildi",
+  "Driver Pending": "Haydovchi kutilyapti",
+  "Order Shipped": "Buyurtma jo'natildi",
+  "In Transit": "Yo'lda",
+  "Order Completed": "Buyurtma yakunlandi",
+  "Order Rejected": "Buyurtma rad etildi",
+  "Order Cancelled": "Buyurtma bekor qilindi",
+  "Driver Rejected": "Haydovchi rad etdi",
+  "cab_service": "Taksi xizmati",
+  "parcel_service": "Posilka xizmati",
+  "rental_service": "Ijara xizmati",
+  "in_transit": "Jarayonda",
+  "delivered": "Yetkazilgan",
+  "cancelled": "Bekor qilingan",
+  "Order Date:": "Buyurtma sanasi:",
+  "Delivery Service": "Yetkazib berish xizmati",
+  "Cab Service": "Taksi xizmati",
+  "Parcel Service": "Posilka xizmati",
+  "Rental Service": "Ijara xizmati",
+  "User account is disabled.": "Foydalanuvchi hisobi o'chirilgan.",
+  "User not found": "Foydalanuvchi topilmadi",
+  "User not found. Please register first.":
+      "Foydalanuvchi topilmadi. Iltimos, avval ro'yxatdan o'ting.",
+  "Verification failed": "Tasdiqlash muvaffaqiyatsiz",
+  "Verify": "Tekshirish",
+  "Verify Code": "Kodni tasdiqlash",
+  "Verify Code to customer": "Mijoz uchun kodni tasdiqlash",
+  "Verifying OTP...": "OTP tekshirilmoqda...",
+  "View Booking": "Bronni ko'rish",
+  "View all": "Barchasini ko'rish",
+  "Wallet History": "Hamyon tarixi",
+  "Withdrawal History": "Yechib olish tarixi",
+  "Wrong password provided for that user.":
+      "Bu foydalanuvchi uchun noto'g'ri parol kiritildi.",
+  "You must have a minimum of @amount in your wallet to receive orders to your driver":
+      "Haydovchilaringiz uchun buyurtma olish uchun hamyoningizda kamida @amount bo'lishi kerak",
+  "You're Currently Offline": "Siz hozir oflaynsiz",
+  "Your Available Drivers": "Mavjud haydovchilaringiz",
+  "close": "yopish",
+  "email": "email",
+  "failed_to_pick": "Rasmni tanlash muvaffaqiyatsiz",
+  "invalid_phone_number": "Noto'g'ri telefon raqami",
+  "multiple_time_request": "bir necha marta so'rov",
+  "sent a message": "xabar yubordi",
+  "something went wrong, please contact admin.":
+      "Nimadir noto'g'ri ketdi, iltimos, administrator bilan bog'laning.",
 };

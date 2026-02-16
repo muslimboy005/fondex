@@ -48,7 +48,7 @@ class ParcelOrderDetails extends StatelessWidget {
                         width: double.infinity,
                         padding: const EdgeInsets.all(16),
                         child: Text(
-                          "${'Order Id:'.tr} ${Constant.orderId(orderId: controller.parcelOrder.value.id.toString())}".tr,
+                          "${'Order Id:'.tr} ${Constant.orderId(orderId: controller.parcelOrder.value.id.toString())}",
                           textAlign: TextAlign.start,
                           style: TextStyle(
                             fontFamily: AppThemeData.semiBold,
@@ -126,14 +126,14 @@ class ParcelOrderDetails extends StatelessWidget {
                               Padding(
                                 padding: const EdgeInsets.only(bottom: 8.0),
                                 child: Text(
-                                  "Schedule Pickup time: ${controller.formatDate(controller.parcelOrder.value.senderPickupDateTime!)}".tr,
+                                  "${'Schedule Pickup time:'.tr} ${controller.formatDate(controller.parcelOrder.value.senderPickupDateTime!)}",
                                   style: AppThemeData.mediumTextStyle(fontSize: 14, color: AppThemeData.info400),
                                 ),
                               ),
                             Padding(
                               padding: const EdgeInsets.only(bottom: 8.0),
                               child: Text(
-                                "Order Date:${controller.parcelOrder.value.isSchedule == true ? controller.formatDate(controller.parcelOrder.value.createdAt!) : controller.formatDate(controller.parcelOrder.value.senderPickupDateTime!)}".tr,
+                                "${'Order Date:'.tr} ${controller.parcelOrder.value.isSchedule == true ? controller.formatDate(controller.parcelOrder.value.createdAt!) : controller.formatDate(controller.parcelOrder.value.senderPickupDateTime!)}",
                                 style: AppThemeData.mediumTextStyle(fontSize: 14, color: AppThemeData.info400),
                               ),
                             ),
@@ -316,8 +316,7 @@ class ParcelOrderDetails extends StatelessWidget {
                             _summaryTile(
                                 "Order Total".tr, Constant.amountShow(amount: controller.totalAmount.value.toString()), isDark, null),
                             _summaryTile(
-                              "Admin Commission (${controller.parcelOrder.value.adminCommission}${controller.parcelOrder.value.adminCommissionType == "Percentage" || controller.parcelOrder.value.adminCommissionType == "percentage" ? "%" : Constant.currencyModel!.symbol})"
-                                  .tr,
+                              "${'Admin Commission'.tr} (${controller.parcelOrder.value.adminCommission}${controller.parcelOrder.value.adminCommissionType == "Percentage" || controller.parcelOrder.value.adminCommissionType == "percentage" ? "%" : Constant.currencyModel!.symbol})",
                               Constant.amountShow(amount: controller.adminCommission.value.toString()),
                               isDark,
                               AppThemeData.danger300,
@@ -338,11 +337,12 @@ class ParcelOrderDetails extends StatelessWidget {
                                     ),
                                     child: Padding(
                                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            "Note : Admin commission will be debited from your wallet balance. \n \nAdmin commission will apply on your booking Amount minus Discount(if applicable).",
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                            "Note: Admin commission will be debited from your wallet balance.\n\nAdmin commission will apply on your booking amount minus discount (if applicable)."
+                                                .tr,
                                             style: AppThemeData.boldTextStyle(
                                                 fontSize: 16, color: isDark ? AppThemeData.danger300 : AppThemeData.danger300),
                                           ),

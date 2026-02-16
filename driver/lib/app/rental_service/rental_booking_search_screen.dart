@@ -36,7 +36,9 @@ class RentalBookingSearchScreen extends StatelessWidget {
                 : Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: controller.rentalBookingData.isEmpty
-                        ? Constant.showEmptyView(message: "No Rental booking available", isDark: isDark)
+                        ? Constant.showEmptyView(
+                            message: "No Rental booking available".tr,
+                            isDark: isDark)
                         : ListView.builder(
                             shrinkWrap: true,
                             itemCount: controller.rentalBookingData.length,
@@ -78,7 +80,7 @@ class RentalBookingSearchScreen extends StatelessWidget {
                                                   crossAxisAlignment: CrossAxisAlignment.start,
                                                   children: [
                                                     Text(
-                                                      '${rentalBookingData.author!.firstName} ${rentalBookingData.author!.lastName}'.tr,
+                                                      '${rentalBookingData.author!.firstName} ${rentalBookingData.author!.lastName}',
                                                       textAlign: TextAlign.start,
                                                       style: AppThemeData.boldTextStyle(
                                                           fontSize: 16, color: isDark ? AppThemeData.greyDark900 : AppThemeData.grey900),
@@ -156,7 +158,7 @@ class RentalBookingSearchScreen extends StatelessWidget {
                                                         ),
                                                       ),
                                                       Text(
-                                                        "${rentalBookingData.rentalPackageModel!.name}".tr,
+                                                        rentalBookingData.rentalPackageModel!.name??"",
                                                         textAlign: TextAlign.start,
                                                         style: AppThemeData.semiBoldTextStyle(
                                                             fontSize: 16,
@@ -179,8 +181,7 @@ class RentalBookingSearchScreen extends StatelessWidget {
                                                         ),
                                                       ),
                                                       Text(
-                                                        "${rentalBookingData.rentalPackageModel!.includedDistance} ${Constant.distanceType}"
-                                                            .tr,
+                                                        "${rentalBookingData.rentalPackageModel!.includedDistance} ${Constant.distanceType}",
                                                         textAlign: TextAlign.start,
                                                         style: AppThemeData.semiBoldTextStyle(
                                                             fontSize: 16,
@@ -203,7 +204,7 @@ class RentalBookingSearchScreen extends StatelessWidget {
                                                         ),
                                                       ),
                                                       Text(
-                                                        "${rentalBookingData.rentalPackageModel!.includedHours} Hr".tr,
+                                                        "${rentalBookingData.rentalPackageModel!.includedHours} ${'Hr'.tr}",
                                                         textAlign: TextAlign.start,
                                                         style: AppThemeData.semiBoldTextStyle(
                                                             fontSize: 16,
@@ -228,7 +229,7 @@ class RentalBookingSearchScreen extends StatelessWidget {
                                                       height: 5,
                                                     ),
                                                     Text(
-                                                      Constant.amountShow(amount: rentalBookingData.subTotal).tr,
+                                                      Constant.amountShow(amount: rentalBookingData.subTotal),
                                                       textAlign: TextAlign.start,
                                                       style: AppThemeData.semiBoldTextStyle(
                                                           fontSize: 14, color: isDark ? AppThemeData.greyDark900 : AppThemeData.grey900),
@@ -244,7 +245,7 @@ class RentalBookingSearchScreen extends StatelessWidget {
                                                       height: 5,
                                                     ),
                                                     Text(
-                                                      Constant.timestampToDate(rentalBookingData.bookingDateTime!).tr,
+                                                      Constant.timestampToDate(rentalBookingData.bookingDateTime!),
                                                       textAlign: TextAlign.start,
                                                       style: AppThemeData.semiBoldTextStyle(
                                                           fontSize: 14, color: isDark ? AppThemeData.greyDark900 : AppThemeData.grey900),
@@ -297,8 +298,8 @@ class RentalBookingSearchScreen extends StatelessWidget {
                                                         ShowToastDialog.showToast("Booking accepted successfully".tr);
                                                       } else {
                                                         ShowToastDialog.showToast(
-                                                            "Your owner has to maintain minimum ${Constant.amountShow(amount: Constant.ownerMinimumDepositToRideAccept)} wallet balance to accept the rental booking. Please contact your owner"
-                                                                .tr);
+                                                            "Your owner has to maintain minimum @amount wallet balance to accept the rental booking. Please contact your owner"
+                                                                .trParams({"amount": Constant.amountShow(amount: Constant.ownerMinimumDepositToRideAccept)}));
                                                       }
                                                     } else {
                                                       if (controller.driverModel.value.walletAmount! >=

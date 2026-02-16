@@ -40,34 +40,62 @@ class RoundedButtonFill extends StatelessWidget {
         onPress?.call();
       },
       child: Container(
-        width: Responsive.width(width ?? 100, context),
+        width: width != null ? Responsive.width(width!, context) : null,
         height: Responsive.height(height ?? 6, context),
         decoration: ShapeDecoration(
           color: color,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius ?? 50)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(radius ?? 50),
+          ),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            if (isRight == false) Padding(padding: const EdgeInsets.only(right: 10, left: 10), child: icon),
+            if (isRight == false)
+              Padding(
+                padding: const EdgeInsets.only(right: 10, left: 10),
+                child: icon,
+              ),
             isCenter == true
-                ? Text(
-                    title.tr,
-                    textAlign: TextAlign.center,
-                    style: AppThemeData.semiBoldTextStyle(fontSize: fontSizes ?? 16, color: textColor ?? AppThemeData.grey50),
-                  )
-                : Expanded(
+                ? FittedBox(
+                    fit: BoxFit.scaleDown,
                     child: Padding(
-                      padding: EdgeInsets.only(right: isRight == null ? 0 : 30),
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
                       child: Text(
                         title.tr,
                         textAlign: TextAlign.center,
-                        style: AppThemeData.semiBoldTextStyle(fontSize: fontSizes ?? 16, color: textColor ?? AppThemeData.grey50),
+                        style: AppThemeData.semiBoldTextStyle(
+                          fontSize: fontSizes ?? 16,
+                          color: textColor ?? AppThemeData.grey50,
+                        ),
+                      ),
+                    ),
+                  )
+                : Expanded(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Padding(
+                        padding: EdgeInsets.only(
+                          left: 8,
+                          right: isRight == null ? 8 : 30,
+                        ),
+                        child: Text(
+                          title.tr,
+                          textAlign: TextAlign.center,
+                          style: AppThemeData.semiBoldTextStyle(
+                            fontSize: fontSizes ?? 16,
+                            color: textColor ?? AppThemeData.grey50,
+                          ),
+                        ),
                       ),
                     ),
                   ),
-            if (isRight == true) Padding(padding: const EdgeInsets.only(left: 10, right: 10), child: icon),
+            if (isRight == true)
+              Padding(
+                padding: const EdgeInsets.only(left: 10, right: 10),
+                child: icon,
+              ),
           ],
         ),
       ),

@@ -37,7 +37,8 @@ class RentalHomeController extends GetxController {
   RxBool isLoading = false.obs;
 
   // Location input
-  final Rx<TextEditingController> sourceTextEditController = TextEditingController().obs;
+  final Rx<TextEditingController> sourceTextEditController =
+      TextEditingController().obs;
 
   // Selected date
   Rx<DateTime> selectedDate = DateTime.now().obs;
@@ -73,11 +74,20 @@ class RentalHomeController extends GetxController {
         Constant.currentLocation = position;
 
         // Set default coordinates for Google or OSM
-        departureLatLong.value = gmaps.LatLng(position.latitude, position.longitude);
-        departureLatLongOsm.value = latlong.LatLng(position.latitude, position.longitude);
+        departureLatLong.value = gmaps.LatLng(
+          position.latitude,
+          position.longitude,
+        );
+        departureLatLongOsm.value = latlong.LatLng(
+          position.latitude,
+          position.longitude,
+        );
 
         // Get readable address
-        String address = await Utils.getAddressFromCoordinates(position.latitude, position.longitude);
+        String address = await Utils.getAddressFromCoordinates(
+          position.latitude,
+          position.longitude,
+        );
         sourceTextEditController.value.text = address;
       }
     } catch (e) {
@@ -101,7 +111,12 @@ class RentalHomeController extends GetxController {
 
   /// Date Picker
   Future<void> pickDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(context: context, initialDate: selectedDate.value, firstDate: DateTime.now(), lastDate: DateTime(2100));
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: selectedDate.value,
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2100),
+    );
 
     if (picked != null) {
       selectedDate.value = picked;
@@ -109,7 +124,9 @@ class RentalHomeController extends GetxController {
   }
 
   Future<void> getRentalPackage() async {
-    await FireStoreUtils.getRentalPackage(selectedVehicleType.value!.id.toString()).then((value) {
+    await FireStoreUtils.getRentalPackage(
+      selectedVehicleType.value!.id.toString(),
+    ).then((value) {
       rentalPackages.value = value;
       if (rentalPackages.isNotEmpty) {
         selectedPackage.value = rentalPackages[0];
@@ -119,8 +136,14 @@ class RentalHomeController extends GetxController {
 
   void completeOrder() {
     DestinationLocation sourceLocation = DestinationLocation(
-      latitude: Constant.selectedMapType == 'osm' ? departureLatLongOsm.value.latitude : departureLatLong.value.latitude,
-      longitude: Constant.selectedMapType == 'osm' ? departureLatLongOsm.value.longitude : departureLatLong.value.longitude,
+      latitude:
+          Constant.selectedMapType == 'osm'
+              ? departureLatLongOsm.value.latitude
+              : departureLatLong.value.latitude,
+      longitude:
+          Constant.selectedMapType == 'osm'
+              ? departureLatLongOsm.value.longitude
+              : departureLatLong.value.longitude,
     );
 
     print("=====>");
@@ -143,18 +166,35 @@ class RentalHomeController extends GetxController {
     rentalOrderModel.taxSetting = Constant.taxList;
     rentalOrderModel.createdAt = Timestamp.now();
     rentalOrderModel.sourceLocation = sourceLocation;
-    rentalOrderModel.adminCommission = Constant.sectionConstantModel!.adminCommision!.amount;
-    rentalOrderModel.adminCommissionType = Constant.sectionConstantModel!.adminCommision!.commissionType;
+    rentalOrderModel.adminCommission =
+        Constant.sectionConstantModel!.adminCommision!.amount;
+    rentalOrderModel.adminCommissionType =
+        Constant.sectionConstantModel!.adminCommision!.commissionType;
     rentalOrderModel.sourcePoint = G(
-      geopoint: GeoPoint(sourceLocation.latitude ?? 0.0, sourceLocation.longitude ?? 0.0),
-      geohash: Geoflutterfire().point(latitude: sourceLocation.latitude ?? 0.0, longitude: sourceLocation.longitude ?? 0.0).hash,
+      geopoint: GeoPoint(
+        sourceLocation.latitude ?? 0.0,
+        sourceLocation.longitude ?? 0.0,
+      ),
+      geohash:
+          Geoflutterfire()
+              .point(
+                latitude: sourceLocation.latitude ?? 0.0,
+                longitude: sourceLocation.longitude ?? 0.0,
+              )
+              .hash,
     );
-    rentalOrderModel.zoneId = Constant.getZoneId(sourceLocation.latitude ?? 0.0, sourceLocation.longitude ?? 0.0);
+    rentalOrderModel.zoneId = Constant.getZoneId(
+      sourceLocation.latitude ?? 0.0,
+      sourceLocation.longitude ?? 0.0,
+    );
     log(rentalOrderModel.toJson().toString());
     Get.back();
     Get.back();
 
-    Get.to(() => RentalConformationScreen(), arguments: {"rentalOrderModel": rentalOrderModel});
+    Get.to(
+      () => RentalConformationScreen(),
+      arguments: {"rentalOrderModel": rentalOrderModel},
+    );
   }
 
   void setDepartureMarker(double lat, double lng) {
@@ -193,19 +233,45 @@ class RentalHomeController extends GetxController {
 
   Future<void> getPaymentSettings() async {
     await FireStoreUtils.getPaymentSettingsData().then((value) {
-      stripeModel.value = StripeModel.fromJson(jsonDecode(Preferences.getString(Preferences.stripeSettings)));
-      payPalModel.value = PayPalModel.fromJson(jsonDecode(Preferences.getString(Preferences.paypalSettings)));
-      payStackModel.value = PayStackModel.fromJson(jsonDecode(Preferences.getString(Preferences.payStack)));
-      mercadoPagoModel.value = MercadoPagoModel.fromJson(jsonDecode(Preferences.getString(Preferences.mercadoPago)));
-      flutterWaveModel.value = FlutterWaveModel.fromJson(jsonDecode(Preferences.getString(Preferences.flutterWave)));
-      paytmModel.value = PaytmModel.fromJson(jsonDecode(Preferences.getString(Preferences.paytmSettings)));
-      payFastModel.value = PayFastModel.fromJson(jsonDecode(Preferences.getString(Preferences.payFastSettings)));
-      razorPayModel.value = RazorPayModel.fromJson(jsonDecode(Preferences.getString(Preferences.razorpaySettings)));
-      midTransModel.value = MidTrans.fromJson(jsonDecode(Preferences.getString(Preferences.midTransSettings)));
-      orangeMoneyModel.value = OrangeMoney.fromJson(jsonDecode(Preferences.getString(Preferences.orangeMoneySettings)));
-      xenditModel.value = Xendit.fromJson(jsonDecode(Preferences.getString(Preferences.xenditSettings)));
-      walletSettingModel.value = WalletSettingModel.fromJson(jsonDecode(Preferences.getString(Preferences.walletSettings)));
-      cashOnDeliverySettingModel.value = CodSettingModel.fromJson(jsonDecode(Preferences.getString(Preferences.codSettings)));
+      stripeModel.value = StripeModel.fromJson(
+        jsonDecode(Preferences.getString(Preferences.stripeSettings)),
+      );
+      payPalModel.value = PayPalModel.fromJson(
+        jsonDecode(Preferences.getString(Preferences.paypalSettings)),
+      );
+      payStackModel.value = PayStackModel.fromJson(
+        jsonDecode(Preferences.getString(Preferences.payStack)),
+      );
+      mercadoPagoModel.value = MercadoPagoModel.fromJson(
+        jsonDecode(Preferences.getString(Preferences.mercadoPago)),
+      );
+      flutterWaveModel.value = FlutterWaveModel.fromJson(
+        jsonDecode(Preferences.getString(Preferences.flutterWave)),
+      );
+      paytmModel.value = PaytmModel.fromJson(
+        jsonDecode(Preferences.getString(Preferences.paytmSettings)),
+      );
+      payFastModel.value = PayFastModel.fromJson(
+        jsonDecode(Preferences.getString(Preferences.payFastSettings)),
+      );
+      razorPayModel.value = RazorPayModel.fromJson(
+        jsonDecode(Preferences.getString(Preferences.razorpaySettings)),
+      );
+      midTransModel.value = MidTrans.fromJson(
+        jsonDecode(Preferences.getString(Preferences.midTransSettings)),
+      );
+      orangeMoneyModel.value = OrangeMoney.fromJson(
+        jsonDecode(Preferences.getString(Preferences.orangeMoneySettings)),
+      );
+      xenditModel.value = Xendit.fromJson(
+        jsonDecode(Preferences.getString(Preferences.xenditSettings)),
+      );
+      walletSettingModel.value = WalletSettingModel.fromJson(
+        jsonDecode(Preferences.getString(Preferences.walletSettings)),
+      );
+      cashOnDeliverySettingModel.value = CodSettingModel.fromJson(
+        jsonDecode(Preferences.getString(Preferences.codSettings)),
+      );
 
       if (walletSettingModel.value.isEnabled == true) {
         selectedPaymentMethod.value = PaymentGateway.wallet.name;

@@ -32,7 +32,7 @@ class ForgotPasswordScreen extends StatelessWidget {
                     style: TextStyle(color: isDark ? AppThemeData.grey50 : AppThemeData.grey900, fontSize: 22, fontFamily: AppThemeData.semiBold),
                   ),
                   Text(
-                    "No worries!! We’ll send you reset instructions".tr,
+                    "No worries!! We'll send you reset instructions".tr,
                     style: TextStyle(color: isDark ? AppThemeData.grey400 : AppThemeData.grey500, fontSize: 16, fontFamily: AppThemeData.regular),
                   ),
                   const SizedBox(

@@ -61,7 +61,7 @@ class VerificationDetailsUploadScreen extends StatelessWidget {
                             height: 5,
                           ),
                           Text(
-                            "${'Please upload a valid'.tr} ${controller.documentModel.value.title} ${'to verify your identity complete the registration process.'.tr}".tr,
+                            "${'Please upload a valid'.tr} ${controller.documentModel.value.title} ${'to verify your identity complete the registration process.'.tr}",
                             style: TextStyle(fontSize: 16, color: isDark ? AppThemeData.grey200 : AppThemeData.grey700, fontFamily: AppThemeData.regular),
                           ),
                           const SizedBox(
@@ -75,7 +75,7 @@ class VerificationDetailsUploadScreen extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    "${'Front Side of'} ${controller.documentModel.value.title.toString()}",
+                                    "${'Front Side of'.tr} ${controller.documentModel.value.title.toString()}",
                                     style: TextStyle(color: isDark ? AppThemeData.grey50 : AppThemeData.grey900, fontFamily: AppThemeData.bold, fontSize: 16),
                                   ),
                                   const SizedBox(

@@ -1,1 +1,33 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"fondexuzb","appId":"1:893074789710:android:70c2e98114a8ef1ac4ba1f","fileOutput":"android/app/google-services.json"}},"ios":{"default":{"projectId":"fondexuzb","appId":"1:893074789710:ios:22e27503a8aa568bc4ba1f","uploadDebugSymbols":false,"fileOutput":"ios/Runner/GoogleService-Info.plist"}},"dart":{"lib/firebase_options.dart":{"projectId":"fondexuzb","configurations":{"android":"1:893074789710:android:70c2e98114a8ef1ac4ba1f","ios":"1:893074789710:ios:22e27503a8aa568bc4ba1f"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "fondexuzb",
+          "appId": "1:893074789710:android:70c2e98114a8ef1ac4ba1f",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "ios": {
+        "default": {
+          "projectId": "fondexuzb",
+          "appId": "1:893074789710:ios:22e27503a8aa568bc4ba1f",
+          "uploadDebugSymbols": false,
+          "fileOutput": "ios/Runner/GoogleService-Info.plist"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "fondexuzb",
+          "configurations": {
+            "android": "1:893074789710:android:70c2e98114a8ef1ac4ba1f",
+            "ios": "1:893074789710:ios:22e27503a8aa568bc4ba1f"
+          }
+        }
+      }
+    }
+  },
+  "firestore": {
+    "indexes": "firestore.indexes.json"
+  }
+}

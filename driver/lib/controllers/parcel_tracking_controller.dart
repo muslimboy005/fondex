@@ -284,15 +284,18 @@ import 'package:driver/utils/fire_store_utils.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:yandex_mapkit/yandex_mapkit.dart' as ym;
 import 'package:latlong2/latlong.dart' as location;
 import 'package:flutter_map/flutter_map.dart' as flutterMap;
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:driver/utils/yandex_map_utils.dart';
 import '../models/parcel_order_model.dart';
 import '../models/user_model.dart';
 
 class ParcelTrackingController extends GetxController {
   GoogleMapController? mapController;
+  ym.YandexMapController? yandexMapController;
   final flutterMap.MapController osmMapController = flutterMap.MapController();
 
   Rx<UserModel> driverUserModel = UserModel().obs;
@@ -343,7 +346,7 @@ class ParcelTrackingController extends GetxController {
       type.value = args['type'] ?? "parcelOrder";
       _listenToOrder();
     } else {
-      ShowToastDialog.showToast("Order data not found");
+      ShowToastDialog.showToast("Order data not found".tr);
       Get.back();
     }
     isLoading.value = false;
@@ -380,10 +383,10 @@ class ParcelTrackingController extends GetxController {
   }
 
   void _updateTracking() {
-    if (Constant.selectedMapType == 'google') {
-      _updateGoogleMap();
-    } else {
+    if (Constant.isOsmMap) {
       _updateOsmMap();
+    } else {
+      _updateGoogleMap();
     }
   }
 
@@ -470,6 +473,16 @@ class ParcelTrackingController extends GetxController {
   }
 
   Future<void> _animateCameraBounds(LatLng src, LatLng dest) async {
+    if (Constant.isYandexMap) {
+      if (yandexMapController == null) return;
+      final bounds = yandexBoundsFromLatLngs([src, dest]);
+      await yandexMapController!.moveCamera(
+        ym.CameraUpdate.newGeometry(
+          ym.Geometry.fromBoundingBox(bounds),
+        ),
+      );
+      return;
+    }
     if (mapController == null) return;
 
     LatLngBounds bounds;
@@ -589,7 +602,7 @@ class ParcelTrackingController extends GetxController {
   }
 
   Future<void> _loadIcons() async {
-    if (Constant.selectedMapType == 'google') {
+    if (!Constant.isOsmMap) {
       pickupIcon = BitmapDescriptor.fromBytes(
           await Constant().getBytesFromAsset('assets/images/pickup.png', 100));
       dropoffIcon = BitmapDescriptor.fromBytes(

@@ -65,11 +65,11 @@ class RentalReviewController extends GetxController {
   /// Save / update review (Driver → Customer)
   Future<void> submitReview() async {
     if (comment.value.text.trim().isEmpty || ratings.value == 0) {
-      ShowToastDialog.showToast("Please provide rating and comment");
+      ShowToastDialog.showToast("Please provide rating and comment".tr);
       return;
     }
 
-    ShowToastDialog.showLoader("Submitting...");
+    ShowToastDialog.showLoader("Submitting...".tr);
 
     final user = await FireStoreUtils.getUserProfile(order.value?.authorID ?? '');
 

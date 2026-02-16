@@ -195,7 +195,7 @@ class AddEditOfferScreen extends StatelessWidget {
                           prefix: Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                             child: Text(
-                              controller.selectCouponType.value == "Percentage" || controller.selectCouponType.value == "Percent" ? "%" : "${Constant.currencyModel!.symbol}".tr,
+                              controller.selectCouponType.value == "Percentage" || controller.selectCouponType.value == "Percent" ? "%" : (Constant.currencyModel?.symbol ?? ''),
                               style: TextStyle(color: isDark ? AppThemeData.grey50 : AppThemeData.grey900, fontFamily: AppThemeData.semiBold, fontSize: 18),
                             ),
                           ),

@@ -22,14 +22,23 @@ class SpecialDiscountScreen extends StatelessWidget {
       init: SpecialDiscountController(),
       builder: (controller) {
         return Scaffold(
-          backgroundColor: isDark ? AppThemeData.surfaceDark : AppThemeData.surface,
+          backgroundColor: isDark
+              ? AppThemeData.surfaceDark
+              : AppThemeData.surface,
           appBar: AppBar(
             backgroundColor: AppThemeData.primary300,
             centerTitle: false,
-            iconTheme: IconThemeData(color: isDark ? AppThemeData.grey800 : AppThemeData.grey100, size: 20),
+            iconTheme: IconThemeData(
+              color: isDark ? AppThemeData.grey800 : AppThemeData.grey100,
+              size: 20,
+            ),
             title: Text(
               "Special Discounts".tr,
-              style: TextStyle(color: isDark ? AppThemeData.grey800 : AppThemeData.grey100, fontSize: 18, fontFamily: AppThemeData.medium),
+              style: TextStyle(
+                color: isDark ? AppThemeData.grey800 : AppThemeData.grey100,
+                fontSize: 18,
+                fontFamily: AppThemeData.medium,
+              ),
             ),
           ),
           body: Padding(
@@ -41,7 +50,13 @@ class SpecialDiscountScreen extends StatelessWidget {
                     Expanded(
                       child: Text(
                         "Special Discount amount".tr,
-                        style: TextStyle(color: isDark ? AppThemeData.grey100 : AppThemeData.grey800, fontSize: 18, fontFamily: AppThemeData.medium),
+                        style: TextStyle(
+                          color: isDark
+                              ? AppThemeData.grey100
+                              : AppThemeData.grey800,
+                          fontSize: 18,
+                          fontFamily: AppThemeData.medium,
+                        ),
                       ),
                     ),
                     Transform.scale(
@@ -59,8 +74,12 @@ class SpecialDiscountScreen extends StatelessWidget {
                 Expanded(
                   child: Container(
                     decoration: ShapeDecoration(
-                      color: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      color: isDark
+                          ? AppThemeData.grey900
+                          : AppThemeData.grey50,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                     ),
                     child: ListView.separated(
                       shrinkWrap: true,
@@ -74,23 +93,37 @@ class SpecialDiscountScreen extends StatelessWidget {
                                 children: [
                                   Expanded(
                                     child: Text(
-                                      "${controller.specialDiscount[index].day}".tr,
-                                      style: TextStyle(color: isDark ? AppThemeData.grey100 : AppThemeData.grey800, fontSize: 18, fontFamily: AppThemeData.medium),
+                                      controller.specialDiscount[index].day ??
+                                          '',
+                                      style: TextStyle(
+                                        color: isDark
+                                            ? AppThemeData.grey100
+                                            : AppThemeData.grey800,
+                                        fontSize: 18,
+                                        fontFamily: AppThemeData.medium,
+                                      ),
                                     ),
                                   ),
                                   InkWell(
                                     onTap: () {
                                       controller.addValue(index);
                                     },
-                                    child: SvgPicture.asset("assets/icons/ic_add_one.svg"),
+                                    child: SvgPicture.asset(
+                                      "assets/icons/ic_add_one.svg",
+                                    ),
                                   ),
                                 ],
                               ),
                               Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 10),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 10,
+                                ),
                                 child: ListView.builder(
                                   shrinkWrap: true,
-                                  itemCount: controller.specialDiscount[index].timeslot!.length,
+                                  itemCount: controller
+                                      .specialDiscount[index]
+                                      .timeslot!
+                                      .length,
                                   physics: const NeverScrollableScrollPhysics(),
                                   itemBuilder: (context, indexTimeSlot) {
                                     return Padding(
@@ -103,32 +136,78 @@ class SpecialDiscountScreen extends StatelessWidget {
                                               Expanded(
                                                 child: InkWell(
                                                   onTap: () async {
-                                                    TimeOfDay? startTime = await _selectTime(context);
-                                                    controller.specialDiscount[index].timeslot![indexTimeSlot].from = DateFormat(
-                                                      'HH:mm',
-                                                    ).format(DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day, startTime!.hour, startTime.minute));
+                                                    TimeOfDay? startTime =
+                                                        await _selectTime(
+                                                          context,
+                                                        );
+                                                    controller
+                                                        .specialDiscount[index]
+                                                        .timeslot![indexTimeSlot]
+                                                        .from = DateFormat('HH:mm')
+                                                        .format(
+                                                          DateTime(
+                                                            DateTime.now().year,
+                                                            DateTime.now()
+                                                                .month,
+                                                            DateTime.now().day,
+                                                            startTime!.hour,
+                                                            startTime.minute,
+                                                          ),
+                                                        );
                                                   },
                                                   child: Container(
                                                     decoration: ShapeDecoration(
-                                                      color: isDark ? AppThemeData.surfaceDark : AppThemeData.surface,
-                                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                                      color: isDark
+                                                          ? AppThemeData
+                                                                .surfaceDark
+                                                          : AppThemeData
+                                                                .surface,
+                                                      shape: RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              12,
+                                                            ),
+                                                      ),
                                                     ),
                                                     child: Padding(
-                                                      padding: const EdgeInsets.symmetric(vertical: 4.0),
+                                                      padding:
+                                                          const EdgeInsets.symmetric(
+                                                            vertical: 4.0,
+                                                          ),
                                                       child: Padding(
-                                                        padding: const EdgeInsets.all(8.0),
+                                                        padding:
+                                                            const EdgeInsets.all(
+                                                              8.0,
+                                                            ),
                                                         child: Text(
-                                                          controller.specialDiscount[index].timeslot![indexTimeSlot].from!.isEmpty
+                                                          controller
+                                                                  .specialDiscount[index]
+                                                                  .timeslot![indexTimeSlot]
+                                                                  .from!
+                                                                  .isEmpty
                                                               ? 'Start Time'.tr
-                                                              : controller.specialDiscount[index].timeslot![indexTimeSlot].from.toString(),
+                                                              : controller
+                                                                    .specialDiscount[index]
+                                                                    .timeslot![indexTimeSlot]
+                                                                    .from
+                                                                    .toString(),
                                                           style: TextStyle(
-                                                            color: controller.specialDiscount[index].timeslot![indexTimeSlot].to!.isEmpty
+                                                            color:
+                                                                controller
+                                                                    .specialDiscount[index]
+                                                                    .timeslot![indexTimeSlot]
+                                                                    .to!
+                                                                    .isEmpty
                                                                 ? isDark
-                                                                      ? AppThemeData.grey600
-                                                                      : AppThemeData.grey400
+                                                                      ? AppThemeData
+                                                                            .grey600
+                                                                      : AppThemeData
+                                                                            .grey400
                                                                 : isDark
-                                                                ? AppThemeData.grey100
-                                                                : AppThemeData.grey900,
+                                                                ? AppThemeData
+                                                                      .grey100
+                                                                : AppThemeData
+                                                                      .grey900,
                                                           ),
                                                         ),
                                                       ),
@@ -140,49 +219,141 @@ class SpecialDiscountScreen extends StatelessWidget {
                                               Expanded(
                                                 child: InkWell(
                                                   onTap: () async {
-                                                    TimeOfDay? endTimeOfDay = await _selectTime(context);
+                                                    TimeOfDay? endTimeOfDay =
+                                                        await _selectTime(
+                                                          context,
+                                                        );
 
                                                     if (endTimeOfDay != null) {
-                                                      DateTime endTime = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day, endTimeOfDay.hour, endTimeOfDay.minute);
-                                                      DateTime time = DateFormat("HH:mm").parse(controller.specialDiscount[index].timeslot![indexTimeSlot].from.toString());
-                                                      DateTime startTime = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day, time.hour, time.minute);
+                                                      DateTime
+                                                      endTime = DateTime(
+                                                        DateTime.now().year,
+                                                        DateTime.now().month,
+                                                        DateTime.now().day,
+                                                        endTimeOfDay.hour,
+                                                        endTimeOfDay.minute,
+                                                      );
+                                                      DateTime
+                                                      time = DateFormat("HH:mm").parse(
+                                                        controller
+                                                            .specialDiscount[index]
+                                                            .timeslot![indexTimeSlot]
+                                                            .from
+                                                            .toString(),
+                                                      );
+                                                      DateTime
+                                                      startTime = DateTime(
+                                                        DateTime.now().year,
+                                                        DateTime.now().month,
+                                                        DateTime.now().day,
+                                                        time.hour,
+                                                        time.minute,
+                                                      );
 
-                                                      if (startTime.isAfter(endTime)) {
-                                                        ShowToastDialog.showToast("Please select Valid Time".tr);
+                                                      if (startTime.isAfter(
+                                                        endTime,
+                                                      )) {
+                                                        ShowToastDialog.showToast(
+                                                          "Please select Valid Time"
+                                                              .tr,
+                                                        );
                                                       } else {
-                                                        if (endTimeOfDay.format(context).toString() == "12:00 AM") {
-                                                          controller.specialDiscount[index].timeslot![indexTimeSlot].to = DateFormat(
-                                                            'HH:mm',
-                                                          ).format(DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day, 23, 59));
+                                                        if (endTimeOfDay
+                                                                .format(context)
+                                                                .toString() ==
+                                                            "12:00 AM") {
+                                                          controller
+                                                              .specialDiscount[index]
+                                                              .timeslot![indexTimeSlot]
+                                                              .to = DateFormat('HH:mm')
+                                                              .format(
+                                                                DateTime(
+                                                                  DateTime.now()
+                                                                      .year,
+                                                                  DateTime.now()
+                                                                      .month,
+                                                                  DateTime.now()
+                                                                      .day,
+                                                                  23,
+                                                                  59,
+                                                                ),
+                                                              );
                                                         } else {
-                                                          controller.specialDiscount[index].timeslot![indexTimeSlot].to = DateFormat(
-                                                            'HH:mm',
-                                                          ).format(DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day, endTimeOfDay.hour, endTimeOfDay.minute));
+                                                          controller
+                                                              .specialDiscount[index]
+                                                              .timeslot![indexTimeSlot]
+                                                              .to = DateFormat('HH:mm')
+                                                              .format(
+                                                                DateTime(
+                                                                  DateTime.now()
+                                                                      .year,
+                                                                  DateTime.now()
+                                                                      .month,
+                                                                  DateTime.now()
+                                                                      .day,
+                                                                  endTimeOfDay
+                                                                      .hour,
+                                                                  endTimeOfDay
+                                                                      .minute,
+                                                                ),
+                                                              );
                                                         }
                                                       }
                                                     }
                                                   },
                                                   child: Container(
                                                     decoration: ShapeDecoration(
-                                                      color: isDark ? AppThemeData.surfaceDark : AppThemeData.surface,
-                                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                                      color: isDark
+                                                          ? AppThemeData
+                                                                .surfaceDark
+                                                          : AppThemeData
+                                                                .surface,
+                                                      shape: RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              12,
+                                                            ),
+                                                      ),
                                                     ),
                                                     child: Padding(
-                                                      padding: const EdgeInsets.symmetric(vertical: 4.0),
+                                                      padding:
+                                                          const EdgeInsets.symmetric(
+                                                            vertical: 4.0,
+                                                          ),
                                                       child: Padding(
-                                                        padding: const EdgeInsets.all(8.0),
+                                                        padding:
+                                                            const EdgeInsets.all(
+                                                              8.0,
+                                                            ),
                                                         child: Text(
-                                                          controller.specialDiscount[index].timeslot![indexTimeSlot].to!.isEmpty
+                                                          controller
+                                                                  .specialDiscount[index]
+                                                                  .timeslot![indexTimeSlot]
+                                                                  .to!
+                                                                  .isEmpty
                                                               ? 'End Time'.tr
-                                                              : controller.specialDiscount[index].timeslot![indexTimeSlot].to.toString(),
+                                                              : controller
+                                                                    .specialDiscount[index]
+                                                                    .timeslot![indexTimeSlot]
+                                                                    .to
+                                                                    .toString(),
                                                           style: TextStyle(
-                                                            color: controller.specialDiscount[index].timeslot![indexTimeSlot].to!.isEmpty
+                                                            color:
+                                                                controller
+                                                                    .specialDiscount[index]
+                                                                    .timeslot![indexTimeSlot]
+                                                                    .to!
+                                                                    .isEmpty
                                                                 ? isDark
-                                                                      ? AppThemeData.grey600
-                                                                      : AppThemeData.grey400
+                                                                      ? AppThemeData
+                                                                            .grey600
+                                                                      : AppThemeData
+                                                                            .grey400
                                                                 : isDark
-                                                                ? AppThemeData.grey100
-                                                                : AppThemeData.grey800,
+                                                                ? AppThemeData
+                                                                      .grey100
+                                                                : AppThemeData
+                                                                      .grey800,
                                                           ),
                                                         ),
                                                       ),
@@ -193,45 +364,148 @@ class SpecialDiscountScreen extends StatelessWidget {
                                               const SizedBox(width: 10),
                                               Expanded(
                                                 child: TextFormField(
-                                                  textAlignVertical: TextAlignVertical.center,
-                                                  textInputAction: TextInputAction.next,
-                                                  initialValue: controller.specialDiscount[index].timeslot![indexTimeSlot].discount,
+                                                  textAlignVertical:
+                                                      TextAlignVertical.center,
+                                                  textInputAction:
+                                                      TextInputAction.next,
+                                                  initialValue: controller
+                                                      .specialDiscount[index]
+                                                      .timeslot![indexTimeSlot]
+                                                      .discount,
                                                   onChanged: (text) {
-                                                    controller.specialDiscount[index].timeslot![indexTimeSlot].discount = text;
+                                                    controller
+                                                            .specialDiscount[index]
+                                                            .timeslot![indexTimeSlot]
+                                                            .discount =
+                                                        text;
                                                   },
-                                                  keyboardType: TextInputType.number,
+                                                  keyboardType:
+                                                      TextInputType.number,
                                                   decoration: InputDecoration(
-                                                    contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+                                                    contentPadding:
+                                                        const EdgeInsets.symmetric(
+                                                          vertical: 12,
+                                                          horizontal: 10,
+                                                        ),
                                                     hintText: 'Discount'.tr,
                                                     filled: true,
                                                     isDense: true,
-                                                    fillColor: isDark ? AppThemeData.surfaceDark : AppThemeData.surface,
-                                                    disabledBorder: UnderlineInputBorder(
-                                                      borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                                      borderSide: BorderSide(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50, width: 1),
-                                                    ),
+                                                    fillColor: isDark
+                                                        ? AppThemeData
+                                                              .surfaceDark
+                                                        : AppThemeData.surface,
+                                                    disabledBorder:
+                                                        UnderlineInputBorder(
+                                                          borderRadius:
+                                                              const BorderRadius.all(
+                                                                Radius.circular(
+                                                                  10,
+                                                                ),
+                                                              ),
+                                                          borderSide: BorderSide(
+                                                            color: isDark
+                                                                ? AppThemeData
+                                                                      .grey900
+                                                                : AppThemeData
+                                                                      .grey50,
+                                                            width: 1,
+                                                          ),
+                                                        ),
                                                     focusedBorder: OutlineInputBorder(
-                                                      borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                                      borderSide: BorderSide(color: isDark ? AppThemeData.secondary300 : AppThemeData.secondary300, width: 1),
+                                                      borderRadius:
+                                                          const BorderRadius.all(
+                                                            Radius.circular(10),
+                                                          ),
+                                                      borderSide: BorderSide(
+                                                        color: isDark
+                                                            ? AppThemeData
+                                                                  .secondary300
+                                                            : AppThemeData
+                                                                  .secondary300,
+                                                        width: 1,
+                                                      ),
                                                     ),
-                                                    enabledBorder: OutlineInputBorder(
-                                                      borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                                      borderSide: BorderSide(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50, width: 1),
-                                                    ),
+                                                    enabledBorder:
+                                                        OutlineInputBorder(
+                                                          borderRadius:
+                                                              const BorderRadius.all(
+                                                                Radius.circular(
+                                                                  10,
+                                                                ),
+                                                              ),
+                                                          borderSide: BorderSide(
+                                                            color: isDark
+                                                                ? AppThemeData
+                                                                      .grey900
+                                                                : AppThemeData
+                                                                      .grey50,
+                                                            width: 1,
+                                                          ),
+                                                        ),
                                                     errorBorder: OutlineInputBorder(
-                                                      borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                                      borderSide: BorderSide(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50, width: 1),
+                                                      borderRadius:
+                                                          const BorderRadius.all(
+                                                            Radius.circular(10),
+                                                          ),
+                                                      borderSide: BorderSide(
+                                                        color: isDark
+                                                            ? AppThemeData
+                                                                  .grey900
+                                                            : AppThemeData
+                                                                  .grey50,
+                                                        width: 1,
+                                                      ),
                                                     ),
                                                     border: OutlineInputBorder(
-                                                      borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                                      borderSide: BorderSide(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50, width: 1),
+                                                      borderRadius:
+                                                          const BorderRadius.all(
+                                                            Radius.circular(10),
+                                                          ),
+                                                      borderSide: BorderSide(
+                                                        color: isDark
+                                                            ? AppThemeData
+                                                                  .grey900
+                                                            : AppThemeData
+                                                                  .grey50,
+                                                        width: 1,
+                                                      ),
                                                     ),
-                                                    hintStyle: TextStyle(fontSize: 14, color: isDark ? AppThemeData.grey600 : AppThemeData.grey400, fontFamily: AppThemeData.regular),
+                                                    hintStyle: TextStyle(
+                                                      fontSize: 14,
+                                                      color: isDark
+                                                          ? AppThemeData.grey600
+                                                          : AppThemeData
+                                                                .grey400,
+                                                      fontFamily:
+                                                          AppThemeData.regular,
+                                                    ),
                                                     suffix: Padding(
-                                                      padding: const EdgeInsets.symmetric(horizontal: 5),
+                                                      padding:
+                                                          const EdgeInsets.symmetric(
+                                                            horizontal: 5,
+                                                          ),
                                                       child: Text(
-                                                        controller.specialDiscount[index].timeslot![indexTimeSlot].type == "percentage" ? "%" : "${Constant.currencyModel!.symbol}".tr,
-                                                        style: TextStyle(color: isDark ? AppThemeData.grey50 : AppThemeData.grey900, fontFamily: AppThemeData.semiBold, fontSize: 14),
+                                                        controller
+                                                                    .specialDiscount[index]
+                                                                    .timeslot![indexTimeSlot]
+                                                                    .type ==
+                                                                "percentage"
+                                                            ? "%"
+                                                            : (Constant
+                                                                      .currencyModel
+                                                                      ?.symbol ??
+                                                                  ''),
+                                                        style: TextStyle(
+                                                          color: isDark
+                                                              ? AppThemeData
+                                                                    .grey50
+                                                              : AppThemeData
+                                                                    .grey900,
+                                                          fontFamily:
+                                                              AppThemeData
+                                                                  .semiBold,
+                                                          fontSize: 14,
+                                                        ),
                                                       ),
                                                     ),
                                                   ),
@@ -242,95 +516,311 @@ class SpecialDiscountScreen extends StatelessWidget {
                                           const SizedBox(height: 10),
                                           Row(
                                             children: [
-                                              Expanded(
+                                              Flexible(
+                                                flex: 1,
                                                 child: DropdownButtonFormField<String>(
+                                                  isExpanded: true,
                                                   hint: Text(
                                                     'Select Type'.tr,
-                                                    style: TextStyle(fontSize: 14, color: isDark ? AppThemeData.grey700 : AppThemeData.grey700, fontFamily: AppThemeData.regular),
+                                                    style: TextStyle(
+                                                      fontSize: 14,
+                                                      color: isDark
+                                                          ? AppThemeData.grey700
+                                                          : AppThemeData
+                                                                .grey700,
+                                                      fontFamily:
+                                                          AppThemeData.regular,
+                                                    ),
                                                   ),
-                                                  dropdownColor: isDark ? AppThemeData.greyDark50 : AppThemeData.grey50,
-                                                  icon: const Icon(Icons.keyboard_arrow_down_outlined),
+                                                  dropdownColor: isDark
+                                                      ? AppThemeData.greyDark50
+                                                      : AppThemeData.grey50,
+                                                  icon: const Icon(
+                                                    Icons
+                                                        .keyboard_arrow_down_outlined,
+                                                  ),
+                                                  menuMaxHeight: 200,
+                                                  itemHeight: 48,
+                                                  isDense: true,
                                                   decoration: InputDecoration(
-                                                    errorStyle: const TextStyle(color: Colors.red),
+                                                    errorStyle: const TextStyle(
+                                                      color: Colors.red,
+                                                    ),
                                                     isDense: true,
                                                     filled: true,
-                                                    contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
-                                                    fillColor: isDark ? AppThemeData.surfaceDark : AppThemeData.surface,
-                                                    disabledBorder: UnderlineInputBorder(
-                                                      borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                                      borderSide: BorderSide(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50, width: 1),
-                                                    ),
+                                                    contentPadding:
+                                                        const EdgeInsets.symmetric(
+                                                          vertical: 12,
+                                                          horizontal: 10,
+                                                        ),
+                                                    fillColor: isDark
+                                                        ? AppThemeData
+                                                              .surfaceDark
+                                                        : AppThemeData.surface,
+                                                    disabledBorder:
+                                                        UnderlineInputBorder(
+                                                          borderRadius:
+                                                              const BorderRadius.all(
+                                                                Radius.circular(
+                                                                  10,
+                                                                ),
+                                                              ),
+                                                          borderSide: BorderSide(
+                                                            color: isDark
+                                                                ? AppThemeData
+                                                                      .grey900
+                                                                : AppThemeData
+                                                                      .grey50,
+                                                            width: 1,
+                                                          ),
+                                                        ),
                                                     focusedBorder: OutlineInputBorder(
-                                                      borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                                      borderSide: BorderSide(color: isDark ? AppThemeData.secondary300 : AppThemeData.secondary300, width: 1),
+                                                      borderRadius:
+                                                          const BorderRadius.all(
+                                                            Radius.circular(10),
+                                                          ),
+                                                      borderSide: BorderSide(
+                                                        color: isDark
+                                                            ? AppThemeData
+                                                                  .secondary300
+                                                            : AppThemeData
+                                                                  .secondary300,
+                                                        width: 1,
+                                                      ),
                                                     ),
-                                                    enabledBorder: OutlineInputBorder(
-                                                      borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                                      borderSide: BorderSide(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50, width: 1),
-                                                    ),
+                                                    enabledBorder:
+                                                        OutlineInputBorder(
+                                                          borderRadius:
+                                                              const BorderRadius.all(
+                                                                Radius.circular(
+                                                                  10,
+                                                                ),
+                                                              ),
+                                                          borderSide: BorderSide(
+                                                            color: isDark
+                                                                ? AppThemeData
+                                                                      .grey900
+                                                                : AppThemeData
+                                                                      .grey50,
+                                                            width: 1,
+                                                          ),
+                                                        ),
                                                     errorBorder: OutlineInputBorder(
-                                                      borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                                      borderSide: BorderSide(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50, width: 1),
+                                                      borderRadius:
+                                                          const BorderRadius.all(
+                                                            Radius.circular(10),
+                                                          ),
+                                                      borderSide: BorderSide(
+                                                        color: isDark
+                                                            ? AppThemeData
+                                                                  .grey900
+                                                            : AppThemeData
+                                                                  .grey50,
+                                                        width: 1,
+                                                      ),
                                                     ),
                                                     border: OutlineInputBorder(
-                                                      borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                                      borderSide: BorderSide(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50, width: 1),
+                                                      borderRadius:
+                                                          const BorderRadius.all(
+                                                            Radius.circular(10),
+                                                          ),
+                                                      borderSide: BorderSide(
+                                                        color: isDark
+                                                            ? AppThemeData
+                                                                  .grey900
+                                                            : AppThemeData
+                                                                  .grey50,
+                                                        width: 1,
+                                                      ),
                                                     ),
                                                   ),
-                                                  initialValue: controller.specialDiscount[index].timeslot![indexTimeSlot].discountType == "dinein" ? "Dine-In Discount" : "Delivery Discount",
+                                                  initialValue:
+                                                      controller
+                                                              .specialDiscount[index]
+                                                              .timeslot![indexTimeSlot]
+                                                              .discountType ==
+                                                          "dinein"
+                                                      ? "Dine-In Discount"
+                                                      : "Delivery Discount",
                                                   onChanged: (value) {
-                                                    if (value == "Dine-In Discount") {
-                                                      controller.specialDiscount[index].timeslot![indexTimeSlot].discountType = "dinein";
+                                                    if (value ==
+                                                        "Dine-In Discount") {
+                                                      controller
+                                                              .specialDiscount[index]
+                                                              .timeslot![indexTimeSlot]
+                                                              .discountType =
+                                                          "dinein";
                                                     } else {
-                                                      controller.specialDiscount[index].timeslot![indexTimeSlot].discountType = "delivery";
+                                                      controller
+                                                              .specialDiscount[index]
+                                                              .timeslot![indexTimeSlot]
+                                                              .discountType =
+                                                          "delivery";
                                                     }
                                                     controller.update();
                                                   },
-                                                  style: TextStyle(fontSize: 14, color: isDark ? AppThemeData.grey50 : AppThemeData.grey900, fontFamily: AppThemeData.medium),
-                                                  items: controller.discountType.map((item) {
-                                                    return DropdownMenuItem<String>(value: item.tr, child: Text(item.toString().tr));
-                                                  }).toList(),
+                                                  style: TextStyle(
+                                                    fontSize: 14,
+                                                    color: isDark
+                                                        ? AppThemeData.grey50
+                                                        : AppThemeData.grey900,
+                                                    fontFamily:
+                                                        AppThemeData.medium,
+                                                  ),
+                                                  items: controller.discountType
+                                                      .map((item) {
+                                                        return DropdownMenuItem<
+                                                          String
+                                                        >(
+                                                          value: item,
+                                                          child: Text(
+                                                            item.toString().tr,
+                                                          ),
+                                                        );
+                                                      })
+                                                      .toList(),
                                                 ),
                                               ),
                                               const SizedBox(width: 10),
-                                              Expanded(
+                                              Flexible(
+                                                flex: 1,
                                                 child: DropdownButtonFormField<String>(
-                                                  dropdownColor: isDark ? AppThemeData.greyDark50 : AppThemeData.grey50,
+                                                  isExpanded: true,
+                                                  dropdownColor: isDark
+                                                      ? AppThemeData.greyDark50
+                                                      : AppThemeData.grey50,
                                                   hint: Text(
                                                     'Select Type'.tr,
-                                                    style: TextStyle(fontSize: 14, color: isDark ? AppThemeData.grey700 : AppThemeData.grey700, fontFamily: AppThemeData.regular),
+                                                    style: TextStyle(
+                                                      fontSize: 14,
+                                                      color: isDark
+                                                          ? AppThemeData.grey700
+                                                          : AppThemeData
+                                                                .grey700,
+                                                      fontFamily:
+                                                          AppThemeData.regular,
+                                                    ),
                                                   ),
-                                                  icon: const Icon(Icons.keyboard_arrow_down_outlined),
+                                                  icon: const Icon(
+                                                    Icons
+                                                        .keyboard_arrow_down_outlined,
+                                                  ),
+                                                  menuMaxHeight: 200,
+                                                  itemHeight: 48,
+                                                  isDense: true,
                                                   decoration: InputDecoration(
-                                                    errorStyle: const TextStyle(color: Colors.red),
+                                                    errorStyle: const TextStyle(
+                                                      color: Colors.red,
+                                                    ),
                                                     isDense: true,
                                                     filled: true,
-                                                    contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
-                                                    fillColor: isDark ? AppThemeData.surfaceDark : AppThemeData.surface,
-                                                    disabledBorder: UnderlineInputBorder(
-                                                      borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                                      borderSide: BorderSide(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50, width: 1),
-                                                    ),
+                                                    contentPadding:
+                                                        const EdgeInsets.symmetric(
+                                                          vertical: 12,
+                                                          horizontal: 10,
+                                                        ),
+                                                    fillColor: isDark
+                                                        ? AppThemeData
+                                                              .surfaceDark
+                                                        : AppThemeData.surface,
+                                                    disabledBorder:
+                                                        UnderlineInputBorder(
+                                                          borderRadius:
+                                                              const BorderRadius.all(
+                                                                Radius.circular(
+                                                                  10,
+                                                                ),
+                                                              ),
+                                                          borderSide: BorderSide(
+                                                            color: isDark
+                                                                ? AppThemeData
+                                                                      .grey900
+                                                                : AppThemeData
+                                                                      .grey50,
+                                                            width: 1,
+                                                          ),
+                                                        ),
                                                     focusedBorder: OutlineInputBorder(
-                                                      borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                                      borderSide: BorderSide(color: isDark ? AppThemeData.secondary300 : AppThemeData.secondary300, width: 1),
+                                                      borderRadius:
+                                                          const BorderRadius.all(
+                                                            Radius.circular(10),
+                                                          ),
+                                                      borderSide: BorderSide(
+                                                        color: isDark
+                                                            ? AppThemeData
+                                                                  .secondary300
+                                                            : AppThemeData
+                                                                  .secondary300,
+                                                        width: 1,
+                                                      ),
                                                     ),
-                                                    enabledBorder: OutlineInputBorder(
-                                                      borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                                      borderSide: BorderSide(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50, width: 1),
-                                                    ),
+                                                    enabledBorder:
+                                                        OutlineInputBorder(
+                                                          borderRadius:
+                                                              const BorderRadius.all(
+                                                                Radius.circular(
+                                                                  10,
+                                                                ),
+                                                              ),
+                                                          borderSide: BorderSide(
+                                                            color: isDark
+                                                                ? AppThemeData
+                                                                      .grey900
+                                                                : AppThemeData
+                                                                      .grey50,
+                                                            width: 1,
+                                                          ),
+                                                        ),
                                                     errorBorder: OutlineInputBorder(
-                                                      borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                                      borderSide: BorderSide(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50, width: 1),
+                                                      borderRadius:
+                                                          const BorderRadius.all(
+                                                            Radius.circular(10),
+                                                          ),
+                                                      borderSide: BorderSide(
+                                                        color: isDark
+                                                            ? AppThemeData
+                                                                  .grey900
+                                                            : AppThemeData
+                                                                  .grey50,
+                                                        width: 1,
+                                                      ),
                                                     ),
                                                     border: OutlineInputBorder(
-                                                      borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                                      borderSide: BorderSide(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50, width: 1),
+                                                      borderRadius:
+                                                          const BorderRadius.all(
+                                                            Radius.circular(10),
+                                                          ),
+                                                      borderSide: BorderSide(
+                                                        color: isDark
+                                                            ? AppThemeData
+                                                                  .grey900
+                                                            : AppThemeData
+                                                                  .grey50,
+                                                        width: 1,
+                                                      ),
                                                     ),
                                                   ),
-                                                  initialValue: controller.specialDiscount[index].timeslot![indexTimeSlot].type == "amount" ? Constant.currencyModel!.symbol : "%",
+                                                  initialValue:
+                                                      controller
+                                                              .specialDiscount[index]
+                                                              .timeslot![indexTimeSlot]
+                                                              .type ==
+                                                          "amount"
+                                                      ? Constant
+                                                            .currencyModel!
+                                                            .symbol
+                                                      : "%",
                                                   onChanged: (value) {
-                                                    controller.changeValue(index, indexTimeSlot, value == Constant.currencyModel!.symbol! ? "amount" : "percentage");
+                                                    controller.changeValue(
+                                                      index,
+                                                      indexTimeSlot,
+                                                      value ==
+                                                              Constant
+                                                                  .currencyModel!
+                                                                  .symbol!
+                                                          ? "amount"
+                                                          : "percentage",
+                                                    );
                                                     // if (value == Constant.currencyModel!.symbol!) {
                                                     //   controller.specialDiscount[index].timeslot![indexTimeSlot].type = "amount";
                                                     // } else {
@@ -338,9 +828,25 @@ class SpecialDiscountScreen extends StatelessWidget {
                                                     // }
                                                     controller.update();
                                                   },
-                                                  style: TextStyle(fontSize: 14, color: isDark ? AppThemeData.grey50 : AppThemeData.grey900, fontFamily: AppThemeData.medium),
-                                                  items: controller.type.map((item) {
-                                                    return DropdownMenuItem<String>(value: item, child: Text(item.tr.toString()));
+                                                  style: TextStyle(
+                                                    fontSize: 14,
+                                                    color: isDark
+                                                        ? AppThemeData.grey50
+                                                        : AppThemeData.grey900,
+                                                    fontFamily:
+                                                        AppThemeData.medium,
+                                                  ),
+                                                  items: controller.type.map((
+                                                    item,
+                                                  ) {
+                                                    return DropdownMenuItem<
+                                                      String
+                                                    >(
+                                                      value: item,
+                                                      child: Text(
+                                                        item.tr.toString(),
+                                                      ),
+                                                    );
                                                   }).toList(),
                                                 ),
                                               ),
@@ -349,11 +855,20 @@ class SpecialDiscountScreen extends StatelessWidget {
                                           const SizedBox(height: 10),
                                           InkWell(
                                             onTap: () {
-                                              controller.remove(index, indexTimeSlot);
+                                              controller.remove(
+                                                index,
+                                                indexTimeSlot,
+                                              );
                                             },
                                             child: Text(
                                               "Remove Discount".tr,
-                                              style: TextStyle(color: isDark ? AppThemeData.danger300 : AppThemeData.danger300, fontSize: 16, fontFamily: AppThemeData.medium),
+                                              style: TextStyle(
+                                                color: isDark
+                                                    ? AppThemeData.danger300
+                                                    : AppThemeData.danger300,
+                                                fontSize: 16,
+                                                fontFamily: AppThemeData.medium,
+                                              ),
                                             ),
                                           ),
                                         ],
@@ -369,7 +884,11 @@ class SpecialDiscountScreen extends StatelessWidget {
                       separatorBuilder: (BuildContext context, int index) {
                         return Padding(
                           padding: const EdgeInsets.symmetric(vertical: 10),
-                          child: MySeparator(color: isDark ? AppThemeData.grey700 : AppThemeData.grey200),
+                          child: MySeparator(
+                            color: isDark
+                                ? AppThemeData.grey700
+                                : AppThemeData.grey200,
+                          ),
                         );
                       },
                     ),
@@ -386,17 +905,28 @@ class SpecialDiscountScreen extends StatelessWidget {
               child: RoundedButtonFill(
                 title: "Save Details".tr,
                 height: 5.5,
-                color: isDark ? AppThemeData.primary300 : AppThemeData.primary300,
+                color: isDark
+                    ? AppThemeData.primary300
+                    : AppThemeData.primary300,
                 textColor: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
                 fontSizes: 16,
                 onPress: () async {
                   bool isEmptyField = false;
                   for (var element in controller.specialDiscount) {
                     var emptyList = element.timeslot!.where(
-                      (element) => element.discount!.isEmpty || element.from!.isEmpty || element.to!.isEmpty || (element.type == "percentage" && double.parse(element.discount.toString()) > 100),
+                      (element) =>
+                          element.discount!.isEmpty ||
+                          element.from!.isEmpty ||
+                          element.to!.isEmpty ||
+                          (element.type == "percentage" &&
+                              double.parse(element.discount.toString()) > 100),
                     );
-                    if (element.timeslot!.isNotEmpty && emptyList.isNotEmpty && !isEmptyField) {
-                      ShowToastDialog.showToast("Please enter valid details".tr);
+                    if (element.timeslot!.isNotEmpty &&
+                        emptyList.isNotEmpty &&
+                        !isEmptyField) {
+                      ShowToastDialog.showToast(
+                        "Please enter valid details".tr,
+                      );
                       isEmptyField = true;
                       continue;
                     }
@@ -416,7 +946,10 @@ class SpecialDiscountScreen extends StatelessWidget {
 
   Future<TimeOfDay?> _selectTime(BuildContext context) async {
     FocusScope.of(context).requestFocus(FocusNode()); //remove focus
-    final TimeOfDay? newTime = await showTimePicker(context: context, initialTime: TimeOfDay.now());
+    final TimeOfDay? newTime = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
     if (newTime != null) {
       return newTime;
     }

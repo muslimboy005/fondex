@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart' as flutterMap;
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:yandex_mapkit/yandex_mapkit.dart' as ym;
+import 'package:driver/utils/yandex_map_utils.dart';
 
 class DriverLocationScreen extends StatelessWidget {
   const DriverLocationScreen({super.key});
@@ -19,7 +21,7 @@ class DriverLocationScreen extends StatelessWidget {
           return Scaffold(
             appBar: AppBar(
               title: Text(
-                "Driver Locations",
+                "Driver Locations".tr,
                 style: TextStyle(
                   color: isDark ? Colors.white : Colors.black,
                 ),
@@ -31,7 +33,7 @@ class DriverLocationScreen extends StatelessWidget {
             ),
             body: controller.isLoading.value
                 ? Constant.loader()
-                : Constant.selectedMapType == "osm"
+                : Constant.isOsmMap
                     ? Obx(() {
                         // Schedule a post-frame callback to ensure the FlutterMap has been built
                         // before we attempt to move the map to the driver's location.
@@ -58,28 +60,64 @@ class DriverLocationScreen extends StatelessWidget {
                           ],
                         );
                       })
-                    : GoogleMap(
-                        initialCameraPosition: controller.driverList.isNotEmpty
-                            ? CameraPosition(
-                                target: LatLng(controller.driverList.first.location == null ? 12.9716 : controller.driverList.first.location!.latitude!,
-                                    controller.driverList.first.location == null ? 77.5946 : controller.driverList.first.location!.longitude!),
-                                zoom: 14,
-                              )
-                            : CameraPosition(
-                                target: LatLng(12.9716, 77.5946),
-                                zoom: 14,
-                              ),
-                        myLocationEnabled: true,
-                        myLocationButtonEnabled: true,
-                        markers: controller.markers.toSet(),
-                        onMapCreated: (GoogleMapController mapController) {
-                          controller.mapController.complete(mapController);
-                          // Wait for markers to load
-                          Future.delayed(const Duration(milliseconds: 500), () async {
-                            await controller.moveCameraToFirstDriver(mapController);
-                          });
-                        },
-                      ),
+                    : Constant.isYandexMap
+                        ? ym.YandexMap(
+                            onMapCreated:
+                                (ym.YandexMapController mapController) async {
+                              controller.yandexMapController = mapController;
+                              await mapController.toggleUserLayer(visible: true);
+                              final initialLat =
+                                  controller.driverList.isNotEmpty &&
+                                          controller.driverList.first.location !=
+                                              null
+                                      ? controller.driverList.first.location!
+                                          .latitude!
+                                      : 41.3111;
+                              final initialLng =
+                                  controller.driverList.isNotEmpty &&
+                                          controller.driverList.first.location !=
+                                              null
+                                      ? controller.driverList.first.location!
+                                          .longitude!
+                                      : 69.2797;
+                              await mapController.moveCamera(
+                                ym.CameraUpdate.newCameraPosition(
+                                  ym.CameraPosition(
+                                    target: ym.Point(
+                                      latitude: initialLat,
+                                      longitude: initialLng,
+                                    ),
+                                    zoom: 14,
+                                  ),
+                                ),
+                              );
+                            },
+                            mapObjects: yandexMapObjectsFromGoogle(
+                              markers: controller.markers,
+                            ),
+                          )
+                        : GoogleMap(
+                            initialCameraPosition: controller.driverList.isNotEmpty
+                                ? CameraPosition(
+                                    target: LatLng(controller.driverList.first.location == null ? 41.3111 : controller.driverList.first.location!.latitude!,
+                                        controller.driverList.first.location == null ? 69.2797 : controller.driverList.first.location!.longitude!),
+                                    zoom: 14,
+                                  )
+                                : CameraPosition(
+                                    target: LatLng(41.3111, 69.2797),
+                                    zoom: 14,
+                                  ),
+                            myLocationEnabled: true,
+                            myLocationButtonEnabled: true,
+                            markers: controller.markers.toSet(),
+                            onMapCreated: (GoogleMapController mapController) {
+                              controller.mapController.complete(mapController);
+                              // Wait for markers to load
+                              Future.delayed(const Duration(milliseconds: 500), () async {
+                                await controller.moveCameraToFirstDriver(mapController);
+                              });
+                            },
+                          ),
           );
         });
   }

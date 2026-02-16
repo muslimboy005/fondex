@@ -138,7 +138,7 @@ class PaymentListScreen extends StatelessWidget {
                       ShowToastDialog.showToast("Please enter amount greater than 0".tr);
                     } else if ((double.tryParse(controller.topUpAmountController.value.text.trim()) ?? 0) < double.parse(Constant.minimumAmountToDeposit.toString())) {
                       ShowToastDialog.showToast(
-                        "${'Please enter minimum amount of'.tr} ${Constant.amountShow(amount: Constant.minimumAmountToDeposit)}".tr,
+                        "${'Please enter minimum amount of'.tr} ${Constant.amountShow(amount: Constant.minimumAmountToDeposit)}",
                       );
                     } else {
                       if (double.parse(controller.topUpAmountController.value.text) >= double.parse(Constant.minimumAmountToDeposit.toString())) {
@@ -181,7 +181,7 @@ class PaymentListScreen extends StatelessWidget {
                           ShowToastDialog.showToast("Please select payment method".tr);
                         }
                       } else {
-                        ShowToastDialog.showToast("${'Please Enter minimum amount of'.tr} ${Constant.amountShow(amount: Constant.minimumAmountToDeposit)}".tr);
+                        ShowToastDialog.showToast("${'Please enter minimum amount of'.tr} ${Constant.amountShow(amount: Constant.minimumAmountToDeposit)}");
                       }
                     }
                   },

@@ -95,8 +95,9 @@ class OwnerHomeScreen extends StatelessWidget {
                                             child: Padding(
                                               padding: const EdgeInsets.all(8.0),
                                               child: Text(
-                                                "You must have a minimum of ${Constant.amountShow(amount: Constant.ownerMinimumDepositToRideAccept.toString())} in your wallet to receive orders to your driver"
-                                                    .tr,
+                                                "You must have a minimum of @amount in your wallet to receive orders to your driver".trParams({
+                                                  "amount": Constant.amountShow(amount: Constant.ownerMinimumDepositToRideAccept.toString())
+                                                }),
                                                 style: TextStyle(
                                                   color: AppThemeData.danger300,
                                                   fontSize: 14,

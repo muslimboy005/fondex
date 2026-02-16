@@ -112,7 +112,9 @@ class VendorModel {
     g = json['g'] != null ? G.fromJson(json['g']) : null;
     hidephotos = json['hidephotos'];
     reststatus = json['reststatus'];
-    filters = json['filters'] != null ? Filters.fromJson(json['filters']) : null;
+    filters = json['filters'] != null
+        ? Filters.fromJson(json['filters'])
+        : null;
     reviewsCount = json['reviewsCount'] ?? 0.0;
     photo = json['photo'];
     description = json['description'];
@@ -123,8 +125,12 @@ class VendorModel {
     longitude = double.parse(json['longitude'].toString());
     enabledDiveInFuture = json['enabledDiveInFuture'];
     restaurantCost = json['restaurantCost']?.toString();
-    deliveryCharge = json['DeliveryCharge'] != null ? DeliveryCharge.fromJson(json['DeliveryCharge']) : null;
-    adminCommission = json['adminCommission'] != null ? AdminCommission.fromJson(json['adminCommission']) : null;
+    deliveryCharge = json['DeliveryCharge'] != null
+        ? DeliveryCharge.fromJson(json['DeliveryCharge'])
+        : null;
+    adminCommission = json['adminCommission'] != null
+        ? AdminCommission.fromJson(json['adminCommission'])
+        : null;
     authorProfilePic = json['authorProfilePic'];
     authorName = json['authorName'];
     phonenumber = json['phonenumber'];
@@ -139,11 +145,15 @@ class VendorModel {
     reviewsSum = json['reviewsSum'] ?? 0.0;
     photos = json['photos'] ?? [];
     title = json['title'];
-    categoryTitle = json['categoryTitle'] is String ? [] : json['categoryTitle'] ?? [];
+    categoryTitle = json['categoryTitle'] is String
+        ? []
+        : json['categoryTitle'] ?? [];
     latitude = double.parse(json['latitude'].toString());
     subscriptionPlanId = json['subscriptionPlanId'];
     subscriptionExpiryDate = json['subscriptionExpiryDate'];
-    subscriptionPlan = json['subscription_plan'] != null ? SubscriptionPlanModel.fromJson(json['subscription_plan']) : null;
+    subscriptionPlan = json['subscription_plan'] != null
+        ? SubscriptionPlanModel.fromJson(json['subscription_plan'])
+        : null;
     subscriptionTotalOrders = json['subscriptionTotalOrders'];
     sectionId = json['section_id'];
     isSelfDelivery = json['isSelfDelivery'] ?? false;
@@ -196,7 +206,9 @@ class VendorModel {
     data['authorName'] = authorName;
     data['phonenumber'] = phonenumber;
     if (specialDiscount != null) {
-      data['specialDiscount'] = specialDiscount!.map((v) => v.toJson()).toList();
+      data['specialDiscount'] = specialDiscount!
+          .map((v) => v.toJson())
+          .toList();
     }
     data['specialDiscountEnable'] = specialDiscountEnable;
     data['coordinates'] = coordinates;
@@ -284,7 +296,16 @@ class Filters {
   String? freeWiFi;
   String? takesReservations;
 
-  Filters({this.goodForLunch, this.outdoorSeating, this.liveMusic, this.vegetarianFriendly, this.goodForDinner, this.goodForBreakfast, this.freeWiFi, this.takesReservations});
+  Filters({
+    this.goodForLunch,
+    this.outdoorSeating,
+    this.liveMusic,
+    this.vegetarianFriendly,
+    this.goodForDinner,
+    this.goodForBreakfast,
+    this.freeWiFi,
+    this.takesReservations,
+  });
 
   Filters.fromJson(Map<String, dynamic> json) {
     goodForLunch = json['Good for Lunch'];
@@ -317,7 +338,12 @@ class DeliveryCharge {
   num? deliveryChargesPerKm;
   bool? vendorCanModify;
 
-  DeliveryCharge({this.minimumDeliveryChargesWithinKm, this.minimumDeliveryCharges, this.deliveryChargesPerKm, this.vendorCanModify});
+  DeliveryCharge({
+    this.minimumDeliveryChargesWithinKm,
+    this.minimumDeliveryCharges,
+    this.deliveryChargesPerKm,
+    this.vendorCanModify,
+  });
 
   DeliveryCharge.fromJson(Map<String, dynamic> json) {
     minimumDeliveryChargesWithinKm = json['minimum_delivery_charges_within_km'];
@@ -369,7 +395,13 @@ class SpecialDiscountTimeslot {
   String? type;
   String? from;
 
-  SpecialDiscountTimeslot({this.discount, this.discountType, this.to, this.type, this.from});
+  SpecialDiscountTimeslot({
+    this.discount,
+    this.discountType,
+    this.to,
+    this.type,
+    this.from,
+  });
 
   SpecialDiscountTimeslot.fromJson(Map<String, dynamic> json) {
     discount = json['discount'];

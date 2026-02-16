@@ -561,7 +561,7 @@ class IntercityHomeController extends GetxController {
           userId: FireStoreUtils.getCurrentUid(),
           isTopup: false,
           orderId: currentOrder.value.id,
-          note: "Cab Amount debited".tr,
+          note: "Cab Amount debited",
           paymentStatus: "success".tr,
           serviceType: Constant.parcelServiceType,
         );

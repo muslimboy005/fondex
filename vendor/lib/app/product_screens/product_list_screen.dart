@@ -5,15 +5,43 @@ import 'package:get/get.dart';
 import 'package:vendor/themes/theme_controller.dart';
 import 'package:vendor/app/add_restaurant_screen/add_restaurant_screen.dart';
 import 'package:vendor/app/product_screens/add_product_screen.dart';
+import 'package:vendor/app/subscription_plan_screen/subscription_plan_screen.dart';
 import 'package:vendor/app/verification_screen/verification_screen.dart';
 import 'package:vendor/constant/constant.dart';
 import 'package:vendor/constant/show_toast_dialog.dart';
 import 'package:vendor/controller/product_list_controller.dart';
 import 'package:vendor/themes/app_them_data.dart';
+import 'package:vendor/themes/custom_dialog_box.dart';
 import 'package:vendor/themes/responsive.dart';
 import 'package:vendor/themes/round_button_fill.dart';
 import 'package:vendor/utils/fire_store_utils.dart';
 import 'package:vendor/utils/network_image_widget.dart';
+
+void _showSubscriptionRequiredDialog(BuildContext context) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return CustomDialogBox(
+        title: "Subscription Required".tr,
+        descriptions:
+            "Your current subscription plan has reached its maximum product limit. Upgrade now to add more products."
+                .tr,
+        positiveString: "Subscribe".tr,
+        negativeString: "Cancel".tr,
+        positiveClick: () {
+          Get.back();
+          Get.to(
+            const SubscriptionPlanScreen(),
+            arguments: {'isProfile': true},
+          );
+        },
+        negativeClick: () {
+          Get.back();
+        },
+      );
+    },
+  );
+}
 
 class ProductListScreen extends StatelessWidget {
   const ProductListScreen({super.key});
@@ -70,10 +98,7 @@ class ProductListScreen extends StatelessWidget {
                                       : '0',
                                 ) <=
                                 controller.productList.length) {
-                          ShowToastDialog.showToast(
-                            "Your current subscription plan has reached its maximum product limit. Upgrade now to add more products."
-                                .tr,
-                          );
+                          _showSubscriptionRequiredDialog(context);
                         } else {
                           Get.to(const AddProductScreen())!.then((value) {
                             if (value == true) {
@@ -320,10 +345,7 @@ class ProductListScreen extends StatelessWidget {
                                         : '0',
                                   ) <=
                                   controller.productList.length) {
-                            ShowToastDialog.showToast(
-                              "Your current subscription plan has reached its maximum product limit. Upgrade now to add more products."
-                                  .tr,
-                            );
+                            _showSubscriptionRequiredDialog(context);
                           } else {
                             Get.to(const AddProductScreen())!.then((value) {
                               if (value == true) {

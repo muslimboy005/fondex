@@ -21,12 +21,14 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart' as location;
 import 'package:google_maps_flutter/google_maps_flutter.dart' as google_maps;
+import 'package:yandex_mapkit/yandex_mapkit.dart' as ym;
 import 'package:location/location.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class CabHomeController extends GetxController {
   RxBool isLoading = true.obs;
   google_maps.GoogleMapController? mapController;
+  ym.YandexMapController? yandexMapController;
   RxMap<String, google_maps.Marker> markers =
       <String, google_maps.Marker>{}.obs;
   RxMap<google_maps.PolylineId, google_maps.Polyline> polyLines =
@@ -88,7 +90,7 @@ class CabHomeController extends GetxController {
       ShowToastDialog.closeLoader();
       debugPrint("Error in acceptOrder: $e");
       debugPrintStack(stackTrace: s);
-      ShowToastDialog.showToast("Something went wrong. Please try again.");
+      ShowToastDialog.showToast("Something went wrong. Please try again.".tr);
     }
   }
 
@@ -113,7 +115,7 @@ class CabHomeController extends GetxController {
       driverModel.value.inProgressOrderID = [];
       await FireStoreUtils.updateUser(driverModel.value);
 
-      // 3️⃣ Close bottom sheet immediately (don’t wait for Firestore)
+      // 3️⃣ Close bottom sheet immediately (don't wait for Firestore)
       if (Get.isBottomSheetOpen ?? false) {
         Get.back();
       } else if (Constant.singleOrderReceive == false) {
@@ -815,14 +817,19 @@ class CabHomeController extends GetxController {
   google_maps.BitmapDescriptor? sourceIcon;
   google_maps.BitmapDescriptor? destinationIcon;
 
+  /// Marker icon size scale (0.22 = kichik hajm)
+  static const double _markerSizeScale = 0.22;
+
   Future<void> _loadIcons() async {
     try {
-      final Uint8List driverBytes =
-          await Constant().getBytesFromAsset('assets/images/ic_cab.png', 50);
+      final int driverW = (50 * _markerSizeScale).round().clamp(8, 200);
+      final int pinW = (100 * _markerSizeScale).round().clamp(8, 200);
+      final Uint8List driverBytes = await Constant()
+          .getBytesFromAsset('assets/images/ic_cab.png', driverW);
       final Uint8List sourceBytes = await Constant()
-          .getBytesFromAsset('assets/images/location_black3x.png', 100);
+          .getBytesFromAsset('assets/images/location_black3x.png', pinW);
       final Uint8List destBytes = await Constant()
-          .getBytesFromAsset('assets/images/location_orange3x.png', 100);
+          .getBytesFromAsset('assets/images/location_orange3x.png', pinW);
 
       driverIcon = google_maps.BitmapDescriptor.fromBytes(driverBytes);
       sourceIcon = google_maps.BitmapDescriptor.fromBytes(sourceBytes);
@@ -920,16 +927,33 @@ class CabHomeController extends GetxController {
       // Update Google map camera if controller is ready
       // ✅ Use GPS location for camera if available
       google_maps.LatLng cameraTarget = driverMarkerPosition;
-      if (mapController != null &&
-          !(cameraTarget.latitude == 0.0 && cameraTarget.longitude == 0.0)) {
-        mapController!.animateCamera(
-          google_maps.CameraUpdate.newCameraPosition(
-            google_maps.CameraPosition(
-              target: cameraTarget,
-              zoom: 16,
+      if (Constant.isYandexMap) {
+        if (yandexMapController != null &&
+            !(cameraTarget.latitude == 0.0 && cameraTarget.longitude == 0.0)) {
+          await yandexMapController!.moveCamera(
+            ym.CameraUpdate.newCameraPosition(
+              ym.CameraPosition(
+                target: ym.Point(
+                  latitude: cameraTarget.latitude,
+                  longitude: cameraTarget.longitude,
+                ),
+                zoom: 16,
+              ),
             ),
-          ),
-        );
+          );
+        }
+      } else {
+        if (mapController != null &&
+            !(cameraTarget.latitude == 0.0 && cameraTarget.longitude == 0.0)) {
+          mapController!.animateCamera(
+            google_maps.CameraUpdate.newCameraPosition(
+              google_maps.CameraPosition(
+                target: cameraTarget,
+                zoom: 16,
+              ),
+            ),
+          );
+        }
       }
       update();
     } catch (e, stackTrace) {
@@ -1132,22 +1156,40 @@ class CabHomeController extends GetxController {
 
     update();
     // Update camera to first point
-    if (polylineCoordinates.isNotEmpty && mapController != null) {
+    if (polylineCoordinates.isNotEmpty) {
       final firstPoint = polylineCoordinates.first;
-      mapController!.animateCamera(
-        google_maps.CameraUpdate.newCameraPosition(
-          google_maps.CameraPosition(
-            target: google_maps.LatLng(
-              firstPoint.latitude,
-              firstPoint.longitude,
+      if (Constant.isYandexMap) {
+        if (yandexMapController == null) return;
+        yandexMapController!.moveCamera(
+          ym.CameraUpdate.newCameraPosition(
+            ym.CameraPosition(
+              target: ym.Point(
+                latitude: firstPoint.latitude,
+                longitude: firstPoint.longitude,
+              ),
+              zoom: currentOrder.value.id == null ||
+                      currentOrder.value.status == Constant.driverPending
+                  ? 16
+                  : 20,
             ),
-            zoom: currentOrder.value.id == null ||
-                    currentOrder.value.status == Constant.driverPending
-                ? 16
-                : 20,
           ),
-        ),
-      );
+        );
+      } else if (mapController != null) {
+        mapController!.animateCamera(
+          google_maps.CameraUpdate.newCameraPosition(
+            google_maps.CameraPosition(
+              target: google_maps.LatLng(
+                firstPoint.latitude,
+                firstPoint.longitude,
+              ),
+              zoom: currentOrder.value.id == null ||
+                      currentOrder.value.status == Constant.driverPending
+                  ? 16
+                  : 20,
+            ),
+          ),
+        );
+      }
     }
   }
 
@@ -1161,25 +1203,37 @@ class CabHomeController extends GetxController {
       lng = double.tryParse('${loc.longitude}') ?? 0.0;
     }
     _updateCurrentLocationMarkers();
-    // Move Google map camera to current location
-    if (mapController != null && lat != 0.0 && lng != 0.0) {
-      mapController!.animateCamera(
-        google_maps.CameraUpdate.newCameraPosition(
-          google_maps.CameraPosition(
-            target: google_maps.LatLng(lat, lng),
-            zoom: 16,
+    // Move map camera to current location
+    if (Constant.isYandexMap) {
+      if (yandexMapController != null && lat != 0.0 && lng != 0.0) {
+        yandexMapController!.moveCamera(
+          ym.CameraUpdate.newCameraPosition(
+            ym.CameraPosition(
+              target: ym.Point(latitude: lat, longitude: lng),
+              zoom: 16,
+            ),
           ),
-        ),
-      );
+        );
+      }
+    } else {
+      if (mapController != null && lat != 0.0 && lng != 0.0) {
+        mapController!.animateCamera(
+          google_maps.CameraUpdate.newCameraPosition(
+            google_maps.CameraPosition(
+              target: google_maps.LatLng(lat, lng),
+              zoom: 16,
+            ),
+          ),
+        );
+      }
     }
   }
 
-  Rx<location.LatLng> source =
-      location.LatLng(21.1702, 72.8311).obs; // Start (e.g., Surat)
+  Rx<location.LatLng> source = location.LatLng(0.0, 0.0).obs; // Start (unset)
   Rx<location.LatLng> current =
-      location.LatLng(21.1800, 72.8400).obs; // Moving marker
+      location.LatLng(0.0, 0.0).obs; // Moving marker (unset)
   Rx<location.LatLng> destination =
-      location.LatLng(21.2000, 72.8600).obs; // Destination
+      location.LatLng(0.0, 0.0).obs; // Destination (unset)
 
   void setOsmMapMarker() {
     // OSM markers are now handled by Google Maps via updateGoogleMarkers()

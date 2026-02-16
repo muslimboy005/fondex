@@ -8,22 +8,17 @@
     <!-- Location (driver tracking & orders) -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
 
     <!-- Camera & Media -->
     <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.RECORD_AUDIO" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
-    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <!-- Notifications (Android 13+) -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
-    <!-- Foreground service (location when app in background) -->
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+
+    
+
 
     <application
         android:label="Fondex Driver"
@@ -64,6 +59,14 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyDxOSX6rowgZnN20x7smx7V9COeW1I7hkU" />
+
+        <!-- Yandex MapKit API Key -->
+        <meta-data
+            android:name="com.yandex.mapkit.api.key"
+            android:value="9bd1fb94-3024-43a3-9d31-44ecc894e42f" />
+        <meta-data
+            android:name="com.yandex.maps.api.key"
+            android:value="9bd1fb94-3024-43a3-9d31-44ecc894e42f" />
 
         <meta-data
             android:name="com.google.android.gms.wallet.api.enabled"

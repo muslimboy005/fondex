@@ -144,7 +144,7 @@ class PhoneRegistrationController extends GetxController {
           } else if (response.statusCode == 500) {
             errorMessage = "Server error. Please try again later.".tr;
           } else {
-            errorMessage = "Registration failed (${response.statusCode})".tr;
+            errorMessage = "${'Registration failed'.tr} (${response.statusCode})";
           }
           ShowToastDialog.showToast(errorMessage);
         } else {
@@ -155,7 +155,7 @@ class PhoneRegistrationController extends GetxController {
             final message =
                 errorData['message']?.toString() ??
                 errorData['error']?.toString() ??
-                "Registration failed (${response.statusCode})".tr;
+                "${'Registration failed'.tr} (${response.statusCode})";
             // Limit message length to prevent overflow
             final shortMessage = message.length > 100
                 ? "${message.substring(0, 100)}..."
@@ -170,7 +170,7 @@ class PhoneRegistrationController extends GetxController {
             } else if (response.statusCode == 500) {
               errorMessage = "Server error. Please try again later.".tr;
             } else {
-              errorMessage = "Registration failed (${response.statusCode})".tr;
+              errorMessage = "${'Registration failed'.tr} (${response.statusCode})";
             }
             ShowToastDialog.showToast(errorMessage);
           }

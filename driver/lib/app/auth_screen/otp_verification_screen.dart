@@ -7,6 +7,7 @@ import '../../controllers/otp_verification_controller.dart';
 import '../../themes/app_them_data.dart';
 import '../../themes/responsive.dart';
 import '../../themes/theme_controller.dart';
+import 'phone_registration_screen.dart';
 
 class OtpVerificationScreen extends StatelessWidget {
   const OtpVerificationScreen({super.key});
@@ -30,7 +31,7 @@ class OtpVerificationScreen extends StatelessWidget {
                 color: isDark ? AppThemeData.greyDark500 : AppThemeData.grey500,
               ),
               onPressed: () {
-                Get.back();
+                Get.off(() => const PhoneRegistrationScreen());
               },
             ),
             actions: [
@@ -225,7 +226,7 @@ class OtpVerificationScreen extends StatelessWidget {
                     child: Center(
                       child: Text.rich(
                         TextSpan(
-                          text: "Didn't have an account?".tr,
+                          text: "Didn't Have an account?".tr,
                           style: AppThemeData.mediumTextStyle(
                             color: isDark
                                 ? AppThemeData.greyDark800

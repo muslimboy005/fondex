@@ -9,6 +9,8 @@ import '../../themes/app_them_data.dart';
 import 'package:flutter_map/flutter_map.dart' as fm;
 import 'package:google_maps_flutter/google_maps_flutter.dart' as gmap;
 import 'package:latlong2/latlong.dart' as osm;
+import 'package:yandex_mapkit/yandex_mapkit.dart' as ym;
+import 'package:driver/utils/yandex_map_utils.dart';
 import '../../themes/theme_controller.dart';
 import '../../utils/network_image_widget.dart';
 
@@ -25,7 +27,7 @@ class CabOrderDetails extends StatelessWidget {
         return Scaffold(
           appBar: AppBar(
             title: Text(
-              "Ride Details",
+              "Ride Details".tr,
               style: TextStyle(
                 color: isDark ? Colors.white : Colors.black,
               ),
@@ -55,8 +57,7 @@ class CabOrderDetails extends StatelessWidget {
                         width: double.infinity,
                         padding: const EdgeInsets.all(16),
                         child: Text(
-                          "${'Order Id:'.tr} ${Constant.orderId(orderId: controller.cabOrder.value.id.toString())}"
-                              .tr,
+                          "${'Order Id:'.tr} ${Constant.orderId(orderId: controller.cabOrder.value.id.toString())}",
                           textAlign: TextAlign.start,
                           style: TextStyle(
                             fontFamily: AppThemeData.semiBold,
@@ -85,8 +86,7 @@ class CabOrderDetails extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              "${'Booking Date:'.tr}${controller.formatDate(controller.cabOrder.value.scheduleDateTime!)}"
-                                  .tr,
+                              "${'Booking Date:'.tr}${controller.formatDate(controller.cabOrder.value.scheduleDateTime!)}",
                               textAlign: TextAlign.start,
                               style: TextStyle(
                                 fontFamily: AppThemeData.semiBold,
@@ -224,7 +224,7 @@ class CabOrderDetails extends StatelessWidget {
                         ),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(15),
-                          child: Constant.selectedMapType == "osm"
+                          child: Constant.isOsmMap
                               ? fm.FlutterMap(
                                   options: fm.MapOptions(
                                     initialCenter: osm.LatLng(
@@ -257,12 +257,12 @@ class CabOrderDetails extends StatelessWidget {
                                                   .sourceLocation!.latitude!,
                                               controller.cabOrder.value
                                                   .sourceLocation!.longitude!),
-                                          width: 20,
-                                          height: 20,
+                                          width: 5,
+                                          height: 5,
                                           child: Image.asset(
                                               'assets/icons/ic_cab_pickup.png',
-                                              width: 10,
-                                              height: 10),
+                                              width: 2,
+                                              height: 2),
                                         ),
                                         fm.Marker(
                                           point: osm.LatLng(
@@ -274,29 +274,60 @@ class CabOrderDetails extends StatelessWidget {
                                                 .destinationLocation!
                                                 .longitude!,
                                           ),
-                                          width: 20,
-                                          height: 20,
+                                          width: 5,
+                                          height: 5,
                                           child: Image.asset(
                                               'assets/icons/ic_cab_destination.png',
-                                              width: 10,
-                                              height: 10),
+                                              width: 2,
+                                              height: 2),
                                         ),
                                       ],
                                     ),
                                   ],
                                 )
-                              : gmap.GoogleMap(
-                                  initialCameraPosition: gmap.CameraPosition(
-                                    target: gmap.LatLng(
-                                        controller.cabOrder.value
-                                            .sourceLocation!.latitude!,
-                                        controller.cabOrder.value
-                                            .sourceLocation!.longitude!),
-                                    zoom: 13,
-                                  ),
-                                  polylines: controller.googlePolylines.toSet(),
-                                  markers: controller.googleMarkers.toSet(),
-                                ),
+                              : Constant.isYandexMap
+                                  ? ym.YandexMap(
+                                      onMapCreated: (ym.YandexMapController
+                                          mapController) async {
+                                        await mapController.moveCamera(
+                                          ym.CameraUpdate.newCameraPosition(
+                                            ym.CameraPosition(
+                                              target: ym.Point(
+                                                latitude: controller
+                                                    .cabOrder
+                                                    .value
+                                                    .sourceLocation!
+                                                    .latitude!,
+                                                longitude: controller
+                                                    .cabOrder
+                                                    .value
+                                                    .sourceLocation!
+                                                    .longitude!,
+                                              ),
+                                              zoom: 13,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                      mapObjects: yandexMapObjectsFromGoogle(
+                                        markers: controller.googleMarkers,
+                                        polylines: controller.googlePolylines,
+                                      ),
+                                    )
+                                  : gmap.GoogleMap(
+                                      initialCameraPosition:
+                                          gmap.CameraPosition(
+                                        target: gmap.LatLng(
+                                            controller.cabOrder.value
+                                                .sourceLocation!.latitude!,
+                                            controller.cabOrder.value
+                                                .sourceLocation!.longitude!),
+                                        zoom: 13,
+                                      ),
+                                      polylines:
+                                          controller.googlePolylines.toSet(),
+                                      markers: controller.googleMarkers.toSet(),
+                                    ),
                         ),
                       ),
                       controller.cabOrder.value.driver != null
@@ -433,7 +464,7 @@ class CabOrderDetails extends StatelessWidget {
                             _iconTile(
                               Constant.amountShow(
                                   amount: controller.cabOrder.value.subTotal),
-                              "${controller.cabOrder.value.paymentMethod}".tr,
+                              controller.cabOrder.value.paymentMethod ?? '',
                               "assets/icons/ic_rate_parcel.svg",
                               isDark,
                             ),
@@ -515,8 +546,7 @@ class CabOrderDetails extends StatelessWidget {
                                 isDark,
                                 null),
                             _summaryTile(
-                              "Admin Commission (${controller.cabOrder.value.adminCommission}${controller.cabOrder.value.adminCommissionType == "Percentage" || controller.cabOrder.value.adminCommissionType == "percentage" ? "%" : Constant.currencyModel!.symbol})"
-                                  .tr,
+                              "${'Admin Commission'.tr} (${controller.cabOrder.value.adminCommission}${controller.cabOrder.value.adminCommissionType == "Percentage" || controller.cabOrder.value.adminCommissionType == "percentage" ? "%" : Constant.currencyModel!.symbol})",
                               Constant.amountShow(
                                   amount: controller.adminCommission.value
                                       .toString()),
@@ -549,7 +579,8 @@ class CabOrderDetails extends StatelessWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      "Note : Admin commission will be debited from your wallet balance. \n \nAdmin commission will apply on your booking Amount minus Discount(if applicable).",
+                                      "Note: Admin commission will be debited from your wallet balance.\n\nAdmin commission will apply on your booking amount minus discount (if applicable)."
+                                          .tr,
                                       style: AppThemeData.boldTextStyle(
                                           fontSize: 16,
                                           color: isDark

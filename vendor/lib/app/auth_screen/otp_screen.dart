@@ -44,7 +44,7 @@ class OtpScreen extends StatelessWidget {
                           style: TextStyle(color: isDark ? AppThemeData.grey50 : AppThemeData.grey900, fontSize: 22, fontFamily: AppThemeData.semiBold),
                         ),
                         Text(
-                          "${'Enter the OTP sent to your mobile number.'.tr} ${controller.countryCode.value} ${Constant.maskingString(controller.phoneNumber.value, 3)}".tr,
+                          "${'Enter the OTP sent to your mobile number.'.tr} ${controller.countryCode.value} ${Constant.maskingString(controller.phoneNumber.value, 3)}",
                           textAlign: TextAlign.start,
                           style: TextStyle(
                             color: isDark ? AppThemeData.grey200 : AppThemeData.grey700,

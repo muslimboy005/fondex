@@ -259,7 +259,7 @@ class AddAdvertisementScreen extends StatelessWidget {
                                       mainAxisAlignment: MainAxisAlignment.center,
                                       children: [
                                         Text(
-                                          "Profile Image (Ratio - 1:1)".tr,
+                                          "Profile Image (Ratio - 1:1)".tr,
                                           style: TextStyle(color: AppThemeData.danger300, fontFamily: AppThemeData.medium, fontSize: 14),
                                         ),
                                         const SizedBox(height: 5),
@@ -302,7 +302,7 @@ class AddAdvertisementScreen extends StatelessWidget {
                                             SvgPicture.asset('assets/icons/ic_folder.svg'),
                                             const SizedBox(height: 10),
                                             Text(
-                                              "Upload Cover (Ratio - 2:1)".tr,
+                                      "Upload Cover (Ratio - 2:1)".tr,
                                               style: TextStyle(color: AppThemeData.danger300, fontFamily: AppThemeData.medium, fontSize: 14),
                                             ),
                                             const SizedBox(height: 5),

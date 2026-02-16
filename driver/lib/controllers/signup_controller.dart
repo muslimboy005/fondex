@@ -78,10 +78,6 @@ class SignupController extends GetxController {
         countryCodeEditingController.value.text = userModel.value.countryCode ?? "+1";
         emailEditingController.value.text = userModel.value.email ?? "";
         // Password is not shown/asked, it's default "123456" in Firebase
-      } else if (type.value == "google" || type.value == "apple") {
-        emailEditingController.value.text = userModel.value.email ?? "";
-        firstNameEditingController.value.text = userModel.value.firstName ?? "";
-        lastNameEditingController.value.text = userModel.value.lastName ?? "";
       }
     }
 
@@ -97,7 +93,7 @@ class SignupController extends GetxController {
   }
 
   Future<void> getSection() async {
-    ShowToastDialog.showLoader("Please wait");
+    ShowToastDialog.showLoader("Please wait".tr);
     await FireStoreUtils.getSections(selectedService.value == "Cab Service"
             ? "cab-service"
             : selectedService.value == "Parcel Service"
@@ -116,7 +112,7 @@ class SignupController extends GetxController {
   }
 
   Future<void> getVehicleType() async {
-    ShowToastDialog.showLoader("Please wait");
+    ShowToastDialog.showLoader("Please wait".tr);
     cabVehicleType.clear();
     if (selectedService.value == "Cab Service") {
       await FireStoreUtils.getCabVehicleType(selectedSection.value.id.toString()).then((value) {
@@ -137,7 +133,7 @@ class SignupController extends GetxController {
   }
 
   Future<void> getCarModel() async {
-    ShowToastDialog.showLoader("Please wait");
+    ShowToastDialog.showLoader("Please wait".tr);
     carModelList.clear();
     selectedCarModel.value = CarModel();
     await FireStoreUtils.getCarModel(selectedCarMakes.value.name.toString()).then((value) {
@@ -151,8 +147,8 @@ class SignupController extends GetxController {
   }
 
   Future<void> signUp() async {
-    ShowToastDialog.showLoader("Please wait");
-    if (type.value == "google" || type.value == "apple" || type.value == "mobileNumber") {
+    ShowToastDialog.showLoader("Please wait".tr);
+    if (type.value == "mobileNumber") {
       userModel.value.firstName = firstNameEditingController.value.text.toString();
       userModel.value.lastName = lastNameEditingController.value.text.toString();
       userModel.value.email = emailEditingController.value.text.toString().toLowerCase();

@@ -18,11 +18,13 @@ import 'package:flutter_map/flutter_map.dart' as flutterMap;
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:yandex_mapkit/yandex_mapkit.dart' as ym;
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart' as location;
 import 'package:geolocator/geolocator.dart';
 import 'package:location/location.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:driver/utils/yandex_map_utils.dart';
 
 import '../models/order_model.dart';
 
@@ -160,6 +162,7 @@ class HomeController extends GetxController {
   }
 
   Future<void> acceptOrder() async {
+    log("🟢 [acceptOrder] Boshlandi");
     await AudioPlayerService.playSound(false);
     ShowToastDialog.showLoader("Please wait".tr);
     driverModel.value.inProgressOrderID ?? [];
@@ -173,12 +176,16 @@ class HomeController extends GetxController {
     currentOrder.value.driver = driverModel.value;
 
     await FireStoreUtils.setOrder(currentOrder.value);
+    log("🟢 [acceptOrder] Firestore yangilandi, status=${currentOrder.value.status}");
     print("SendNotification ===========>");
     SendNotification.sendFcmMessage(Constant.driverAcceptedNotification,
         currentOrder.value.author?.fcmToken ?? '', {});
     SendNotification.sendFcmMessage(Constant.driverAcceptedNotification,
         currentOrder.value.vendor?.fcmToken ?? '', {});
     ShowToastDialog.closeLoader();
+    log("🟢 [acceptOrder] changeData() chaqirilmoqda...");
+    await changeData();
+    log("🟢 [acceptOrder] changeData() tugadi. markers=${markers.length}, polyLines=${polyLines.length}");
   }
 
   Future<void> rejectOrder() async {
@@ -331,6 +338,7 @@ class HomeController extends GetxController {
       }
 
       currentOrder.value = newOrder;
+      log("🟢 [_listenToOrder] Order yangilandi orderId=${newOrder.id} status=${newOrder.status}, changeData() chaqirilmoqda");
       changeData();
       update(); // Update UI to show bottom sheet
     }, onError: (error) {
@@ -351,21 +359,35 @@ class HomeController extends GetxController {
   RxBool isChange = false.obs;
 
   Future<void> changeData() async {
+    log("🟡 [changeData] Boshlandi :: orderId=${currentOrder.value.id} status=${currentOrder.value.status} mapType=${Constant.mapType} selectedMapType=${Constant.selectedMapType}");
     print(
         "currentOrder.value.status :: ${currentOrder.value.id} :: ${currentOrder.value.status} :: ( ${orderModel.value.driver?.vendorID != null} :: ${orderModel.value.status})");
 
+    // Taksi kabi: xarita turidan qat'iy nazar yo'lni chizish (inappmap yoki boshqa)
     if (Constant.mapType == "inappmap") {
       if (Constant.selectedMapType == "osm") {
-        getOSMPolyline();
+        log("🟡 [changeData] OSM yo'l chizilmoqda...");
+        await getOSMPolyline();
+        log("🟡 [changeData] getOSMPolyline tugadi, routePoints=${routePoints.length}");
       } else {
-        getDirections();
+        log("🟡 [changeData] getDirections (Google/Yandex) chaqirilmoqda...");
+        await getDirections();
+        log("🟡 [changeData] getDirections tugadi");
       }
+    } else {
+      log("🟡 [changeData] mapType!=inappmap, getDirections chaqirilmoqda...");
+      await getDirections();
+      log("🟡 [changeData] getDirections tugadi");
     }
+    update();
+    log("🟡 [changeData] update() chaqirildi");
+
     if (currentOrder.value.status == Constant.driverPending) {
       await AudioPlayerService.playSound(true);
     } else {
       await AudioPlayerService.playSound(false);
     }
+    log("🟡 [changeData] Tugadi");
   }
 
   void getDriver() {
@@ -396,6 +418,7 @@ class HomeController extends GetxController {
           if (driverModel.value.id != null) {
             isLoading.value = false;
             update();
+            log("🟢 [getDriver] stream yangilandi, changeData() chaqirilmoqda (restartda yo'l shu yerda chiziladi)");
             changeData();
             getCurrentOrder();
           }
@@ -405,6 +428,7 @@ class HomeController extends GetxController {
   }
 
   GoogleMapController? mapController;
+  ym.YandexMapController? yandexMapController;
 
   Rx<PolylinePoints> polylinePoints =
       PolylinePoints(apiKey: Constant.mapAPIKey).obs;
@@ -416,7 +440,7 @@ class HomeController extends GetxController {
   BitmapDescriptor? taxiIcon;
 
   Future<void> setIcons() async {
-    if (Constant.selectedMapType == 'google') {
+    if (!Constant.isOsmMap) {
       final Uint8List departure = await Constant()
           .getBytesFromAsset('assets/images/location_black3x.png', 100);
       final Uint8List destination = await Constant()
@@ -431,27 +455,36 @@ class HomeController extends GetxController {
   }
 
   Future<void> getDirections() async {
+    log("🔵 [getDirections] Boshlandi");
     final order = currentOrder.value;
     final driver = driverModel.value;
 
     // 1️⃣ Safety checks
     if (order.id == null) {
+      log("⚠️ [getDirections] Order ID null, chiqilmoqda");
       debugPrint("⚠️ getDirections: Order ID is null");
       return;
     }
+    log("🔵 [getDirections] orderId=${order.id} status=${order.status} vendorLat=${order.vendor?.latitude} vendorLng=${order.vendor?.longitude}");
 
-    // ✅ Try to get fresh GPS location first
-    try {
-      final locationService = Location();
-      final freshLocation = await locationService.getLocation();
-      if (freshLocation.latitude != null && freshLocation.longitude != null) {
-        Constant.locationDataFinal = freshLocation;
-        debugPrint(
-            "📍 getDirections: Got fresh GPS location: ${freshLocation.latitude}, ${freshLocation.longitude}");
+    // ✅ Mavjud lokatsiyadan darhol foydalanish (getLocation() bloklamaslik uchun)
+    // Yangi GPS keyinroq backgroundda yangilanishi mumkin
+    if (Constant.locationDataFinal == null ||
+        Constant.locationDataFinal!.latitude == null ||
+        Constant.locationDataFinal!.longitude == null) {
+      try {
+        final locationService = Location();
+        final freshLocation = await locationService.getLocation().timeout(
+              const Duration(seconds: 2),
+              onTimeout: () => throw TimeoutException('getLocation 2s'),
+            );
+        if (freshLocation.latitude != null && freshLocation.longitude != null) {
+          Constant.locationDataFinal = freshLocation;
+          log("🔵 [getDirections] Fresh GPS olindi: ${freshLocation.latitude}, ${freshLocation.longitude}");
+        }
+      } catch (e) {
+        log("🔵 [getDirections] Fresh GPS olinnadi, mavjuddan foydalanamiz: $e");
       }
-    } catch (e) {
-      debugPrint("📍 getDirections: Could not get fresh GPS location: $e");
-      // Continue with existing location
     }
 
     // ✅ Use current GPS location if available, otherwise fallback to driver.location
@@ -474,15 +507,11 @@ class HomeController extends GetxController {
     }
 
     if (driverLoc == null) {
+      log("⚠️ [getDirections] Driver location null, chiqilmoqda");
       debugPrint("⚠️ getDirections: Driver location is null");
       return;
     }
-
-    // Icons must be loaded before proceeding
-    if (taxiIcon == null || destinationIcon == null || departureIcon == null) {
-      debugPrint("⚠️ getDirections: One or more map icons are null");
-      return;
-    }
+    log("🔵 [getDirections] driverLoc: ${driverLoc.latitude}, ${driverLoc.longitude}");
 
     // 2️⃣ Get start and end coordinates based on order status
     LatLng? origin;
@@ -519,12 +548,16 @@ class HomeController extends GetxController {
     }
 
     if (origin == null || destination == null) {
+      log("⚠️ [getDirections] origin yoki destination null, chiqilmoqda");
       debugPrint("⚠️ getDirections: Missing origin or destination");
       return;
     }
+    log("🔵 [getDirections] origin=$origin destination=$destination");
 
     // 3️⃣ Fetch polyline route
+    log("🔵 [getDirections] _fetchPolyline chaqirilmoqda...");
     final polylineCoordinates = await _fetchPolyline(origin, destination);
+    log("🔵 [getDirections] polyline nuqtalar soni: ${polylineCoordinates.length}");
     if (polylineCoordinates.isEmpty) {
       debugPrint(
           "⚠️ getDirections: No route found between origin and destination");
@@ -533,18 +566,18 @@ class HomeController extends GetxController {
     // 4️⃣ Update markers safely - clear all existing markers first
     markers.clear();
 
-    // Restaurant marker (barcha holatlarda ko'rsatiladi)
+    // Restaurant marker — yashil (barcha holatlarda)
     if (order.vendor?.latitude != null && order.vendor?.longitude != null) {
       markers['Restaurant'] = Marker(
         markerId: const MarkerId('Restaurant'),
         infoWindow: InfoWindow(title: order.vendor?.title ?? "Restaurant"),
         position: _toLatLng(order.vendor?.latitude, order.vendor?.longitude) ??
             const LatLng(0, 0),
-        icon: departureIcon!,
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
       );
     }
 
-    // Mijoz marker (orderInTransit holatida ko'rsatiladi)
+    // Mijoz marker — qizil (orderInTransit holatida ko'rsatiladi)
     if (order.status == Constant.orderInTransit &&
         order.address?.location?.latitude != null &&
         order.address?.location?.longitude != null) {
@@ -556,11 +589,11 @@ class HomeController extends GetxController {
               order.address?.location?.longitude,
             ) ??
             const LatLng(0, 0),
-        icon: destinationIcon!,
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
       );
     }
 
-    // ✅ Create driver marker with current GPS location
+    // Kurier/haydovchi marker — qizil
     // Double-check that we're using the most current GPS location
     LatLng driverMarkerPosition;
     if (Constant.locationDataFinal != null &&
@@ -585,7 +618,7 @@ class HomeController extends GetxController {
       markerId: const MarkerId('Driver'),
       infoWindow: const InfoWindow(title: "Driver"),
       position: driverMarkerPosition,
-      icon: taxiIcon!,
+      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
       rotation: double.tryParse(driver.rotation.toString()) ?? 0,
       anchor: const Offset(0.5, 0.5),
       flat: true,
@@ -593,6 +626,10 @@ class HomeController extends GetxController {
 
     // 5️⃣ Draw polyline
     addPolyLine(polylineCoordinates);
+    markers.refresh();
+    polyLines.refresh();
+    update();
+    log("🔵 [getDirections] Tugadi: markers=${markers.length} polyLines=${polyLines.length}");
   }
 
   /// Helper: safely convert to LatLng if valid
@@ -622,7 +659,7 @@ class HomeController extends GetxController {
   }
 
   void addPolyLine(List<LatLng> polylineCoordinates) {
-    // mapOsmController.clearAllRoads();
+    log("🟣 [addPolyLine] polyline nuqtalar=${polylineCoordinates.length}");
     PolylineId id = const PolylineId("poly");
     Polyline polyline = Polyline(
       polylineId: id,
@@ -632,6 +669,7 @@ class HomeController extends GetxController {
       geodesic: true,
     );
     polyLines[id] = polyline;
+    log("🟣 [addPolyLine] polyLines.length=${polyLines.length}, update() chaqirilmoqda");
     update();
 
     // ✅ Use current GPS location for camera if available, otherwise use polyline start
@@ -663,6 +701,21 @@ class HomeController extends GetxController {
     LatLng source,
     GoogleMapController? mapController,
   ) async {
+    if (Constant.isYandexMap) {
+      if (yandexMapController == null) return;
+      await yandexMapController!.moveCamera(
+        ym.CameraUpdate.newCameraPosition(
+          ym.CameraPosition(
+            target: yandexPointFromLatLng(source),
+            zoom: currentOrder.value.id == null ||
+                    currentOrder.value.status == Constant.driverPending
+                ? 16
+                : 20,
+          ),
+        ),
+      );
+      return;
+    }
     if (mapController == null) return;
     mapController.animateCamera(
       CameraUpdate.newCameraPosition(
@@ -763,38 +816,57 @@ class HomeController extends GetxController {
         print("OSM map move ignored (controller not ready): $e");
       }
 
-      // --- GOOGLE MAP Section ---
+      // --- GOOGLE / YANDEX MAP Section ---
       try {
         // Skip if icons are not loaded yet
-        if (taxiIcon != null) {
+        {
           // Remove old driver marker
           markers.remove("Driver");
 
-          // Create new Google Marker
+          // Kurier marker — qizil
           markers["Driver"] = Marker(
             markerId: const MarkerId("Driver"),
             infoWindow: const InfoWindow(title: "Driver"),
             position: LatLng(current.value.latitude, current.value.longitude),
-            icon: taxiIcon!,
+            icon:
+                BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
             rotation: _safeRotation(),
             anchor: const Offset(0.5, 0.5),
             flat: true,
           );
 
           // Animate camera to current driver location
-          if (mapController != null &&
-              !(current.value.latitude == 0.0 &&
-                  current.value.longitude == 0.0)) {
-            mapController!.animateCamera(
-              CameraUpdate.newCameraPosition(
-                CameraPosition(
-                  target:
-                      LatLng(current.value.latitude, current.value.longitude),
-                  zoom: 16,
-                  bearing: _safeRotation(),
+          if (Constant.isYandexMap) {
+            if (yandexMapController != null &&
+                !(current.value.latitude == 0.0 &&
+                    current.value.longitude == 0.0)) {
+              await yandexMapController!.moveCamera(
+                ym.CameraUpdate.newCameraPosition(
+                  ym.CameraPosition(
+                    target: ym.Point(
+                      latitude: current.value.latitude,
+                      longitude: current.value.longitude,
+                    ),
+                    zoom: 16,
+                  ),
                 ),
-              ),
-            );
+              );
+            }
+          } else {
+            if (mapController != null &&
+                !(current.value.latitude == 0.0 &&
+                    current.value.longitude == 0.0)) {
+              mapController!.animateCamera(
+                CameraUpdate.newCameraPosition(
+                  CameraPosition(
+                    target:
+                        LatLng(current.value.latitude, current.value.longitude),
+                    zoom: 16,
+                    bearing: _safeRotation(),
+                  ),
+                ),
+              );
+            }
           }
         }
       } catch (e) {
@@ -820,12 +892,11 @@ class HomeController extends GetxController {
     return LatLng(lat, lng);
   }
 
-  Rx<location.LatLng> source =
-      location.LatLng(21.1702, 72.8311).obs; // Start (e.g., Surat)
+  Rx<location.LatLng> source = location.LatLng(0.0, 0.0).obs; // Start (unset)
   Rx<location.LatLng> current =
-      location.LatLng(21.1800, 72.8400).obs; // Moving marker
+      location.LatLng(0.0, 0.0).obs; // Moving marker (unset)
   Rx<location.LatLng> destination =
-      location.LatLng(21.2000, 72.8600).obs; // Destination
+      location.LatLng(0.0, 0.0).obs; // Destination (unset)
 
   // Yandex Maps removed - using Google Maps instead
   // Google Maps markers are handled via getDirections() method
@@ -834,19 +905,20 @@ class HomeController extends GetxController {
     final markers = <flutterMap.Marker>[];
     final order = currentOrder.value;
 
-    // Driver marker - always show if location is valid
+    // Kurier marker — qizil (har doim ko'rsatiladi)
     if (!(current.value.latitude == 0.0 && current.value.longitude == 0.0)) {
       debugPrint(
           "📍 Creating driver marker at: ${current.value.latitude}, ${current.value.longitude}");
       markers.add(
         flutterMap.Marker(
           point: current.value,
-          width: 72,
-          height: 72,
+          width: 48,
+          height: 48,
           rotate: true,
-          child: Image.asset(
-            'assets/images/food_delivery.png',
-            fit: BoxFit.contain,
+          child: const Icon(
+            Icons.delivery_dining,
+            color: Colors.red,
+            size: 48,
           ),
         ),
       );
@@ -854,7 +926,7 @@ class HomeController extends GetxController {
       debugPrint("⚠️ Driver location is 0,0 - marker not created");
     }
 
-    // Restaurant marker - show in all states if vendor location is valid
+    // Restoran marker — yashil (barcha holatlarda)
     if (order.vendor?.latitude != null && order.vendor?.longitude != null) {
       final restaurantLat = order.vendor!.latitude ?? 0.0;
       final restaurantLng = order.vendor!.longitude ?? 0.0;
@@ -864,14 +936,18 @@ class HomeController extends GetxController {
             point: location.LatLng(restaurantLat, restaurantLng),
             width: 40,
             height: 40,
-            child: Image.asset('assets/images/location_black3x.png'),
+            child: const Icon(
+              Icons.store_rounded,
+              color: Colors.green,
+              size: 40,
+            ),
           ),
         );
         debugPrint("📍 Restaurant marker at: $restaurantLat, $restaurantLng");
       }
     }
 
-    // Destination marker (Restaurant yoki Customer) - only show if valid and not 0,0
+    // Mijoz (destination) marker — qizil (orderInTransit da ko'rinadi)
     if (!(destination.value.latitude == 0.0 &&
         destination.value.longitude == 0.0)) {
       markers.add(
@@ -879,29 +955,22 @@ class HomeController extends GetxController {
           point: destination.value,
           width: 40,
           height: 40,
-          child: Image.asset('assets/images/location_orange3x.png'),
+          child: const Icon(
+            Icons.person_pin_circle_rounded,
+            color: Colors.red,
+            size: 40,
+          ),
         ),
       );
       debugPrint(
           "📍 Destination marker at: ${destination.value.latitude}, ${destination.value.longitude}");
     }
 
-    // Source marker - only show if valid and not 0,0 (legacy support)
-    if (!(source.value.latitude == 0.0 && source.value.longitude == 0.0)) {
-      markers.add(
-        flutterMap.Marker(
-          point: source.value,
-          width: 40,
-          height: 40,
-          child: Image.asset('assets/images/location_black3x.png'),
-        ),
-      );
-    }
-
     osmMarkers.value = markers;
   }
 
-  void getOSMPolyline() async {
+  Future<void> getOSMPolyline() async {
+    log("🟠 [getOSMPolyline] Boshlandi orderId=${currentOrder.value.id} status=${currentOrder.value.status}");
     try {
       if (currentOrder.value.id != null) {
         final order = currentOrder.value;
@@ -911,27 +980,22 @@ class HomeController extends GetxController {
         if (Constant.locationDataFinal != null &&
             Constant.locationDataFinal!.latitude != null &&
             Constant.locationDataFinal!.longitude != null) {
-          // Use current GPS location (most accurate)
           driverLoc = UserLocation(
             latitude: Constant.locationDataFinal!.latitude!,
             longitude: Constant.locationDataFinal!.longitude!,
           );
-          print(
-              "📍 getOSMPolyline: Using current GPS location: ${driverLoc.latitude}, ${driverLoc.longitude}");
+          log("🟠 [getOSMPolyline] GPS: ${driverLoc.latitude}, ${driverLoc.longitude}");
         } else {
-          // Fallback to driver.location from Firestore
           driverLoc = driverModel.value.location;
-          print(
-              "📍 getOSMPolyline: Using driver.location from Firestore: ${driverLoc?.latitude}, ${driverLoc?.longitude}");
+          log("🟠 [getOSMPolyline] Firestore driver: ${driverLoc?.latitude}, ${driverLoc?.longitude}");
         }
 
         if (driverLoc == null) {
-          print("⚠️ getOSMPolyline: Driver location is null");
+          log("⚠️ [getOSMPolyline] Driver location null, chiqilmoqda");
           return;
         }
 
-        print(
-            "📍 getOSMPolyline: Order Status = ${order.status}, OrderId = ${order.id}");
+        log("🟠 [getOSMPolyline] Order Status=${order.status} OrderId=${order.id}");
 
         // Driver dan Restaurant gacha (driverPending, driverAccepted, orderShipped)
         if (order.status == Constant.driverPending ||
@@ -947,12 +1011,15 @@ class HomeController extends GetxController {
               order.vendor!.latitude ?? 0.0,
               order.vendor!.longitude ?? 0.0,
             );
-            print(
-                "📍 Driver → Restaurant: ${current.value} → ${destination.value}");
+            log("🟠 [getOSMPolyline] Driver→Restaurant, setOsmMapMarker va fetchRoute...");
+            setOsmMapMarker();
+            update();
             animateToSource();
-            fetchRoute(current.value, destination.value).then((value) {
-              setOsmMapMarker();
-            });
+            await fetchRoute(current.value, destination.value);
+            log("🟠 [getOSMPolyline] fetchRoute tugadi, routePoints=${routePoints.length}");
+            setOsmMapMarker();
+            update();
+            log("🟠 [getOSMPolyline] Driver→Restaurant tugadi");
           }
         }
         // Restaurant dan Mijozgacha (orderInTransit)
@@ -961,12 +1028,10 @@ class HomeController extends GetxController {
               order.vendor?.longitude != null &&
               order.address?.location?.latitude != null &&
               order.address?.location?.longitude != null) {
-            // Restaurant dan boshlaymiz (driver hozirgi joyi)
             current.value = location.LatLng(
               driverLoc.latitude ?? 0.0,
               driverLoc.longitude ?? 0.0,
             );
-            // Mijoz manzili
             destination.value = location.LatLng(
               order.address!.location!.latitude ?? 0.0,
               order.address!.location!.longitude ?? 0.0,
@@ -974,18 +1039,22 @@ class HomeController extends GetxController {
             print(
                 "📍 Restaurant → Customer: ${current.value} → ${destination.value}");
             setOsmMapMarker();
-            fetchRoute(current.value, destination.value).then((value) {
-              setOsmMapMarker();
-            });
+            update();
+            await fetchRoute(current.value, destination.value);
+            setOsmMapMarker();
+            update();
             animateToSource();
           }
         } else {
-          print("⚠️ getOSMPolyline: Unknown order status ${order.status}");
+          log("⚠️ [getOSMPolyline] Noma'lum status: ${order.status}");
         }
+      } else {
+        log("⚠️ [getOSMPolyline] currentOrder.id null");
       }
     } catch (e) {
-      print('❌ getOSMPolyline Error: $e');
+      log("❌ [getOSMPolyline] Error: $e");
     }
+    log("🟠 [getOSMPolyline] Tugadi");
   }
 
   RxList<location.LatLng> routePoints = <location.LatLng>[].obs;

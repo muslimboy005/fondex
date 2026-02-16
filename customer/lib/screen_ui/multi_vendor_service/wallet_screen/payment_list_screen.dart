@@ -371,7 +371,7 @@ class PaymentListScreen extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  value.name.capitalizeString(),
+                  value.localizedLabel(),
                   textAlign: TextAlign.start,
                   style: TextStyle(
                     fontFamily: AppThemeData.medium,

@@ -164,6 +164,12 @@ const Map<String, String> uzUZ = {
   'You have reached the maximum order capacity for your current plan. Upgrade your subscription to continue accepting orders seamlessly!.':
       'Siz joriy rejangizning maksimal buyurtma quvvatiga yetdingiz. Buyurtmalarni qabul qilishni davom ettirish uchun obunangizni yangilang!.',
   'Cancel Order': 'Buyurtmani bekor qilish',
+  'Order Completed': 'Buyurtma bajarildi',
+  'Order Cancelled': 'Buyurtma bekor qilindi',
+  'Order Rejected': 'Buyurtma rad etildi',
+  'Driver Pending': 'Haydovchi kutilmoqda',
+  'Order Amount credited': 'Buyurtma summasi kiritildi',
+  'Order Tax credited': 'Buyurtma solig\'i kiritildi',
   "Choose a image for thumbnail": "Miniatura uchun rasmni tanlang",
   "JPEG, PNG, JPG, GIF format": "JPEG, PNG, JPG, GIF format",
   "Choose a story video": "Hikoya videosini tanlang",
@@ -608,6 +614,8 @@ const Map<String, String> uzUZ = {
   "Your current subscription plan has reached its maximum order limit. Upgrade now to accept more order.":
       "Joriy obuna rejangiz maksimal buyurtma chegarasiga yetdi. Ko'proq buyurtma qabul qilish uchun hozir yangilang.",
   "Expiry Date": "Muddati tugash sanasi",
+  "Subscribe": "Obuna bo'lish",
+  "Subscription Required": "Obuna talab qilinadi",
   "Subscription Packages": "Obuna paketlari",
   "Subscription History": "Obuna tarixi",
   "Subscription plan not found.": "Obuna rejasi topilmadi.",
@@ -855,4 +863,98 @@ const Map<String, String> uzUZ = {
   'Email address': 'Elektron pochta manzili',
   'Already have an account?': 'Allaqachon hisobingiz bormi?',
   'Sign in': 'Kirish',
+  "00:00": "00:00",
+  "API endpoint not found. Please contact support.":
+      "API manzili topilmadi. Iltimos, qo'llab-quvvatlash xizmatiga murojaat qiling.",
+  "Back side of": "Orqa tomoni",
+  "Bu raqam bilan boshqa ilovada ro'yxatdan o'tgansiz":
+      "Bu raqam bilan boshqa ilovada ro'yxatdan o'tgansiz",
+  "Continue": "Davom etish",
+  "Didn’t have an account?": "Hisobingiz yo'qmi?",
+  "Did’t receive any code? ": "Kod kelmadimi? ",
+  "Edit": "Tahrirlash",
+  "Enter Courier company name": "Kuryer kompaniyasi nomini kiriting",
+  "Enter Courier tracking Id": "Kuryer kuzatuv ID sini kiriting",
+  "Enter Store name": "Do'kon nomini kiriting",
+  "Enter Your Name": "Ismingizni kiriting",
+  "Enter the OTP sent to your mobile":
+      "Telefoningizga yuborilgan OTP ni kiriting",
+  "Enter valid 6-digit OTP": "To'g'ri 6 raqamli OTP kiriting",
+  "Enter your name": "Ismingizni kiriting",
+  "Error": "Xato",
+  "File type : ": "Fayl turi : ",
+  "First Name*": "Ism*",
+  "Fondex": "Fondex",
+  "Foodie Restaurant": "Foodie Restaurant",
+  "Get started by adding your store details to manage your menu, orders, and reservations.":
+      "Menyu, buyurtma va bronlarni boshqarish uchun do'kon ma'lumotlarini qo'shib boshlang.",
+  "Invalid OTP code. Please try again.":
+      "Noto'g'ri OTP kodi. Iltimos, qayta urinib ko'ring.",
+  "Invalid OTP or Verification Failed":
+      "Noto'g'ri OTP yoki tekshiruv muvaffaqiyatsiz",
+  "Invalid email address.": "Noto'g'ri elektron pochta manzili.",
+  "Invalid password.": "Noto'g'ri parol.",
+  "Invalid response from server": "Serverdan noto'g'ri javob",
+  "Invalid server response. Please try again.":
+      "Server javobi noto'g'ri. Iltimos, qayta urinib ko'ring.",
+  "Last Name*": "Familiya*",
+  "Let’s Get Started": "Keling, boshlaymiz",
+  "Log in to continue managing your Store’s orders and reservations seamlessly.":
+      "Do'koningiz buyurtma va bronlarini qulay boshqarishni davom ettirish uchun tizimga kiring.",
+  "Logging in...": "Kirilmoqda...",
+  "Login failed. Please try again.":
+      "Kirish muvaffaqiyatsiz. Iltimos, qayta urinib ko'ring.",
+  "Login timeout. Please check your internet connection.":
+      "Kirish vaqti tugadi. Internet aloqangizni tekshiring.",
+  "Mark Deliver": "Yetkazildi deb belgilash",
+  "No internet connection. Please check your network.":
+      "Internet aloqasi yo'q. Tarmog'ingizni tekshiring.",
+  "No worries!! We’ll send you reset instructions":
+      "Xavotir olmang!! Parolni tiklash bo'yicha ko'rsatmalar yuboramiz",
+  "OK": "OK",
+  "OTP session expired. Please request a new code.":
+      "OTP seansi muddati tugadi. Iltimos, yangi kod so'rang.",
+  "OTP xato": "OTP xato",
+  "Payment Unsuccessful!!": "To'lov muvaffaqiyatsiz!!",
+  "Please enter a valid 9-digit phone number":
+      "Iltimos, to'g'ri 9 xonali telefon raqamini kiriting",
+  "Please enter your phone number": "Iltimos, telefon raqamingizni kiriting",
+  "Please select category": "Kategoriya tanlang",
+  "Please select less than": "Iltimos, kamroq qiymatni tanlang",
+  "Please select location": "Joylashuvni tanlang",
+  "Registering...": "Ro'yxatdan o'tkazilmoqda...",
+  "Registration failed": "Ro'yxatdan o'tish muvaffaqiyatsiz",
+  "Registration failed. Please try again.":
+      "Ro'yxatdan o'tish muvaffaqiyatsiz. Iltimos, qayta urinib ko'ring.",
+  "Registration successful": "Ro'yxatdan o'tish muvaffaqiyatli",
+  "Request timeout. Please check your internet connection.":
+      "So'rov vaqti tugadi. Internet aloqangizni tekshiring.",
+  "Resend OTP": "OTP ni qayta yuborish",
+  "Resend OTP in": "OTP ni qayta yuborish",
+  "Server error. Please try again later.":
+      "Server xatosi. Iltimos, keyinroq qayta urinib ko'ring.",
+  "Something went wrong": "Nimadir noto'g'ri ketdi",
+  "Something went wrong. Please try again.":
+      "Nimadir noto'g'ri ketdi. Iltimos, qayta urinib ko'ring.",
+  "Store Profile": "Do'kon profili",
+  "Success! You’ve unlocked your subscription benefits starting today.":
+      "Muvaffaqiyat! Bugundan boshlab obuna imtiyozlaringiz faollashtirildi.",
+  "This user is disabled": "Bu foydalanuvchi o'chirilgan",
+  "This user is not created in store application.":
+      "Bu foydalanuvchi do'kon ilovasida yaratilmagan.",
+  "User account is disabled.": "Foydalanuvchi hisobi o'chirilgan.",
+  "User not found": "Foydalanuvchi topilmadi",
+  "User not found. Please register first.":
+      "Foydalanuvchi topilmadi. Iltimos, avval ro'yxatdan o'ting.",
+  "Variant": "Variant",
+  "Verification failed": "Tasdiqlash muvaffaqiyatsiz",
+  "Verify": "Tekshirish",
+  "Verifying OTP...": "OTP tekshirilmoqda...",
+  "admin commission will be charged from customer billing orders and the admin charge will be earned after the order is accepted by the store.":
+      "Administrator komissiyasi mijoz to'lovidan undiriladi va buyurtma do'kon tomonidan qabul qilingandan so'ng komissiya hisoblanadi.",
+  "failed_to_pick": "Rasmni tanlash muvaffaqiyatsiz",
+  "invalid_phone_number": "Noto'g'ri telefon raqami",
+  "please select": "iltimos tanlang",
+  "something went wrong, please contact admin.":
+      "Nimadir noto'g'ri ketdi, iltimos, administrator bilan bog'laning.",
 };

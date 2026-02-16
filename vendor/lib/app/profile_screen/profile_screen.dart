@@ -15,6 +15,7 @@ import 'package:vendor/app/dine_in_screen/dine_in_create_screen.dart';
 import 'package:vendor/app/driver_screens/driver_list_screen.dart';
 import 'package:vendor/app/edit_profile_screen/edit_profile_screen.dart';
 import 'package:vendor/app/offer_screens/offer_screen.dart';
+import 'package:vendor/app/product_screens/product_list_screen.dart';
 import 'package:vendor/app/special_discount_screen/special_discount_screen.dart';
 import 'package:vendor/app/subscription_plan_screen/subscription_history_screen.dart';
 import 'package:vendor/app/subscription_plan_screen/subscription_plan_screen.dart';
@@ -50,16 +51,26 @@ class ProfileScreen extends StatelessWidget {
             appBar: AppBar(
               backgroundColor: AppThemeData.primary300,
               centerTitle: false,
-              iconTheme: const IconThemeData(color: AppThemeData.grey50, size: 20),
+              iconTheme: const IconThemeData(
+                color: AppThemeData.grey50,
+                size: 20,
+              ),
               title: Text(
                 "Store Profile".tr,
-                style: TextStyle(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50, fontSize: 18, fontFamily: AppThemeData.medium),
+                style: TextStyle(
+                  color: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
+                  fontSize: 18,
+                  fontFamily: AppThemeData.medium,
+                ),
               ),
             ),
             body: controller.isLoading.value
                 ? Constant.loader()
                 : Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
                     child: SingleChildScrollView(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -70,25 +81,46 @@ class ProfileScreen extends StatelessWidget {
                               children: [
                                 ClipOval(
                                   child: NetworkImageWidget(
-                                    imageUrl: controller.userModel.value.profilePictureURL.toString(),
+                                    imageUrl: controller
+                                        .userModel
+                                        .value
+                                        .profilePictureURL
+                                        .toString(),
                                     width: 80,
                                     height: 80,
                                     fit: BoxFit.cover,
-                                    errorWidget: Image.asset("assets/images/user_placeholder.png"),
+                                    errorWidget: Image.asset(
+                                      "assets/images/user_placeholder.png",
+                                    ),
                                   ),
                                 ),
                                 const SizedBox(width: 20),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         controller.userModel.value.fullName(),
-                                        style: TextStyle(color: isDark ? AppThemeData.grey50 : AppThemeData.grey900, fontFamily: AppThemeData.semiBold, fontWeight: FontWeight.w500, fontSize: 18),
+                                        style: TextStyle(
+                                          color: isDark
+                                              ? AppThemeData.grey50
+                                              : AppThemeData.grey900,
+                                          fontFamily: AppThemeData.semiBold,
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 18,
+                                        ),
                                       ),
                                       Text(
                                         controller.userModel.value.email ?? '',
-                                        style: TextStyle(color: isDark ? AppThemeData.grey400 : AppThemeData.grey500, fontFamily: AppThemeData.regular, fontWeight: FontWeight.w500, fontSize: 12),
+                                        style: TextStyle(
+                                          color: isDark
+                                              ? AppThemeData.grey400
+                                              : AppThemeData.grey500,
+                                          fontFamily: AppThemeData.regular,
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 12,
+                                        ),
                                       ),
                                       const SizedBox(height: 10),
                                       RoundedButtonFill(
@@ -99,7 +131,9 @@ class ProfileScreen extends StatelessWidget {
                                         height: 5.5,
                                         fontSizes: 14,
                                         onPress: () async {
-                                          Get.to(const EditProfileScreen())?.then((value) {
+                                          Get.to(
+                                            const EditProfileScreen(),
+                                          )?.then((value) {
                                             if (value == true) {
                                               controller.getUserProfile();
                                             }
@@ -112,37 +146,75 @@ class ProfileScreen extends StatelessWidget {
                               ],
                             ),
                           ),
-                          if (Constant.isSubscriptionModelApplied == true || Constant.vendorAdminCommission?.isEnabled == true)
-                            controller.userModel.value.subscriptionPlanId?.isNotEmpty == true?Padding(
-                              padding: const EdgeInsets.only(bottom: 10),
-                              child: SubscriptionPlanWidget(
-                                onClick: () {
-                                  Get.to(const SubscriptionPlanScreen(), arguments: {'isProfile': true})?.then((value) {
-                                    if (value == true) {
-                                      controller.getUserProfile();
-                                    }
-                                  });
-                                },
-                                userModel: controller.userModel.value,
-                              ),
-                            ):SizedBox(),
+                          if (Constant.isSubscriptionModelApplied == true ||
+                              Constant.vendorAdminCommission?.isEnabled == true)
+                            controller
+                                        .userModel
+                                        .value
+                                        .subscriptionPlanId
+                                        ?.isNotEmpty ==
+                                    true
+                                ? Padding(
+                                    padding: const EdgeInsets.only(bottom: 10),
+                                    child: SubscriptionPlanWidget(
+                                      onClick: () {
+                                        Get.to(
+                                          const SubscriptionPlanScreen(),
+                                          arguments: {'isProfile': true},
+                                        )?.then((value) {
+                                          if (value == true) {
+                                            controller.getUserProfile();
+                                          }
+                                        });
+                                      },
+                                      userModel: controller.userModel.value,
+                                    ),
+                                  )
+                                : SizedBox(),
                           Text(
                             "Store Information".tr,
-                            style: TextStyle(color: isDark ? AppThemeData.grey400 : AppThemeData.grey500, fontFamily: AppThemeData.semiBold, fontWeight: FontWeight.w500),
+                            style: TextStyle(
+                              color: isDark
+                                  ? AppThemeData.grey400
+                                  : AppThemeData.grey500,
+                              fontFamily: AppThemeData.semiBold,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
                           const SizedBox(height: 10),
                           Container(
                             width: Responsive.width(100, context),
                             decoration: ShapeDecoration(
-                              color: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              color: isDark
+                                  ? AppThemeData.grey900
+                                  : AppThemeData.grey50,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                             ),
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 8,
+                              ),
                               child: Column(
                                 children: [
-                                  (Constant.isStoreVerification == true && controller.userModel.value.isDocumentVerify == false) ||
-                                          (controller.userModel.value.vendorID == null || controller.userModel.value.vendorID!.isEmpty)
+                                  (Constant.isStoreVerification == true &&
+                                              controller
+                                                      .userModel
+                                                      .value
+                                                      .isDocumentVerify ==
+                                                  false) ||
+                                          (controller
+                                                      .userModel
+                                                      .value
+                                                      .vendorID ==
+                                                  null ||
+                                              controller
+                                                  .userModel
+                                                  .value
+                                                  .vendorID!
+                                                  .isEmpty)
                                       ? const SizedBox()
                                       : Constant.storyEnable == false
                                       ? const SizedBox()
@@ -153,12 +225,23 @@ class ProfileScreen extends StatelessWidget {
                                             width: 44,
                                             height: 44,
                                             decoration: ShapeDecoration(
-                                              color: isDark ? AppThemeData.secondary600 : AppThemeData.secondary50,
-                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(120)),
+                                              color: isDark
+                                                  ? AppThemeData.secondary600
+                                                  : AppThemeData.secondary50,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(120),
+                                              ),
                                             ),
                                             child: Padding(
                                               padding: const EdgeInsets.all(10),
-                                              child: SvgPicture.asset("assets/icons/ic_story.svg", colorFilter: ColorFilter.mode(AppThemeData.primary300, BlendMode.srcIn)),
+                                              child: SvgPicture.asset(
+                                                "assets/icons/ic_story.svg",
+                                                colorFilter: ColorFilter.mode(
+                                                  AppThemeData.primary300,
+                                                  BlendMode.srcIn,
+                                                ),
+                                              ),
                                             ),
                                           ),
                                           "Add Story".tr,
@@ -167,10 +250,25 @@ class ProfileScreen extends StatelessWidget {
                                           },
                                         ),
                                   Visibility(
-                                    visible: Constant.isEnableAdsFeature == true,
+                                    visible:
+                                        Constant.isEnableAdsFeature == true,
                                     child:
-                                        (Constant.isStoreVerification == true && controller.userModel.value.isDocumentVerify == false) ||
-                                            (controller.userModel.value.vendorID == null || controller.userModel.value.vendorID!.isEmpty)
+                                        (Constant.isStoreVerification == true &&
+                                                controller
+                                                        .userModel
+                                                        .value
+                                                        .isDocumentVerify ==
+                                                    false) ||
+                                            (controller
+                                                        .userModel
+                                                        .value
+                                                        .vendorID ==
+                                                    null ||
+                                                controller
+                                                    .userModel
+                                                    .value
+                                                    .vendorID!
+                                                    .isEmpty)
                                         ? const SizedBox()
                                         : Constant.storyEnable == false
                                         ? const SizedBox()
@@ -181,21 +279,43 @@ class ProfileScreen extends StatelessWidget {
                                               width: 44,
                                               height: 44,
                                               decoration: ShapeDecoration(
-                                                color: isDark ? AppThemeData.secondary600 : AppThemeData.secondary50,
-                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(120)),
+                                                color: isDark
+                                                    ? AppThemeData.secondary600
+                                                    : AppThemeData.secondary50,
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                        120,
+                                                      ),
+                                                ),
                                               ),
                                               child: Padding(
-                                                padding: const EdgeInsets.all(10),
-                                                child: SvgPicture.asset("assets/icons/ic_advertisement.svg", colorFilter: ColorFilter.mode(AppThemeData.primary300, BlendMode.srcIn)),
+                                                padding: const EdgeInsets.all(
+                                                  10,
+                                                ),
+                                                child: SvgPicture.asset(
+                                                  "assets/icons/ic_advertisement.svg",
+                                                  colorFilter: ColorFilter.mode(
+                                                    AppThemeData.primary300,
+                                                    BlendMode.srcIn,
+                                                  ),
+                                                ),
                                               ),
                                             ),
                                             "Advertisement",
                                             () {
-                                              Get.to(const AdvertisementListScreen());
+                                              Get.to(
+                                                const AdvertisementListScreen(),
+                                              );
                                             },
                                           ),
                                   ),
-                                  Constant.isStoreVerification == true && controller.userModel.value.isDocumentVerify == false
+                                  Constant.isStoreVerification == true &&
+                                          controller
+                                                  .userModel
+                                                  .value
+                                                  .isDocumentVerify ==
+                                              false
                                       ? const SizedBox()
                                       : cardDecoration(
                                           isDark,
@@ -204,23 +324,50 @@ class ProfileScreen extends StatelessWidget {
                                             width: 44,
                                             height: 44,
                                             decoration: ShapeDecoration(
-                                              color: isDark ? AppThemeData.secondary600 : AppThemeData.secondary50,
-                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(120)),
+                                              color: isDark
+                                                  ? AppThemeData.secondary600
+                                                  : AppThemeData.secondary50,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(120),
+                                              ),
                                             ),
                                             child: Padding(
                                               padding: const EdgeInsets.all(10),
-                                              child: SvgPicture.asset("assets/icons/ic_building_two.svg", colorFilter: ColorFilter.mode(AppThemeData.primary300, BlendMode.srcIn)),
+                                              child: SvgPicture.asset(
+                                                "assets/icons/ic_building_two.svg",
+                                                colorFilter: ColorFilter.mode(
+                                                  AppThemeData.primary300,
+                                                  BlendMode.srcIn,
+                                                ),
+                                              ),
                                             ),
                                           ),
                                           "Store Information's",
                                           () {
-                                            Get.to(const AddRestaurantScreen())?.then((v) {
+                                            Get.to(
+                                              const AddRestaurantScreen(),
+                                            )?.then((v) {
                                               controller.getUserProfile();
                                             });
                                           },
                                         ),
-                                  (Constant.isStoreVerification == true && controller.userModel.value.isDocumentVerify == false) ||
-                                          (controller.userModel.value.vendorID == null || controller.userModel.value.vendorID!.isEmpty)
+                                  (Constant.isStoreVerification == true &&
+                                              controller
+                                                      .userModel
+                                                      .value
+                                                      .isDocumentVerify ==
+                                                  false) ||
+                                          (controller
+                                                      .userModel
+                                                      .value
+                                                      .vendorID ==
+                                                  null ||
+                                              controller
+                                                  .userModel
+                                                  .value
+                                                  .vendorID!
+                                                  .isEmpty)
                                       ? const SizedBox()
                                       : cardDecoration(
                                           isDark,
@@ -229,24 +376,49 @@ class ProfileScreen extends StatelessWidget {
                                             width: 44,
                                             height: 44,
                                             decoration: ShapeDecoration(
-                                              color: isDark ? AppThemeData.secondary600 : AppThemeData.secondary50,
-                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(120)),
+                                              color: isDark
+                                                  ? AppThemeData.secondary600
+                                                  : AppThemeData.secondary50,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(120),
+                                              ),
                                             ),
                                             child: Padding(
                                               padding: const EdgeInsets.all(12),
-                                              child: SvgPicture.asset("assets/icons/ic_manage_product.svg", colorFilter: ColorFilter.mode(AppThemeData.primary300, BlendMode.srcIn)),
+                                              child: SvgPicture.asset(
+                                                "assets/icons/ic_manage_product.svg",
+                                                colorFilter: ColorFilter.mode(
+                                                  AppThemeData.primary300,
+                                                  BlendMode.srcIn,
+                                                ),
+                                              ),
                                             ),
                                           ),
                                           "Manage Products",
                                           () {
-                                            DashBoardController dashBoardController = Get.find<DashBoardController>();
-                                            dashBoardController.selectedIndex.value = (Constant.selectedSection?.dineInActive == true) ? 2 : 1;
+                                            Get.to(const ProductListScreen());
                                           },
                                         ),
-                                  (Constant.selectedSection?.serviceTypeFlag == "ecommerce-service")
+                                  (Constant.selectedSection?.serviceTypeFlag ==
+                                          "ecommerce-service")
                                       ? SizedBox()
-                                      : (Constant.isStoreVerification == true && controller.userModel.value.isDocumentVerify == false) ||
-                                            (controller.userModel.value.vendorID == null || controller.userModel.value.vendorID!.isEmpty)
+                                      : (Constant.isStoreVerification == true &&
+                                                controller
+                                                        .userModel
+                                                        .value
+                                                        .isDocumentVerify ==
+                                                    false) ||
+                                            (controller
+                                                        .userModel
+                                                        .value
+                                                        .vendorID ==
+                                                    null ||
+                                                controller
+                                                    .userModel
+                                                    .value
+                                                    .vendorID!
+                                                    .isEmpty)
                                       ? const SizedBox()
                                       : cardDecoration(
                                           isDark,
@@ -255,12 +427,23 @@ class ProfileScreen extends StatelessWidget {
                                             width: 44,
                                             height: 44,
                                             decoration: ShapeDecoration(
-                                              color: isDark ? AppThemeData.secondary600 : AppThemeData.secondary50,
-                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(120)),
+                                              color: isDark
+                                                  ? AppThemeData.secondary600
+                                                  : AppThemeData.secondary50,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(120),
+                                              ),
                                             ),
                                             child: Padding(
                                               padding: const EdgeInsets.all(10),
-                                              child: SvgPicture.asset("assets/icons/ic_alarm-clock.svg", colorFilter: ColorFilter.mode(AppThemeData.primary300, BlendMode.srcIn)),
+                                              child: SvgPicture.asset(
+                                                "assets/icons/ic_alarm-clock.svg",
+                                                colorFilter: ColorFilter.mode(
+                                                  AppThemeData.primary300,
+                                                  BlendMode.srcIn,
+                                                ),
+                                              ),
                                             ),
                                           ),
                                           "Working Hours",
@@ -268,31 +451,45 @@ class ProfileScreen extends StatelessWidget {
                                             Get.to(const WorkingHoursScreen());
                                           },
                                         ),
-                                  cardDecoration(
-                                    isDark,
-                                    controller,
-                                    Container(
-                                      width: 44,
-                                      height: 44,
-                                      decoration: ShapeDecoration(
-                                        color: isDark ? AppThemeData.secondary600 : AppThemeData.secondary50,
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(120)),
-                                      ),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(10),
-                                        child: SvgPicture.asset("assets/icons/ic_wallet.svg", colorFilter: ColorFilter.mode(AppThemeData.primary300, BlendMode.srcIn)),
-                                      ),
-                                    ),
-                                    "Withdraw Method",
-                                    () {
-                                      Get.to(const WithdrawMethodSetupScreen());
-                                    },
-                                  ),
+
+                                  // cardDecoration(
+                                  //   isDark,
+                                  //   controller,
+                                  //   Container(
+                                  //     width: 44,
+                                  //     height: 44,
+                                  //     decoration: ShapeDecoration(
+                                  //       color: isDark
+                                  //           ? AppThemeData.secondary600
+                                  //           : AppThemeData.secondary50,
+                                  //       shape: RoundedRectangleBorder(
+                                  //         borderRadius: BorderRadius.circular(
+                                  //           120,
+                                  //         ),
+                                  //       ),
+                                  //     ),
+                                  //     child: Padding(
+                                  //       padding: const EdgeInsets.all(10),
+                                  //       child: SvgPicture.asset(
+                                  //         "assets/icons/ic_wallet.svg",
+                                  //         colorFilter: ColorFilter.mode(
+                                  //           AppThemeData.primary300,
+                                  //           BlendMode.srcIn,
+                                  //         ),
+                                  //       ),
+                                  //     ),
+                                  //   ),
+                                  //   "Withdraw Method",
+                                  //   () {
+                                  //     Get.to(const WithdrawMethodSetupScreen());
+                                  //   },
+                                  // ),
                                 ],
                               ),
                             ),
                           ),
-                          (Constant.selectedSection?.serviceTypeFlag == "ecommerce-service")
+                          (Constant.selectedSection?.serviceTypeFlag ==
+                                  "ecommerce-service")
                               ? SizedBox()
                               : Constant.isSelfDeliveryFeature == true
                               ? Column(
@@ -301,17 +498,32 @@ class ProfileScreen extends StatelessWidget {
                                     const SizedBox(height: 20),
                                     Text(
                                       "Delivery Man Information".tr,
-                                      style: TextStyle(color: isDark ? AppThemeData.grey400 : AppThemeData.grey500, fontFamily: AppThemeData.semiBold, fontWeight: FontWeight.w500),
+                                      style: TextStyle(
+                                        color: isDark
+                                            ? AppThemeData.grey400
+                                            : AppThemeData.grey500,
+                                        fontFamily: AppThemeData.semiBold,
+                                        fontWeight: FontWeight.w500,
+                                      ),
                                     ),
                                     const SizedBox(height: 10),
                                     Container(
                                       width: Responsive.width(100, context),
                                       decoration: ShapeDecoration(
-                                        color: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                        color: isDark
+                                            ? AppThemeData.grey900
+                                            : AppThemeData.grey50,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        ),
                                       ),
                                       child: Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 10,
+                                          vertical: 8,
+                                        ),
                                         child: Column(
                                           children: [
                                             cardDecoration(
@@ -321,12 +533,32 @@ class ProfileScreen extends StatelessWidget {
                                                 width: 44,
                                                 height: 44,
                                                 decoration: ShapeDecoration(
-                                                  color: isDark ? AppThemeData.taxiBooking50 : AppThemeData.taxiBooking50.withAlpha(30),
-                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(120)),
+                                                  color: isDark
+                                                      ? AppThemeData
+                                                            .taxiBooking50
+                                                      : AppThemeData
+                                                            .taxiBooking50
+                                                            .withAlpha(30),
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          120,
+                                                        ),
+                                                  ),
                                                 ),
                                                 child: Padding(
-                                                  padding: const EdgeInsets.all(12),
-                                                  child: SvgPicture.asset("assets/icons/ic_manage_delivery_man.svg", colorFilter: ColorFilter.mode(AppThemeData.taxiBooking400, BlendMode.srcIn)),
+                                                  padding: const EdgeInsets.all(
+                                                    12,
+                                                  ),
+                                                  child: SvgPicture.asset(
+                                                    "assets/icons/ic_manage_delivery_man.svg",
+                                                    colorFilter:
+                                                        ColorFilter.mode(
+                                                          AppThemeData
+                                                              .taxiBooking400,
+                                                          BlendMode.srcIn,
+                                                        ),
+                                                  ),
                                                 ),
                                               ),
                                               "Manage Delivery Man",
@@ -341,8 +573,19 @@ class ProfileScreen extends StatelessWidget {
                                   ],
                                 )
                               : SizedBox(),
-                          (Constant.isStoreVerification == true && controller.userModel.value.isDocumentVerify == false) ||
-                                  (controller.userModel.value.vendorID == null || controller.userModel.value.vendorID!.isEmpty)
+                          (Constant.isStoreVerification == true &&
+                                      controller
+                                              .userModel
+                                              .value
+                                              .isDocumentVerify ==
+                                          false) ||
+                                  (controller.userModel.value.vendorID ==
+                                          null ||
+                                      controller
+                                          .userModel
+                                          .value
+                                          .vendorID!
+                                          .isEmpty)
                               ? const SizedBox()
                               : (Constant.selectedSection?.dineInActive == true)
                               ? Column(
@@ -351,17 +594,32 @@ class ProfileScreen extends StatelessWidget {
                                     const SizedBox(height: 20),
                                     Text(
                                       "Dine-in Information".tr,
-                                      style: TextStyle(color: isDark ? AppThemeData.grey400 : AppThemeData.grey500, fontFamily: AppThemeData.semiBold, fontWeight: FontWeight.w500),
+                                      style: TextStyle(
+                                        color: isDark
+                                            ? AppThemeData.grey400
+                                            : AppThemeData.grey500,
+                                        fontFamily: AppThemeData.semiBold,
+                                        fontWeight: FontWeight.w500,
+                                      ),
                                     ),
                                     const SizedBox(height: 10),
                                     Container(
                                       width: Responsive.width(100, context),
                                       decoration: ShapeDecoration(
-                                        color: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                        color: isDark
+                                            ? AppThemeData.grey900
+                                            : AppThemeData.grey50,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        ),
                                       ),
                                       child: Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 10,
+                                          vertical: 8,
+                                        ),
                                         child: Column(
                                           children: [
                                             cardDecoration(
@@ -371,14 +629,30 @@ class ProfileScreen extends StatelessWidget {
                                                 width: 44,
                                                 height: 44,
                                                 decoration: ShapeDecoration(
-                                                  color: isDark ? AppThemeData.primary600 : AppThemeData.primary50,
-                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(120)),
+                                                  color: isDark
+                                                      ? AppThemeData.primary600
+                                                      : AppThemeData.primary50,
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          120,
+                                                        ),
+                                                  ),
                                                 ),
-                                                child: Padding(padding: const EdgeInsets.all(10), child: SvgPicture.asset("assets/icons/ic_knife_fork.svg")),
+                                                child: Padding(
+                                                  padding: const EdgeInsets.all(
+                                                    10,
+                                                  ),
+                                                  child: SvgPicture.asset(
+                                                    "assets/icons/ic_knife_fork.svg",
+                                                  ),
+                                                ),
                                               ),
                                               "Dine in Store",
                                               () {
-                                                Get.to(const DineInCreateScreen());
+                                                Get.to(
+                                                  const DineInCreateScreen(),
+                                                );
                                               },
                                             ),
                                             cardDecoration(
@@ -388,15 +662,36 @@ class ProfileScreen extends StatelessWidget {
                                                 width: 44,
                                                 height: 44,
                                                 decoration: ShapeDecoration(
-                                                  color: isDark ? AppThemeData.primary600 : AppThemeData.primary50,
-                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(120)),
+                                                  color: isDark
+                                                      ? AppThemeData.primary600
+                                                      : AppThemeData.primary50,
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          120,
+                                                        ),
+                                                  ),
                                                 ),
-                                                child: Padding(padding: const EdgeInsets.all(10), child: SvgPicture.asset("assets/icons/ic_people-unknown.svg")),
+                                                child: Padding(
+                                                  padding: const EdgeInsets.all(
+                                                    10,
+                                                  ),
+                                                  child: SvgPicture.asset(
+                                                    "assets/icons/ic_people-unknown.svg",
+                                                  ),
+                                                ),
                                               ),
                                               "Dine in Requests",
                                               () {
-                                                DashBoardController dashBoardController = Get.find<DashBoardController>();
-                                                dashBoardController.selectedIndex.value = 1;
+                                                DashBoardController
+                                                dashBoardController =
+                                                    Get.find<
+                                                      DashBoardController
+                                                    >();
+                                                dashBoardController
+                                                        .selectedIndex
+                                                        .value =
+                                                    1;
                                               },
                                             ),
                                           ],
@@ -412,20 +707,34 @@ class ProfileScreen extends StatelessWidget {
                               const SizedBox(height: 20),
                               Text(
                                 "Subscription Management".tr,
-                                style: TextStyle(color: isDark ? AppThemeData.grey400 : AppThemeData.grey500, fontFamily: AppThemeData.semiBold, fontWeight: FontWeight.w500),
+                                style: TextStyle(
+                                  color: isDark
+                                      ? AppThemeData.grey400
+                                      : AppThemeData.grey500,
+                                  fontFamily: AppThemeData.semiBold,
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
                               const SizedBox(height: 10),
                               Container(
                                 width: Responsive.width(100, context),
                                 decoration: ShapeDecoration(
-                                  color: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  color: isDark
+                                      ? AppThemeData.grey900
+                                      : AppThemeData.grey50,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
                                 ),
                                 child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 8,
+                                  ),
                                   child: Column(
                                     children: [
-                                      (Constant.isSubscriptionModelApplied == true)
+                                      (Constant.isSubscriptionModelApplied ==
+                                              true)
                                           ? cardDecoration(
                                               isDark,
                                               controller,
@@ -433,14 +742,33 @@ class ProfileScreen extends StatelessWidget {
                                                 width: 44,
                                                 height: 44,
                                                 decoration: ShapeDecoration(
-                                                  color: isDark ? AppThemeData.success50 : AppThemeData.success50,
-                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(120)),
+                                                  color: isDark
+                                                      ? AppThemeData.success50
+                                                      : AppThemeData.success50,
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          120,
+                                                        ),
+                                                  ),
                                                 ),
-                                                child: Padding(padding: const EdgeInsets.all(10), child: SvgPicture.asset("assets/icons/ic_subscription.svg")),
+                                                child: Padding(
+                                                  padding: const EdgeInsets.all(
+                                                    10,
+                                                  ),
+                                                  child: SvgPicture.asset(
+                                                    "assets/icons/ic_subscription.svg",
+                                                  ),
+                                                ),
                                               ),
                                               "Subscription Packages",
                                               () {
-                                                Get.to(const SubscriptionPlanScreen(), arguments: {'isProfile': true})?.then((value) {
+                                                Get.to(
+                                                  const SubscriptionPlanScreen(),
+                                                  arguments: {
+                                                    'isProfile': true,
+                                                  },
+                                                )?.then((value) {
                                                   if (value == true) {
                                                     controller.getUserProfile();
                                                   }
@@ -455,14 +783,26 @@ class ProfileScreen extends StatelessWidget {
                                           width: 44,
                                           height: 44,
                                           decoration: ShapeDecoration(
-                                            color: isDark ? AppThemeData.success50 : AppThemeData.success50,
-                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(120)),
+                                            color: isDark
+                                                ? AppThemeData.success50
+                                                : AppThemeData.success50,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(120),
+                                            ),
                                           ),
-                                          child: Padding(padding: const EdgeInsets.all(10), child: SvgPicture.asset("assets/icons/ic_history.svg")),
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(10),
+                                            child: SvgPicture.asset(
+                                              "assets/icons/ic_history.svg",
+                                            ),
+                                          ),
                                         ),
                                         "Subscription History",
                                         () {
-                                          Get.to(const SubscriptionHistoryScreen());
+                                          Get.to(
+                                            const SubscriptionHistoryScreen(),
+                                          );
                                         },
                                       ),
                                     ],
@@ -471,8 +811,19 @@ class ProfileScreen extends StatelessWidget {
                               ),
                             ],
                           ),
-                          (Constant.isStoreVerification == true && controller.userModel.value.isDocumentVerify == false) ||
-                                  (controller.userModel.value.vendorID == null || controller.userModel.value.vendorID!.isEmpty)
+                          (Constant.isStoreVerification == true &&
+                                      controller
+                                              .userModel
+                                              .value
+                                              .isDocumentVerify ==
+                                          false) ||
+                                  (controller.userModel.value.vendorID ==
+                                          null ||
+                                      controller
+                                          .userModel
+                                          .value
+                                          .vendorID!
+                                          .isEmpty)
                               ? const SizedBox()
                               : Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -480,17 +831,32 @@ class ProfileScreen extends StatelessWidget {
                                     const SizedBox(height: 20),
                                     Text(
                                       "Offers & Discounts".tr,
-                                      style: TextStyle(color: isDark ? AppThemeData.grey400 : AppThemeData.grey500, fontFamily: AppThemeData.semiBold, fontWeight: FontWeight.w500),
+                                      style: TextStyle(
+                                        color: isDark
+                                            ? AppThemeData.grey400
+                                            : AppThemeData.grey500,
+                                        fontFamily: AppThemeData.semiBold,
+                                        fontWeight: FontWeight.w500,
+                                      ),
                                     ),
                                     const SizedBox(height: 10),
                                     Container(
                                       width: Responsive.width(100, context),
                                       decoration: ShapeDecoration(
-                                        color: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                        color: isDark
+                                            ? AppThemeData.grey900
+                                            : AppThemeData.grey50,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        ),
                                       ),
                                       child: Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 10,
+                                          vertical: 8,
+                                        ),
                                         child: Column(
                                           children: [
                                             cardDecoration(
@@ -500,17 +866,32 @@ class ProfileScreen extends StatelessWidget {
                                                 width: 44,
                                                 height: 44,
                                                 decoration: ShapeDecoration(
-                                                  color: isDark ? AppThemeData.success600 : AppThemeData.success50,
-                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(120)),
+                                                  color: isDark
+                                                      ? AppThemeData.success600
+                                                      : AppThemeData.success50,
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          120,
+                                                        ),
+                                                  ),
                                                 ),
-                                                child: Padding(padding: const EdgeInsets.all(10), child: SvgPicture.asset("assets/icons/ic_gift_box.svg")),
+                                                child: Padding(
+                                                  padding: const EdgeInsets.all(
+                                                    10,
+                                                  ),
+                                                  child: SvgPicture.asset(
+                                                    "assets/icons/ic_gift_box.svg",
+                                                  ),
+                                                ),
                                               ),
                                               "Offers",
                                               () {
                                                 Get.to(const OfferScreen());
                                               },
                                             ),
-                                            Constant.specialDiscountOfferEnable == false
+                                            Constant.specialDiscountOfferEnable ==
+                                                    false
                                                 ? const SizedBox()
                                                 : cardDecoration(
                                                     isDark,
@@ -519,14 +900,33 @@ class ProfileScreen extends StatelessWidget {
                                                       width: 44,
                                                       height: 44,
                                                       decoration: ShapeDecoration(
-                                                        color: isDark ? AppThemeData.success600 : AppThemeData.success50,
-                                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(120)),
+                                                        color: isDark
+                                                            ? AppThemeData
+                                                                  .success600
+                                                            : AppThemeData
+                                                                  .success50,
+                                                        shape: RoundedRectangleBorder(
+                                                          borderRadius:
+                                                              BorderRadius.circular(
+                                                                120,
+                                                              ),
+                                                        ),
                                                       ),
-                                                      child: Padding(padding: const EdgeInsets.all(10), child: SvgPicture.asset("assets/icons/ic_coupon.svg")),
+                                                      child: Padding(
+                                                        padding:
+                                                            const EdgeInsets.all(
+                                                              10,
+                                                            ),
+                                                        child: SvgPicture.asset(
+                                                          "assets/icons/ic_coupon.svg",
+                                                        ),
+                                                      ),
                                                     ),
                                                     "Special Discounts",
                                                     () {
-                                                      Get.to(const SpecialDiscountScreen());
+                                                      Get.to(
+                                                        const SpecialDiscountScreen(),
+                                                      );
                                                     },
                                                   ),
                                           ],
@@ -538,17 +938,30 @@ class ProfileScreen extends StatelessWidget {
                           const SizedBox(height: 20),
                           Text(
                             "Preferences".tr,
-                            style: TextStyle(color: isDark ? AppThemeData.grey400 : AppThemeData.grey500, fontFamily: AppThemeData.semiBold, fontWeight: FontWeight.w500),
+                            style: TextStyle(
+                              color: isDark
+                                  ? AppThemeData.grey400
+                                  : AppThemeData.grey500,
+                              fontFamily: AppThemeData.semiBold,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
                           const SizedBox(height: 10),
                           Container(
                             width: Responsive.width(100, context),
                             decoration: ShapeDecoration(
-                              color: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              color: isDark
+                                  ? AppThemeData.grey900
+                                  : AppThemeData.grey50,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                             ),
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 8,
+                              ),
                               child: Column(
                                 children: [
                                   cardDecoration(
@@ -558,10 +971,21 @@ class ProfileScreen extends StatelessWidget {
                                       width: 44,
                                       height: 44,
                                       decoration: ShapeDecoration(
-                                        color: isDark ? AppThemeData.warning600 : AppThemeData.warning50,
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(120)),
+                                        color: isDark
+                                            ? AppThemeData.warning600
+                                            : AppThemeData.warning50,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            120,
+                                          ),
+                                        ),
                                       ),
-                                      child: Padding(padding: const EdgeInsets.all(10), child: SvgPicture.asset("assets/icons/ic_language.svg")),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(10),
+                                        child: SvgPicture.asset(
+                                          "assets/icons/ic_language.svg",
+                                        ),
+                                      ),
                                     ),
                                     "Change Language",
                                     () {
@@ -575,10 +999,21 @@ class ProfileScreen extends StatelessWidget {
                                       width: 44,
                                       height: 44,
                                       decoration: ShapeDecoration(
-                                        color: isDark ? AppThemeData.warning600 : AppThemeData.warning50,
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(120)),
+                                        color: isDark
+                                            ? AppThemeData.warning600
+                                            : AppThemeData.warning50,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            120,
+                                          ),
+                                        ),
                                       ),
-                                      child: Padding(padding: const EdgeInsets.all(10), child: SvgPicture.asset("assets/icons/ic_darkmode.svg")),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(10),
+                                        child: SvgPicture.asset(
+                                          "assets/icons/ic_darkmode.svg",
+                                        ),
+                                      ),
                                     ),
                                     "Dark Mode",
                                     () {},
@@ -590,17 +1025,30 @@ class ProfileScreen extends StatelessWidget {
                           const SizedBox(height: 20),
                           Text(
                             "Social".tr,
-                            style: TextStyle(color: isDark ? AppThemeData.grey400 : AppThemeData.grey500, fontFamily: AppThemeData.semiBold, fontWeight: FontWeight.w500),
+                            style: TextStyle(
+                              color: isDark
+                                  ? AppThemeData.grey400
+                                  : AppThemeData.grey500,
+                              fontFamily: AppThemeData.semiBold,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
                           const SizedBox(height: 10),
                           Container(
                             width: Responsive.width(100, context),
                             decoration: ShapeDecoration(
-                              color: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              color: isDark
+                                  ? AppThemeData.grey900
+                                  : AppThemeData.grey50,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                             ),
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 8,
+                              ),
                               child: Column(
                                 children: [
                                   cardDecoration(
@@ -610,10 +1058,21 @@ class ProfileScreen extends StatelessWidget {
                                       width: 44,
                                       height: 44,
                                       decoration: ShapeDecoration(
-                                        color: isDark ? AppThemeData.info600 : AppThemeData.info50,
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(120)),
+                                        color: isDark
+                                            ? AppThemeData.info600
+                                            : AppThemeData.info50,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            120,
+                                          ),
+                                        ),
                                       ),
-                                      child: Padding(padding: const EdgeInsets.all(10), child: SvgPicture.asset("assets/icons/ic_share.svg")),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(10),
+                                        child: SvgPicture.asset(
+                                          "assets/icons/ic_share.svg",
+                                        ),
+                                      ),
                                     ),
                                     "Share app",
                                     () {
@@ -630,14 +1089,26 @@ class ProfileScreen extends StatelessWidget {
                                       width: 44,
                                       height: 44,
                                       decoration: ShapeDecoration(
-                                        color: isDark ? AppThemeData.info600 : AppThemeData.info50,
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(120)),
+                                        color: isDark
+                                            ? AppThemeData.info600
+                                            : AppThemeData.info50,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            120,
+                                          ),
+                                        ),
                                       ),
-                                      child: Padding(padding: const EdgeInsets.all(10), child: SvgPicture.asset("assets/icons/ic_rate.svg")),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(10),
+                                        child: SvgPicture.asset(
+                                          "assets/icons/ic_rate.svg",
+                                        ),
+                                      ),
                                     ),
                                     "Rate the app",
                                     () {
-                                      final InAppReview inAppReview = InAppReview.instance;
+                                      final InAppReview inAppReview =
+                                          InAppReview.instance;
                                       inAppReview.requestReview();
                                     },
                                   ),
@@ -648,7 +1119,13 @@ class ProfileScreen extends StatelessWidget {
                           const SizedBox(height: 20),
                           Text(
                             "Legal".tr,
-                            style: TextStyle(color: isDark ? AppThemeData.grey400 : AppThemeData.grey500, fontFamily: AppThemeData.semiBold, fontWeight: FontWeight.w500),
+                            style: TextStyle(
+                              color: isDark
+                                  ? AppThemeData.grey400
+                                  : AppThemeData.grey500,
+                              fontFamily: AppThemeData.semiBold,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
                           const SizedBox(height: 10),
                           Constant.isStoreVerification == false
@@ -656,11 +1133,18 @@ class ProfileScreen extends StatelessWidget {
                               : Container(
                                   width: Responsive.width(100, context),
                                   decoration: ShapeDecoration(
-                                    color: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                    color: isDark
+                                        ? AppThemeData.grey900
+                                        : AppThemeData.grey50,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
                                   ),
                                   child: Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 8,
+                                    ),
                                     child: Column(
                                       children: [
                                         cardDecoration(
@@ -670,10 +1154,20 @@ class ProfileScreen extends StatelessWidget {
                                             width: 44,
                                             height: 44,
                                             decoration: ShapeDecoration(
-                                              color: isDark ? AppThemeData.grey800 : AppThemeData.grey100,
-                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(120)),
+                                              color: isDark
+                                                  ? AppThemeData.grey800
+                                                  : AppThemeData.grey100,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(120),
+                                              ),
                                             ),
-                                            child: Padding(padding: const EdgeInsets.all(10), child: SvgPicture.asset("assets/icons/ic_documention.svg")),
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(10),
+                                              child: SvgPicture.asset(
+                                                "assets/icons/ic_documention.svg",
+                                              ),
+                                            ),
                                           ),
                                           "Document Verifications",
                                           () {
@@ -687,14 +1181,28 @@ class ProfileScreen extends StatelessWidget {
                                             width: 44,
                                             height: 44,
                                             decoration: ShapeDecoration(
-                                              color: isDark ? AppThemeData.grey800 : AppThemeData.grey100,
-                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(120)),
+                                              color: isDark
+                                                  ? AppThemeData.grey800
+                                                  : AppThemeData.grey100,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(120),
+                                              ),
                                             ),
-                                            child: Padding(padding: const EdgeInsets.all(10), child: SvgPicture.asset("assets/icons/ic_terms_condition.svg")),
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(10),
+                                              child: SvgPicture.asset(
+                                                "assets/icons/ic_terms_condition.svg",
+                                              ),
+                                            ),
                                           ),
                                           "Terms and Conditions",
                                           () {
-                                            Get.to(const TermsAndConditionScreen(type: "termAndCondition"));
+                                            Get.to(
+                                              const TermsAndConditionScreen(
+                                                type: "termAndCondition",
+                                              ),
+                                            );
                                           },
                                         ),
                                         cardDecoration(
@@ -704,14 +1212,28 @@ class ProfileScreen extends StatelessWidget {
                                             width: 44,
                                             height: 44,
                                             decoration: ShapeDecoration(
-                                              color: isDark ? AppThemeData.grey800 : AppThemeData.grey100,
-                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(120)),
+                                              color: isDark
+                                                  ? AppThemeData.grey800
+                                                  : AppThemeData.grey100,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(120),
+                                              ),
                                             ),
-                                            child: Padding(padding: const EdgeInsets.all(10), child: SvgPicture.asset("assets/icons/ic_privacyPolicy.svg")),
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(10),
+                                              child: SvgPicture.asset(
+                                                "assets/icons/ic_privacyPolicy.svg",
+                                              ),
+                                            ),
                                           ),
                                           "Privacy Policy",
                                           () {
-                                            Get.to(const TermsAndConditionScreen(type: "privacy"));
+                                            Get.to(
+                                              const TermsAndConditionScreen(
+                                                type: "privacy",
+                                              ),
+                                            );
                                           },
                                         ),
                                       ],
@@ -722,41 +1244,69 @@ class ProfileScreen extends StatelessWidget {
                           Container(
                             width: Responsive.width(100, context),
                             decoration: ShapeDecoration(
-                              color: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              color: isDark
+                                  ? AppThemeData.grey900
+                                  : AppThemeData.grey50,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
                             ),
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 6,
+                              ),
                               child: Column(
                                 children: [
-                                  cardDecoration(isDark, controller, SvgPicture.asset("assets/icons/ic_logout.svg"), "Log out", () {
-                                    showDialog(
-                                      context: context,
-                                      builder: (BuildContext context) {
-                                        return CustomDialogBox(
-                                          title: "Log out".tr,
-                                          descriptions: "Are you sure you want to log out? You will need to enter your credentials to log back in.".tr,
-                                          positiveString: "Log out".tr,
-                                          negativeString: "Cancel".tr,
-                                          positiveClick: () async {
-                                            ShowToastDialog.showLoader("Please wait".tr);
-                                            await AudioPlayerService.playSound(false);
-                                            Constant.userModel!.fcmToken = "";
-                                            await FireStoreUtils.updateUser(Constant.userModel!);
-                                            Constant.userModel = null;
-                                            await FirebaseAuth.instance.signOut();
-                                            ShowToastDialog.closeLoader();
-                                            // Navigate to email login screen for Android/iOS
-                                            Get.offAll(const LoginScreen());
-                                          },
-                                          negativeClick: () {
-                                            Get.back();
-                                          },
-                                          img: Image.asset('assets/images/ic_logout.gif', height: 50, width: 50),
-                                        );
-                                      },
-                                    );
-                                  }),
+                                  cardDecoration(
+                                    isDark,
+                                    controller,
+                                    SvgPicture.asset(
+                                      "assets/icons/ic_logout.svg",
+                                    ),
+                                    "Log out",
+                                    () {
+                                      showDialog(
+                                        context: context,
+                                        builder: (BuildContext context) {
+                                          return CustomDialogBox(
+                                            title: "Log out".tr,
+                                            descriptions:
+                                                "Are you sure you want to log out? You will need to enter your credentials to log back in."
+                                                    .tr,
+                                            positiveString: "Log out".tr,
+                                            negativeString: "Cancel".tr,
+                                            positiveClick: () async {
+                                              ShowToastDialog.showLoader(
+                                                "Please wait".tr,
+                                              );
+                                              await AudioPlayerService.playSound(
+                                                false,
+                                              );
+                                              Constant.userModel!.fcmToken = "";
+                                              await FireStoreUtils.updateUser(
+                                                Constant.userModel!,
+                                              );
+                                              Constant.userModel = null;
+                                              await FirebaseAuth.instance
+                                                  .signOut();
+                                              ShowToastDialog.closeLoader();
+                                              // Navigate to email login screen for Android/iOS
+                                              Get.offAll(const LoginScreen());
+                                            },
+                                            negativeClick: () {
+                                              Get.back();
+                                            },
+                                            img: Image.asset(
+                                              'assets/images/ic_logout.gif',
+                                              height: 50,
+                                              width: 50,
+                                            ),
+                                          );
+                                        },
+                                      );
+                                    },
+                                  ),
                                 ],
                               ),
                             ),
@@ -771,26 +1321,40 @@ class ProfileScreen extends StatelessWidget {
                                   builder: (BuildContext context) {
                                     return CustomDialogBox(
                                       title: "Delete Account".tr,
-                                      descriptions: "Are you sure you want to delete your account? This action is irreversible and will permanently remove all your data.".tr,
+                                      descriptions:
+                                          "Are you sure you want to delete your account? This action is irreversible and will permanently remove all your data."
+                                              .tr,
                                       positiveString: "Delete".tr,
                                       negativeString: "Cancel".tr,
                                       positiveClick: () async {
-                                        ShowToastDialog.showLoader("Please wait".tr);
+                                        ShowToastDialog.showLoader(
+                                          "Please wait".tr,
+                                        );
                                         await controller.deleteUserFromServer();
-                                        await FireStoreUtils.deleteUser().then((value) {
+                                        await FireStoreUtils.deleteUser().then((
+                                          value,
+                                        ) {
                                           ShowToastDialog.closeLoader();
                                           if (value == true) {
-                                            ShowToastDialog.showToast("Account deleted successfully".tr);
+                                            ShowToastDialog.showToast(
+                                              "Account deleted successfully".tr,
+                                            );
                                             Get.offAll(const LoginScreen());
                                           } else {
-                                            ShowToastDialog.showToast("Contact Administrator".tr);
+                                            ShowToastDialog.showToast(
+                                              "Contact Administrator".tr,
+                                            );
                                           }
                                         });
                                       },
                                       negativeClick: () {
                                         Get.back();
                                       },
-                                      img: Image.asset('assets/icons/delete_dialog.gif', height: 50, width: 50),
+                                      img: Image.asset(
+                                        'assets/icons/delete_dialog.gif',
+                                        height: 50,
+                                        width: 50,
+                                      ),
                                     );
                                   },
                                 );
@@ -799,22 +1363,23 @@ class ProfileScreen extends StatelessWidget {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
-                                  SvgPicture.asset("assets/icons/ic_delete.svg"),
+                                  SvgPicture.asset(
+                                    "assets/icons/ic_delete.svg",
+                                  ),
                                   const SizedBox(width: 10),
                                   Text(
                                     "Delete Account".tr,
                                     textAlign: TextAlign.start,
-                                    style: TextStyle(fontFamily: AppThemeData.medium, fontSize: 16, color: isDark ? AppThemeData.danger300 : AppThemeData.danger300),
+                                    style: TextStyle(
+                                      fontFamily: AppThemeData.medium,
+                                      fontSize: 16,
+                                      color: isDark
+                                          ? AppThemeData.danger300
+                                          : AppThemeData.danger300,
+                                    ),
                                   ),
                                 ],
                               ),
-                            ),
-                          ),
-                          Center(
-                            child: Text(
-                              "V : ${Constant.appVersion}",
-                              textAlign: TextAlign.center,
-                              style: TextStyle(fontFamily: AppThemeData.medium, fontSize: 14, color: isDark ? AppThemeData.grey50 : AppThemeData.grey900),
                             ),
                           ),
                         ],
@@ -827,7 +1392,13 @@ class ProfileScreen extends StatelessWidget {
     });
   }
 
-  Padding cardDecoration(isDark, ProfileController controller, Widget image, String title, Function()? onPress) {
+  Padding cardDecoration(
+    isDark,
+    ProfileController controller,
+    Widget image,
+    String title,
+    Function()? onPress,
+  ) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: InkWell(
@@ -877,7 +1448,11 @@ class SubscriptionPlanWidget extends StatelessWidget {
   final VoidCallback onClick;
   final UserModel userModel;
 
-  const SubscriptionPlanWidget({super.key, required this.onClick, required this.userModel});
+  const SubscriptionPlanWidget({
+    super.key,
+    required this.onClick,
+    required this.userModel,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -886,7 +1461,9 @@ class SubscriptionPlanWidget extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 4),
       decoration: BoxDecoration(
-        border: Border.all(color: isDark ? AppThemeData.grey800 : AppThemeData.grey200),
+        border: Border.all(
+          color: isDark ? AppThemeData.grey800 : AppThemeData.grey200,
+        ),
         color: isDark ? AppThemeData.grey50 : AppThemeData.grey800,
         borderRadius: BorderRadius.circular(16),
       ),
@@ -897,7 +1474,13 @@ class SubscriptionPlanWidget extends StatelessWidget {
             top: 10,
             child: Opacity(
               opacity: 0.8,
-              child: Image.asset(width: Responsive.width(100, context), height: Responsive.height(100, context), "assets/images/ic_gradient.png", color: AppThemeData.primary300, fit: BoxFit.fill),
+              child: Image.asset(
+                width: Responsive.width(100, context),
+                height: Responsive.height(100, context),
+                "assets/images/ic_gradient.png",
+                color: AppThemeData.primary300,
+                fit: BoxFit.fill,
+              ),
             ),
           ),
           Padding(
@@ -908,7 +1491,12 @@ class SubscriptionPlanWidget extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    NetworkImageWidget(imageUrl: userModel.subscriptionPlan?.image ?? '', fit: BoxFit.cover, width: 50, height: 50),
+                    NetworkImageWidget(
+                      imageUrl: userModel.subscriptionPlan?.image ?? '',
+                      fit: BoxFit.cover,
+                      width: 50,
+                      height: 50,
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Row(
@@ -919,11 +1507,28 @@ class SubscriptionPlanWidget extends StatelessWidget {
                             children: [
                               Text(
                                 userModel.subscriptionPlan?.name ?? '',
-                                style: TextStyle(color: isDark ? AppThemeData.grey900 : AppThemeData.grey50, fontSize: 18, fontWeight: FontWeight.bold, fontFamily: AppThemeData.semiBold),
+                                style: TextStyle(
+                                  color: isDark
+                                      ? AppThemeData.grey900
+                                      : AppThemeData.grey50,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: AppThemeData.semiBold,
+                                ),
                               ),
                               Text(
-                                userModel.subscriptionPlan?.type == 'free' ? userModel.subscriptionPlan?.description ?? '' : Constant.amountShow(amount: userModel.subscriptionPlan?.price),
-                                style: const TextStyle(fontFamily: AppThemeData.medium, fontSize: 14, color: AppThemeData.grey400),
+                                userModel.subscriptionPlan?.type == 'free'
+                                    ? userModel.subscriptionPlan?.description ??
+                                          ''
+                                    : Constant.amountShow(
+                                        amount:
+                                            userModel.subscriptionPlan?.price,
+                                      ),
+                                style: const TextStyle(
+                                  fontFamily: AppThemeData.medium,
+                                  fontSize: 14,
+                                  color: AppThemeData.grey400,
+                                ),
                               ),
                             ],
                           ),
@@ -933,11 +1538,25 @@ class SubscriptionPlanWidget extends StatelessWidget {
                               children: [
                                 Text(
                                   'Expiry Date'.tr,
-                                  style: TextStyle(fontFamily: AppThemeData.medium, fontSize: 12, color: isDark ? AppThemeData.grey900 : AppThemeData.grey50),
+                                  style: TextStyle(
+                                    fontFamily: AppThemeData.medium,
+                                    fontSize: 12,
+                                    color: isDark
+                                        ? AppThemeData.grey900
+                                        : AppThemeData.grey50,
+                                  ),
                                 ),
                                 Text(
-                                  userModel.subscriptionPlan!.expiryDay == "-1" ? "LifeTime" : Constant.timestampToDate(userModel.subscriptionExpiryDate!),
-                                  style: const TextStyle(fontFamily: AppThemeData.regular, fontSize: 12, color: AppThemeData.grey400),
+                                  userModel.subscriptionPlan!.expiryDay == "-1"
+                                      ? "LifeTime"
+                                      : Constant.timestampToDate(
+                                          userModel.subscriptionExpiryDate!,
+                                        ),
+                                  style: const TextStyle(
+                                    fontFamily: AppThemeData.regular,
+                                    fontSize: 12,
+                                    color: AppThemeData.grey400,
+                                  ),
                                 ),
                               ],
                             ),
@@ -947,15 +1566,28 @@ class SubscriptionPlanWidget extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 30),
-                RoundedButtonFill(radius: 14, textColor: AppThemeData.grey200, title: "Change Plan".tr, color: AppThemeData.primary300, width: 80, height: 5, onPress: onClick),
+                RoundedButtonFill(
+                  radius: 14,
+                  textColor: AppThemeData.grey200,
+                  title: "Change Plan".tr,
+                  color: AppThemeData.primary300,
+                  width: 80,
+                  height: 5,
+                  onPress: onClick,
+                ),
                 if (Constant.selectedSection?.adminCommision?.isEnabled == true)
                   Padding(
                     padding: const EdgeInsets.only(top: 10),
                     child: Text(
-                      Constant.userModel?.vendorID != null && Constant.userModel!.vendorID!.isNotEmpty
+                      Constant.userModel?.vendorID != null &&
+                              Constant.userModel!.vendorID!.isNotEmpty
                           ? "${Constant.vendorAdminCommission?.commissionType == 'Percent' || Constant.vendorAdminCommission?.commissionType == 'percentage' ? "${Constant.vendorAdminCommission?.amount} %" : "${Constant.amountShow(amount: Constant.vendorAdminCommission?.amount)} Flat"} ${"admin commission will be charged from customer billing orders and the admin charge will be earned after the order is accepted by the store.".tr}"
                           : "${Constant.selectedSection?.adminCommision?.commissionType == 'Percent' || Constant.selectedSection?.adminCommision?.commissionType == 'percentage' ? "${Constant.selectedSection?.adminCommision?.amount} %" : "${Constant.amountShow(amount: Constant.selectedSection?.adminCommision?.amount)} Flat"} ${"admin commission will be charged from customer billing orders and the admin charge will be earned after the order is accepted by the store.".tr}",
-                      style: const TextStyle(fontFamily: AppThemeData.medium, fontSize: 9, color: AppThemeData.grey400),
+                      style: const TextStyle(
+                        fontFamily: AppThemeData.medium,
+                        fontSize: 9,
+                        color: AppThemeData.grey400,
+                      ),
                     ),
                   ),
               ],

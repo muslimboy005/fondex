@@ -53,7 +53,7 @@ class ProductRatingViewScreen extends StatelessWidget {
                                 style: TextStyle(color: isDark ? AppThemeData.grey400 : AppThemeData.grey500, fontSize: 16, fontFamily: AppThemeData.medium),
                               ),
                               Text(
-                                "${controller.productModel.value.name}".tr,
+                                controller.productModel.value.name ?? '',
                                 style: TextStyle(color: isDark ? AppThemeData.grey100 : AppThemeData.grey800, fontSize: 18, fontFamily: AppThemeData.semiBold),
                               ),
                               const SizedBox(height: 10),
@@ -117,7 +117,7 @@ class ProductRatingViewScreen extends StatelessWidget {
                               controller.ratingModel.value.comment == null || controller.ratingModel.value.comment!.isEmpty
                                   ? const SizedBox()
                                   : Text(
-                                      "${controller.ratingModel.value.comment}".tr,
+                                      controller.ratingModel.value.comment ?? '',
                                       style: TextStyle(color: isDark ? AppThemeData.grey400 : AppThemeData.grey500, fontSize: 16, fontFamily: AppThemeData.medium),
                                     ),
                               Visibility(

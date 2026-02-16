@@ -299,8 +299,7 @@ class ParcelSearchScreen extends StatelessWidget {
                                                       ),
                                                       Text(
                                                         Constant.amountShow(
-                                                                amount: controller.calculateParcelTotalAmountBooking(parcelBookingData))
-                                                            .tr,
+                                                                amount: controller.calculateParcelTotalAmountBooking(parcelBookingData)),
                                                         textAlign: TextAlign.start,
                                                         style: AppThemeData.semiBoldTextStyle(
                                                             fontSize: 14, color: isDark ? AppThemeData.greyDark900 : AppThemeData.grey900),
@@ -320,7 +319,7 @@ class ParcelSearchScreen extends StatelessWidget {
                                                         height: 5,
                                                       ),
                                                       Text(
-                                                        '${Constant.timestampToDate(parcelBookingData.senderPickupDateTime!)}  '.tr,
+                                                        '${Constant.timestampToDate(parcelBookingData.senderPickupDateTime!)}  ',
                                                         textAlign: TextAlign.start,
                                                         style: AppThemeData.semiBoldTextStyle(
                                                             fontSize: 14, color: isDark ? AppThemeData.greyDark900 : AppThemeData.grey900),
@@ -340,7 +339,7 @@ class ParcelSearchScreen extends StatelessWidget {
                                                         height: 5,
                                                       ),
                                                       Text(
-                                                        '${parcelBookingData.parcelWeight}'.tr,
+                                                        '${parcelBookingData.parcelWeight}',
                                                         textAlign: TextAlign.start,
                                                         style: AppThemeData.semiBoldTextStyle(
                                                             fontSize: 14, color: isDark ? AppThemeData.greyDark900 : AppThemeData.grey900),
@@ -415,8 +414,8 @@ class ParcelSearchScreen extends StatelessWidget {
                                                     controller.acceptParcelBooking(parcelBookingData);
                                                   } else {
                                                     ShowToastDialog.showToast(
-                                                        "Your owner has to maintain minimum {amount} wallet balance to accept the parcel booking. Please contact your owner"
-                                                            .trParams({"amount": Constant.amountShow(amount: Constant.ownerMinimumDepositToRideAccept)}).tr);
+                                                        "Your owner has to maintain minimum @amount wallet balance to accept the parcel booking. Please contact your owner"
+                                                            .trParams({"amount": Constant.amountShow(amount: Constant.ownerMinimumDepositToRideAccept)}));
                                                   }
                                                 } else {
                                                   if (controller.driverModel.value.walletAmount != null &&
@@ -425,8 +424,8 @@ class ParcelSearchScreen extends StatelessWidget {
                                                     controller.acceptParcelBooking(parcelBookingData);
                                                   } else {
                                                     ShowToastDialog.showToast(
-                                                        "Your owner has to maintain minimum {amount} wallet balance to accept the parcel booking. Please contact your owner"
-                                                            .trParams({"amount": Constant.amountShow(amount: Constant.ownerMinimumDepositToRideAccept)}).tr);
+                                                        "Your owner has to maintain minimum @amount wallet balance to accept the parcel booking. Please contact your owner"
+                                                            .trParams({"amount": Constant.amountShow(amount: Constant.ownerMinimumDepositToRideAccept)}));
                                                   }
                                                 }
                                               },

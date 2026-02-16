@@ -13,7 +13,6 @@ import '../../themes/round_button_fill.dart';
 import '../../themes/text_field_widget.dart';
 import 'package:get/get.dart';
 import 'forgot_password_screen.dart';
-import 'mobile_login_screen.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});

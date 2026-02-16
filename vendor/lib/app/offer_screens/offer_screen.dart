@@ -78,7 +78,7 @@ class OfferScreen extends StatelessWidget {
                                               child: Padding(
                                                 padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 4),
                                                 child: Text(
-                                                  "${couponModel.code}".tr,
+                                                  couponModel.code ?? '',
                                                   style: TextStyle(color: isDark ? AppThemeData.grey200 : AppThemeData.grey700, fontSize: 18, fontFamily: AppThemeData.medium),
                                                 ),
                                               ),
@@ -86,7 +86,9 @@ class OfferScreen extends StatelessWidget {
                                           ),
                                           const SizedBox(height: 10),
                                           Text(
-                                            (couponModel.discountType == "Fix Price" ? "${Constant.amountShow(amount: couponModel.discount)} ${"Off".tr}" : "${couponModel.discount} % ${"Off".tr}").tr,
+                                            couponModel.discountType == "Fix Price"
+                                                ? "${Constant.amountShow(amount: couponModel.discount)} ${"Off".tr}"
+                                                : "${couponModel.discount} % ${"Off".tr}",
                                             style: TextStyle(color: isDark ? AppThemeData.primary300 : AppThemeData.primary300, fontSize: 14, fontFamily: AppThemeData.medium),
                                           ),
                                         ],

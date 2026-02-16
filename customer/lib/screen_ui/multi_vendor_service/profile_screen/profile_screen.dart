@@ -1,11 +1,13 @@
+import 'dart:io';
+
 import 'package:customer/constant/constant.dart';
 import 'package:customer/controllers/my_profile_controller.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:customer/screen_ui/on_demand_service/provider_inbox_screen.dart';
 import 'package:customer/screen_ui/on_demand_service/worker_inbox_screen.dart';
 import 'package:customer/themes/app_them_data.dart';
 import 'package:customer/themes/custom_dialog_box.dart';
 import 'package:customer/themes/responsive.dart';
-import 'package:in_app_review/in_app_review.dart';
 import '../../../controllers/theme_controller.dart';
 import '../../../service/fire_store_utils.dart';
 import '../../../themes/show_toast_dialog.dart';
@@ -314,7 +316,7 @@ class ProfileScreen extends StatelessWidget {
                                     "Share app".tr,
                                     () {
                                       Share.share(
-                                        '${'Check out Foodie, your ultimate food delivery application!'.tr} \n\n${'Google Play:'.tr} ${Constant.googlePlayLink} \n\n${'App Store:'.tr} ${Constant.appStoreLink}',
+                                        '${'Check out Foodie, your ultimate food delivery application!'.tr} \n\n${'Google Play:'.tr} ${Constant.customerGooglePlayUrl} \n\n${'App Store:'.tr} ${Constant.customerAppStoreUrl}',
                                         subject: 'Look what I made!'.tr,
                                       );
                                     },
@@ -324,10 +326,27 @@ class ProfileScreen extends StatelessWidget {
                                     controller,
                                     "assets/icons/ic_rate.svg",
                                     "Rate the app".tr,
-                                    () {
-                                      final InAppReview inAppReview =
-                                          InAppReview.instance;
-                                      inAppReview.requestReview();
+                                    () async {
+                                      final Uri rateUri = Uri.parse(
+                                        Platform.isAndroid
+                                            ? Constant.customerGooglePlayUrl
+                                            : Constant.customerAppStoreUrl,
+                                      );
+                                      try {
+                                        final launched = await launchUrl(
+                                          rateUri,
+                                          mode: LaunchMode.externalApplication,
+                                        );
+                                        if (!launched) {
+                                          ShowToastDialog.showToast(
+                                            'Could not open store'.tr,
+                                          );
+                                        }
+                                      } catch (e) {
+                                        ShowToastDialog.showToast(
+                                          'Could not open store'.tr,
+                                        );
+                                      }
                                     },
                                   ),
                                 ],
@@ -634,20 +653,6 @@ class ProfileScreen extends StatelessWidget {
                                   ),
                                 ),
                               ),
-                          Center(
-                            child: Text(
-                              "V : ${Constant.appVersion}",
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontFamily: AppThemeData.medium,
-                                fontSize: 14,
-                                color:
-                                    isDark
-                                        ? AppThemeData.grey50
-                                        : AppThemeData.grey900,
-                              ),
-                            ),
-                          ),
                         ],
                       ),
                     ),

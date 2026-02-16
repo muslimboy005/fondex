@@ -238,7 +238,7 @@ class WalletScreen extends StatelessWidget {
                         children: [
                           Expanded(
                             child: Text(
-                              transactionModel.note.toString(),
+                              transactionModel.note.toString().tr,
                               style: TextStyle(fontSize: 16, fontFamily: AppThemeData.semiBold, fontWeight: FontWeight.w600, color: isDark ? AppThemeData.grey100 : AppThemeData.grey800),
                             ),
                           ),
@@ -267,3 +267,16 @@ class WalletScreen extends StatelessWidget {
 }
 
 enum PaymentGateway { payFast, mercadoPago, paypal, stripe, flutterWave, payStack, razorpay, cod, wallet, midTrans, orangeMoney, xendit, payme }
+
+extension PaymentGatewayLabel on PaymentGateway {
+  String localizedLabel() {
+    switch (this) {
+      case PaymentGateway.wallet:
+        return 'Wallet'.tr;
+      case PaymentGateway.cod:
+        return 'Cash on Delivery'.tr;
+      default:
+        return name.capitalizeString();
+    }
+  }
+}

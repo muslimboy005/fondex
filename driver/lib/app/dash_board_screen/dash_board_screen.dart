@@ -23,8 +23,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-import 'package:in_app_review/in_app_review.dart';
-import 'package:share_plus/share_plus.dart';
 
 class DashBoardScreen extends StatelessWidget {
   const DashBoardScreen({super.key});
@@ -216,18 +214,18 @@ class DrawerView extends StatelessWidget {
                                       controller.drawerIndex.value = 2;
                                     },
                                   ),
-                                  _buildDivider(isDark),
-                                  _buildMenuItem(
-                                    icon: Icons.account_balance_rounded,
-                                    title: 'Withdrawal Method'.tr,
-                                    isDark: isDark,
-                                    isSelected:
-                                        controller.drawerIndex.value == 3,
-                                    onTap: () {
-                                      Get.back();
-                                      controller.drawerIndex.value = 3;
-                                    },
-                                  ),
+                                  // _buildDivider(isDark),
+                                  // _buildMenuItem(
+                                  //   icon: Icons.account_balance_rounded,
+                                  //   title: 'Withdrawal Method'.tr,
+                                  //   isDark: isDark,
+                                  //   isSelected:
+                                  //       controller.drawerIndex.value == 3,
+                                  //   onTap: () {
+                                  //     Get.back();
+                                  //     controller.drawerIndex.value = 3;
+                                  //   },
+                                  // ),
                                 ],
                                 if (Constant.isDriverVerification == true) ...[
                                   _buildDivider(isDark),
@@ -359,20 +357,7 @@ class DrawerView extends StatelessWidget {
                             const SizedBox(height: 16),
                             _buildDeleteAccountButton(context, isDark),
                             const SizedBox(height: 16),
-                            // Center(
-                            //   child: Text(
-                            //     "V : ${Constant.appVersion}",
-                            //     style: TextStyle(
-                            //       fontFamily: AppThemeData.medium,
-                            //       fontSize: 13,
-                            //       color: isDark
-                            //           ? AppThemeData.grey500
-                            //           : AppThemeData.grey400,
-                            //     ),
-                            //   ),
-                            // ),
-                            // const SizedBox(height: 24),
-                          ],
+                             ],
                         ),
                       ),
                     ),
@@ -835,7 +820,7 @@ class DrawerView extends StatelessWidget {
               ),
               const SizedBox(width: 10),
               Text(
-                'Log Out'.tr,
+                'Log out'.tr,
                 style: TextStyle(
                   color: AppThemeData.danger300,
                   fontSize: 15,

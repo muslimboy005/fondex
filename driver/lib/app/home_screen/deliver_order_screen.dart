@@ -334,7 +334,7 @@ class DeliverOrderScreen extends StatelessWidget {
                                         },
                                       ),
                                       Text(
-                                        "${'Give'.tr} ${controller.totalQuantity.value.toString()} ${'Items to the customer'.tr}".tr,
+                                        "${'Give'.tr} ${controller.totalQuantity.value.toString()} ${'Items to the customer'.tr}",
                                         style: TextStyle(color: isDark ? AppThemeData.success400 : AppThemeData.success400, fontSize: 16, fontFamily: AppThemeData.medium),
                                       ),
                                     ],

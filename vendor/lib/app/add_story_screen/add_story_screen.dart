@@ -163,7 +163,7 @@ class AddStoryScreen extends StatelessWidget {
                                   const SizedBox(height: 5),
                                   Text(
                                     "${'mp4 format,  less then'.tr} ${double.parse(controller.videoDuration.toString()).toStringAsFixed(0)} ${'sec.'.tr}"
-                                        .tr,
+                                        ,
                                     style: TextStyle(
                                       fontSize: 12,
                                       color: isDark ? AppThemeData.grey200 : AppThemeData.grey700,

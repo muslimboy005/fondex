@@ -14,7 +14,6 @@ import '../../themes/round_button_fill.dart';
 import '../../themes/text_field_widget.dart';
 import 'package:get/get.dart';
 import 'login_screen.dart';
-import 'mobile_login_screen.dart';
 
 class SignUpScreen extends StatelessWidget {
   const SignUpScreen({super.key});

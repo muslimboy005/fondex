@@ -2,7 +2,7 @@ const Map<String, String> ruRU = {
   'Log In to Your Account': 'Log In to Your Account',
   'Sign in to access your Fondex account and manage your deliveries seamlessly.':
       'Sign in to access your Fondex account and manage your deliveries seamlessly.',
-  'Didn’t Have an account?': 'Didn’t Have an account?',
+  "Didn't Have an account?": "Didn't Have an account?",
   'Sign up': 'Sign up',
   'Email Address': 'Email Address',
   'Enter email address': 'Enter email address',
@@ -10,15 +10,13 @@ const Map<String, String> ruRU = {
   'Enter password': 'Enter password',
   'Forgot Password': 'Forgot Password',
   'Continue with Mobile Number': 'Continue with Mobile Number',
-  'with Google': 'with Google',
-  'with Apple': 'with Apple',
   'Please enter valid email': 'Please enter valid email',
   'Please enter valid password': 'Please enter valid password',
   'Log in': 'Log in',
   'Verify Your Mobile Number': 'Verify Your Mobile Number',
   'Enter the OTP sent to your mobile number to verify and secure your account.':
       'Enter the OTP sent to your mobile number to verify and secure your account.',
-  'Did’t receive any code? ': 'Did’t receive any code? ',
+  "Didn't receive any code? ": "Didn't receive any code? ",
   'Send Again': 'Send Again',
   'Already Have an account?': 'Already Have an account?',
   'Verify otp': 'Verify otp',
@@ -127,8 +125,8 @@ const Map<String, String> ruRU = {
   "Ride Type": "Ride Type",
   "Reject": "Reject",
   "Accept": "Accept",
-  "Your owner has to maintain minimum {amount} wallet balance to accept the cab booking. Please contact your owner":
-      "Your owner has to maintain minimum {amount} wallet balance to accept the cab booking. Please contact your owner",
+  "Your owner has to maintain minimum @amount wallet balance to accept the cab booking. Please contact your owner":
+      "Your owner has to maintain minimum @amount wallet balance to accept the cab booking. Please contact your owner",
   "You don't have sufficient balance in your wallet.":
       "You don't have sufficient balance in your wallet.",
   "Payment Type": "Payment Type",
@@ -142,6 +140,7 @@ const Map<String, String> ruRU = {
   "Enter the OTP shared by the customer to begin the trip":
       "Enter the OTP shared by the customer to begin the trip",
   "Start Ride": "Start Ride",
+  "ride": "Поездка",
   "Please enter valid OTP": "Please enter valid OTP",
   "Confirm Cash Payment": "Confirm Cash Payment",
   "Are you sure you received the cash from the passenger?":
@@ -168,8 +167,8 @@ const Map<String, String> ruRU = {
   "please select": "please select",
   "camera": "camera",
   "gallery": "gallery",
-  "No worries!! We’ll send you reset instructions":
-      "No worries!! We’ll send you reset instructions",
+  "No worries!! We'll send you reset instructions":
+      "No worries!! We'll send you reset instructions",
   "Deliver to the": "Deliver to the",
   "Variants": "Variants",
   "Addons": "Addons",
@@ -192,7 +191,7 @@ const Map<String, String> ruRU = {
   "view_status": "View Status",
   "New": "New",
   "wallet_minimum_required":
-      "You must have a minimum {amount} in your wallet to receive orders",
+      "You must have a minimum @amount in your wallet to receive orders",
   "Active": "Active",
   "New Order not found.": "New Order not found.",
   "deliver_to_the": "Deliver to the",
@@ -204,8 +203,8 @@ const Map<String, String> ruRU = {
   "Delivery Charge": "Delivery Charge",
   "Active order not found.": "Active order not found.",
   "Order Ready to pickup": "Order Ready to pickup",
-  "Your order has been ready pickup the order and deliver to the customer’s locations.":
-      "Your order has been ready pickup the order and deliver to the customer’s locations.",
+  "Your order has been ready pickup the order and deliver to the customer's locations.":
+      "Your order has been ready pickup the order and deliver to the customer's locations.",
   "Item and Deliver to the": "Item and Deliver to the",
   "Confirm Pickup": "Confirm Pickup",
   "Conform pickup order": "Conform pickup order",
@@ -268,7 +267,6 @@ const Map<String, String> ruRU = {
   "Parcel Track": "Parcel Track",
   "Pickup Address (Sender):": "Pickup Address (Sender):",
   "Schedule Pickup time:": "Schedule Pickup time:",
-  "Order Date:": "Order Date:",
   "Parcel Type:": "Parcel Type:",
   "Weight": "Weight",
   "Rate": "Rate",
@@ -278,10 +276,10 @@ const Map<String, String> ruRU = {
   "Where to?": "Where to?",
   "Select Date": "Select Date",
   "Parcel Booking not found": "Parcel Booking not found",
-  "Your owner has to maintain minimum {amount} wallet balance to accept the parcel booking. Please contact your owner":
-      "Your owner has to maintain minimum {amount} wallet balance to accept the parcel booking. Please contact your owner",
-  "You have to maintain minimum {amount} wallet balance to accept the parcel booking.":
-      "You have to maintain minimum {amount} wallet balance to accept the parcel booking.",
+  "Your owner has to maintain minimum @amount wallet balance to accept the parcel booking. Please contact your owner":
+      "Your owner has to maintain minimum @amount wallet balance to accept the parcel booking. Please contact your owner",
+  "You have to maintain minimum @amount wallet balance to accept the parcel booking.":
+      "You have to maintain minimum @amount wallet balance to accept the parcel booking.",
   "No Rental booking available": "No Rental booking available",
   "Package Details:": "Package Details:",
   "Including Distance:": "Including Distance:",
@@ -290,10 +288,10 @@ const Map<String, String> ruRU = {
   "Booking rejected successfully": "Booking rejected successfully",
   "Accepting booking...": "Accepting booking...",
   "Booking accepted successfully": "Booking accepted successfully",
-  "Your owner has to maintain minimum {{amount}} wallet balance to accept the rental booking. Please contact your owner":
-      "Your owner has to maintain minimum {{amount}} wallet balance to accept the rental booking. Please contact your owner",
-  "You have to maintain minimum {{amount}} wallet balance to accept the rental booking.":
-      "You have to maintain minimum {{amount}} wallet balance to accept the rental booking.",
+  "Your owner has to maintain minimum @amount wallet balance to accept the rental booking. Please contact your owner":
+      "Your owner has to maintain minimum @amount wallet balance to accept the rental booking. Please contact your owner",
+  "You have to maintain minimum @amount wallet balance to accept the rental booking.":
+      "You have to maintain minimum @amount wallet balance to accept the rental booking.",
   "Search new ride": "Search new ride",
   "Reached Location": "Reached Location",
   "Set Final kilometers": "Set Final kilometers",
@@ -423,4 +421,266 @@ const Map<String, String> ruRU = {
   "Your Favorite Ride, Parcel, Rental & Item Delivered Fast!":
       "Your Favorite Ride, Parcel, Rental & Item Delivered Fast!",
   "Fondex Driver": "Fondex Driver",
+  "API endpoint not found. Please contact support.":
+      "API endpoint not found. Please contact support.",
+  "Amount Top-up successfully": "Amount Top-up successfully",
+  "An error occurred while deleting driver":
+      "An error occurred while deleting driver",
+  "An error occurred. Please try again.":
+      "An error occurred. Please try again.",
+  "Availability Status": "Availability Status",
+  "Bill Details": "Bill Details",
+  "Bu raqam bilan boshqa ilovada ro'yxatdan o'tgansiz":
+      "Bu raqam bilan boshqa ilovada ro'yxatdan o'tgansiz",
+  "Call": "Call",
+  "Cancel Payment?": "Cancel Payment?",
+  "Check out eMart, your ultimate food delivery application!":
+      "Check out eMart, your ultimate food delivery application!",
+  "Choose image from gallery": "Choose image from gallery",
+  "Choose video from gallery": "Choose video from gallery",
+  "Confirm Location": "Confirm Location",
+  "Continue": "Continue",
+  "Continue Payment": "Continue Payment",
+  "Could not open Google Maps": "Could not open Google Maps",
+  "Could not open Yandex Maps": "Could not open Yandex Maps",
+  "Current Kilometer reading": "Current Kilometer reading",
+  "Deleting driver...": "Deleting driver...",
+  "Document upload successfully": "Document upload successfully",
+  "Driver account deleted successfully": "Driver account deleted successfully",
+  "Driver created successfully": "Driver created successfully",
+  "Driver update successfully": "Driver update successfully",
+  "Earnings": "Earnings",
+  "Enter Current Kilometer reading": "Enter Current Kilometer reading",
+  "Enter email is Invalid": "Enter email is Invalid",
+  "Enter the OTP sent to your mobile": "Enter the OTP sent to your mobile",
+  "Enter valid 6-digit OTP": "Enter valid 6-digit OTP",
+  "Error": "Error",
+  "Error opening Google Maps": "Error opening Google Maps",
+  "Error opening Yandex Maps": "Error opening Yandex Maps",
+  "Exit": "Exit",
+  "Extra": "Extra",
+  "Failed to delete driver. Please contact administrator.":
+      "Failed to delete driver. Please contact administrator.",
+  "Failed to get payment link": "Failed to get payment link",
+  "Failed to parse server response": "Failed to parse server response",
+  "Final kilometer reading cannot be less than starting kilometer reading":
+      "Final kilometer reading cannot be less than starting kilometer reading",
+  "Hr": "Hr",
+  "Including": "Including",
+  "Invalid Email.": "Invalid Email.",
+  "Invalid OTP": "Invalid OTP",
+  "Invalid OTP code. Please try again.": "Invalid OTP code. Please try again.",
+  "Invalid OTP or Verification Failed": "Invalid OTP or Verification Failed",
+  "Invalid email address.": "Invalid email address.",
+  "Invalid email or password. Please check your credentials and try again.":
+      "Invalid email or password. Please check your credentials and try again.",
+  "Invalid password.": "Invalid password.",
+  "Invalid response from server": "Invalid response from server",
+  "Invalid server response. Please try again.":
+      "Invalid server response. Please try again.",
+  "Kilometer updated successfully": "Kilometer updated successfully",
+  "Ko'rish": "Ko'rish",
+  "Let's Get Started": "Let's Get Started",
+  "Location information is not available":
+      "Location information is not available",
+  "Logging in...": "Logging in...",
+  "Login failed": "Login failed",
+  "Login failed. Please try again.": "Login failed. Please try again.",
+  "Login timeout. Please check your internet connection.":
+      "Login timeout. Please check your internet connection.",
+  "Map view": "Map view",
+  "Menu": "Menu",
+  "Network error. Please check your internet connection.":
+      "Network error. Please check your internet connection.",
+  "No Location Picked": "No Location Picked",
+  "No internet connection. Please check your network.":
+      "No internet connection. Please check your network.",
+  "No rental requests available in your selected zone.":
+      "No rental requests available in your selected zone.",
+  "No user found for that email.": "No user found for that email.",
+  "Note: Admin commission will be debited from your wallet balance.\n\nAdmin commission will apply on your booking amount minus discount (if applicable).":
+      "Note: Admin commission will be debited from your wallet balance.\n\nAdmin commission will apply on your booking amount minus discount (if applicable).",
+  "Nothing found here...": "Nothing found here...",
+  "OTP sent": "OTP sent",
+  "OTP session expired. Please request a new code.":
+      "OTP session expired. Please request a new code.",
+  "OTP xato": "OTP xato",
+  "Online - Ready for orders": "Online - Ready for orders",
+  "Online - Ready for rides": "Online - Ready for rides",
+  "Order Delivered": "Order Delivered",
+  "Order ID": "Order ID",
+  "Payme Payment": "Payme Payment",
+  "Payment Failed": "Payment Failed",
+  "Payment Failed!!": "Payment Failed!!",
+  "Payment Processing!! via": "Payment Processing!! via",
+  "Payment Successful!!": "Payment Successful!!",
+  "Payment UnSuccessful!!": "Payment UnSuccessful!!",
+  "Payment Unsuccessful!!": "Payment Unsuccessful!!",
+  "Payment error": "Payment error",
+  "Payment successfully": "Payment successfully",
+  "Phone number is required": "Phone number is required",
+  "PickUp Location": "PickUp Location",
+  "Picked Location:": "Picked Location:",
+  "Please confirm that you have received the full cash amount from the customer before continuing.":
+      "Please confirm that you have received the full cash amount from the customer before continuing.",
+  "Please enter a valid 9-digit phone number":
+      "Please enter a valid 9-digit phone number",
+  "Please enter current kilometer reading":
+      "Please enter current kilometer reading",
+  "Please enter your email address.": "Please enter your email address.",
+  "Please enter your password.": "Please enter your password.",
+  "Please enter your phone number": "Please enter your phone number",
+  "Please upload back side of document.":
+      "Please upload back side of document.",
+  "Please upload front side of document.":
+      "Please upload front side of document.",
+  "Processing...": "Processing...",
+  "Rate the App": "Rate the App",
+  "Reached store for Pickup": "Reached store for Pickup",
+  "Reached the Customers Door Steps": "Reached the Customers Door Steps",
+  "Real-time status and earnings summary":
+      "Real-time status and earnings summary",
+  "Record video": "Record video",
+  "Registering...": "Registering...",
+  "Registration failed": "Registration failed",
+  "Registration failed. Please try again.":
+      "Registration failed. Please try again.",
+  "Request timeout. Please check your internet connection.":
+      "Request timeout. Please check your internet connection.",
+  "Resend OTP": "Resend OTP",
+  "Resend OTP in": "Resend OTP in",
+  "Reset Password link sent your": "Reset Password link sent your",
+  "Ride Completed": "Ride Completed",
+  "Ride completed successfully": "Ride completed successfully",
+  "Ride started successfully": "Ride started successfully",
+  "Search Rental Booking": "Search Rental Booking",
+  "Search location...": "Search location...",
+  "Send Media": "Send Media",
+  "Sent a audio": "Sent a audio",
+  "Sent a video": "Sent a video",
+  "Server authentication error. Please try again.":
+      "Server authentication error. Please try again.",
+  "Server error. Please try again later.":
+      "Server error. Please try again later.",
+  "Share & Support": "Share & Support",
+  "Share App": "Share App",
+  "Sign in to access your eMart account and manage your deliveries seamlessly.":
+      "Sign in to access your Fondex account and manage your deliveries seamlessly.",
+  "Sign up now to start your journey as a eMart driver and begin earning with every delivery.":
+      "Sign up now to start your journey as a eMart driver and begin earning with every delivery.",
+  "Something want wrong please contact administrator":
+      "Something want wrong please contact administrator",
+  "Something went wrong. Please try again.":
+      "Something went wrong. Please try again.",
+  "Switch to online mode to accept and deliver parcel orders.":
+      "Switch to online mode to accept and deliver parcel orders.",
+  "Switch to online mode to accept and deliver rental orders.":
+      "Switch to online mode to accept and deliver rental orders.",
+  "Take a picture": "Take a picture",
+  "Thank you for sign up, your application is under approval so please wait till that approve.":
+      "Thank you for sign up, your application is under approval so please wait till that approve.",
+  "The account already exists for that email.":
+      "The account already exists for that email.",
+  "The password provided is too weak.": "The password provided is too weak.",
+  "This user is disabled": "This user is disabled",
+  "This user is not created in driver application.":
+      "This user is not created in driver application.",
+  "Too many failed login attempts. Please try again later.":
+      "Too many failed login attempts. Please try again later.",
+  "Total Bookings": "Total Bookings",
+  "Total Drivers": "Total Drivers",
+  "Updating...": "Updating...",
+  "Upload Document": "Upload Document",
+  "Updating vehicle information...": "Updating vehicle information...",
+  "Update not allowed for Owner type users.":
+      "Update not allowed for Owner type users.",
+  "Uploading video...": "Uploading video...",
+  "Generating thumbnail...": "Generating thumbnail...",
+  "Loading chat...": "Loading chat...",
+  "Vehicle information updated successfully.":
+      "Vehicle information updated successfully.",
+  "Failed to update. Please try again.": "Failed to update. Please try again.",
+  "Error updating vehicle info": "Error updating vehicle info",
+  "Please enter car plate number": "Please enter car plate number",
+  "Please select a vehicle type": "Please select a vehicle type",
+  "Please select a car brand": "Please select a car brand",
+  "Please select a car model": "Please select a car model",
+  "Please provide rating and comment": "Please provide rating and comment",
+  "Submitting...": "Submitting...",
+  "Camera permission denied. Please allow access to take a photo.":
+      "Camera permission denied. Please allow access to take a photo.",
+  "Gallery permission denied. Please allow access to select an image.":
+      "Gallery permission denied. Please allow access to select an image.",
+  "Trip Start": "Trip Start",
+  "Booking Id:": "Booking Id:",
+  "Min": "Min",
+  "Error fetching drivers": "Error fetching drivers",
+  "Error fetching cab orders": "Error fetching cab orders",
+  "Error fetching parcel orders": "Error fetching parcel orders",
+  "Error fetching rental orders": "Error fetching rental orders",
+  "Failed to calculate total": "Failed to calculate total",
+  "Failed to fetch order details": "Failed to fetch order details",
+  "Location permissions are permanently denied, we cannot request permissions.":
+      "Location permissions are permanently denied, we cannot request permissions.",
+  "Google map is not installed": "Google map is not installed",
+  "Google Go map is not installed": "Google Go map is not installed",
+  "Waze is not installed": "Waze is not installed",
+  "Mapswithme is not installed": "Mapswithme is not installed",
+  "YandexNavi is not installed": "YandexNavi is not installed",
+  "yandexMaps map is not installed": "yandexMaps map is not installed",
+  "Order data not found": "Order data not found",
+  "Exception": "Exception",
+  "on_going": "В процессе",
+  "completed": "Завершено",
+  "On Going": "В процессе",
+  "Completed": "Завершено",
+  "Cancelled": "Отменено",
+  "Order Placed": "Заказ размещен",
+  "Order Accepted": "Заказ принят",
+  "Driver Accepted": "Водитель принял",
+  "Driver Pending": "Ожидание водителя",
+  "Order Shipped": "Заказ отправлен",
+  "In Transit": "В пути",
+  "Order Completed": "Заказ завершен",
+  "Order Rejected": "Заказ отклонен",
+  "Order Cancelled": "Заказ отменен",
+  "Driver Rejected": "Водитель отклонил",
+  "cab_service": "Такси сервис",
+  "parcel_service": "Курьерский сервис",
+  "rental_service": "Прокат сервис",
+  "in_transit": "В пути",
+  "delivered": "Доставлен",
+  "cancelled": "Отменено",
+  "Order Date:": "Дата заказа:",
+  "Delivery Service": "Delivery Service",
+  "Cab Service": "Cab Service",
+  "Parcel Service": "Parcel Service",
+  "Rental Service": "Rental Service",
+  "User account is disabled.": "User account is disabled.",
+  "User not found": "User not found",
+  "User not found. Please register first.":
+      "User not found. Please register first.",
+  "Verification failed": "Verification failed",
+  "Verify": "Verify",
+  "Verify Code": "Verify Code",
+  "Verify Code to customer": "Verify Code to customer",
+  "Verifying OTP...": "Verifying OTP...",
+  "View Booking": "View Booking",
+  "View all": "View all",
+  "Wallet History": "Wallet History",
+  "Withdrawal History": "Withdrawal History",
+  "Wrong password provided for that user.":
+      "Wrong password provided for that user.",
+  "You must have a minimum of @amount in your wallet to receive orders to your driver":
+      "You must have a minimum of @amount in your wallet to receive orders to your driver",
+  "You're Currently Offline": "You're Currently Offline",
+  "Your Available Drivers": "Your Available Drivers",
+  "close": "close",
+  "email": "email",
+  "failed_to_pick": "failed_to_pick",
+  "invalid_phone_number": "invalid_phone_number",
+  "multiple_time_request": "multiple_time_request",
+  "sent a message": "sent a message",
+  "something went wrong, please contact admin.":
+      "something went wrong, please contact admin.",
 };

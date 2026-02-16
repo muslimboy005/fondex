@@ -22,7 +22,8 @@ class RentalOrderListScreen extends StatelessWidget {
       builder: (controller) {
         return DefaultTabController(
           length: controller.tabTitles.length,
-          initialIndex: controller.tabTitles.indexOf(controller.selectedTab.value),
+          initialIndex:
+              controller.tabTitles.indexOf(controller.selectedTab.value),
           child: Column(
             children: [
               // TabBar
@@ -35,8 +36,11 @@ class RentalOrderListScreen extends StatelessWidget {
                 dividerColor: isDark ? Colors.black : Colors.white,
                 unselectedLabelColor: AppThemeData.grey500,
                 labelStyle: AppThemeData.boldTextStyle(fontSize: 16),
-                unselectedLabelStyle: AppThemeData.mediumTextStyle(fontSize: 16),
-                tabs: controller.tabTitles.map((title) => Tab(child: Text(title))).toList(),
+                unselectedLabelStyle:
+                    AppThemeData.mediumTextStyle(fontSize: 16),
+                tabs: controller.tabTitles
+                    .map((title) => Tab(child: Text(title.tr)))
+                    .toList(),
               ),
 
               // Body: loader or TabBarView
@@ -52,7 +56,10 @@ class RentalOrderListScreen extends StatelessWidget {
                             return Center(
                               child: Text(
                                 "No orders found".tr,
-                                style: AppThemeData.mediumTextStyle(color: isDark ? AppThemeData.greyDark900 : AppThemeData.grey900),
+                                style: AppThemeData.mediumTextStyle(
+                                    color: isDark
+                                        ? AppThemeData.greyDark900
+                                        : AppThemeData.grey900),
                               ),
                             );
                           }
@@ -64,59 +71,113 @@ class RentalOrderListScreen extends StatelessWidget {
                               RentalOrderModel order = orders[index]; //use this
                               return InkWell(
                                 onTap: () {
-                                  Get.to(() => RentalOrderDetailsScreen(), arguments: {"rentalOrder": order.id});
+                                  Get.to(() => RentalOrderDetailsScreen(),
+                                      arguments: {"rentalOrder": order.id});
                                 },
                                 child: Container(
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(15),
-                                    color: isDark ? AppThemeData.greyDark50 : AppThemeData.grey50,
-                                    border: Border.all(color: isDark ? AppThemeData.greyDark200 : AppThemeData.grey200),
+                                    color: isDark
+                                        ? AppThemeData.greyDark50
+                                        : AppThemeData.grey50,
+                                    border: Border.all(
+                                        color: isDark
+                                            ? AppThemeData.greyDark200
+                                            : AppThemeData.grey200),
                                   ),
                                   padding: const EdgeInsets.all(16),
                                   margin: const EdgeInsets.only(bottom: 10),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Row(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
-                                          Padding(padding: const EdgeInsets.only(top: 5), child: Image.asset("assets/icons/pickup.png", height: 18, width: 18)),
+                                          Padding(
+                                              padding:
+                                                  const EdgeInsets.only(top: 5),
+                                              child: Image.asset(
+                                                  "assets/icons/pickup.png",
+                                                  height: 18,
+                                                  width: 18)),
                                           const SizedBox(width: 10),
                                           Expanded(
                                             //prevents overflow
                                             child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
                                               children: [
                                                 Row(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
                                                   children: [
                                                     Expanded(
                                                       //text wraps if too long
                                                       child: Text(
-                                                        order.sourceLocationName ?? "-",
-                                                        style: AppThemeData.semiBoldTextStyle(fontSize: 16, color: isDark ? AppThemeData.greyDark900 : AppThemeData.grey900),
-                                                        overflow: TextOverflow.ellipsis, //safe cutoff
+                                                        order.sourceLocationName ??
+                                                            "-",
+                                                        style: AppThemeData
+                                                            .semiBoldTextStyle(
+                                                                fontSize: 16,
+                                                                color: isDark
+                                                                    ? AppThemeData
+                                                                        .greyDark900
+                                                                    : AppThemeData
+                                                                        .grey900),
+                                                        overflow: TextOverflow
+                                                            .ellipsis, //safe cutoff
                                                         maxLines: 2,
                                                       ),
                                                     ),
-                                                    if (order.status != null) ...[
+                                                    if (order.status !=
+                                                        null) ...[
                                                       const SizedBox(width: 8),
                                                       Container(
-                                                        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
-                                                        decoration: BoxDecoration(
-                                                          color: AppThemeData.info50,
-                                                          border: Border.all(color: AppThemeData.info300),
-                                                          borderRadius: BorderRadius.circular(12),
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                                vertical: 6,
+                                                                horizontal: 12),
+                                                        decoration:
+                                                            BoxDecoration(
+                                                          color: AppThemeData
+                                                              .info50,
+                                                          border: Border.all(
+                                                              color:
+                                                                  AppThemeData
+                                                                      .info300),
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(12),
                                                         ),
-                                                        child: Text(order.status ?? '', style: AppThemeData.boldTextStyle(fontSize: 14, color: AppThemeData.info500)),
+                                                        child: Text(
+                                                            (order.status ?? '')
+                                                                .tr,
+                                                            style: AppThemeData
+                                                                .boldTextStyle(
+                                                                    fontSize:
+                                                                        14,
+                                                                    color: AppThemeData
+                                                                        .info500)),
                                                       ),
                                                     ],
                                                   ],
                                                 ),
-                                                if (order.bookingDateTime != null)
+                                                if (order.bookingDateTime !=
+                                                    null)
                                                   Text(
-                                                    Constant.timestampToDateTime(order.bookingDateTime!),
-                                                    style: AppThemeData.mediumTextStyle(fontSize: 12, color: isDark ? AppThemeData.greyDark600 : AppThemeData.grey600),
+                                                    Constant.timestampToDateTime(
+                                                        order.bookingDateTime!),
+                                                    style: AppThemeData
+                                                        .mediumTextStyle(
+                                                            fontSize: 12,
+                                                            color: isDark
+                                                                ? AppThemeData
+                                                                    .greyDark600
+                                                                : AppThemeData
+                                                                    .grey600),
                                                   ),
                                               ],
                                             ),
@@ -124,24 +185,42 @@ class RentalOrderListScreen extends StatelessWidget {
                                         ],
                                       ),
                                       const SizedBox(height: 12),
-                                      Text("Vehicle Type :".tr, style: AppThemeData.boldTextStyle(fontSize: 16, color: isDark ? AppThemeData.greyDark900 : AppThemeData.grey900)),
+                                      Text("Vehicle Type :".tr,
+                                          style: AppThemeData.boldTextStyle(
+                                              fontSize: 16,
+                                              color: isDark
+                                                  ? AppThemeData.greyDark900
+                                                  : AppThemeData.grey900)),
                                       Padding(
-                                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 10, horizontal: 10),
                                         child: Row(
                                           children: [
                                             ClipRRect(
-                                              borderRadius: BorderRadius.circular(10),
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
                                               child: CachedNetworkImage(
-                                                imageUrl: order.rentalVehicleType?.rentalVehicleIcon ?? Constant.placeHolderImage,
+                                                imageUrl: order
+                                                        .rentalVehicleType
+                                                        ?.rentalVehicleIcon ??
+                                                    Constant.placeHolderImage,
                                                 height: 60,
                                                 width: 60,
                                                 fit: BoxFit.cover,
-                                                placeholder: (context, url) => Center(
-                                                  child: CircularProgressIndicator.adaptive(
-                                                    valueColor: AlwaysStoppedAnimation(AppThemeData.primary300),
+                                                placeholder: (context, url) =>
+                                                    Center(
+                                                  child:
+                                                      CircularProgressIndicator
+                                                          .adaptive(
+                                                    valueColor:
+                                                        AlwaysStoppedAnimation(
+                                                            AppThemeData
+                                                                .primary300),
                                                   ),
                                                 ),
-                                                errorWidget: (context, url, error) => Image.network(
+                                                errorWidget:
+                                                    (context, url, error) =>
+                                                        Image.network(
                                                   Constant.placeHolderImage,
                                                   fit: BoxFit.cover,
                                                 ),
@@ -149,19 +228,38 @@ class RentalOrderListScreen extends StatelessWidget {
                                             ),
                                             Expanded(
                                               child: Padding(
-                                                padding: const EdgeInsets.symmetric(horizontal: 10),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 10),
                                                 child: Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
                                                   children: [
                                                     Text(
                                                       "${order.rentalVehicleType!.name}",
-                                                      style: AppThemeData.semiBoldTextStyle(fontSize: 18, color: isDark ? AppThemeData.greyDark900 : AppThemeData.grey900),
+                                                      style: AppThemeData
+                                                          .semiBoldTextStyle(
+                                                              fontSize: 18,
+                                                              color: isDark
+                                                                  ? AppThemeData
+                                                                      .greyDark900
+                                                                  : AppThemeData
+                                                                      .grey900),
                                                     ),
                                                     Padding(
-                                                      padding: const EdgeInsets.only(top: 2.0),
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                              top: 2.0),
                                                       child: Text(
                                                         "${order.rentalVehicleType!.shortDescription}",
-                                                        style: AppThemeData.mediumTextStyle(fontSize: 14, color: isDark ? AppThemeData.greyDark600 : AppThemeData.grey600),
+                                                        style: AppThemeData
+                                                            .mediumTextStyle(
+                                                                fontSize: 14,
+                                                                color: isDark
+                                                                    ? AppThemeData
+                                                                        .greyDark600
+                                                                    : AppThemeData
+                                                                        .grey600),
                                                       ),
                                                     ),
                                                   ],
@@ -171,39 +269,79 @@ class RentalOrderListScreen extends StatelessWidget {
                                           ],
                                         ),
                                       ),
-                                      Text("Package info :".tr, style: AppThemeData.boldTextStyle(fontSize: 16, color: isDark ? AppThemeData.greyDark900 : AppThemeData.grey900)),
+                                      Text("Package info :".tr,
+                                          style: AppThemeData.boldTextStyle(
+                                              fontSize: 16,
+                                              color: isDark
+                                                  ? AppThemeData.greyDark900
+                                                  : AppThemeData.grey900)),
                                       Padding(
-                                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 10, horizontal: 10),
                                         child: Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
                                           children: [
                                             Expanded(
                                               child: Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                    order.rentalPackageModel!.name.toString(),
-                                                    style: AppThemeData.semiBoldTextStyle(fontSize: 18, color: isDark ? AppThemeData.greyDark900 : AppThemeData.grey900),
+                                                    order.rentalPackageModel!
+                                                        .name
+                                                        .toString(),
+                                                    style: AppThemeData
+                                                        .semiBoldTextStyle(
+                                                            fontSize: 18,
+                                                            color: isDark
+                                                                ? AppThemeData
+                                                                    .greyDark900
+                                                                : AppThemeData
+                                                                    .grey900),
                                                   ),
                                                   const SizedBox(height: 4),
                                                   Text(
-                                                    order.rentalPackageModel!.description.toString(),
-                                                    style: AppThemeData.mediumTextStyle(fontSize: 14, color: isDark ? AppThemeData.greyDark600 : AppThemeData.grey600),
+                                                    order.rentalPackageModel!
+                                                        .description
+                                                        .toString(),
+                                                    style: AppThemeData
+                                                        .mediumTextStyle(
+                                                            fontSize: 14,
+                                                            color: isDark
+                                                                ? AppThemeData
+                                                                    .greyDark600
+                                                                : AppThemeData
+                                                                    .grey600),
                                                   ),
                                                 ],
                                               ),
                                             ),
                                             SizedBox(width: 10),
                                             Text(
-                                              Constant.amountShow(amount: order.rentalPackageModel!.baseFare.toString()),
-                                              style: AppThemeData.boldTextStyle(fontSize: 18, color: isDark ? AppThemeData.greyDark900 : AppThemeData.grey900),
+                                              Constant.amountShow(
+                                                  amount: order
+                                                      .rentalPackageModel!
+                                                      .baseFare
+                                                      .toString()),
+                                              style: AppThemeData.boldTextStyle(
+                                                  fontSize: 18,
+                                                  color: isDark
+                                                      ? AppThemeData.greyDark900
+                                                      : AppThemeData.grey900),
                                             ),
                                           ],
                                         ),
                                       ),
-                                      if (order.status == Constant.orderPlaced || order.status == Constant.driverAccepted) ...[
+                                      if (order.status ==
+                                              Constant.orderPlaced ||
+                                          order.status ==
+                                              Constant.driverAccepted) ...[
                                         SizedBox(height: 10),
-                                        if (order.status == Constant.orderPlaced || order.status == Constant.driverAccepted)
+                                        if (order.status ==
+                                                Constant.orderPlaced ||
+                                            order.status ==
+                                                Constant.driverAccepted)
                                           Expanded(
                                             child: RoundedButtonFill(
                                               title: "Cancel Booking".tr,

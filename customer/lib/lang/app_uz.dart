@@ -152,6 +152,7 @@ const Map<String, String> uzUZ = {
   'Your SOS request is already submitted':
       'Sizning SOS so\'rovingiz allaqachon yuborilgan',
   'Pay Now': 'Hozir to\'lash',
+  'Cash on Delivery': 'Naqd pul',
   'Something went wrong, please contact admin.':
       'Nimadir noto\'g\'ri ketdi, iltimos, administrator bilan bog\'laning.',
   'Please select payment method': 'Iltimos, to\'lov usulini tanlang',
@@ -173,6 +174,7 @@ const Map<String, String> uzUZ = {
   'Login': 'Kirish',
   'Where are you going for?': 'Qayerga borasiz?',
   'Ride': 'Sayohat',
+  'ride': 'Sayohat',
   'City rides, 24x7 availability': 'Shahar ichi',
   'Intercity/Outstation': 'Shahar tashqarisi',
   'Long trips, prepaid options': 'Uzoq sayohatlar, oldindan to\'lov',
@@ -546,7 +548,7 @@ const Map<String, String> uzUZ = {
   'Refer a Friend': 'Do\'stni taklif qilish',
   'Share app': 'Ilovani ulashish',
   'Check out Foodie, your ultimate food delivery application!':
-      'Foodie ni ko\'rib chiqing, sizning eng yaxshi ovqat yetkazib berish ilovangiz!',
+      'Fondex ni ko\'rib chiqing, sizning eng yaxshi ovqat yetkazib berish ilovangiz!',
   'Google Play:': 'Google Play:',
   'App Store:': 'App Store:',
   'Look what I made!': 'Qarang, men nima qildim!',
@@ -583,19 +585,26 @@ const Map<String, String> uzUZ = {
   'Refer your friend and earn': 'Do\'stingizni taklif qiling va pul ishlang',
   'Invite Friends & Businesses': 'Do\'stlar va bizneslarni taklif qilish',
   'Invite your friends to sign up with Foodie using your code, and you\'ll earn':
-      'Do\'stlaringizni Foodie ga sizning kodingiz bilan ro\'yxatdan o\'tkazing va siz pul ishlaysiz',
+      'Do\'stlaringizni Fondex ga sizning kodingiz bilan ro\'yxatdan o\'tkazing va siz pul ishlaysiz',
   'after their Success the first order!':
       'ularning birinchi muvaffaqiyatli buyurtmasidan keyin!',
   'Copied': 'Nusxalandi',
   'or': 'yoki',
   'Share Code': 'Kodni ulashish',
   'Hey there, thanks for choosing Foodie. Hope you love our product. If you do, share it with your friends using code':
-      'Salom, Foodie ni tanlaganingiz uchun rahmat. Umid qilamiz, mahsulotimiz sizga yoqadi. Agar yoqsa, kodingizdan foydalanib do\'stlaringiz bilan ulashing',
+      'Salom, Fondex ni tanlaganingiz uchun rahmat. Umid qilamiz, mahsulotimiz sizga yoqadi. Agar yoqsa, kodingizdan foydalanib do\'stlaringiz bilan ulashing',
   'and get': 'va oling',
   'when order completed': 'buyurtma bajarilganda',
   'items': 'mahsulotlar',
   'View Cart': 'Savatni ko\'rish',
   'Timing is not added by store': 'Ish vaqti do\'kon tomonidan qo\'shilmagan',
+  'Monday': 'Dushanba',
+  'Tuesday': 'Seshanba',
+  'Wednesday': 'Chorshanba',
+  'Thursday': 'Payshanba',
+  'Friday': 'Juma',
+  'Saturday': 'Shanba',
+  'Sunday': 'Yakshanba',
   'Also applicable on table booking': 'Stol broniga ham qo\'llanadi',
   'Additional Offers': 'Qo\'shimcha takliflar',
   'Search the item and more...': 'Mahsulot va boshqalarni qidirish...',
@@ -784,6 +793,7 @@ const Map<String, String> uzUZ = {
       'Haydovchi kilometrajni qo\'shmaguncha hozir to\'lay olmaysiz',
   'OnDemand Service successfully booked':
       'Talab bo\'yicha xizmat muvaffaqiyatli bron qilindi',
+  'Booking Amount Refund': 'Bron summasi qaytarildi',
   'Booking Extra charge debited': 'Bron qo\'shimcha to\'lovi yechib olindi',
   'Extra Charge Amount Credited': 'Qo\'shimcha to\'lov summasi kiritildi',
   'Failed to get access token': 'Kirish tokenini olish muvaffaqiyatsiz',
@@ -806,6 +816,8 @@ const Map<String, String> uzUZ = {
   "Something went wrong while booking.":
       "Bron qilishda nimadir noto'g'ri ketdi.",
   "Cab Amount debited": "Taksi summasi yechib olindi",
+  "Order Amount credited": "Buyurtma summasi kiritildi",
+  "Order Tax credited": "Buyurtma solig'i kiritildi",
   "Stop": "To'xtash",
   'Departure': 'Jo\'nash',
   'Destination': 'Manzil',
@@ -820,8 +832,12 @@ const Map<String, String> uzUZ = {
   'Driver Rejected': 'Haydovchi rad etdi',
   'You can only cancel before pickup.':
       'Siz faqat olishdan oldin bekor qilishingiz mumkin.',
+  'Order Refund success': 'Buyurtma to\'lovi muvaffaqiyatli qaytarildi',
+  'Order amount refunded to customer': 'Buyurtma summasi mijozga qaytarildi',
+  'Order tax refunded to customer': 'Buyurtma solig\'i mijozga qaytarildi',
   'Refund for cancelled parcel order':
       'Bekor qilingan posilka buyurtmasi uchun pul qaytarish',
+  'Admin commission refund': 'Administrator komissiyasi qaytarildi',
   'success': 'muvaffaqiyatli',
   'Order cancelled successfully': 'Buyurtma muvaffaqiyatli bekor qilindi',
   'Failed to cancel order:': 'Buyurtmani bekor qilish muvaffaqiyatsiz:',
@@ -843,9 +859,16 @@ const Map<String, String> uzUZ = {
   'email': 'email',
   'Restaurants': 'Restoranlar',
   'Amount Top-up successfully': 'To\'ldirish muvaffaqiyatli',
+  'Subscription Amount debited': 'Obuna summasi yechildi',
+  'Wallet Top-up': 'Hamyonni to\'ldirish',
   'Something want wrong please contact administrator':
       'Nimadir noto\'g\'ri ketdi, iltimos, administrator bilan bog\'laning',
+  'Contact us for any questions on your order.':
+      'Buyurtmangiz bo‘yicha savollar uchun biz bilan bog‘laning.',
   'Payment': 'To\'lov',
+  'tolov qilindin': 'To\'lov qilindi',
+  'еуые': 'Keshbek miqdori',
+  'eue': 'Keshbek miqdori',
   'Cancel Payment': 'To\'lovni bekor qilish',
   'Cancel Payment?': 'To\'lovni bekor qilish?',
   'Orange Money Payment': 'Orange Money to\'lovi',
@@ -909,14 +932,16 @@ const Map<String, String> uzUZ = {
   'Register': 'Ro\'yxatdan o\'tish',
   'Sign in': 'Kirish',
 
-  'API endpoint not found. Please contact support.': 'API manzili topilmadi. Iltimos, qo\'llab-quvvatlash xizmatiga murojaat qiling.',
+  'API endpoint not found. Please contact support.':
+      'API manzili topilmadi. Iltimos, qo\'llab-quvvatlash xizmatiga murojaat qiling.',
   'Account create successfully': 'Hisob muvaffaqiyatli yaratildi',
   'Book now': 'Hozir bron qiling',
   'Booking Amount debited': 'Bron summasi yechildi',
   'Boradigan joy': 'Boradigan joy',
   'Boradigan manzil': 'Boradigan manzil',
   'Boshlang\'ich joy': 'Boshlang\'ich joy',
-  'Bu raqam bilan boshqa ilovada ro\'yxatdan o\'tgansiz': 'Bu raqam bilan boshqa ilovada ro\'yxatdan o\'tgansiz',
+  'Bu raqam bilan boshqa ilovada ro\'yxatdan o\'tgansiz':
+      'Bu raqam bilan boshqa ilovada ro\'yxatdan o\'tgansiz',
   'Buyurtma berish': 'Buyurtma berish',
   'Cancelling order...': 'Buyurtma bekor qilinmoqda...',
   'Couldn\'t review': 'Baholashning iloji bo\'lmadi',
@@ -934,40 +959,53 @@ const Map<String, String> uzUZ = {
   'Failed to get payment link': 'To\'lov havolasini olishning iloji bo\'lmadi',
   'Failed to parse server response': 'Server javobini tahlil qilib bo\'lmadi',
   'Gift card purchase amount debited': 'Sovg\'a karta xaridi summasi yechildi',
+  'Cashback Amount': 'Keshbek miqdori',
   'Ha': 'Ha',
   'Hotel': 'Mehmonxona',
   'Ikkala joyni tanlang': 'Ikkala joyni tanlang',
-  'Invalid OTP code. Please try again.': 'Noto\'g\'ri OTP kodi. Iltimos, qayta urinib ko\'ring.',
+  'Invalid OTP code. Please try again.':
+      'Noto\'g\'ri OTP kodi. Iltimos, qayta urinib ko\'ring.',
   'Invalid email address.': 'Noto\'g\'ri elektron pochta manzili.',
   'Invalid password.': 'Noto\'g\'ri parol.',
   'Invalid response from server': 'Serverdan noto\'g\'ri javob',
-  'Invalid server response. Please try again.': 'Server javobi noto\'g\'ri. Iltimos, qayta urinib ko\'ring.',
-  'Invite your friends to sign up with Foodie using your code, and you’ll earn': 'Do\'stlaringizni Foodie\'ga kodingiz orqali ro\'yxatdan o\'tishga taklif qiling, va siz',
+  'Invalid server response. Please try again.':
+      'Server javobi noto\'g\'ri. Iltimos, qayta urinib ko\'ring.',
+  'Invite your friends to sign up with Foodie using your code, and you’ll earn':
+      'Do\'stlaringizni Fondex\'ga kodingiz orqali ro\'yxatdan o\'tishga taklif qiling, va siz',
   'Items': 'Mahsulotlar',
   'Joriy manzil': 'Joriy manzil',
   'Kamida 3 ta belgi kiriting': 'Kamida 3 ta belgi kiriting',
   'Let’s Get Started': 'Keling, boshlaymiz',
   'Log In': 'Kirish',
-  'Login timeout. Please check your internet connection.': 'Kirish vaqti tugadi. Internet aloqangizni tekshiring.',
+  'Login timeout. Please check your internet connection.':
+      'Kirish vaqti tugadi. Internet aloqangizni tekshiring.',
   'Min': 'Min',
-  'No internet connection. Please check your network.': 'Internet aloqasi yo\'q. Tarmog\'ingizni tekshiring.',
+  'No internet connection. Please check your network.':
+      'Internet aloqasi yo\'q. Tarmog\'ingizni tekshiring.',
   'No service Found': 'Xizmat topilmadi',
-  'No worries!! We’ll send you reset instructions': 'Xavotir olmang!! Parolni tiklash bo\'yicha ko\'rsatmalar yuboramiz',
+  'No worries!! We’ll send you reset instructions':
+      'Xavotir olmang!! Parolni tiklash bo\'yicha ko\'rsatmalar yuboramiz',
   'Nothing found here...': 'Bu yerda hech narsa topilmadi',
-  'OTP session expired. Please request a new code.': 'OTP seansi muddati tugadi. Iltimos, yangi kod so\'rang.',
-  'OTP timed out. Please try again.': 'OTP vaqti tugadi. Iltimos, qayta urinib ko\'ring.',
+  'OTP session expired. Please request a new code.':
+      'OTP seansi muddati tugadi. Iltimos, yangi kod so\'rang.',
+  'OTP timed out. Please try again.':
+      'OTP vaqti tugadi. Iltimos, qayta urinib ko\'ring.',
   'OTP xato': 'OTP xato',
   'Order Amount debited': 'Buyurtma summasi yechildi',
-  'Password and Confirm password doesn\'t match': 'Parol va tasdiqlash paroli mos kelmaydi',
+  'Password and Confirm password doesn\'t match':
+      'Parol va tasdiqlash paroli mos kelmaydi',
   'Payme Payment': 'Payme to\'lovi',
   'Payment error': 'To\'lov xatosi',
   'Please Enter Amount': 'Iltimos, summani kiriting',
   'Please enter Confirm password': 'Iltimos, parolni tasdiqlashni kiriting',
   'Please enter Phone number': 'Iltimos, telefon raqamini kiriting',
-  'Please enter a valid 9-digit phone number': 'Iltimos, to\'g\'ri 9 xonali telefon raqamini kiriting',
-  'Please enter a valid @length-digit mobile number': 'Iltimos, to\'g\'ri @length raqamli telefon raqamini kiriting',
+  'Please enter a valid 9-digit phone number':
+      'Iltimos, to\'g\'ri 9 xonali telefon raqamini kiriting',
+  'Please enter a valid @length-digit mobile number':
+      'Iltimos, to\'g\'ri @length raqamli telefon raqamini kiriting',
   'Please enter address': 'Iltimos, manzilni kiriting',
-  'Please enter minimum 6 characters password': 'Iltimos, kamida 6 ta belgidan iborat parol kiriting',
+  'Please enter minimum 6 characters password':
+      'Iltimos, kamida 6 ta belgidan iborat parol kiriting',
   'Please enter password': 'Iltimos, parolni kiriting',
   'Please enter your phone number': 'Iltimos, telefon raqamingizni kiriting',
   'Please select time slot.': 'Iltimos, vaqt oralig\'ini tanlang.',
@@ -978,32 +1016,42 @@ const Map<String, String> uzUZ = {
   'Referral code is Invalid': 'Taklif kodi noto\'g\'ri',
   'Registering...': 'Ro\'yxatdan o\'tkazilmoqda...',
   'Registration failed': 'Ro\'yxatdan o\'tish muvaffaqiyatsiz',
-  'Registration failed. Please try again.': 'Ro\'yxatdan o\'tish muvaffaqiyatsiz. Iltimos, qayta urinib ko\'ring.',
-  'Request timeout. Please check your internet connection.': 'So\'rov vaqti tugadi. Internet aloqangizni tekshiring.',
-  'Server authentication error. Please try again.': 'Server autentifikatsiya xatosi. Iltimos, qayta urinib ko\'ring.',
-  'Server error. Please try again later.': 'Server xatosi. Iltimos, keyinroq qayta urinib ko\'ring.',
+  'Registration failed. Please try again.':
+      'Ro\'yxatdan o\'tish muvaffaqiyatsiz. Iltimos, qayta urinib ko\'ring.',
+  'Request timeout. Please check your internet connection.':
+      'So\'rov vaqti tugadi. Internet aloqangizni tekshiring.',
+  'Server authentication error. Please try again.':
+      'Server autentifikatsiya xatosi. Iltimos, qayta urinib ko\'ring.',
+  'Server error. Please try again later.':
+      'Server xatosi. Iltimos, keyinroq qayta urinib ko\'ring.',
   'Something went wrong': 'Nimadir noto\'g\'ri ketdi',
   'Tasdiqlash': 'Tasdiqlash',
-  'The account already exists for that email.': 'Bu elektron pochta uchun hisob allaqachon mavjud.',
+  'The account already exists for that email.':
+      'Bu elektron pochta uchun hisob allaqachon mavjud.',
   'The password provided is too weak.': 'Kiritilgan parol juda zaif.',
   'To\'lov holati tekshirilmoqda...': 'To\'lov holati tekshirilmoqda...',
   'To\'lov usulini tanlang': 'To\'lov usulini tanlang',
   'User account is disabled.': 'Foydalanuvchi hisobi o\'chirilgan.',
   'User not found': 'Foydalanuvchi topilmadi',
-  'User not found. Please register first.': 'Foydalanuvchi topilmadi. Iltimos, avval ro\'yxatdan o\'ting.',
+  'User not found. Please register first.':
+      'Foydalanuvchi topilmadi. Iltimos, avval ro\'yxatdan o\'ting.',
   'Vehicle Type': 'Transport turi',
   'Verification failed': 'Tasdiqlash muvaffaqiyatsiz',
-  'We’ve received your parcel booking and it’s now being processed. You can track its status in real time.': 'Biz sizning posilka broningizni qabul qildik va hozirda qayta ishlanmoqda. Siz uning holatini real vaqtda kuzatishingiz mumkin.',
+  'We’ve received your parcel booking and it’s now being processed. You can track its status in real time.':
+      'Biz sizning posilka broningizni qabul qildik va hozirda qayta ishlanmoqda. Siz uning holatini real vaqtda kuzatishingiz mumkin.',
   'Work': 'Ish',
   'Write Coupon Code': 'Kupon kodini yozing',
   'Xaritadagi joyga bosing': 'Xaritadagi joyga bosing',
   'Xaritadan boradigan joyni tanlang': 'Xaritadan boradigan joyni tanlang',
-  'Xaritadan boshlang\'ich joyni tanlang': 'Xaritadan boshlang\'ich joyni tanlang',
+  'Xaritadan boshlang\'ich joyni tanlang':
+      'Xaritadan boshlang\'ich joyni tanlang',
   'Xaritadan tanlash': 'Xaritadan tanlash',
   'Yo\'q': 'Yo\'q',
-  'You’re not logged in. Please sign in to access your account and explore all features.': 'Siz tizimga kirmagansiz. Iltimos, hisobingizga kirish va barcha funksiyalardan foydalanish uchun tizimga kiring.',
+  'You’re not logged in. Please sign in to access your account and explore all features.':
+      'Siz tizimga kirmagansiz. Iltimos, hisobingizga kirish va barcha funksiyalardan foydalanish uchun tizimga kiring.',
   'off': ' chegirma',
   'please select': 'iltimos tanlang',
-  'something went wrong, please contact admin.': 'Nimadir noto\'g\'ri ketdi, iltimos, administrator bilan bog\'laning.',
+  'something went wrong, please contact admin.':
+      'Nimadir noto\'g\'ri ketdi, iltimos, administrator bilan bog\'laning.',
   '→ Qayerga boramiz?': '→ Qayerga boramiz?',
 };

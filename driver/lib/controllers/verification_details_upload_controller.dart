@@ -64,10 +64,11 @@ class DetailsUploadController extends GetxController {
         backImage.value = image.path;
       }
     } on PlatformException {
-      ShowToastDialog.showToast(
-          source == ImageSource.camera ? "Camera permission denied. Please allow access to take a photo." : "Gallery permission denied. Please allow access to select an image.");
+      ShowToastDialog.showToast(source == ImageSource.camera
+          ? "Camera permission denied. Please allow access to take a photo.".tr
+          : "Gallery permission denied. Please allow access to select an image.".tr);
     } catch (e) {
-      ShowToastDialog.showToast("Something went wrong. Please try again.");
+      ShowToastDialog.showToast("Something went wrong. Please try again.".tr);
       print("Pick file error: $e");
     }
   }

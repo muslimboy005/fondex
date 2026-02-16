@@ -25,18 +25,40 @@ class DashBoardController extends GetxController {
   }
 
   void setPage() {
-    pageList.value = sectionModel.value.dineInActive != null && sectionModel.value.dineInActive == true
-        ? [const HomeScreen(), const DineInOrderScreen(), const ProductListScreen(), const WalletScreen(), const ProfileScreen()]
-        : [const HomeScreen(), const ProductListScreen(), const WalletScreen(), const ProfileScreen()];
+    pageList.value =
+        sectionModel.value.dineInActive != null &&
+            sectionModel.value.dineInActive == true
+        ? [
+            const HomeScreen(),
+            const DineInOrderScreen(),
+            const ProductListScreen(),
+            const WalletScreen(),
+            const ProfileScreen(),
+          ]
+        : [
+            const HomeScreen(),
+            const ProductListScreen(),
+            const WalletScreen(),
+            const ProfileScreen(),
+          ];
+
+    // Ensure selectedIndex is within valid range after page list changes
+    if (selectedIndex.value >= pageList.length) {
+      selectedIndex.value = pageList.length - 1;
+    }
   }
 
   Future<void> getVendor() async {
     if (Constant.userModel?.vendorID != null) {
-      await FireStoreUtils.getVendorById(Constant.userModel!.vendorID.toString()).then((value) async {
+      await FireStoreUtils.getVendorById(
+        Constant.userModel!.vendorID.toString(),
+      ).then((value) async {
         if (value != null) {
           vendorModel.value = value;
           Constant.vendorAdminCommission = value.adminCommission;
-          await FireStoreUtils.getSectionById(vendorModel.value.sectionId.toString()).then((value) {
+          await FireStoreUtils.getSectionById(
+            vendorModel.value.sectionId.toString(),
+          ).then((value) {
             if (value != null) {
               sectionModel.value = value;
               Constant.selectedSection = sectionModel.value;
@@ -46,7 +68,9 @@ class DashBoardController extends GetxController {
       });
     }
 
-    await FireStoreUtils.getSectionById(Constant.userModel!.sectionId.toString()).then((value) {
+    await FireStoreUtils.getSectionById(
+      Constant.userModel!.sectionId.toString(),
+    ).then((value) {
       if (value != null) {
         sectionModel.value = value;
         Constant.selectedSection = sectionModel.value;

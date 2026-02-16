@@ -1115,20 +1115,19 @@ class FireStoreUtils {
   }
 
   static Future<ReferralModel?> getReferralUserBy() async {
-    ReferralModel? referralModel;
     try {
-      await fireStore
-          .collection(CollectionName.referral)
-          .doc(getCurrentUid())
-          .get()
-          .then((value) {
-            referralModel = ReferralModel.fromJson(value.data()!);
-          });
+      final value =
+          await fireStore
+              .collection(CollectionName.referral)
+              .doc(getCurrentUid())
+              .get();
+      if (value.exists && value.data() != null) {
+        return ReferralModel.fromJson(value.data()!);
+      }
     } catch (e, s) {
-      print('FireStoreUtils.firebaseCreateNewUser $e $s');
-      return null;
+      print('FireStoreUtils.getReferralUserBy $e $s');
     }
-    return referralModel;
+    return null;
   }
 
   static Future<List<ProductModel>> getProductByVendorId(
