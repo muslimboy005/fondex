@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:vendor/app/auth_screen/login_screen.dart';
+import 'package:vendor/app/auth_screen/auth_screen.dart';
 import 'package:vendor/app/auth_screen/signup_screen.dart';
 import 'package:vendor/app/dash_board_screens/app_not_access_screen.dart';
 import 'package:vendor/app/dash_board_screens/dash_board_screen.dart';
@@ -192,7 +192,7 @@ class SignupController extends GetxController {
             "Thank you for sign up, your application is under approval so please wait till that approve."
                 .tr,
           );
-          Get.offAll(const LoginScreen());
+          Get.offAll(const AuthScreen());
         }
       });
     } else {
@@ -268,7 +268,7 @@ class SignupController extends GetxController {
                 "Thank you for sign up, your application is under approval so please wait till that approve."
                     .tr,
               );
-              Get.offAll(const LoginScreen());
+              Get.offAll(const AuthScreen());
             }
           });
         }

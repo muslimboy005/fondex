@@ -1,4 +1,6 @@
 import 'package:customer/constant/constant.dart';
+import 'package:customer/screen_ui/auth_screens/auth_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../controllers/0n_demand_payment_controller.dart';
@@ -136,6 +138,11 @@ class OnDemandPaymentScreen extends StatelessWidget {
                             color: AppThemeData.primary300,
                             textColor: AppThemeData.grey900,
                             onPress: () async {
+                              if (auth.FirebaseAuth.instance.currentUser == null) {
+                                ShowToastDialog.showToast("Please login first".tr);
+                                Get.to(() => const AuthScreen());
+                                return;
+                              }
                               print("getTotalAmount :::::::: ${"${controller.totalAmount.value}"}");
                               if (controller.isOrderPlaced.value == false) {
                                 controller.isOrderPlaced.value = true;

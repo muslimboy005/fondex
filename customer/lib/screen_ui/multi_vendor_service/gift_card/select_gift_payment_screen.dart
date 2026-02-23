@@ -1,6 +1,8 @@
 import 'package:customer/constant/constant.dart';
 import 'package:customer/controllers/gift_card_controller.dart';
+import 'package:customer/screen_ui/auth_screens/auth_screen.dart';
 import 'package:customer/payment/createRazorPayOrderModel.dart';
+import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:customer/payment/rozorpayConroller.dart';
 import 'package:customer/themes/app_them_data.dart';
 import 'package:customer/themes/round_button_fill.dart';
@@ -120,6 +122,11 @@ class SelectGiftPaymentScreen extends StatelessWidget {
                 textColor: AppThemeData.grey50,
                 fontSizes: 16,
                 onPress: () async {
+                  if (auth.FirebaseAuth.instance.currentUser == null) {
+                    ShowToastDialog.showToast("Please login first".tr);
+                    Get.to(() => const AuthScreen());
+                    return;
+                  }
                   if (controller.selectedPaymentMethod.value == PaymentGateway.stripe.name) {
                     controller.stripeMakePayment(amount: controller.amountController.value.text);
                   } else if (controller.selectedPaymentMethod.value == PaymentGateway.paypal.name) {

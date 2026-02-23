@@ -1324,11 +1324,16 @@ class ProductListView extends StatelessWidget {
             VendorCategoryModel vendorCategoryModel =
                 controller.vendorCategoryList[categoryIndex];
 
-            // Get products for this category
+            // Get products for this category (or uncategorized)
             final categoryProducts =
-                controller.productList
-                    .where((p0) => p0.categoryID == vendorCategoryModel.id)
-                    .toList();
+                vendorCategoryModel.id == RestaurantDetailsController.uncategorizedCategoryId
+                    ? controller.productList
+                        .where((p0) => !controller.vendorCategoryList
+                            .any((c) => c.id != RestaurantDetailsController.uncategorizedCategoryId && c.id == p0.categoryID))
+                        .toList()
+                    : controller.productList
+                        .where((p0) => p0.categoryID == vendorCategoryModel.id)
+                        .toList();
 
             // Skip if no products in this category
             if (categoryProducts.isEmpty) {

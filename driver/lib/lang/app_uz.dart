@@ -121,6 +121,7 @@ const Map<String, String> uzUZ = {
   "for seamless navigation.": "qulay navigatsiya uchun.",
   "Redirect": "Yo'naltirish",
   "Destination": "Manzil",
+  "Kiritilmagan": "Kiritilmagan",
   "Trip Distance": "Sayohat masofasi",
   "Tips": "Cha'qimcha",
   "Ride Type": "Sayohat turi",
@@ -137,6 +138,8 @@ const Map<String, String> uzUZ = {
   "Customer payment is pending": "Mijoz to'lovi kutilmoqda",
   "Pickup Customer": "Mijozni olish",
   "Complete Ride": "Sayohatni yakunlash",
+  "Manzilga yetib kelingan": "Manzilga yetib kelingan",
+  "Hozir to'lov qilish": "Hozir to'lov qilish",
   "Verify Passenger": "Yo'lovchini tasdiqlash",
   "Enter the OTP shared by the customer to begin the trip":
       "Sayohatni boshlash uchun mijoz tomonidan berilgan OTP kodini kiriting",

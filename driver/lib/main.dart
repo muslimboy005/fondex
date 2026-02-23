@@ -1,12 +1,10 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:ui';
 import 'package:country_code_picker/country_code_picker.dart';
 import 'package:driver/app/splash_screen.dart';
-import 'package:driver/constant/constant.dart';
 import 'package:driver/controllers/global_setting_controller.dart';
+import 'package:driver/controllers/locale_controller.dart';
 import 'package:driver/firebase_options.dart';
-import 'package:driver/models/language_model.dart';
 import 'package:driver/services/audio_player_service.dart';
 import 'package:driver/services/localization_service.dart';
 import 'package:driver/themes/app_them_data.dart';
@@ -70,6 +68,7 @@ void main() async {
     await Preferences.initPref();
 
     Get.put(ThemeController());
+    Get.put(LocaleController());
     await configEasyLoading();
     runApp(const MyApp());
   }, (error, stack) {
@@ -92,20 +91,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   void initState() {
     WidgetsBinding.instance.addObserver(this);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (Preferences.getString(Preferences.languageCodeKey)
-          .toString()
-          .isNotEmpty) {
-        LanguageModel languageModel = Constant.getLanguage();
-        LocalizationService().changeLocale(languageModel.slug.toString());
-      } else {
-        LanguageModel languageModel =
-            LanguageModel(slug: "uz", isRtl: false, title: "O'zbek");
-        Preferences.setString(
-            Preferences.languageCodeKey, jsonEncode(languageModel.toJson()));
-        LocalizationService().changeLocale("uz");
-      }
-    });
     super.initState();
   }
 
@@ -147,7 +132,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
           localizationsDelegates: const [
             CountryLocalizations.delegate,
           ],
-          locale: LocalizationService.locale,
+          locale: Get.find<LocaleController>().locale.value,
           fallbackLocale: LocalizationService.locale,
           translations: LocalizationService(),
           builder: (context, child) {

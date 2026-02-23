@@ -331,10 +331,14 @@ class Constant {
   }
 
   static String amountShow({required String? amount}) {
+    final safeAmount =
+        (amount == null || amount.isEmpty || amount == 'null') ? '0.0' : amount;
+    final value = double.tryParse(safeAmount) ?? 0.0;
+    final formatted = value.toStringAsFixed(currencyModel?.decimal ?? 0);
     if (currencyModel!.symbolatright == true) {
-      return "${double.parse(amount.toString()).toStringAsFixed(currencyModel?.decimal ?? 0)} ${currencyModel!.symbol.toString()}";
+      return "$formatted ${currencyModel!.symbol.toString()}";
     } else {
-      return "${currencyModel!.symbol.toString()} ${amount == null || amount.isEmpty ? "0.0" : double.parse(amount.toString()).toStringAsFixed(currencyModel?.decimal ?? 0)}";
+      return "${currencyModel!.symbol.toString()} $formatted";
     }
   }
 

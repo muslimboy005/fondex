@@ -1,0 +1,14 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "booked_table",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "authorID", "order": "ASCENDING" },
+        { "fieldPath": "date", "order": "DESCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

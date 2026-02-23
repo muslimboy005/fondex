@@ -1482,7 +1482,8 @@ class _AddProductScreenState extends State<AddProductScreen> {
                                                                               2,
                                                                         ),
                                                                         child: Text(
-                                                                          Constant.currencyModel?.symbol ?? '',
+                                                                          Constant.currencyModel?.symbol ??
+                                                                              '',
                                                                           style: TextStyle(
                                                                             color:
                                                                                 isDark

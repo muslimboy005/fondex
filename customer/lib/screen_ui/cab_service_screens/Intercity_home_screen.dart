@@ -21,21 +21,21 @@ import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter_map/flutter_map.dart' as flutterMap;
 import 'package:latlong2/latlong.dart' as latlong;
-import 'package:location/location.dart';
 import 'package:yandex_mapkit/yandex_mapkit.dart' as ym;
 import 'package:customer/utils/yandex_map_utils.dart';
 import '../../constant/constant.dart';
 import '../../controllers/cab_dashboard_controller.dart';
 import '../../controllers/theme_controller.dart';
-import '../../models/user_model.dart';
 import '../../service/fire_store_utils.dart';
 import '../../themes/app_them_data.dart';
 import '../../themes/round_button_fill.dart';
 import '../../themes/show_toast_dialog.dart';
 import '../../themes/text_field_widget.dart';
 import '../../widget/osm_map/map_picker_page.dart';
+import '../../screen_ui/auth_screens/auth_screen.dart';
 import '../../widget/place_picker/location_picker_screen.dart';
 import '../../widget/place_picker/selected_location_model.dart';
+import 'package:firebase_auth/firebase_auth.dart' as auth;
 
 class IntercityHomeScreen extends StatelessWidget {
   const IntercityHomeScreen({super.key});
@@ -2076,6 +2076,11 @@ class IntercityHomeScreen extends StatelessWidget {
                       RoundedButtonFill(
                         title: "Confirm Booking".tr,
                         onPress: () async {
+                          if (auth.FirebaseAuth.instance.currentUser == null) {
+                            ShowToastDialog.showToast("Please login first".tr);
+                            Get.to(() => const AuthScreen());
+                            return;
+                          }
                           controller.placeOrder();
                         },
                         color: AppThemeData.primary300,
@@ -2796,89 +2801,8 @@ class IntercityHomeScreen extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 20),
-                        Obx(() {
-                          if (controller.currentOrder.value.status ==
-                              Constant.orderInTransit) {
-                            return Column(
-                              children: [
-                                RoundedButtonFill(
-                                  title: "SOS".tr,
-                                  color: Colors.red.withOpacity(0.50),
-                                  textColor: AppThemeData.grey50,
-                                  isCenter: true,
-                                  icon: Icon(Icons.call, color: Colors.white),
-                                  onPress: () async {
-                                    ShowToastDialog.showLoader(
-                                      "Please wait...".tr,
-                                    );
-
-                                    LocationData location =
-                                        await controller.currentLocation.value
-                                            .getLocation();
-
-                                    await FireStoreUtils.getSOS(
-                                      controller.currentOrder.value.id ?? '',
-                                    ).then((value) async {
-                                      if (value == false) {
-                                        await FireStoreUtils.setSos(
-                                          controller.currentOrder.value.id ??
-                                              '',
-                                          UserLocation(
-                                            latitude: location.latitude!,
-                                            longitude: location.longitude!,
-                                          ),
-                                        ).then((value) {
-                                          ShowToastDialog.closeLoader();
-                                          ScaffoldMessenger.of(
-                                            context,
-                                          ).showSnackBar(
-                                            SnackBar(
-                                              content: Builder(
-                                                builder: (context) {
-                                                  return Text(
-                                                    "Your SOS request has been submitted to admin"
-                                                        .tr,
-                                                  );
-                                                },
-                                              ),
-                                              backgroundColor: Colors.green,
-                                              duration: const Duration(
-                                                seconds: 3,
-                                              ),
-                                            ),
-                                          );
-                                        });
-                                      } else {
-                                        ShowToastDialog.closeLoader();
-                                        ScaffoldMessenger.of(
-                                          context,
-                                        ).showSnackBar(
-                                          SnackBar(
-                                            content: Builder(
-                                              builder: (context) {
-                                                return Text(
-                                                  "Your SOS request is already submitted"
-                                                      .tr,
-                                                );
-                                              },
-                                            ),
-                                            backgroundColor: Colors.red,
-                                            duration: const Duration(
-                                              seconds: 3,
-                                            ),
-                                          ),
-                                        );
-                                      }
-                                    });
-                                  },
-                                ),
-                                const SizedBox(height: 20),
-                              ],
-                            );
-                          } else {
-                            return const SizedBox.shrink();
-                          }
-                        }),
+                        // SOS tugmasi yashirilgan
+                        const SizedBox.shrink(),
                       ],
                     ),
                   ),

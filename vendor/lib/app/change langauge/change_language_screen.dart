@@ -5,7 +5,7 @@ import 'package:get/get.dart';
 import 'package:vendor/themes/theme_controller.dart';
 import 'package:vendor/constant/constant.dart';
 import 'package:vendor/controller/change_language_controller.dart';
-import 'package:vendor/service/localization_service.dart';
+import 'package:vendor/controller/locale_controller.dart';
 import 'package:vendor/themes/app_them_data.dart';
 import 'package:vendor/utils/network_image_widget.dart';
 import 'package:vendor/utils/preferences.dart';
@@ -49,8 +49,8 @@ class ChangeLanguageScreen extends StatelessWidget {
                                 (data) => Obx(
                                   () => GestureDetector(
                                     onTap: () {
-                                      LocalizationService().changeLocale(data.slug.toString());
-                                      Preferences.setString(Preferences.languageCodeKey, jsonEncode(data));
+                                      Get.find<LocaleController>().setLocale(data.slug.toString());
+                                      Preferences.setString(Preferences.languageCodeKey, jsonEncode(data.toJson()));
                                       controller.selectedLanguage.value = data;
                                     },
                                     child: Container(

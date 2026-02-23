@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:vendor/themes/theme_controller.dart';
-import 'package:vendor/app/auth_screen/phone_number_screen.dart';
+import 'package:vendor/app/auth_screen/phone_registration_screen.dart';
 import 'package:vendor/app/auth_screen/signup_screen.dart';
 import 'package:vendor/app/forgot_password_screen/forgot_password_screen.dart';
 import 'package:vendor/constant/show_toast_dialog.dart';
@@ -160,7 +160,51 @@ class LoginScreen extends StatelessWidget {
                       }
                     },
                   ),
-                  // Social login removed per request: Google/Apple buttons and divider were here.
+                  const SizedBox(height: 24),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          height: 1,
+                          color: isDark
+                              ? AppThemeData.greyDark300
+                              : AppThemeData.grey300,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Text(
+                          "or continue with".tr,
+                          style: TextStyle(
+                            fontFamily: AppThemeData.regular,
+                            fontSize: 14,
+                            color: isDark
+                                ? AppThemeData.greyDark400
+                                : AppThemeData.grey400,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: Container(
+                          height: 1,
+                          color: isDark
+                              ? AppThemeData.greyDark300
+                              : AppThemeData.grey300,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  RoundedButtonFill(
+                    title: "Continue with phone number".tr,
+                    color: isDark
+                        ? AppThemeData.greyDark200
+                        : AppThemeData.grey200,
+                    textColor: isDark
+                        ? AppThemeData.greyDark900
+                        : AppThemeData.grey900,
+                    onPress: () => Get.off(() => const PhoneRegistrationScreen()),
+                  ),
                 ],
               ),
             ),

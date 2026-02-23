@@ -775,6 +775,7 @@ const Map<String, String> uzUZ = {
   'Your Preference': 'Sizning afzalliklaringiz',
   'Your current location': 'Sizning joriy joylashuvingiz',
   'Please login to continue': 'Davom etish uchun iltimos, tizimga kiring',
+  'Please login first': 'Avval tizimga kiring',
   'Please select a vehicle type': 'Iltimos, transport turini tanlang',
   'No preference available for the selected vehicle type':
       'Tanlangan transport turi uchun afzalliklar mavjud emas',
@@ -963,6 +964,8 @@ const Map<String, String> uzUZ = {
   'Ha': 'Ha',
   'Hotel': 'Mehmonxona',
   'Ikkala joyni tanlang': 'Ikkala joyni tanlang',
+  'Boradigan joyni tanlang': 'Boradigan joyni tanlang',
+  'Boshlang\'ich joyni tanlang': 'Boshlang\'ich joyni tanlang',
   'Invalid OTP code. Please try again.':
       'Noto\'g\'ri OTP kodi. Iltimos, qayta urinib ko\'ring.',
   'Invalid email address.': 'Noto\'g\'ri elektron pochta manzili.',

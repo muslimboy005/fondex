@@ -7,6 +7,7 @@ import 'package:driver/themes/responsive.dart';
 import 'package:driver/themes/text_field_widget.dart';
 import 'package:driver/themes/theme_controller.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import '../../constant/constant.dart';
 import '../../controllers/vehicle_information_controller.dart';
@@ -123,6 +124,12 @@ class VehicleInformationScreen extends StatelessWidget {
                             textInputAction: TextInputAction.next,
                             enable:
                                 controller.userModel.value.ownerId != null && controller.userModel.value.ownerId!.isNotEmpty ? false : true,
+                            inputFormatters: [
+                              TextInputFormatter.withFunction(
+                                  (oldValue, newValue) =>
+                                      newValue.copyWith(
+                                          text: newValue.text.toUpperCase())),
+                            ],
                           ),
                           const SizedBox(height: 10),
                           controller.selectedService.value == "Cab Service"

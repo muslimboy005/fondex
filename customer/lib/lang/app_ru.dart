@@ -768,6 +768,7 @@ const Map<String, String> ruRU = {
   'Your Preference': 'Ваши предпочтения',
   'Your current location': 'Ваше текущее местоположение',
   'Please login to continue': 'Пожалуйста, войдите, чтобы продолжить',
+  'Please login first': 'Сначала войдите в систему',
   'Please select a vehicle type':
       'Пожалуйста, выберите тип транспортного средства',
   'No preference available for the selected vehicle type':
@@ -946,6 +947,8 @@ const Map<String, String> ruRU = {
   'Ha': 'Ha',
   'Hotel': 'Hotel',
   'Ikkala joyni tanlang': 'Ikkala joyni tanlang',
+  'Boradigan joyni tanlang': 'Выберите место назначения',
+  'Boshlang\'ich joyni tanlang': 'Выберите начальную точку',
   'Invalid OTP code. Please try again.': 'Invalid OTP code. Please try again.',
   'Invalid email address.': 'Invalid email address.',
   'Invalid password.': 'Invalid password.',

@@ -56,14 +56,18 @@ class CabOrderDetailsController extends GetxController {
 
   Future<void> fetchDriverDetails() async {
     if (cabOrder.value.driverId != null) {
-      await FireStoreUtils.getUserProfile(cabOrder.value.driverId ?? '').then((value) {
+      await FireStoreUtils.getUserProfile(cabOrder.value.driverId ?? '').then((
+        value,
+      ) {
         if (value != null) {
           driverUser.value = value;
         }
       });
 
       print(driverUser.value.toJson());
-      await FireStoreUtils.getReviewsbyID(cabOrder.value.id.toString()).then((value) {
+      await FireStoreUtils.getReviewsbyID(cabOrder.value.id.toString()).then((
+        value,
+      ) {
         if (value != null) {
           ratingModel.value = value;
         }
@@ -79,7 +83,12 @@ class CabOrderDetailsController extends GetxController {
 
     if (cabOrder.value.taxSetting != null) {
       for (var element in cabOrder.value.taxSetting!) {
-        taxAmount.value = (taxAmount.value + Constant.calculateTax(amount: (subTotal.value - discount.value).toString(), taxModel: element));
+        taxAmount.value =
+            (taxAmount.value +
+                Constant.calculateTax(
+                  amount: (subTotal.value - discount.value).toString(),
+                  taxModel: element,
+                ));
       }
     }
 
@@ -94,8 +103,20 @@ class CabOrderDetailsController extends GetxController {
     final destLng = cabOrder.value.destinationLocation!.longitude;
 
     googleMarkers.value = {
-      gmap.Marker(markerId: const gmap.MarkerId('source'), position: gmap.LatLng(sourceLat!, sourceLng!), icon: gmap.BitmapDescriptor.defaultMarkerWithHue(gmap.BitmapDescriptor.hueGreen)),
-      gmap.Marker(markerId: const gmap.MarkerId('destination'), position: gmap.LatLng(destLat!, destLng!), icon: gmap.BitmapDescriptor.defaultMarkerWithHue(gmap.BitmapDescriptor.hueRed)),
+      gmap.Marker(
+        markerId: const gmap.MarkerId('source'),
+        position: gmap.LatLng(sourceLat!, sourceLng!),
+        icon: gmap.BitmapDescriptor.defaultMarkerWithHue(
+          gmap.BitmapDescriptor.hueGreen,
+        ),
+      ),
+      gmap.Marker(
+        markerId: const gmap.MarkerId('destination'),
+        position: gmap.LatLng(destLat!, destLng!),
+        icon: gmap.BitmapDescriptor.defaultMarkerWithHue(
+          gmap.BitmapDescriptor.hueRed,
+        ),
+      ),
     };
   }
 
@@ -104,7 +125,8 @@ class CabOrderDetailsController extends GetxController {
     final src = cabOrder.value.sourceLocation;
     final dest = cabOrder.value.destinationLocation;
 
-    final url = "https://maps.googleapis.com/maps/api/directions/json?origin=${src!.latitude},${src.longitude}&destination=${dest!.latitude},${dest.longitude}&key=$googleApiKey";
+    final url =
+        "https://maps.googleapis.com/maps/api/directions/json?origin=${src!.latitude},${src.longitude}&destination=${dest!.latitude},${dest.longitude}&key=$googleApiKey";
 
     final response = await http.get(Uri.parse(url));
     final data = jsonDecode(response.body);
@@ -113,9 +135,19 @@ class CabOrderDetailsController extends GetxController {
       final points = data["routes"][0]["overview_polyline"]["points"];
       final polylinePoints = PolylinePoints.decodePolyline(points);
 
-      final polylineCoords = polylinePoints.map((p) => gmap.LatLng(p.latitude, p.longitude)).toList();
+      final polylineCoords =
+          polylinePoints
+              .map((p) => gmap.LatLng(p.latitude, p.longitude))
+              .toList();
 
-      googlePolylines.value = {gmap.Polyline(polylineId: const gmap.PolylineId("google_route"), color: AppThemeData.onDemandDark100, width: 5, points: polylineCoords)};
+      googlePolylines.value = {
+        gmap.Polyline(
+          polylineId: const gmap.PolylineId("google_route"),
+          color: AppThemeData.onDemandDark100,
+          width: 5,
+          points: polylineCoords,
+        ),
+      };
     }
   }
 
@@ -124,15 +156,20 @@ class CabOrderDetailsController extends GetxController {
     final src = cabOrder.value.sourceLocation;
     final dest = cabOrder.value.destinationLocation;
 
-    final url = "http://router.project-osrm.org/route/v1/driving/${src!.longitude},${src.latitude};${dest!.longitude},${dest.latitude}?overview=full&geometries=geojson";
+    final url =
+        "http://router.project-osrm.org/route/v1/driving/${src!.longitude},${src.latitude};${dest!.longitude},${dest.latitude}?overview=full&geometries=geojson";
 
     final response = await http.get(Uri.parse(url));
     final data = jsonDecode(response.body);
 
     if (data["routes"].isNotEmpty) {
-      final coords = data["routes"][0]["geometry"]["coordinates"] as List<dynamic>;
+      final coords =
+          data["routes"][0]["geometry"]["coordinates"] as List<dynamic>;
 
-      osmPolyline.value = coords.map((c) => osm.LatLng(c[1].toDouble(), c[0].toDouble())).toList();
+      osmPolyline.value =
+          coords
+              .map((c) => osm.LatLng(c[1].toDouble(), c[0].toDouble()))
+              .toList();
     }
   }
 }

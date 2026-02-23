@@ -55,6 +55,20 @@ class MyCabBookingController extends GetxController {
 
   RxList<CabOrderModel> cabOrder = <CabOrderModel>[].obs;
 
+  /// Bitta nuqta zakaz: jo'nash va tushish manzili bir xil
+  bool isSinglePointOrderFor(CabOrderModel? order) {
+    if (order == null) return false;
+    final src = order.sourceLocation;
+    final dest = order.destinationLocation;
+    if (src == null || dest == null) return true;
+    const eps = 1e-5;
+    final slat = (src.latitude as num?)?.toDouble() ?? 0.0;
+    final slng = (src.longitude as num?)?.toDouble() ?? 0.0;
+    final dlat = (dest.latitude as num?)?.toDouble() ?? 0.0;
+    final dlng = (dest.longitude as num?)?.toDouble() ?? 0.0;
+    return (slat - dlat).abs() < eps && (slng - dlng).abs() < eps;
+  }
+
   final List<String> tabKeys = ["New", "On Going", "Completed", "Cancelled"];
 
   Rx<UserModel> userModel = UserModel().obs;
@@ -240,10 +254,10 @@ class MyCabBookingController extends GetxController {
       walletSettingModel.value = WalletSettingModel.fromJson(jsonDecode(Preferences.getString(Preferences.walletSettings)));
       cashOnDeliverySettingModel.value = CodSettingModel.fromJson(jsonDecode(Preferences.getString(Preferences.codSettings)));
 
-      if (walletSettingModel.value.isEnabled == true) {
-        selectedPaymentMethod.value = PaymentGateway.wallet.name;
-      } else if (cashOnDeliverySettingModel.value.isEnabled == true) {
+      if (cashOnDeliverySettingModel.value.isEnabled == true) {
         selectedPaymentMethod.value = PaymentGateway.cod.name;
+      } else if (walletSettingModel.value.isEnabled == true) {
+        selectedPaymentMethod.value = PaymentGateway.wallet.name;
       } else if (stripeModel.value.isEnabled == true) {
         selectedPaymentMethod.value = PaymentGateway.stripe.name;
       } else if (payPalModel.value.isEnabled == true) {

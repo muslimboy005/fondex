@@ -176,7 +176,7 @@ class SubscriptionPlanScreen extends StatelessWidget {
                               ),
                               validator: (value) =>
                                   value == null ? 'field required' : null,
-                              value:
+                              initialValue:
                                   controller.selectedSectionModel.value.id !=
                                       null
                                   ? controller.selectedSectionModel.value

@@ -185,7 +185,16 @@ class RestaurantDetailsController extends GetxController {
   RxList<BrandsModel> brandList = <BrandsModel>[].obs;
 
   Future<void> getProduct() async {
-    await FireStoreUtils.getProductByVendorId(vendorModel.value.id.toString()).then((value) {
+    vendorCategoryList.clear();
+    categoryKeys.clear();
+    final vendorId = vendorModel.value.id?.toString() ?? '';
+    if (vendorId.isEmpty) {
+      log('getProduct: vendorModel.id is null, cannot load products');
+      allProductList.value = [];
+      productList.value = [];
+      return;
+    }
+    await FireStoreUtils.getProductByVendorId(vendorId).then((value) {
       if ((Constant.isSubscriptionModelApplied == true || vendorModel.value.adminCommission?.isEnabled == true) && vendorModel.value.subscriptionPlan != null) {
         if (vendorModel.value.subscriptionPlan?.itemLimit == '-1') {
           allProductList.value = value;
@@ -202,12 +211,19 @@ class RestaurantDetailsController extends GetxController {
       }
     });
 
+    final knownCategoryIds = <String>{};
     for (var element in productList) {
       await FireStoreUtils.getVendorCategoryById(element.categoryID.toString()).then((value) {
         if (value != null) {
           vendorCategoryList.add(value);
+          knownCategoryIds.add(element.categoryID.toString());
         }
       });
+    }
+
+    final hasUncategorized = productList.any((p) => !knownCategoryIds.contains(p.categoryID.toString()));
+    if (hasUncategorized) {
+      vendorCategoryList.add(VendorCategoryModel(id: uncategorizedCategoryId, title: 'Other', description: ''));
     }
 
     await FireStoreUtils.getBrandList().then((value) {
@@ -216,7 +232,7 @@ class RestaurantDetailsController extends GetxController {
 
     var seen = <String>{};
     vendorCategoryList.value = vendorCategoryList.where((element) => seen.add(element.id.toString())).toList();
-    
+
     // Initialize category keys
     for (var category in vendorCategoryList) {
       if (!categoryKeys.containsKey(category.id.toString())) {
@@ -224,6 +240,8 @@ class RestaurantDetailsController extends GetxController {
       }
     }
   }
+
+  static const String uncategorizedCategoryId = '__uncategorized__';
 
   void searchProduct(String name) {
     if (name.isEmpty) {

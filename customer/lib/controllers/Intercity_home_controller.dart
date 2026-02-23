@@ -665,15 +665,24 @@ class IntercityHomeController extends GetxController {
     bottomSheetType.value = 'waitingForDriver';
   }
 
+  static double _safeVehicleNum(num? value, double def) {
+    if (value == null) return def;
+    final d = value.toDouble();
+    return d.isNaN || d.isInfinite ? def : d;
+  }
+
   double getAmount(VehicleType vehicleType) {
     final double currentDistance = distance.value;
-    if (currentDistance <=
-        (vehicleType.minimum_delivery_charges_within_km ?? 0)) {
-      return double.tryParse(vehicleType.minimum_delivery_charges.toString()) ??
-          0.0;
+    final double minimum = _safeVehicleNum(vehicleType.minimum_delivery_charges, 0.0);
+    final double includedKm = _safeVehicleNum(vehicleType.minimum_delivery_charges_within_km, 0.0);
+    double fare;
+    if (currentDistance <= includedKm) {
+      fare = minimum;
     } else {
-      return (vehicleType.delivery_charges_per_km ?? 0.0) * currentDistance;
+      fare = _safeVehicleNum(vehicleType.delivery_charges_per_km, 0.0) * currentDistance;
     }
+    // NaN yoki kichik masofa bo'lsa ham kamida minimum_delivery_charges (2000) ko'rsatiladi
+    return fare < minimum ? minimum : fare;
   }
 
   void setDepartureMarker(double lat, double long) {
@@ -1387,10 +1396,10 @@ class IntercityHomeController extends GetxController {
         jsonDecode(Preferences.getString(Preferences.codSettings)),
       );
 
-      if (walletSettingModel.value.isEnabled == true) {
-        selectedPaymentMethod.value = PaymentGateway.wallet.name;
-      } else if (cashOnDeliverySettingModel.value.isEnabled == true) {
+      if (cashOnDeliverySettingModel.value.isEnabled == true) {
         selectedPaymentMethod.value = PaymentGateway.cod.name;
+      } else if (walletSettingModel.value.isEnabled == true) {
+        selectedPaymentMethod.value = PaymentGateway.wallet.name;
       } else if (stripeModel.value.isEnabled == true) {
         selectedPaymentMethod.value = PaymentGateway.stripe.name;
       } else if (payPalModel.value.isEnabled == true) {

@@ -1032,12 +1032,12 @@ class CartController extends GetxController {
       print(
         "🔵 [CartController.getPaymentSettings] Payment method tanlash boshlandi",
       );
-      if (walletSettingModel.value.isEnabled == true) {
+      if (cashOnDeliverySettingModel.value.isEnabled == true) {
+        selectedPaymentMethod.value = PaymentGateway.cod.name;
+        print("🔵 [CartController.getPaymentSettings] Tanlangan: COD (naqt)");
+      } else if (walletSettingModel.value.isEnabled == true) {
         selectedPaymentMethod.value = PaymentGateway.wallet.name;
         print("🔵 [CartController.getPaymentSettings] Tanlangan: Wallet");
-      } else if (cashOnDeliverySettingModel.value.isEnabled == true) {
-        selectedPaymentMethod.value = PaymentGateway.cod.name;
-        print("🔵 [CartController.getPaymentSettings] Tanlangan: COD");
       } else if (stripeModel.value.isEnabled == true) {
         selectedPaymentMethod.value = PaymentGateway.stripe.name;
         print("🔵 [CartController.getPaymentSettings] Tanlangan: Stripe");

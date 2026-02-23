@@ -1,5 +1,5 @@
 import 'package:country_code_picker/country_code_picker.dart';
-import 'package:driver/app/auth_screen/login_screen.dart';
+import 'package:driver/app/auth_screen/auth_screen.dart';
 import 'package:driver/app/auth_screen/phone_number_screen.dart';
 import 'package:driver/constant/show_toast_dialog.dart';
 import 'package:driver/controllers/signup_controller.dart';
@@ -78,7 +78,7 @@ class SignupScreen extends StatelessWidget {
                           TextSpan(
                               recognizer: TapGestureRecognizer()
                                 ..onTap = () {
-                                  Get.offAll(const LoginScreen());
+                                  Get.offAll(const AuthScreen());
                                 },
                               text: 'Log in'.tr,
                               style: TextStyle(
@@ -448,9 +448,19 @@ class SignupScreen extends StatelessWidget {
                                                   : controller
                                                       .selectedVehicleType
                                                       .value,
-                                              onChanged: (value) {
+                                              onChanged: (value) async {
+                                                if (value == null) return;
                                                 controller.selectedVehicleType
-                                                    .value = value!;
+                                                    .value = value;
+                                                if (controller.selectedService
+                                                        .value ==
+                                                    "Cab Service") {
+                                                  ShowToastDialog.showLoader(
+                                                      "Please wait".tr);
+                                                  await controller
+                                                      .getCarMakesForCab();
+                                                  ShowToastDialog.closeLoader();
+                                                }
                                                 controller.update();
                                               },
                                               style: TextStyle(
@@ -712,6 +722,13 @@ class SignupScreen extends StatelessWidget {
                                                   'Enter Car Plat Number'.tr,
                                               textInputAction:
                                                   TextInputAction.next,
+                                              inputFormatters: [
+                                                TextInputFormatter.withFunction(
+                                                    (oldValue, newValue) =>
+                                                        newValue.copyWith(
+                                                            text: newValue.text
+                                                                .toUpperCase())),
+                                              ],
                                             ),
                                           ],
                                         )

@@ -1385,53 +1385,32 @@ class _CabHomeScreenState extends State<CabHomeScreen> {
                         ],
                       ),
                       child: Obx(() {
-                        // Markerlarni tekshirish - asosiy shart
-                        final hasSourceMarker =
-                            Constant.selectedMapType == 'osm'
-                                ? controller
-                                            .departureLatLongOsm
-                                            .value
-                                            .latitude !=
-                                        0.0 &&
-                                    controller
-                                            .departureLatLongOsm
-                                            .value
-                                            .longitude !=
-                                        0.0
-                                : controller.departureLatLong.value.latitude !=
-                                        0.0 &&
-                                    controller
-                                            .departureLatLong
-                                            .value
-                                            .longitude !=
-                                        0.0;
-
-                        final hasDestinationMarker =
-                            Constant.selectedMapType == 'osm'
-                                ? controller
-                                            .destinationLatLongOsm
-                                            .value
-                                            .latitude !=
-                                        0.0 &&
-                                    controller
-                                            .destinationLatLongOsm
-                                            .value
-                                            .longitude !=
-                                        0.0
-                                : controller
-                                            .destinationLatLong
-                                            .value
-                                            .latitude !=
-                                        0.0 &&
-                                    controller
-                                            .destinationLatLong
-                                            .value
-                                            .longitude !=
-                                        0.0;
-
-                        // Ikkala marker ham bo'lishi kerak
+                        // Controller markerlarni o'rnatganda canProceedToVehicleSelection yangilanadi
                         final isEnabled =
-                            hasSourceMarker && hasDestinationMarker;
+                            controller.canProceedToVehicleSelection.value;
+                        // Qaysi joy tanlanmaganini ko'rsatish (lokatsiya avto tanlanganida aniqroq matn)
+                        final hasSource = Constant.selectedMapType == 'osm'
+                            ? (controller.departureLatLongOsm.value.latitude != 0.0 &&
+                                controller.departureLatLongOsm.value.longitude != 0.0)
+                            : (controller.departureLatLong.value.latitude != 0.0 &&
+                                controller.departureLatLong.value.longitude != 0.0);
+                        final hasDestination = Constant.selectedMapType == 'osm'
+                            ? (controller.destinationLatLongOsm.value.latitude != 0.0 &&
+                                controller.destinationLatLongOsm.value.longitude != 0.0)
+                            : (controller.destinationLatLong.value.latitude != 0.0 &&
+                                controller.destinationLatLong.value.longitude != 0.0);
+                        String hintText;
+                        if (isEnabled) {
+                          hintText = "Davom etish".tr;
+                        } else if (hasSource && !hasDestination) {
+                          hintText = "Boradigan joyni tanlang".tr;
+                        } else if (!hasSource && hasDestination) {
+                          hintText = "Boshlang'ich joyni tanlang".tr;
+                        } else {
+                          hintText = "Ikkala joyni tanlang".tr;
+                        }
+
+                        debugPrint("CabHome [Tugma] hasSource=$hasSource hasDestination=$hasDestination isEnabled=$isEnabled hintText=$hintText");
 
                         return Container(
                           decoration: BoxDecoration(
@@ -1550,9 +1529,7 @@ class _CabHomeScreenState extends State<CabHomeScreen> {
                                     const SizedBox(width: 12),
                                     Flexible(
                                       child: Text(
-                                        isEnabled
-                                            ? "Davom etish".tr
-                                            : "Ikkala joyni tanlang".tr,
+                                        hintText,
                                         style: TextStyle(
                                           fontSize: 17,
                                           fontWeight: FontWeight.w700,

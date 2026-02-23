@@ -38,6 +38,22 @@ class CabOrderModel {
   String? driverId;
   String? subTotal;
 
+  // Cab booking trip tracking (yo'riqnoma)
+  Timestamp? startTime;
+  Timestamp? endTime;
+  DestinationLocation? startLocation;
+  double? accumulatedDistance;
+  bool? isTracking;
+  DestinationLocation? lastLocation;
+  Timestamp? lastUpdateTime;
+  double? finalDistance;
+  double? finalFare;
+  double? extraKm;
+  double? extraCharge;
+  // Package: bepul km va qo'shimcha km narxi (vehicleType dan yoki order da saqlanadi)
+  double? cabIncludedKm;
+  double? cabExtraKmFare;
+
   CabOrderModel({
     this.status,
     this.rejectedByDrivers,
@@ -72,6 +88,19 @@ class CabOrderModel {
     this.subTotal,
     this.driver,
     this.driverId,
+    this.startTime,
+    this.endTime,
+    this.startLocation,
+    this.accumulatedDistance,
+    this.isTracking,
+    this.lastLocation,
+    this.lastUpdateTime,
+    this.finalDistance,
+    this.finalFare,
+    this.extraKm,
+    this.extraCharge,
+    this.cabIncludedKm,
+    this.cabExtraKmFare,
   });
 
   CabOrderModel.fromJson(Map<String, dynamic> json) {
@@ -113,6 +142,29 @@ class CabOrderModel {
     subTotal = json['subTotal'];
     driver = json['driver'] != null ? UserModel.fromJson(json['driver']) : null;
     driverId = json['driverId'];
+    startTime = json['startTime'];
+    endTime = json['endTime'];
+    startLocation = json['startLocation'] != null ? DestinationLocation.fromJson(json['startLocation']) : null;
+    accumulatedDistance = (json['accumulatedDistance'] is num) ? (json['accumulatedDistance'] as num).toDouble() : null;
+    isTracking = json['isTracking'];
+    lastLocation = json['lastLocation'] != null ? DestinationLocation.fromJson(json['lastLocation']) : null;
+    lastUpdateTime = json['lastUpdateTime'];
+    finalDistance = (json['finalDistance'] is num) ? (json['finalDistance'] as num).toDouble() : null;
+    finalFare = (json['finalFare'] is num) ? (json['finalFare'] as num).toDouble() : null;
+    extraKm = (json['extraKm'] is num) ? (json['extraKm'] as num).toDouble() : null;
+    extraCharge = (json['extraCharge'] is num) ? (json['extraCharge'] as num).toDouble() : null;
+    cabIncludedKm = _safeDouble(json['cabIncludedKm']);
+    cabExtraKmFare = _safeDouble(json['cabExtraKmFare']);
+  }
+
+  /// NaN yoki noto'g'ri qiymat bo'lsa null (keyin vehicleType dan olinadi)
+  static double? _safeDouble(dynamic value) {
+    if (value == null) return null;
+    if (value is num) {
+      final d = value.toDouble();
+      return d.isNaN || d.isInfinite ? null : d;
+    }
+    return null;
   }
 
   Map<String, dynamic> toJson() {
@@ -168,6 +220,19 @@ class CabOrderModel {
       data['author'] = author!.toJson();
     }
     data['subTotal'] = subTotal;
+    if (startTime != null) data['startTime'] = startTime;
+    if (endTime != null) data['endTime'] = endTime;
+    if (startLocation != null) data['startLocation'] = startLocation!.toJson();
+    if (accumulatedDistance != null) data['accumulatedDistance'] = accumulatedDistance;
+    if (isTracking != null) data['isTracking'] = isTracking;
+    if (lastLocation != null) data['lastLocation'] = lastLocation!.toJson();
+    if (lastUpdateTime != null) data['lastUpdateTime'] = lastUpdateTime;
+    if (finalDistance != null) data['finalDistance'] = finalDistance;
+    if (finalFare != null) data['finalFare'] = finalFare;
+    if (extraKm != null) data['extraKm'] = extraKm;
+    if (extraCharge != null) data['extraCharge'] = extraCharge;
+    if (cabIncludedKm != null) data['cabIncludedKm'] = cabIncludedKm;
+    if (cabExtraKmFare != null) data['cabExtraKmFare'] = cabExtraKmFare;
     return data;
   }
 }

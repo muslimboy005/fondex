@@ -62,10 +62,18 @@ class CabOrderDetailsController extends GetxController {
     }
   }
 
+  static double _safeFare(num? value, double def) {
+    if (value == null) return def;
+    final d = value.toDouble();
+    return d.isNaN || d.isInfinite ? def : d;
+  }
+
   void calculateTotalAmount() {
     taxAmount = 0.0.obs;
     discount = 0.0.obs;
-    subTotal.value = double.parse(cabOrder.value.subTotal.toString());
+    final rawSubTotal = double.parse(cabOrder.value.subTotal.toString());
+    final minFare = _safeFare(cabOrder.value.vehicleType?.minimum_delivery_charges, 0.0);
+    subTotal.value = rawSubTotal < minFare ? minFare : rawSubTotal;
     discount.value = double.parse(cabOrder.value.discount ?? '0.0');
 
     for (var element in cabOrder.value.taxSetting!) {

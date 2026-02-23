@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:driver/constant/constant.dart';
 import 'package:driver/controllers/change_language_controller.dart';
-import 'package:driver/services/localization_service.dart';
+import 'package:driver/controllers/locale_controller.dart';
 import 'package:driver/themes/app_them_data.dart';
 import 'package:driver/themes/theme_controller.dart';
 import 'package:driver/utils/network_image_widget.dart';
@@ -42,8 +42,8 @@ class ChangeLanguageScreen extends StatelessWidget {
                                   .map(
                                     (data) => GestureDetector(
                                       onTap: () {
-                                        LocalizationService().changeLocale(data.slug.toString());
-                                        Preferences.setString(Preferences.languageCodeKey, jsonEncode(data));
+                                        Get.find<LocaleController>().setLocale(data.slug.toString());
+                                        Preferences.setString(Preferences.languageCodeKey, jsonEncode(data.toJson()));
                                         controller.selectedLanguage.value = data;
                                       },
                                       child: Container(

@@ -191,6 +191,7 @@ class WalletScreen extends StatelessWidget {
                   Get.to(() => RentalOrderDetailsScreen(), arguments: RentalOrderModel.fromJson(orderData));
                   break;
                 case CollectionName.rides:
+                case CollectionName.cabBookingOrders:
                   Get.to(const CabOrderDetails(), arguments: {"cabOrderModel": CabOrderModel.fromJson(orderData)});
                   break;
                 case CollectionName.vendorOrders:

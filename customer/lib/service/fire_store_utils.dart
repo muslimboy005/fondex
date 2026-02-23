@@ -45,19 +45,8 @@ import '../models/parcel_category.dart';
 import '../models/parcel_order_model.dart';
 import '../models/parcel_weight_model.dart';
 import '../models/payment_model/cod_setting_model.dart';
-import '../models/payment_model/flutter_wave_model.dart';
-import '../models/payment_model/mercado_pago_model.dart';
-import '../models/payment_model/mid_trans.dart';
-import '../models/payment_model/orange_money.dart';
-import '../models/payment_model/pay_fast_model.dart';
-import '../models/payment_model/pay_stack_model.dart';
-import '../models/payment_model/paypal_model.dart';
 import '../models/payment_model/payme_model.dart';
-import '../models/payment_model/paytm_model.dart';
-import '../models/payment_model/razorpay_model.dart';
-import '../models/payment_model/stripe_model.dart';
 import '../models/payment_model/wallet_setting_model.dart';
-import '../models/payment_model/xendit.dart';
 import '../models/popular_destination.dart';
 import '../models/product_model.dart';
 import '../models/provider_serivce_model.dart';
@@ -689,6 +678,7 @@ class FireStoreUtils {
           .then((value) {
             if (value.exists) {
               vendorModel = VendorModel.fromJson(value.data()!);
+              vendorModel!.id ??= value.id;
             }
           });
     } catch (e, s) {
@@ -1138,42 +1128,110 @@ class FireStoreUtils {
       defaultValue: "Delivery",
     );
     List<ProductModel> list = [];
-    log("GetProductByVendorId :: $selectedFoodType");
-    if (selectedFoodType == "TakeAway") {
-      await fireStore
-          .collection(CollectionName.vendorProducts)
-          .where("vendorID", isEqualTo: vendorId)
-          .where('publish', isEqualTo: true)
-          .orderBy("createdAt", descending: false)
-          .get()
-          .then((value) {
-            for (var element in value.docs) {
-              ProductModel productModel = ProductModel.fromJson(element.data());
-              list.add(productModel);
-            }
-          })
-          .catchError((error) {
-            log(error.toString());
-          });
-    } else {
-      await fireStore
-          .collection(CollectionName.vendorProducts)
-          .where("vendorID", isEqualTo: vendorId)
-          .where("takeawayOption", isEqualTo: false)
-          .where('publish', isEqualTo: true)
-          .orderBy("createdAt", descending: false)
-          .get()
-          .then((value) {
-            for (var element in value.docs) {
-              ProductModel productModel = ProductModel.fromJson(element.data());
-              list.add(productModel);
-            }
-          })
-          .catchError((error) {
-            log(error.toString());
-          });
+    log(
+      "GetProductByVendorId :: vendorId=$vendorId selectedFoodType=$selectedFoodType",
+    );
+
+    Future<void> tryQuery() async {
+      // Same query for both Delivery and TakeAway: all published products for vendor (takeawayOption no longer filters Delivery)
+      final snapshot =
+          await fireStore
+              .collection(CollectionName.vendorProducts)
+              .where("vendorID", isEqualTo: vendorId)
+              .where('publish', isEqualTo: true)
+              .orderBy("createdAt", descending: false)
+              .get();
+      for (var element in snapshot.docs) {
+        final data = element.data()..['id'] ??= element.id;
+        list.add(ProductModel.fromJson(data));
+      }
     }
 
+    Future<void> runFallbackQuery() async {
+      list.clear();
+      final snapshot =
+          await fireStore
+              .collection(CollectionName.vendorProducts)
+              .where("vendorID", isEqualTo: vendorId)
+              .where('publish', isEqualTo: true)
+              .get();
+      for (var element in snapshot.docs) {
+        final data = element.data()..['id'] ??= element.id;
+        list.add(ProductModel.fromJson(data));
+      }
+      list.sort((a, b) {
+        final aMs = a.createdAt?.millisecondsSinceEpoch ?? 0;
+        final bMs = b.createdAt?.millisecondsSinceEpoch ?? 0;
+        return aMs.compareTo(bMs);
+      });
+      log("GetProductByVendorId: fallback ok, count=${list.length}");
+    }
+
+    try {
+      await tryQuery();
+      log("GetProductByVendorId: main query count=${list.length}");
+      if (list.isEmpty) {
+        log(
+          "GetProductByVendorId: main returned 0, trying fallback (no orderBy/takeawayOption in query)",
+        );
+        await runFallbackQuery();
+      }
+    } catch (e) {
+      final isIndexError =
+          e.toString().contains('failed-precondition') ||
+          e.toString().contains('index') ||
+          e.toString().contains('FAILED_PRECONDITION');
+      log("GetProductByVendorId: error=$e isIndexError=$isIndexError");
+      if (isIndexError || list.isEmpty) {
+        log("GetProductByVendorId: running fallback");
+        try {
+          await runFallbackQuery();
+        } catch (e2) {
+          log("GetProductByVendorId fallback error: $e2");
+        }
+      }
+    }
+
+    if (list.isEmpty) {
+      for (final fieldName in ['vendorID', 'vendorId', 'VendorId']) {
+        log(
+          "GetProductByVendorId: trying last-resort query (field=$fieldName)",
+        );
+        try {
+          final snapshot =
+              await fireStore
+                  .collection(CollectionName.vendorProducts)
+                  .where(fieldName, isEqualTo: vendorId)
+                  .get();
+          log(
+            "GetProductByVendorId: last-resort $fieldName docs=${snapshot.docs.length}",
+          );
+          for (var element in snapshot.docs) {
+            final data = element.data()..['id'] ??= element.id;
+            final pub = data['publish'];
+            final publishOk = pub == true || pub == null;
+            if (!publishOk) continue;
+            list.add(ProductModel.fromJson(data));
+          }
+          if (list.isNotEmpty) {
+            list.sort((a, b) {
+              final aMs = a.createdAt?.millisecondsSinceEpoch ?? 0;
+              final bMs = b.createdAt?.millisecondsSinceEpoch ?? 0;
+              return aMs.compareTo(bMs);
+            });
+            log("GetProductByVendorId: last-resort ok, count=${list.length}");
+            break;
+          }
+        } catch (e3) {
+          log("GetProductByVendorId last-resort $fieldName error: $e3");
+        }
+      }
+    }
+    if (list.isEmpty) {
+      log(
+        "GetProductByVendorId: 0 products for vendorId=$vendorId. In Firebase Console: open Firestore → vendor_products → check if any document has vendorID or vendorId = this id. This vendor may have no products added yet.",
+      );
+    }
     return list;
   }
 
@@ -1396,186 +1454,6 @@ class FireStoreUtils {
   static Future getPaymentSettingsData() async {
     print("🔵 [getPaymentSettingsData] Boshlandi");
 
-    // PayFast
-    await fireStore
-        .collection(CollectionName.settings)
-        .doc("payFastSettings")
-        .get()
-        .then((value) async {
-          print("🔵 [getPaymentSettingsData] PayFast: exists=${value.exists}");
-          if (value.exists) {
-            PayFastModel payFastModel = PayFastModel.fromJson(value.data()!);
-            print(
-              "🔵 [getPaymentSettingsData] PayFast: isEnable=${payFastModel.isEnable}",
-            );
-            await Preferences.setString(
-              Preferences.payFastSettings,
-              jsonEncode(payFastModel.toJson()),
-            );
-          } else {
-            print("⚠️ [getPaymentSettingsData] PayFast: Document mavjud emas");
-          }
-        })
-        .catchError((e) {
-          print("❌ [getPaymentSettingsData] PayFast xatosi: $e");
-        });
-
-    // MercadoPago
-    await fireStore
-        .collection(CollectionName.settings)
-        .doc("MercadoPago")
-        .get()
-        .then((value) async {
-          print(
-            "🔵 [getPaymentSettingsData] MercadoPago: exists=${value.exists}",
-          );
-          if (value.exists) {
-            MercadoPagoModel mercadoPagoModel = MercadoPagoModel.fromJson(
-              value.data()!,
-            );
-            print(
-              "🔵 [getPaymentSettingsData] MercadoPago: isEnabled=${mercadoPagoModel.isEnabled}",
-            );
-            await Preferences.setString(
-              Preferences.mercadoPago,
-              jsonEncode(mercadoPagoModel.toJson()),
-            );
-          } else {
-            print(
-              "⚠️ [getPaymentSettingsData] MercadoPago: Document mavjud emas",
-            );
-          }
-        })
-        .catchError((e) {
-          print("❌ [getPaymentSettingsData] MercadoPago xatosi: $e");
-        });
-
-    // PayPal
-    await fireStore
-        .collection(CollectionName.settings)
-        .doc("paypalSettings")
-        .get()
-        .then((value) async {
-          print("🔵 [getPaymentSettingsData] PayPal: exists=${value.exists}");
-          if (value.exists) {
-            PayPalModel payPalModel = PayPalModel.fromJson(value.data()!);
-            print(
-              "🔵 [getPaymentSettingsData] PayPal: isEnabled=${payPalModel.isEnabled}",
-            );
-            await Preferences.setString(
-              Preferences.paypalSettings,
-              jsonEncode(payPalModel.toJson()),
-            );
-          } else {
-            print("⚠️ [getPaymentSettingsData] PayPal: Document mavjud emas");
-          }
-        })
-        .catchError((e) {
-          print("❌ [getPaymentSettingsData] PayPal xatosi: $e");
-        });
-
-    // Stripe
-    await fireStore
-        .collection(CollectionName.settings)
-        .doc("stripeSettings")
-        .get()
-        .then((value) async {
-          print("🔵 [getPaymentSettingsData] Stripe: exists=${value.exists}");
-          if (value.exists) {
-            StripeModel stripeModel = StripeModel.fromJson(value.data()!);
-            print(
-              "🔵 [getPaymentSettingsData] Stripe: isEnabled=${stripeModel.isEnabled}",
-            );
-            await Preferences.setString(
-              Preferences.stripeSettings,
-              jsonEncode(stripeModel.toJson()),
-            );
-          } else {
-            print("⚠️ [getPaymentSettingsData] Stripe: Document mavjud emas");
-          }
-        })
-        .catchError((e) {
-          print("❌ [getPaymentSettingsData] Stripe xatosi: $e");
-        });
-
-    // FlutterWave
-    await fireStore
-        .collection(CollectionName.settings)
-        .doc("flutterWave")
-        .get()
-        .then((value) async {
-          print(
-            "🔵 [getPaymentSettingsData] FlutterWave: exists=${value.exists}",
-          );
-          if (value.exists) {
-            FlutterWaveModel flutterWaveModel = FlutterWaveModel.fromJson(
-              value.data()!,
-            );
-            print(
-              "🔵 [getPaymentSettingsData] FlutterWave: isEnable=${flutterWaveModel.isEnable}",
-            );
-            await Preferences.setString(
-              Preferences.flutterWave,
-              jsonEncode(flutterWaveModel.toJson()),
-            );
-          } else {
-            print(
-              "⚠️ [getPaymentSettingsData] FlutterWave: Document mavjud emas",
-            );
-          }
-        })
-        .catchError((e) {
-          print("❌ [getPaymentSettingsData] FlutterWave xatosi: $e");
-        });
-
-    // PayStack
-    await fireStore
-        .collection(CollectionName.settings)
-        .doc("payStack")
-        .get()
-        .then((value) async {
-          print("🔵 [getPaymentSettingsData] PayStack: exists=${value.exists}");
-          if (value.exists) {
-            PayStackModel payStackModel = PayStackModel.fromJson(value.data()!);
-            print(
-              "🔵 [getPaymentSettingsData] PayStack: isEnable=${payStackModel.isEnable}",
-            );
-            await Preferences.setString(
-              Preferences.payStack,
-              jsonEncode(payStackModel.toJson()),
-            );
-          } else {
-            print("⚠️ [getPaymentSettingsData] PayStack: Document mavjud emas");
-          }
-        })
-        .catchError((e) {
-          print("❌ [getPaymentSettingsData] PayStack xatosi: $e");
-        });
-
-    // Paytm
-    await fireStore
-        .collection(CollectionName.settings)
-        .doc("PaytmSettings")
-        .get()
-        .then((value) async {
-          print("🔵 [getPaymentSettingsData] Paytm: exists=${value.exists}");
-          if (value.exists) {
-            PaytmModel paytmModel = PaytmModel.fromJson(value.data()!);
-            print(
-              "🔵 [getPaymentSettingsData] Paytm: isEnabled=${paytmModel.isEnabled}",
-            );
-            await Preferences.setString(
-              Preferences.paytmSettings,
-              jsonEncode(paytmModel.toJson()),
-            );
-          } else {
-            print("⚠️ [getPaymentSettingsData] Paytm: Document mavjud emas");
-          }
-        })
-        .catchError((e) {
-          print("❌ [getPaymentSettingsData] Paytm xatosi: $e");
-        });
-
     // Wallet
     await fireStore
         .collection(CollectionName.settings)
@@ -1602,30 +1480,6 @@ class FireStoreUtils {
           print("❌ [getPaymentSettingsData] Wallet xatosi: $e");
         });
 
-    // RazorPay
-    await fireStore
-        .collection(CollectionName.settings)
-        .doc("razorpaySettings")
-        .get()
-        .then((value) async {
-          print("🔵 [getPaymentSettingsData] RazorPay: exists=${value.exists}");
-          if (value.exists) {
-            RazorPayModel razorPayModel = RazorPayModel.fromJson(value.data()!);
-            print(
-              "🔵 [getPaymentSettingsData] RazorPay: isEnabled=${razorPayModel.isEnabled}",
-            );
-            await Preferences.setString(
-              Preferences.razorpaySettings,
-              jsonEncode(razorPayModel.toJson()),
-            );
-          } else {
-            print("⚠️ [getPaymentSettingsData] RazorPay: Document mavjud emas");
-          }
-        })
-        .catchError((e) {
-          print("❌ [getPaymentSettingsData] RazorPay xatosi: $e");
-        });
-
     // COD
     await fireStore
         .collection(CollectionName.settings)
@@ -1650,82 +1504,6 @@ class FireStoreUtils {
         })
         .catchError((e) {
           print("❌ [getPaymentSettingsData] COD xatosi: $e");
-        });
-
-    // MidTrans
-    await fireStore
-        .collection(CollectionName.settings)
-        .doc("midtrans_settings")
-        .get()
-        .then((value) async {
-          print("🔵 [getPaymentSettingsData] MidTrans: exists=${value.exists}");
-          if (value.exists) {
-            MidTrans midTrans = MidTrans.fromJson(value.data()!);
-            print(
-              "🔵 [getPaymentSettingsData] MidTrans: enable=${midTrans.enable}",
-            );
-            await Preferences.setString(
-              Preferences.midTransSettings,
-              jsonEncode(midTrans.toJson()),
-            );
-          } else {
-            print("⚠️ [getPaymentSettingsData] MidTrans: Document mavjud emas");
-          }
-        })
-        .catchError((e) {
-          print("❌ [getPaymentSettingsData] MidTrans xatosi: $e");
-        });
-
-    // OrangeMoney
-    await fireStore
-        .collection(CollectionName.settings)
-        .doc("orange_money_settings")
-        .get()
-        .then((value) async {
-          print(
-            "🔵 [getPaymentSettingsData] OrangeMoney: exists=${value.exists}",
-          );
-          if (value.exists) {
-            OrangeMoney orangeMoney = OrangeMoney.fromJson(value.data()!);
-            print(
-              "🔵 [getPaymentSettingsData] OrangeMoney: enable=${orangeMoney.enable}",
-            );
-            await Preferences.setString(
-              Preferences.orangeMoneySettings,
-              jsonEncode(orangeMoney.toJson()),
-            );
-          } else {
-            print(
-              "⚠️ [getPaymentSettingsData] OrangeMoney: Document mavjud emas",
-            );
-          }
-        })
-        .catchError((e) {
-          print("❌ [getPaymentSettingsData] OrangeMoney xatosi: $e");
-        });
-
-    // Xendit
-    await fireStore
-        .collection(CollectionName.settings)
-        .doc("xendit_settings")
-        .get()
-        .then((value) async {
-          print("🔵 [getPaymentSettingsData] Xendit: exists=${value.exists}");
-          if (value.exists) {
-            Xendit xendit = Xendit.fromJson(value.data()!);
-            print(
-              "🔵 [getPaymentSettingsData] Xendit: enable=${xendit.enable}",
-            );
-            await Preferences.setString(
-              Preferences.xenditSettings,
-              jsonEncode(xendit.toJson()),
-            );
-          } else {
-            print("⚠️ [getPaymentSettingsData] Xendit: Document mavjud emas");
-          }
-        })
-        .catchError((e) {
-          print("❌ [getPaymentSettingsData] Xendit xatosi: $e");
         });
 
     // Payme
@@ -1832,6 +1610,7 @@ class FireStoreUtils {
         for (var document in documentList) {
           final data = document.data() as Map<String, dynamic>;
           VendorModel vendorModel = VendorModel.fromJson(data);
+          vendorModel.id ??= document.id;
           if ((Constant.isSubscriptionModelApplied == true ||
                   vendorModel.adminCommission?.isEnabled == true) &&
               vendorModel.subscriptionPlan != null) {
@@ -1909,6 +1688,7 @@ class FireStoreUtils {
         for (var document in documentList) {
           final data = document.data() as Map<String, dynamic>;
           VendorModel vendorModel = VendorModel.fromJson(data);
+          vendorModel.id ??= document.id;
           if ((Constant.isSubscriptionModelApplied == true ||
                   Constant.sectionConstantModel!.adminCommision?.isEnabled ==
                       true) &&
@@ -2110,6 +1890,7 @@ class FireStoreUtils {
         for (var document in documentList) {
           final data = document.data() as Map<String, dynamic>;
           VendorModel vendorModel = VendorModel.fromJson(data);
+          vendorModel.id ??= document.id;
 
           if (Constant.isSubscriptionModelApplied == true ||
               Constant.sectionConstantModel?.adminCommision?.isEnabled ==
@@ -2388,25 +2169,43 @@ class FireStoreUtils {
     );
   }
 
+  /// Compress video to 720p @ 24fps to avoid MediaCodec 1080p60 NoSupport on some devices.
+  static Future<File> _compressChatVideo(File file) async {
+    try {
+      final MediaInfo? info = await VideoCompress.compressVideo(
+        file.path,
+        quality: VideoQuality.Res1280x720Quality,
+        deleteOrigin: false,
+        includeAudio: true,
+        frameRate: 24,
+      );
+      return info != null ? File(info.path!) : file;
+    } catch (_) {
+      return file;
+    }
+  }
+
   static Future<ChatVideoContainer?> uploadChatVideoToFireStorage(
     BuildContext context,
     File video,
   ) async {
     try {
+      ShowToastDialog.showLoader("Compressing video...");
+      File fileToUpload = await _compressChatVideo(video);
       ShowToastDialog.showLoader("Uploading video...");
       final String uniqueID = const Uuid().v4();
       final Reference videoRef = FirebaseStorage.instance.ref(
         'videos/$uniqueID.mp4',
       );
       final UploadTask uploadTask = videoRef.putFile(
-        video,
+        fileToUpload,
         SettableMetadata(contentType: 'video/mp4'),
       );
       await uploadTask;
       final String videoUrl = await videoRef.getDownloadURL();
       ShowToastDialog.showLoader("Generating thumbnail...");
       File thumbnail = await VideoCompress.getFileThumbnail(
-        video.path,
+        fileToUpload.path,
         quality: 75, // 0 - 100
         position: -1, // Get the first frame
       );
@@ -2726,7 +2525,7 @@ class FireStoreUtils {
 
   static Future cabOrderPlace(CabOrderModel orderModel) async {
     await fireStore
-        .collection(CollectionName.rides)
+        .collection(CollectionName.cabBookingOrders)
         .doc(orderModel.id)
         .set(orderModel.toJson());
   }
@@ -2749,11 +2548,22 @@ class FireStoreUtils {
     CabOrderModel? orderModel;
     try {
       final doc =
-          await fireStore.collection(CollectionName.rides).doc(orderId).get();
+          await fireStore
+              .collection(CollectionName.cabBookingOrders)
+              .doc(orderId)
+              .get();
       if (doc.data() != null) {
         final model = CabOrderModel.fromJson(doc.data()!);
         if (model.rideType == "ride") {
           orderModel = model;
+        }
+      }
+      if (orderModel == null) {
+        final docRides =
+            await fireStore.collection(CollectionName.rides).doc(orderId).get();
+        if (docRides.data() != null) {
+          final model = CabOrderModel.fromJson(docRides.data()!);
+          if (model.rideType == "ride") orderModel = model;
         }
       }
     } catch (e, s) {
@@ -2798,6 +2608,29 @@ class FireStoreUtils {
     return userModel;
   }
 
+  static Future<List<UserModel>> getCabDriversForNotification(
+    String sectionId,
+  ) async {
+    List<UserModel> list = [];
+    try {
+      Query<Map<String, dynamic>> query = fireStore
+          .collection(CollectionName.users)
+          .where('role', isEqualTo: Constant.userRoleDriver);
+      final snapshot = await query.get();
+      for (var doc in snapshot.docs) {
+        final data = doc.data();
+        final docSectionId = data['sectionId']?.toString() ?? '';
+        if (docSectionId != sectionId) continue;
+        if (data['active'] == true || data['isActive'] == true) {
+          list.add(UserModel.fromJson(data));
+        }
+      }
+    } catch (e) {
+      log("getCabDriversForNotification error: $e");
+    }
+    return list;
+  }
+
   // static Future<List<CabOrderModel>> getCabDriverOrders() async {
   //   List<CabOrderModel> ordersList = [];
   //   await fireStore.collection(CollectionName.rides).where('authorID', isEqualTo: FireStoreUtils.getCurrentUid()).orderBy('createdAt', descending: true).get().then((value) {
@@ -2811,7 +2644,7 @@ class FireStoreUtils {
 
   static Stream<List<CabOrderModel>> getCabDriverOrders() {
     return fireStore
-        .collection(CollectionName.rides)
+        .collection(CollectionName.cabBookingOrders)
         .where('authorID', isEqualTo: FireStoreUtils.getCurrentUid())
         .where('sectionId', isEqualTo: Constant.sectionConstantModel!.id)
         .orderBy('createdAt', descending: true)
@@ -3534,11 +3367,14 @@ class FireStoreUtils {
 
     try {
       final docRef = fireStore
-          .collection(CollectionName.rides)
+          .collection(CollectionName.cabBookingOrders)
           .doc(orderModel.id);
-      await docRef.set(orderModel.toJson(), SetOptions(merge: true));
+      final payload = orderModel.toJson();
+      await docRef.set(payload, SetOptions(merge: true));
+      // cab_booking_orders da qaysi maydonlar yangilanganini log qilish
+      print('[CAB_PAYMENT] cab_booking_orders yangilandi: docId=${orderModel.id}, paymentMethod=${orderModel.paymentMethod}');
     } catch (e) {
-      print("Error updating OnDemand order: $e");
+      print("[CAB_PAYMENT] Error updating cab order: $e");
       rethrow;
     }
   }
@@ -3667,6 +3503,7 @@ class FireStoreUtils {
       CollectionName.parcelOrders,
       CollectionName.rentalOrders,
       CollectionName.providerOrders,
+      CollectionName.cabBookingOrders,
       CollectionName.rides,
       CollectionName.vendorOrders,
     ];

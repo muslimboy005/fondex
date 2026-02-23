@@ -462,7 +462,7 @@ class CabOrderDetails extends StatelessWidget {
                                 "assets/icons/ic_duration.svg",
                                 isDark),
                             _iconTile(
-                              Constant.amountShow(
+                              Constant.amountShowRounded(
                                   amount: controller.cabOrder.value.subTotal),
                               controller.cabOrder.value.paymentMethod ?? '',
                               "assets/icons/ic_rate_parcel.svg",
@@ -495,7 +495,7 @@ class CabOrderDetails extends StatelessWidget {
                             // Subtotal
                             _summaryTile(
                                 "Subtotal".tr,
-                                Constant.amountShow(
+                                Constant.amountShowRounded(
                                     amount:
                                         controller.subTotal.value.toString()),
                                 isDark,
@@ -504,7 +504,7 @@ class CabOrderDetails extends StatelessWidget {
                             // Discount
                             _summaryTile(
                                 "Discount".tr,
-                                Constant.amountShow(
+                                Constant.amountShowRounded(
                                     amount:
                                         controller.discount.value.toString()),
                                 isDark,
@@ -516,7 +516,7 @@ class CabOrderDetails extends StatelessWidget {
                                 (index) {
                               return _summaryTile(
                                   "${controller.cabOrder.value.taxSetting![index].title} ${controller.cabOrder.value.taxSetting![index].type == 'fix' ? '' : '(${controller.cabOrder.value.taxSetting![index].tax}%)'}",
-                                  Constant.amountShow(
+                                  Constant.amountShowRounded(
                                     amount: Constant.getTaxValue(
                                       amount: ((double.tryParse(controller
                                                       .cabOrder.value.subTotal
@@ -540,14 +540,14 @@ class CabOrderDetails extends StatelessWidget {
                             // Total
                             _summaryTile(
                                 "Order Total".tr,
-                                Constant.amountShow(
+                                Constant.amountShowRounded(
                                     amount: controller.totalAmount.value
                                         .toString()),
                                 isDark,
                                 null),
                             _summaryTile(
                               "${'Admin Commission'.tr} (${controller.cabOrder.value.adminCommission}${controller.cabOrder.value.adminCommissionType == "Percentage" || controller.cabOrder.value.adminCommissionType == "percentage" ? "%" : Constant.currencyModel!.symbol})",
-                              Constant.amountShow(
+                              Constant.amountShowRounded(
                                   amount: controller.adminCommission.value
                                       .toString()),
                               isDark,

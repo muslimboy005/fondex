@@ -869,7 +869,9 @@ class CabOrderDetails extends StatelessWidget {
                                 Constant.amountShow(
                                   amount: controller.cabOrder.value.subTotal,
                                 ),
-                                controller.cabOrder.value.paymentMethod ?? '',
+                                (controller.cabOrder.value.paymentMethod?.toLowerCase() == 'cod')
+                                    ? "Cash on Delivery".tr
+                                    : (controller.cabOrder.value.paymentMethod ?? ''),
                                 "assets/icons/ic_rate_parcel.svg",
                                 isDark,
                               ),

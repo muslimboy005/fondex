@@ -42,6 +42,7 @@ class CollectionName {
   static const String parcelOrders = "parcel_orders";
   static const String vehicleType = 'vehicle_type';
   static const String rides = 'rides';
+  static const String cabBookingOrders = 'cab_booking_orders';
   static const String popularDestinations = 'popular_destinations';
   static const String providerCategories = 'provider_categories';
   static const String providersServices = 'providers_services';

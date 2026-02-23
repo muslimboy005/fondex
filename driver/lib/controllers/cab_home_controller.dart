@@ -22,6 +22,7 @@ import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart' as location;
 import 'package:google_maps_flutter/google_maps_flutter.dart' as google_maps;
 import 'package:yandex_mapkit/yandex_mapkit.dart' as ym;
+import 'package:geolocator/geolocator.dart';
 import 'package:location/location.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -38,6 +39,14 @@ class CabHomeController extends GetxController {
   StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _orderDocSub;
   StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _orderQuerySub;
 
+  /// Safar davomida har 15–20 sekundda GPS va masofa yangilanishi
+  Timer? _trackingTimer;
+  location.LatLng? _lastTrackedLatLng;
+  double _accumulatedKm = 0.0;
+
+  /// Aktiv zakaz bo‘lmaganda yangi pending orderlarni tekshirish (yana zakaz handle qilish)
+  Timer? _pendingOrderPollTimer;
+
   @override
   void onInit() {
     getData();
@@ -46,10 +55,44 @@ class CabHomeController extends GetxController {
 
   @override
   void onClose() {
+    _stopTrackingTimer();
+    _pendingOrderPollTimer?.cancel();
+    _pendingOrderPollTimer = null;
     _driverSub?.cancel();
     _orderDocSub?.cancel();
     _orderQuerySub?.cancel();
     super.onClose();
+  }
+
+  void _stopTrackingTimer() {
+    _trackingTimer?.cancel();
+    _trackingTimer = null;
+  }
+
+  void _startPendingOrderPoll() {
+    _pendingOrderPollTimer?.cancel();
+    _pendingOrderPollTimer =
+        Timer.periodic(const Duration(seconds: 15), (_) async {
+      if (currentOrder.value.id != null && currentOrder.value.id!.isNotEmpty) {
+        return;
+      }
+      if (driverModel.value.inProgressOrderID != null &&
+          driverModel.value.inProgressOrderID!.isNotEmpty) {
+        return;
+      }
+      if (driverModel.value.orderCabRequestData != null) return;
+      await _queryPendingOrdersForDriver();
+      if (currentOrder.value.id != null && currentOrder.value.id!.isNotEmpty) {
+        _pendingOrderPollTimer?.cancel();
+        _pendingOrderPollTimer = null;
+        update();
+      }
+    });
+  }
+
+  void _stopPendingOrderPoll() {
+    _pendingOrderPollTimer?.cancel();
+    _pendingOrderPollTimer = null;
   }
 
   Future<void> getData() async {
@@ -157,6 +200,27 @@ class CabHomeController extends GetxController {
     return result;
   }
 
+  /// Faqat jo'nash joyi bilan berilgan zakaz (manzil user tomonidan kiritilmagan)
+  bool get isSinglePointOrder {
+    final order = currentOrder.value;
+    // Masofa 0 yoki bo'sh – bitta nuqta (faqat jo'nash joyi)
+    final dist = double.tryParse(order.distance ?? '') ?? -1.0;
+    if (dist >= 0 && dist < 0.001) return true;
+    final src = order.sourceLocation;
+    final dest = order.destinationLocation;
+    if (dest == null) return true;
+    final destName = (order.destinationLocationName ?? '').trim();
+    final srcName = (order.sourceLocationName ?? '').trim();
+    if (destName.isEmpty || destName == srcName) return true;
+    if (src == null) return true;
+    const eps = 1e-4;
+    final slat = (src.latitude is num) ? (src.latitude as num).toDouble() : 0.0;
+    final slng = (src.longitude is num) ? (src.longitude as num).toDouble() : 0.0;
+    final dlat = (dest.latitude is num) ? (dest.latitude as num).toDouble() : 0.0;
+    final dlng = (dest.longitude is num) ? (dest.longitude as num).toDouble() : 0.0;
+    return (slat - dlat).abs() < eps && (slng - dlng).abs() < eps;
+  }
+
   Future<void> clearMap() async {
     await AudioPlayerService.playSound(false);
     // Clear Google Maps markers and polylines
@@ -169,35 +233,306 @@ class CabHomeController extends GetxController {
   Future<void> onRideStatus() async {
     await AudioPlayerService.playSound(false);
     ShowToastDialog.showLoader("Please wait".tr);
+
+    final orderId = currentOrder.value.id;
+    if (orderId == null || orderId.isEmpty) {
+      ShowToastDialog.closeLoader();
+      return;
+    }
+
+    double lat = 0.0, lng = 0.0;
+    if (Constant.locationDataFinal != null &&
+        Constant.locationDataFinal!.latitude != null &&
+        Constant.locationDataFinal!.longitude != null) {
+      lat = Constant.locationDataFinal!.latitude!;
+      lng = Constant.locationDataFinal!.longitude!;
+    } else {
+      try {
+        final loc = await Location().getLocation();
+        lat = loc.latitude ?? 0.0;
+        lng = loc.longitude ?? 0.0;
+      } catch (_) {}
+    }
+    if (lat == 0.0 && lng == 0.0) {
+      ShowToastDialog.closeLoader();
+      ShowToastDialog.showToast("Location not available".tr);
+      return;
+    }
+
+    final ok = await FireStoreUtils.updateCabOrderStartTrip(
+      orderId: orderId,
+      startLocation: {'latitude': lat, 'longitude': lng},
+    );
+    if (!ok) {
+      currentOrder.value.status = Constant.orderInTransit;
+      await FireStoreUtils.setCabOrder(currentOrder.value);
+    }
+
     currentOrder.value.status = Constant.orderInTransit;
-    await FireStoreUtils.setCabOrder(currentOrder.value);
+    currentOrder.value.startLocation =
+        DestinationLocation(latitude: lat, longitude: lng);
+    currentOrder.value.accumulatedDistance = 0.0;
+    currentOrder.value.isTracking = true;
+    currentOrder.value.finalFare = null;
+    currentOrder.value.finalDistance = null;
+    currentOrder.value.extraKm = null;
+    currentOrder.value.extraCharge = null;
+    _lastTrackedLatLng = location.LatLng(lat, lng);
+    _accumulatedKm = 0.0;
+    _startTrackingTimer();
+
     ShowToastDialog.closeLoader();
     Get.back();
-
-    // Status o'zgarganda yo'l yangilanishi kerak
-    // orderInTransit -> driver dan destination gacha
-    print(
-        "🚗 [onRideStatus] Status orderInTransit ga o'zgardi, yo'l yangilanmoqda");
+    log("🚗 [onRideStatus] Safar boshlandi, finalFare tozalandi – Manzilga yetib keldik tugmasi ko'rinadi");
     await changeData();
+  }
+
+  void _startTrackingTimer() {
+    _stopTrackingTimer();
+    _trackingTimer =
+        Timer.periodic(const Duration(seconds: 12), (_) => _onTrackingTick());
+    log("📍 [Cab] Tracking timer started, interval 12s");
+  }
+
+  Future<void> _onTrackingTick() async {
+    final orderId = currentOrder.value.id;
+    if (orderId == null ||
+        orderId.isEmpty ||
+        currentOrder.value.isTracking != true) {
+      _stopTrackingTimer();
+      return;
+    }
+
+    double lat = 0.0, lng = 0.0;
+    if (Constant.locationDataFinal != null &&
+        Constant.locationDataFinal!.latitude != null &&
+        Constant.locationDataFinal!.longitude != null) {
+      lat = Constant.locationDataFinal!.latitude!;
+      lng = Constant.locationDataFinal!.longitude!;
+    } else {
+      try {
+        final loc = await Location().getLocation();
+        lat = loc.latitude ?? 0.0;
+        lng = loc.longitude ?? 0.0;
+      } catch (_) {
+        return;
+      }
+    }
+    if (lat == 0.0 && lng == 0.0) return;
+
+    final current = location.LatLng(lat, lng);
+    if (_lastTrackedLatLng != null) {
+      final segmentM = Geolocator.distanceBetween(
+        _lastTrackedLatLng!.latitude,
+        _lastTrackedLatLng!.longitude,
+        lat,
+        lng,
+      );
+      _accumulatedKm += segmentM / 1000.0;
+    }
+    _lastTrackedLatLng = current;
+
+    final order = currentOrder.value;
+    final includedKm = _safeKmOrFare(
+      order.cabIncludedKm,
+      order.vehicleType?.minimum_delivery_charges_within_km,
+      0.0,
+    );
+    final extraKmFare = _safeKmOrFare(
+      order.cabExtraKmFare,
+      order.vehicleType?.delivery_charges_per_km,
+      0.0,
+    );
+    final baseSubTotal = double.tryParse(order.subTotal ?? '0') ?? 0.0;
+    final extraKm = _accumulatedKm > includedKm ? _accumulatedKm - includedKm : 0.0;
+    final extraCharge = extraKm * extraKmFare;
+    double currentFare = baseSubTotal + extraCharge;
+    final minFare = _safeKmOrFare(null, order.vehicleType?.minimum_delivery_charges, 0.0);
+    if (currentFare < minFare) currentFare = minFare;
+
+    log("📍 [Cab] Tick orderId=$orderId km=${_accumulatedKm.toStringAsFixed(3)} fare=$currentFare extraKm=$extraKm");
+
+    Map<String, dynamic>? driverMap;
+    if (order.driver != null) {
+      driverMap = order.driver!.toJson();
+      driverMap['currentLocation'] = {'latitude': lat, 'longitude': lng};
+    }
+
+    await FireStoreUtils.updateCabOrderTracking(
+      orderId: orderId,
+      accumulatedDistance: _accumulatedKm,
+      lat: lat,
+      lng: lng,
+      driverWithCurrentLocation: driverMap,
+      subTotal: currentFare,
+      extraKm: extraKm,
+      extraCharge: extraCharge,
+    );
+    currentOrder.value.accumulatedDistance = _accumulatedKm;
+    currentOrder.value.subTotal = currentFare.toString();
+    currentOrder.value.lastLocation =
+        DestinationLocation(latitude: lat, longitude: lng);
+    update();
+  }
+
+  /// vehicle_type da NaN bo'lsa ham xavfsiz: Comfort va boshqa typelar uchun
+  static double _safeKmOrFare(double? fromOrder, num? fromVehicle, double def) {
+    if (fromOrder != null && !fromOrder.isNaN && !fromOrder.isInfinite) {
+      return fromOrder;
+    }
+    if (fromVehicle != null) {
+      final d = fromVehicle.toDouble();
+      if (!d.isNaN && !d.isInfinite) return d;
+    }
+    return def;
+  }
+
+  /// UI da "Tekin yurish" km (NaN bo'lmasligi uchun)
+  double get displayIncludedKm => _safeKmOrFare(
+        currentOrder.value.cabIncludedKm,
+        currentOrder.value.vehicleType?.minimum_delivery_charges_within_km,
+        0.0,
+      );
+
+  /// Zakaz summasi kamida minimum_delivery_charges (1 so'm xato ko'rinishini oldini olish)
+  double get minimumCabFare => _safeKmOrFare(
+        null,
+        currentOrder.value.vehicleType?.minimum_delivery_charges,
+        0.0,
+      );
+
+  /// Bir nuqtali zakazda: "Manzilga yetib keldik" – faqat summa yangilanadi, mijoz to‘lovi ko‘rinadi
+  Future<bool> markReachedDestination() async {
+    try {
+      final order = currentOrder.value;
+      if (order.id == null || order.id!.isEmpty) {
+        log("⚠️ [Cab] markReachedDestination: orderId empty");
+        return false;
+      }
+
+      final totalDistance = order.accumulatedDistance ?? _accumulatedKm;
+      final baseSubTotal = double.tryParse(order.subTotal ?? '0') ?? 0.0;
+      final includedKm = _safeKmOrFare(
+        order.cabIncludedKm,
+        order.vehicleType?.minimum_delivery_charges_within_km,
+        0.0,
+      );
+      final extraKmFare = _safeKmOrFare(
+        order.cabExtraKmFare,
+        order.vehicleType?.delivery_charges_per_km,
+        0.0,
+      );
+
+      final extraKm =
+          totalDistance > includedKm ? totalDistance - includedKm : 0.0;
+      final extraCharge = extraKm * extraKmFare;
+      double finalFare = baseSubTotal + extraCharge;
+      final minFare = _safeKmOrFare(null, order.vehicleType?.minimum_delivery_charges, 0.0);
+      if (finalFare < minFare) finalFare = minFare;
+
+      log("📍 [Cab] markReachedDestination orderId=${order.id} totalKm=$totalDistance finalFare=$finalFare extraKm=$extraKm");
+
+      final ok = await FireStoreUtils.updateCabOrderReachedDestination(
+        orderId: order.id!,
+        finalDistance: totalDistance,
+        finalFare: finalFare,
+        extraKm: extraKm,
+        extraCharge: extraCharge,
+      );
+      if (!ok) {
+        log("⚠️ [Cab] markReachedDestination Firestore update failed");
+        return false;
+      }
+
+      order.finalDistance = totalDistance;
+      order.finalFare = finalFare;
+      order.extraKm = extraKm;
+      order.extraCharge = extraCharge;
+      order.subTotal = finalFare.toString();
+      update();
+
+      final token = order.author?.fcmToken?.trim();
+      if (token != null && token.isNotEmpty) {
+        await SendNotification.sendOneNotification(
+          token: token,
+          title: "Manzilga yetib kelingan".tr,
+          body: "Hozir to'lov qilish".tr,
+          payload: {'type': 'cab_reached_destination', 'rideId': order.id ?? ''},
+        );
+        log("📍 [Cab] Sent FCM to customer: Hozir to'lov qilish");
+      }
+      return true;
+    } catch (e) {
+      log("Error in markReachedDestination(): $e");
+      return false;
+    }
   }
 
   Future<void> completeRide() async {
     try {
-      ShowToastDialog.showLoader("Please wait".tr);
-      await updateCabWalletAmount(currentOrder.value);
+      _stopTrackingTimer();
 
-      await FireStoreUtils.getFirestOrderOrNOtCabService(currentOrder.value)
+      ShowToastDialog.showLoader("Please wait".tr);
+
+      final order = currentOrder.value;
+      final totalDistance = order.accumulatedDistance ?? _accumulatedKm;
+      final includedKm = _safeKmOrFare(
+        order.cabIncludedKm,
+        order.vehicleType?.minimum_delivery_charges_within_km,
+        0.0,
+      );
+      final extraKmFare = _safeKmOrFare(
+        order.cabExtraKmFare,
+        order.vehicleType?.delivery_charges_per_km,
+        0.0,
+      );
+
+      double finalFare;
+      double extraKm;
+      double extraCharge;
+
+      if (order.finalFare != null && order.finalDistance != null) {
+        finalFare = order.finalFare!;
+        extraKm = order.extraKm ?? 0.0;
+        extraCharge = order.extraCharge ?? 0.0;
+      } else {
+        final subTotal = double.tryParse(order.subTotal ?? '0') ?? 0.0;
+        extraKm = totalDistance > includedKm ? totalDistance - includedKm : 0.0;
+        extraCharge = extraKm * extraKmFare;
+        finalFare = subTotal + extraCharge;
+      }
+      final minFare = _safeKmOrFare(null, order.vehicleType?.minimum_delivery_charges, 0.0);
+      if (finalFare < minFare) finalFare = minFare;
+
+      if (order.id != null && order.id!.isNotEmpty) {
+        await FireStoreUtils.updateCabOrderEndTrip(
+          orderId: order.id!,
+          finalDistance: totalDistance,
+          finalFare: finalFare,
+          extraKm: extraKm,
+          extraCharge: extraCharge,
+        );
+      }
+
+      order.finalDistance = totalDistance;
+      order.finalFare = finalFare;
+      order.extraKm = extraKm;
+      order.extraCharge = extraCharge;
+      order.subTotal = finalFare.toString();
+      order.status = Constant.orderCompleted;
+
+      await updateCabWalletAmount(order);
+
+      await FireStoreUtils.getFirestOrderOrNOtCabService(order)
           .then((value) async {
         if (value == true) {
-          await FireStoreUtils.updateReferralAmountCabService(
-              currentOrder.value);
+          await FireStoreUtils.updateReferralAmountCabService(order);
         }
       });
 
-      currentOrder.value.status = Constant.orderCompleted;
       driverModel.value.inProgressOrderID = [];
       driverModel.value.orderCabRequestData = null;
-      await FireStoreUtils.setCabOrder(currentOrder.value);
+      await FireStoreUtils.setCabOrder(order);
       await FireStoreUtils.updateUser(driverModel.value);
 
       ShowToastDialog.closeLoader();
@@ -291,10 +626,11 @@ class CabHomeController extends GetxController {
       print("📦 [getCurrentOrder] inProgressOrderID: $inProgress");
 
       if (inProgress != null && inProgress.isNotEmpty) {
+        _stopPendingOrderPoll();
         final String id = inProgress.first.toString();
         print("📦 [getCurrentOrder] inProgress order topildi, ID: $id");
         _orderDocSub = FireStoreUtils.fireStore
-            .collection(CollectionName.ridesBooking)
+            .collection(CollectionName.cabBookingOrders)
             .doc(id)
             .snapshots()
             .listen((docSnap) => _handleOrderDoc(docSnap, id));
@@ -309,10 +645,11 @@ class CabHomeController extends GetxController {
       if (pendingRequest != null) {
         final id = pendingRequest.id?.toString();
         if (id != null && id.isNotEmpty) {
+          _stopPendingOrderPoll();
           print(
               "📦 [getCurrentOrder] orderCabRequestData dan order topildi, ID: $id");
           _orderDocSub = FireStoreUtils.fireStore
-              .collection(CollectionName.ridesBooking)
+              .collection(CollectionName.cabBookingOrders)
               .doc(id)
               .snapshots()
               .listen((docSnap) => _handleOrderDoc(docSnap, id));
@@ -332,13 +669,16 @@ class CabHomeController extends GetxController {
       // Only clear if we still don't have an order after fallback query
       print(
           "📦 [getCurrentOrder] currentOrder.value.id: ${currentOrder.value.id}");
-      if (currentOrder.value.id == null) {
-        print("📦 [getCurrentOrder] Order topilmadi, clearMap chaqirilmoqda");
+      if (currentOrder.value.id == null || currentOrder.value.id!.isEmpty) {
+        print(
+            "📦 [getCurrentOrder] Order topilmadi, clearMap va pending poll boshlandi");
         currentOrder.value = CabOrderModel();
         await clearMap();
         await AudioPlayerService.playSound(false);
+        _startPendingOrderPoll();
         update();
       } else {
+        _stopPendingOrderPoll();
         print(
             "📦 [getCurrentOrder] Order topildi: ${currentOrder.value.id}, status: ${currentOrder.value.status}");
       }
@@ -360,10 +700,11 @@ class CabHomeController extends GetxController {
         return;
       }
 
-      // Only query for very recent orders (last 1 minute) to avoid picking up old orders
-      final oneMinuteAgo = Timestamp.fromDate(
-          DateTime.now().subtract(const Duration(minutes: 1)));
-      print("🔍 [_queryPendingOrdersForDriver] oneMinuteAgo: $oneMinuteAgo");
+      // Yangi zakazlar (oxirgi 10 daqiqa) – "yana zakaz" ham topilsin, FCM kelmasa ham
+      final recentOrdersSince = Timestamp.fromDate(
+          DateTime.now().subtract(const Duration(minutes: 10)));
+      print(
+          "🔍 [_queryPendingOrdersForDriver] recentOrdersSince: $recentOrdersSince");
 
       final sectionId = driverModel.value.sectionId;
       print("🔍 [_queryPendingOrdersForDriver] sectionId: $sectionId");
@@ -371,11 +712,11 @@ class CabHomeController extends GetxController {
       // Build query - use simpler query to avoid index requirements
       // Query by status and createdAt, filter sectionId in memory if needed
       Query<Map<String, dynamic>> query = FireStoreUtils.fireStore
-          .collection(CollectionName.ridesBooking)
+          .collection(CollectionName.cabBookingOrders)
           .where('status', isEqualTo: Constant.driverPending)
-          .where('createdAt', isGreaterThanOrEqualTo: oneMinuteAgo)
+          .where('createdAt', isGreaterThanOrEqualTo: recentOrdersSince)
           .orderBy('createdAt', descending: true)
-          .limit(5);
+          .limit(10);
 
       print("🔍 [_queryPendingOrdersForDriver] Query yuborilmoqda...");
       final querySnapshot = await query.get();
@@ -418,7 +759,7 @@ class CabHomeController extends GetxController {
                 "🔍 [_queryPendingOrdersForDriver] Order document listener o'rnatilmoqda: $id");
             await _orderDocSub?.cancel();
             _orderDocSub = FireStoreUtils.fireStore
-                .collection(CollectionName.ridesBooking)
+                .collection(CollectionName.cabBookingOrders)
                 .doc(id)
                 .snapshots()
                 .listen((docSnap) => _handleOrderDoc(docSnap, id));
@@ -455,7 +796,7 @@ class CabHomeController extends GetxController {
 
         // Avval document ID sifatida sinab ko'ramiz
         final docRef = FireStoreUtils.fireStore
-            .collection(CollectionName.ridesBooking)
+            .collection(CollectionName.cabBookingOrders)
             .doc(rideId);
 
         final docSnap = await docRef.get().timeout(
@@ -483,7 +824,7 @@ class CabHomeController extends GetxController {
         print(
             "🚀 [getOrderByRideId] Document ID orqali topilmadi, 'id' field orqali qidiryapmiz");
         final querySnapshot = await FireStoreUtils.fireStore
-            .collection(CollectionName.ridesBooking)
+            .collection(CollectionName.cabBookingOrders)
             .where('id', isEqualTo: rideId)
             .limit(1)
             .get()
@@ -505,7 +846,7 @@ class CabHomeController extends GetxController {
           final docId = doc.id;
           await _orderDocSub?.cancel();
           _orderDocSub = FireStoreUtils.fireStore
-              .collection(CollectionName.ridesBooking)
+              .collection(CollectionName.cabBookingOrders)
               .doc(docId)
               .snapshots()
               .listen((snap) => _handleOrderDoc(snap, docId));
@@ -559,9 +900,11 @@ class CabHomeController extends GetxController {
           print(
               "📄 [_handleOrderDoc] shouldShowOrderSheet: $shouldShowOrderSheet");
 
+          _stopPendingOrderPoll();
           await changeData();
           if (currentOrder.value.status == Constant.orderCompleted) {
             print("📄 [_handleOrderDoc] Order completed, tozalash");
+            _stopTrackingTimer();
             driverModel.value.inProgressOrderID = [];
             await FireStoreUtils.updateUser(driverModel.value);
             currentOrder.value = CabOrderModel();
@@ -592,7 +935,7 @@ class CabHomeController extends GetxController {
         print("📄 [_handleOrderDoc] Document mavjud emas, query fallback");
       }
       _orderQuerySub = FireStoreUtils.fireStore
-          .collection(CollectionName.ridesBooking)
+          .collection(CollectionName.cabBookingOrders)
           .where('id', isEqualTo: id)
           .limit(1)
           .snapshots()

@@ -269,7 +269,7 @@ class DineInOrderScreen extends StatelessWidget {
                               ),
                               const SizedBox(height: 5),
                               Text(
-                                "Bronlarni qabul qilishni boshlash uchun iltimos, restoraningizning restoranda iste'mol qilish tafsilotlarini qo'shing.",
+                                "Please add your restaurant's dine-in details to start accepting reservations.".tr,
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   color: isDark

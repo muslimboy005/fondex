@@ -13,9 +13,14 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
+  
     <!-- Notifications (Android 13+) -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
+    <!-- Foreground (notifications) -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
+   
 
     
 

@@ -9,7 +9,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:vendor/app/add_advertisement_screen/advertisement_list_screen.dart';
 import 'package:vendor/app/add_restaurant_screen/add_restaurant_screen.dart';
 import 'package:vendor/app/add_story_screen/add_story_screen.dart';
-import 'package:vendor/app/auth_screen/login_screen.dart';
+import 'package:vendor/app/auth_screen/auth_screen.dart';
 import 'package:vendor/app/change%20langauge/change_language_screen.dart';
 import 'package:vendor/app/dine_in_screen/dine_in_create_screen.dart';
 import 'package:vendor/app/driver_screens/driver_list_screen.dart';
@@ -21,7 +21,6 @@ import 'package:vendor/app/subscription_plan_screen/subscription_history_screen.
 import 'package:vendor/app/subscription_plan_screen/subscription_plan_screen.dart';
 import 'package:vendor/app/terms_and_condition/terms_and_condition_screen.dart';
 import 'package:vendor/app/verification_screen/verification_screen.dart';
-import 'package:vendor/app/withdraw_method_setup_screens/withdraw_method_setup_screen.dart';
 import 'package:vendor/app/working_hours_screen/working_hours_screen.dart';
 import 'package:vendor/constant/constant.dart';
 import 'package:vendor/constant/show_toast_dialog.dart';
@@ -1292,7 +1291,7 @@ class ProfileScreen extends StatelessWidget {
                                                   .signOut();
                                               ShowToastDialog.closeLoader();
                                               // Navigate to email login screen for Android/iOS
-                                              Get.offAll(const LoginScreen());
+                                              Get.offAll(const AuthScreen());
                                             },
                                             negativeClick: () {
                                               Get.back();
@@ -1339,7 +1338,7 @@ class ProfileScreen extends StatelessWidget {
                                             ShowToastDialog.showToast(
                                               "Account deleted successfully".tr,
                                             );
-                                            Get.offAll(const LoginScreen());
+                                            Get.offAll(const AuthScreen());
                                           } else {
                                             ShowToastDialog.showToast(
                                               "Contact Administrator".tr,

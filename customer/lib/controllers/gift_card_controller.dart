@@ -193,7 +193,9 @@ class GiftCardController extends GetxController {
         orangeMoneyModel.value = OrangeMoney.fromJson(jsonDecode(Preferences.getString(Preferences.orangeMoneySettings)));
         xenditModel.value = Xendit.fromJson(jsonDecode(Preferences.getString(Preferences.xenditSettings)));
         walletSettingModel.value = WalletSettingModel.fromJson(jsonDecode(Preferences.getString(Preferences.walletSettings)));
-        if (walletSettingModel.value.isEnabled == true) {
+        if (cashOnDeliverySettingModel.value.isEnabled == true) {
+          selectedPaymentMethod.value = PaymentGateway.cod.name;
+        } else if (walletSettingModel.value.isEnabled == true) {
           selectedPaymentMethod.value = PaymentGateway.wallet.name;
         } else if (stripeModel.value.isEnabled == true) {
           selectedPaymentMethod.value = PaymentGateway.stripe.name;

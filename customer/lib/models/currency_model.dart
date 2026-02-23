@@ -20,23 +20,31 @@ class CurrencyModel {
   });
 
   factory CurrencyModel.fromJson(Map<String, dynamic> parsedJson) {
+    // Firestore admin panel "decimalDigits" ishlatadi (driver/vendor bilan bir xil).
+    // Eski "decimal_degits" ni ham qo'llab-quvvatlash.
+    final int decimalValue =
+        parsedJson['decimalDigits'] != null
+            ? int.parse(parsedJson['decimalDigits'].toString())
+            : (parsedJson['decimal_degits'] != null
+                ? int.parse(parsedJson['decimal_degits'].toString())
+                : 2);
     return CurrencyModel(
       code: parsedJson['code'] ?? '',
-      decimal: parsedJson['decimal_degits'] ?? 0,
-      isactive: parsedJson['isActive'] ?? '',
+      decimal: decimalValue,
+      isactive: parsedJson['isActive'] == true,
       id: parsedJson['id'] ?? '',
       name: parsedJson['name'] ?? '',
       rounding: parsedJson['rounding'] ?? 0,
       symbol: parsedJson['symbol'] ?? '',
-      symbolatright: parsedJson['symbolAtRight'] ?? '',
+      symbolatright: parsedJson['symbolAtRight'] == true,
     );
   }
-
 
   Map<String, dynamic> toJson() {
     return {
       'code': code,
       'decimal_degits': decimal,
+      'decimalDigits': decimal,
       'isActive': isactive,
       'rounding': rounding,
       'id': id,

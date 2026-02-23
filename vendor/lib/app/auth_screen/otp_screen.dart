@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:vendor/themes/theme_controller.dart';
-import 'package:vendor/app/auth_screen/login_screen.dart';
+import 'package:vendor/app/auth_screen/auth_screen.dart';
 import 'package:vendor/app/auth_screen/signup_screen.dart';
 import 'package:vendor/app/dash_board_screens/app_not_access_screen.dart';
 import 'package:vendor/app/dash_board_screens/dash_board_screen.dart';
@@ -158,11 +158,11 @@ class OtpScreen extends StatelessWidget {
                                             } else {
                                               ShowToastDialog.showToast("This user is disable please contact to administrator".tr);
                                               await FirebaseAuth.instance.signOut();
-                                              Get.offAll(const LoginScreen());
+                                              Get.offAll(const AuthScreen());
                                             }
                                           } else {
                                             await FirebaseAuth.instance.signOut();
-                                            Get.offAll(const LoginScreen());
+                                            Get.offAll(const AuthScreen());
                                             ShowToastDialog.showToast("This user is not created in Store application.".tr);
                                           }
                                         } else {

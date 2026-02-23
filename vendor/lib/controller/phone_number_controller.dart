@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:vendor/app/auth_screen/login_screen.dart';
+import 'package:vendor/app/auth_screen/auth_screen.dart';
 import 'package:vendor/app/auth_screen/otp_screen.dart';
 import 'package:vendor/app/dash_board_screens/app_not_access_screen.dart';
 import 'package:vendor/app/dash_board_screens/dash_board_screen.dart';
@@ -13,6 +13,8 @@ import 'package:vendor/constant/constant.dart';
 import 'package:vendor/constant/show_toast_dialog.dart';
 import 'package:vendor/models/user_model.dart';
 import 'package:vendor/utils/fire_store_utils.dart';
+import 'package:vendor/themes/app_them_data.dart';
+import 'package:vendor/themes/theme_controller.dart';
 import 'package:vendor/utils/notification_service.dart';
 
 class PhoneNumberController extends GetxController {
@@ -75,9 +77,14 @@ class PhoneNumberController extends GetxController {
   void _showNameDialog() {
     final firstNameController = TextEditingController();
     final lastNameController = TextEditingController();
-    
+    final isDark = Get.isRegistered<ThemeController>()
+        ? Get.find<ThemeController>().isDark.value
+        : false;
+
     Get.dialog(
       Dialog(
+        backgroundColor: isDark ? AppThemeData.surfaceDark : AppThemeData.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         child: Padding(
           padding: const EdgeInsets.all(20.0),
           child: Column(
@@ -86,22 +93,79 @@ class PhoneNumberController extends GetxController {
             children: [
               Text(
                 "Enter Your Name".tr,
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: AppThemeData.semiBold,
+                  color: isDark ? AppThemeData.greyDark900 : AppThemeData.grey900,
+                ),
               ),
               const SizedBox(height: 20),
               TextField(
                 controller: firstNameController,
+                style: TextStyle(
+                  color: isDark ? AppThemeData.greyDark900 : AppThemeData.grey900,
+                ),
                 decoration: InputDecoration(
                   labelText: "First Name".tr,
-                  border: const OutlineInputBorder(),
+                  labelStyle: TextStyle(
+                    color: isDark ? AppThemeData.greyDark500 : AppThemeData.grey500,
+                  ),
+                  filled: true,
+                  fillColor: isDark ? AppThemeData.greyDark100 : AppThemeData.grey50,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(
+                      color: isDark ? AppThemeData.greyDark300 : AppThemeData.grey200,
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(
+                      color: isDark ? AppThemeData.greyDark300 : AppThemeData.grey200,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(
+                      color: AppThemeData.primary300,
+                      width: 1.5,
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(height: 15),
               TextField(
                 controller: lastNameController,
+                style: TextStyle(
+                  color: isDark ? AppThemeData.greyDark900 : AppThemeData.grey900,
+                ),
                 decoration: InputDecoration(
                   labelText: "Last Name".tr,
-                  border: const OutlineInputBorder(),
+                  labelStyle: TextStyle(
+                    color: isDark ? AppThemeData.greyDark500 : AppThemeData.grey500,
+                  ),
+                  filled: true,
+                  fillColor: isDark ? AppThemeData.greyDark100 : AppThemeData.grey50,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(
+                      color: isDark ? AppThemeData.greyDark300 : AppThemeData.grey200,
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(
+                      color: isDark ? AppThemeData.greyDark300 : AppThemeData.grey200,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(
+                      color: AppThemeData.primary300,
+                      width: 1.5,
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
@@ -110,10 +174,19 @@ class PhoneNumberController extends GetxController {
                 children: [
                   TextButton(
                     onPressed: () => Get.back(),
-                    child: Text("Cancel".tr),
+                    child: Text(
+                      "Cancel".tr,
+                      style: TextStyle(
+                        color: isDark ? AppThemeData.greyDark500 : AppThemeData.grey600,
+                      ),
+                    ),
                   ),
                   const SizedBox(width: 10),
                   ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppThemeData.primary300,
+                      foregroundColor: AppThemeData.grey50,
+                    ),
                     onPressed: () async {
                       if (firstNameController.text.trim().isEmpty) {
                         ShowToastDialog.showToast("Please enter first name".tr);
@@ -124,7 +197,6 @@ class PhoneNumberController extends GetxController {
                         return;
                       }
                       Get.back();
-                      // Register directly without going to signup screen
                       await _registerUser(
                         firstNameController.text.trim(),
                         lastNameController.text.trim(),
@@ -243,7 +315,7 @@ class PhoneNumberController extends GetxController {
             "Thank you for sign up, your application is under approval so please wait till that approve."
                 .tr,
           );
-          Get.offAll(const LoginScreen());
+          Get.offAll(const AuthScreen());
         }
       });
     } catch (e) {

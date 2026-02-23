@@ -18,19 +18,28 @@ import 'package:vendor/utils/fire_store_utils.dart';
 
 class AddProductController extends GetxController {
   RxBool isLoading = true.obs;
-  Rx<TextEditingController> attributesValueController = TextEditingController().obs;
+  Rx<TextEditingController> attributesValueController =
+      TextEditingController().obs;
 
-  Rx<TextEditingController> productTitleController = TextEditingController().obs;
-  Rx<TextEditingController> productDescriptionController = TextEditingController().obs;
-  Rx<TextEditingController> regularPriceController = TextEditingController().obs;
-  Rx<TextEditingController> discountedPriceController = TextEditingController().obs;
-  Rx<TextEditingController> productQuantityController = TextEditingController().obs;
+  Rx<TextEditingController> productTitleController =
+      TextEditingController().obs;
+  Rx<TextEditingController> productDescriptionController =
+      TextEditingController().obs;
+  Rx<TextEditingController> regularPriceController =
+      TextEditingController().obs;
+  Rx<TextEditingController> discountedPriceController =
+      TextEditingController().obs;
+  Rx<TextEditingController> productQuantityController =
+      TextEditingController().obs;
   Rx<TextEditingController> caloriesController = TextEditingController().obs;
   Rx<TextEditingController> gramsController = TextEditingController().obs;
   Rx<TextEditingController> proteinController = TextEditingController().obs;
   Rx<TextEditingController> fatsController = TextEditingController().obs;
 
-  Rx<ItemAttribute?> itemAttributes = ItemAttribute(attributes: [], variants: []).obs;
+  Rx<ItemAttribute?> itemAttributes = ItemAttribute(
+    attributes: [],
+    variants: [],
+  ).obs;
 
   RxList<VendorCategoryModel> vendorCategoryList = <VendorCategoryModel>[].obs;
   Rx<VendorCategoryModel> selectedProductCategory = VendorCategoryModel().obs;
@@ -51,8 +60,10 @@ class AddProductController extends GetxController {
   RxList<AttributesModel> attributesList = <AttributesModel>[].obs;
   RxList<AttributesModel> selectedAttributesList = <AttributesModel>[].obs;
 
-  RxList<ProductSpecificationModel> specificationList = <ProductSpecificationModel>[].obs;
-  RxList<ProductSpecificationModel> addonsList = <ProductSpecificationModel>[].obs;
+  RxList<ProductSpecificationModel> specificationList =
+      <ProductSpecificationModel>[].obs;
+  RxList<ProductSpecificationModel> addonsList =
+      <ProductSpecificationModel>[].obs;
 
   RxString title = "".obs;
 
@@ -84,17 +95,31 @@ class AddProductController extends GetxController {
 
   void priceAndDiscountPriceListen() {
     regularPriceController.value.addListener(() {
-      regularPrice.value = double.parse(regularPriceController.value.text.trim().isEmpty ? '0.0' : regularPriceController.value.text.trim());
-      if (discountPrice.value != 0.0 && regularPrice.value < discountPrice.value) {
-        ShowToastDialog.showToast("Enter a regular price greater than the discount price.".tr);
+      regularPrice.value = double.parse(
+        regularPriceController.value.text.trim().isEmpty
+            ? '0.0'
+            : regularPriceController.value.text.trim(),
+      );
+      if (discountPrice.value != 0.0 &&
+          regularPrice.value < discountPrice.value) {
+        ShowToastDialog.showToast(
+          "Enter a regular price greater than the discount price.".tr,
+        );
       }
     });
     discountedPriceController.value.addListener(() {
-      discountPrice.value = double.parse(discountedPriceController.value.text.trim().isEmpty ? '0.0' : discountedPriceController.value.text.trim());
+      discountPrice.value = double.parse(
+        discountedPriceController.value.text.trim().isEmpty
+            ? '0.0'
+            : discountedPriceController.value.text.trim(),
+      );
 
-      if (regularPrice.value != 0.0 && discountPrice.value > regularPrice.value) {
+      if (regularPrice.value != 0.0 &&
+          discountPrice.value > regularPrice.value) {
         isDiscountedPriceOk.value = true;
-        ShowToastDialog.showToast("Enter a discount price less than the regular price.".tr);
+        ShowToastDialog.showToast(
+          "Enter a discount price less than the regular price.".tr,
+        );
       } else {
         isDiscountedPriceOk.value = false;
       }
@@ -110,20 +135,39 @@ class AddProductController extends GetxController {
   }
 
   Future<void> getArgument() async {
-    if (Constant.userModel!.vendorID != null && Constant.userModel!.vendorID!.isNotEmpty) {
-      await FireStoreUtils.getVendorById(Constant.userModel!.vendorID.toString()).then((value) {
+    if (Constant.userModel!.vendorID != null &&
+        Constant.userModel!.vendorID!.isNotEmpty) {
+      await FireStoreUtils.getVendorById(
+        Constant.userModel!.vendorID.toString(),
+      ).then((value) {
         if (value != null) {
           vendorModel.value = value;
         }
       });
     }
 
-    print("======>");
-    print(Constant.userModel!.sectionId);
-    print(vendorModel.value.categoryID);
-    await FireStoreUtils.getVendorCategoryById(Constant.userModel!.sectionId.toString()).then((value) {
-      if (vendorModel.value.categoryID!.isNotEmpty) {
-        vendorCategoryList.value = value.where((category) => vendorModel.value.categoryID!.contains(category.id)).toList();
+    // Kategoriyalar DOIM dokon (vendor) section bo'yicha olinadi — taom/apteka o'zgartirilganda to'g'ri tur ko'rinsin
+    final sectionId = (vendorModel.value.sectionId != null &&
+            vendorModel.value.sectionId!.isNotEmpty)
+        ? vendorModel.value.sectionId.toString()
+        : Constant.userModel!.sectionId.toString();
+    await FireStoreUtils.getVendorCategoryById(sectionId).then((value) {
+      final vendorCategoryIds = vendorModel.value.categoryID;
+      final hasVendorCategories =
+          vendorCategoryIds != null && vendorCategoryIds.isNotEmpty;
+
+      if (hasVendorCategories) {
+        vendorCategoryList.value = value
+            .where(
+              (category) => vendorCategoryIds.contains(category.id),
+            )
+            .toList();
+        // Vendor categoryID bu section kategoriyalariga mos kelmasa (boshqa section dan qolgan) — section bo'yicha barchasini ko'rsatamiz
+        if (vendorCategoryList.isEmpty) {
+          vendorCategoryList.value = List.from(value);
+        }
+      } else {
+        vendorCategoryList.value = List.from(value);
       }
     });
 
@@ -147,10 +191,13 @@ class AddProductController extends GetxController {
 
       isPublish.value = productModel.value.publish ?? false;
       productTitleController.value.text = productModel.value.name.toString();
-      productDescriptionController.value.text = productModel.value.description.toString();
+      productDescriptionController.value.text = productModel.value.description
+          .toString();
       regularPriceController.value.text = productModel.value.price.toString();
-      discountedPriceController.value.text = productModel.value.disPrice.toString();
-      productQuantityController.value.text = productModel.value.quantity.toString();
+      discountedPriceController.value.text = productModel.value.disPrice
+          .toString();
+      productQuantityController.value.text = productModel.value.quantity
+          .toString();
 
       caloriesController.value.text = productModel.value.calories.toString();
       gramsController.value.text = productModel.value.grams.toString();
@@ -161,29 +208,49 @@ class AddProductController extends GetxController {
       takeAway.value = productModel.value.takeawayOption ?? false;
       if (productModel.value.productSpecification != null) {
         productModel.value.productSpecification!.forEach((key, value) {
-          specificationList.add(ProductSpecificationModel(lable: key, value: value));
+          specificationList.add(
+            ProductSpecificationModel(lable: key, value: value),
+          );
         });
       }
 
-      itemAttributes.value = productModel.value.itemAttribute ?? ItemAttribute();
+      itemAttributes.value =
+          productModel.value.itemAttribute ?? ItemAttribute();
       if (productModel.value.isDigitalProduct == true) {
-        digitalProductFileName.value = Constant.getFileName(productModel.value.digitalProduct.toString());
-        selectedDigital.value = productModel.value.isDigitalProduct == true ? "Yes" : "No";
+        digitalProductFileName.value = Constant.getFileName(
+          productModel.value.digitalProduct.toString(),
+        );
+        selectedDigital.value = productModel.value.isDigitalProduct == true
+            ? "Yes"
+            : "No";
       }
       if (productModel.value.itemAttribute != null) {
         for (var element in productModel.value.itemAttribute!.attributes!) {
-          AttributesModel attributesModel = attributesList.firstWhere((product) => product.id == element.attributeId);
+          AttributesModel attributesModel = attributesList.firstWhere(
+            (product) => product.id == element.attributeId,
+          );
           selectedAttributesList.add(attributesModel);
         }
       }
 
       for (var element in productModel.value.addOnsTitle!) {
-        addonsList.add(ProductSpecificationModel(lable: element, value: productModel.value.addOnsPrice![productModel.value.addOnsTitle!.indexOf(element)]));
+        addonsList.add(
+          ProductSpecificationModel(
+            lable: element,
+            value: productModel
+                .value
+                .addOnsPrice![productModel.value.addOnsTitle!.indexOf(element)],
+          ),
+        );
       }
 
-      if (Constant.selectedSection != null && Constant.selectedSection!.serviceTypeFlag == "ecommerce-service") {
-        if (productModel.value.brandId != null || productModel.value.brandId!.isEmpty) {
-          selectedBrands.value = brandsList.firstWhere((p0) => p0.id == productModel.value.brandId);
+      if (Constant.selectedSection != null &&
+          Constant.selectedSection!.serviceTypeFlag == "ecommerce-service") {
+        if (productModel.value.brandId != null ||
+            productModel.value.brandId!.isEmpty) {
+          selectedBrands.value = brandsList.firstWhere(
+            (p0) => p0.id == productModel.value.brandId,
+          );
         }
       }
 
@@ -213,21 +280,30 @@ class AddProductController extends GetxController {
       ShowToastDialog.showToast("Please enter valid discount price".tr);
     } else if (productQuantityController.value.text.isEmpty) {
       ShowToastDialog.showToast("Please enter product quantity");
-    } else if (double.parse(regularPriceController.value.text.toString()) <= 0) {
+    } else if (double.parse(regularPriceController.value.text.toString()) <=
+        0) {
       ShowToastDialog.showToast("Please enter valid regular price".tr);
-    } else if (Constant.selectedSection!.serviceTypeFlag == "ecommerce-service" && selectedDigital.value == "Yes" && digitalFile == null && digitalProductFileName.isEmpty) {
+    } else if (Constant.selectedSection!.serviceTypeFlag ==
+            "ecommerce-service" &&
+        selectedDigital.value == "Yes" &&
+        digitalFile == null &&
+        digitalProductFileName.isEmpty) {
       ShowToastDialog.showToast("Please upload digital product".tr);
     } else {
       specification.clear();
       for (var element in specificationList) {
         if (element.value!.isNotEmpty && element.lable!.isNotEmpty) {
-          specification.addEntries([MapEntry(element.lable.toString(), element.value)]);
+          specification.addEntries([
+            MapEntry(element.lable.toString(), element.value),
+          ]);
         }
       }
 
       if (selectedDigital.value == "Yes" && digitalFile != null) {
         String fileName = digitalFile!.path.split('/').last;
-        Reference upload = FirebaseStorage.instance.ref().child('/digitalProducts/$fileName');
+        Reference upload = FirebaseStorage.instance.ref().child(
+          '/digitalProducts/$fileName',
+        );
         UploadTask uploadTask = upload.putFile(digitalFile!);
         uploadTask.whenComplete(() {}).catchError((onError) {
           print((onError as PlatformException).message);
@@ -241,7 +317,11 @@ class AddProductController extends GetxController {
       ShowToastDialog.showLoader("Please wait...".tr);
       for (int i = 0; i < images.length; i++) {
         if (images[i].runtimeType == XFile) {
-          String url = await Constant.uploadUserImageToFireStorage(File(images[i].path), "profileImage/${FireStoreUtils.getCurrentUid()}", File(images[i].path).path.split('/').last);
+          String url = await Constant.uploadUserImageToFireStorage(
+            File(images[i].path),
+            "profileImage/${FireStoreUtils.getCurrentUid()}",
+            File(images[i].path).path.split('/').last,
+          );
           images.removeAt(i);
           images.insert(i, url);
         }
@@ -260,29 +340,51 @@ class AddProductController extends GetxController {
       productModel.value.photo = images.isNotEmpty ? images.first : "";
       productModel.value.photos = images;
       productModel.value.price = regularPriceController.value.text.toString();
-      productModel.value.disPrice = discountedPriceController.value.text.toString().isEmpty ? "0" : discountedPriceController.value.text.toString();
-      productModel.value.quantity = int.parse(productQuantityController.value.text);
+      productModel.value.disPrice =
+          discountedPriceController.value.text.toString().isEmpty
+          ? "0"
+          : discountedPriceController.value.text.toString();
+      productModel.value.quantity = int.parse(
+        productQuantityController.value.text,
+      );
       productModel.value.description = productDescriptionController.value.text;
-      productModel.value.calories = int.parse(caloriesController.value.text.isEmpty ? "0" : caloriesController.value.text);
-      productModel.value.grams = int.parse(gramsController.value.text.isEmpty ? "0" : gramsController.value.text);
-      productModel.value.proteins = int.parse(proteinController.value.text.isEmpty ? "0" : proteinController.value.text);
-      productModel.value.fats = int.parse(fatsController.value.text.isEmpty ? "0" : fatsController.value.text);
+      productModel.value.calories = int.parse(
+        caloriesController.value.text.isEmpty
+            ? "0"
+            : caloriesController.value.text,
+      );
+      productModel.value.grams = int.parse(
+        gramsController.value.text.isEmpty ? "0" : gramsController.value.text,
+      );
+      productModel.value.proteins = int.parse(
+        proteinController.value.text.isEmpty
+            ? "0"
+            : proteinController.value.text,
+      );
+      productModel.value.fats = int.parse(
+        fatsController.value.text.isEmpty ? "0" : fatsController.value.text,
+      );
       productModel.value.name = productTitleController.value.text;
       productModel.value.veg = isPureVeg.value;
       productModel.value.nonveg = isNonVeg.value;
       productModel.value.publish = isPublish.value;
       productModel.value.vendorID = Constant.userModel!.vendorID;
       productModel.value.sectionId = vendorModel.value.sectionId;
-      productModel.value.categoryID = selectedProductCategory.value.id.toString();
+      productModel.value.categoryID = selectedProductCategory.value.id
+          .toString();
       productModel.value.itemAttribute =
-          ((itemAttributes.value!.attributes == null || itemAttributes.value!.attributes!.isEmpty) && (itemAttributes.value!.variants == null || itemAttributes.value!.variants!.isEmpty))
+          ((itemAttributes.value!.attributes == null ||
+                  itemAttributes.value!.attributes!.isEmpty) &&
+              (itemAttributes.value!.variants == null ||
+                  itemAttributes.value!.variants!.isEmpty))
           ? null
           : itemAttributes.value;
       productModel.value.addOnsTitle = listAddTitle;
       productModel.value.addOnsPrice = listAddPrice;
       productModel.value.takeawayOption = takeAway.value;
       productModel.value.productSpecification = specification;
-      productModel.value.createdAt = productModel.value.createdAt ?? Timestamp.now();
+      productModel.value.createdAt =
+          productModel.value.createdAt ?? Timestamp.now();
       productModel.value.brandId = selectedBrands.value.id;
       await FireStoreUtils.updateProduct(productModel.value);
       ShowToastDialog.closeLoader();

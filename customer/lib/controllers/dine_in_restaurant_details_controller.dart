@@ -131,12 +131,16 @@ class DineInRestaurantDetailsController extends GetxController {
     }
   }
 
-  // Notification'ni background'da yuborish
+  // Notification'ni background'da yuborish (token bo'sh/noto'g'ri bo'lsa yuborilmaydi)
   Future<void> _sendNotificationInBackground() async {
     try {
+      final token = vendorModel.value.fcmToken?.trim();
+      if (token == null || token.isEmpty || token == 'null' || token.length < 20) {
+        return;
+      }
       await SendNotification.sendFcmMessage(
         Constant.dineInPlaced,
-        vendorModel.value.fcmToken.toString(),
+        token,
         {},
       );
     } catch (e) {
@@ -153,9 +157,9 @@ class DineInRestaurantDetailsController extends GetxController {
           if (day == element.day.toString()) {
             if (element.timeslot!.isNotEmpty) {
               SpecialDiscountTimeslot employeeWithMaxSalary =
-                  element.timeslot!.reduce((item1, item2) => double.parse(item1.discount.toString()) > double.parse(item2.discount.toString()) ? item1 : item2);
+                  element.timeslot!.reduce((item1, item2) => (double.tryParse(item1.discount?.toString() ?? '0') ?? 0) > (double.tryParse(item2.discount?.toString() ?? '0') ?? 0) ? item1 : item2);
               if (employeeWithMaxSalary.discountType == "dinein") {
-                DateModel model = DateModel(date: Timestamp.fromDate(now), discountPer: employeeWithMaxSalary.discount.toString());
+                DateModel model = DateModel(date: Timestamp.fromDate(now), discountPer: employeeWithMaxSalary.discount?.toString() ?? "0");
                 dateList.add(model);
               } else {
                 DateModel model = DateModel(date: Timestamp.fromDate(now), discountPer: "0");
@@ -198,8 +202,24 @@ class DineInRestaurantDetailsController extends GetxController {
   void timeSet(Timestamp selectedDate) {
     timeSlotList.clear();
 
-    for (DateTime time = Constant.stringToDate(vendorModel.value.openDineTime.toString());
-        time.isBefore(Constant.stringToDate(vendorModel.value.closeDineTime.toString()));
+    final openStr = vendorModel.value.openDineTime?.toString().trim();
+    final closeStr = vendorModel.value.closeDineTime?.toString().trim();
+    if (openStr == null || openStr.isEmpty || openStr == 'null' ||
+        closeStr == null || closeStr.isEmpty || closeStr == 'null') {
+      return;
+    }
+
+    DateTime openTime;
+    DateTime closeTime;
+    try {
+      openTime = Constant.stringToDate(openStr);
+      closeTime = Constant.stringToDate(closeStr);
+    } catch (_) {
+      return;
+    }
+
+    for (DateTime time = openTime;
+        time.isBefore(closeTime);
         time = time.add(const Duration(minutes: 30))) {
       final now = DateTime.parse(selectedDate.toDate().toString());
       var day = DateFormat('EEEE').format(now);
@@ -221,11 +241,11 @@ class DineInRestaurantDetailsController extends GetxController {
                       var index = timeSlotList.indexWhere((element) => element.time == time);
                       if (timeSlotList[index].discountPer == "0") {
                         timeSlotList.removeAt(index);
-                        TimeModel model = TimeModel(time: time, discountPer: element.discount, discountType: element.type);
+                        TimeModel model = TimeModel(time: time, discountPer: element.discount?.toString() ?? "0", discountType: element.type ?? "amount");
                         timeSlotList.insert(index == 0 ? 0 : index, model);
                       }
                     } else {
-                      TimeModel model = TimeModel(time: time, discountPer: element.discount, discountType: element.type);
+                      TimeModel model = TimeModel(time: time, discountPer: element.discount?.toString() ?? "0", discountType: element.type ?? "amount");
                       timeSlotList.add(model);
                     }
                   } else {

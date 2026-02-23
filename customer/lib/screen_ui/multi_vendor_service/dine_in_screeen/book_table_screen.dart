@@ -1,6 +1,9 @@
 import 'package:customer/constant/constant.dart';
 import 'package:customer/controllers/dine_in_restaurant_details_controller.dart';
+import 'package:customer/screen_ui/auth_screens/auth_screen.dart';
 import 'package:customer/themes/app_them_data.dart';
+import 'package:customer/themes/show_toast_dialog.dart';
+import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:customer/themes/responsive.dart';
 import 'package:customer/themes/round_button_fill.dart';
 import 'package:customer/themes/text_field_widget.dart';
@@ -460,6 +463,11 @@ class BookTableScreen extends StatelessWidget {
                 textColor: AppThemeData.grey50,
                 fontSizes: 16,
                 onPress: () async {
+                  if (auth.FirebaseAuth.instance.currentUser == null) {
+                    ShowToastDialog.showToast("Please login first".tr);
+                    Get.to(() => const AuthScreen());
+                    return;
+                  }
                   controller.orderBook();
                 },
               ),

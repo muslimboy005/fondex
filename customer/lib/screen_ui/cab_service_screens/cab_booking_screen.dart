@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' as developer;
 import 'dart:io';
 import 'package:customer/models/coupon_model.dart';
 import 'package:customer/models/tax_model.dart';
@@ -32,9 +33,10 @@ import '../../themes/round_button_fill.dart';
 import '../../themes/show_toast_dialog.dart';
 import '../../themes/text_field_widget.dart';
 import '../../widget/osm_map/map_picker_page.dart';
+import '../../screen_ui/auth_screens/auth_screen.dart';
 import '../../widget/place_picker/location_picker_screen.dart';
 import '../../widget/place_picker/selected_location_model.dart';
-import 'package:location/location.dart';
+import 'package:firebase_auth/firebase_auth.dart' as auth;
 
 class CabBookingScreen extends StatelessWidget {
   const CabBookingScreen({super.key});
@@ -112,71 +114,72 @@ class CabBookingScreen extends StatelessWidget {
                             ],
                           )
                           : Constant.isYandexMap
-                              ? ym.YandexMap(
-                                onMapCreated:
-                                    (ym.YandexMapController mapController) async {
-                                  controller.yandexMapController =
-                                      mapController;
-                                  await mapController.toggleUserLayer(
-                                    visible: true,
-                                  );
-                                  await mapController.moveCamera(
-                                    ym.CameraUpdate.newCameraPosition(
-                                      ym.CameraPosition(
-                                        target: ym.Point(
-                                          latitude: controller
+                          ? ym.YandexMap(
+                            onMapCreated: (
+                              ym.YandexMapController mapController,
+                            ) async {
+                              controller.yandexMapController = mapController;
+                              await mapController.toggleUserLayer(
+                                visible: true,
+                              );
+                              await mapController.moveCamera(
+                                ym.CameraUpdate.newCameraPosition(
+                                  ym.CameraPosition(
+                                    target: ym.Point(
+                                      latitude:
+                                          controller
                                               .currentPosition
                                               .value
                                               .latitude,
-                                          longitude: controller
+                                      longitude:
+                                          controller
                                               .currentPosition
                                               .value
                                               .longitude,
-                                        ),
-                                        zoom: 14,
-                                      ),
                                     ),
-                                  );
-                                  if (Constant.currentLocation != null) {
-                                    controller.setDepartureMarker(
-                                      Constant.currentLocation!.latitude,
-                                      Constant.currentLocation!.longitude,
-                                    );
-                                    controller.searchPlaceNameGoogle();
-                                  }
-                                },
-                                mapObjects: yandexMapObjectsFromGoogle(
-                                  markers: controller.markers.toSet(),
-                                  polylines: controller.polyLines.values,
+                                    zoom: 14,
+                                  ),
                                 ),
-                              )
-                              : GoogleMap(
-                                onMapCreated: (googleMapController) {
-                                  controller.mapController =
-                                      googleMapController;
+                              );
+                              if (Constant.currentLocation != null) {
+                                controller.setDepartureMarker(
+                                  Constant.currentLocation!.latitude,
+                                  Constant.currentLocation!.longitude,
+                                );
+                                controller.searchPlaceNameGoogle();
+                              }
+                            },
+                            mapObjects: yandexMapObjectsFromGoogle(
+                              markers: controller.markers.toSet(),
+                              polylines: controller.polyLines.values,
+                            ),
+                          )
+                          : GoogleMap(
+                            onMapCreated: (googleMapController) {
+                              controller.mapController = googleMapController;
 
-                                  if (Constant.currentLocation != null) {
-                                    controller.setDepartureMarker(
-                                      Constant.currentLocation!.latitude,
-                                      Constant.currentLocation!.longitude,
-                                    );
-                                    controller.searchPlaceNameGoogle();
-                                  }
-                                },
-                                initialCameraPosition: CameraPosition(
-                                  target: controller.currentPosition.value,
-                                  zoom: 14,
-                                ),
-                                myLocationEnabled: true,
-                                zoomControlsEnabled: true,
-                                zoomGesturesEnabled: true,
-                                polylines: Set<Polyline>.of(
-                                  controller.polyLines.values,
-                                ),
-                                markers:
-                                    controller.markers
-                                        .toSet(), // reactive marker set
-                              ),
+                              if (Constant.currentLocation != null) {
+                                controller.setDepartureMarker(
+                                  Constant.currentLocation!.latitude,
+                                  Constant.currentLocation!.longitude,
+                                );
+                                controller.searchPlaceNameGoogle();
+                              }
+                            },
+                            initialCameraPosition: CameraPosition(
+                              target: controller.currentPosition.value,
+                              zoom: 14,
+                            ),
+                            myLocationEnabled: true,
+                            zoomControlsEnabled: true,
+                            zoomGesturesEnabled: true,
+                            polylines: Set<Polyline>.of(
+                              controller.polyLines.values,
+                            ),
+                            markers:
+                                controller.markers
+                                    .toSet(), // reactive marker set
+                          ),
 
                       Positioned(
                         top: 50,
@@ -898,53 +901,50 @@ class CabBookingScreen extends StatelessWidget {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 8),
-                          // Destination (boradigan joy - dropoff location)
-                          Row(
-                            children: [
-                              Container(
-                                width: 22,
-                                height: 22,
-                                decoration: BoxDecoration(
-                                  color: AppThemeData.taxiBooking500,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Center(
-                                  child: Icon(
-                                    Icons.circle,
-                                    color: Colors.white,
-                                    size: 8,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Obx(
-                                  () => Text(
-                                    controller
-                                            .destinationTextEditController
-                                            .value
-                                            .text
-                                            .isNotEmpty
-                                        ? controller
-                                            .destinationTextEditController
-                                            .value
-                                            .text
-                                        : "Boradigan manzil".tr,
-                                    style: AppThemeData.mediumTextStyle(
-                                      fontSize: 13,
-                                      color:
-                                          isDark
-                                              ? AppThemeData.grey300
-                                              : AppThemeData.grey600,
+                          Obx(() {
+                            final destEmpty = controller.destinationTextEditController.value.text.trim().isEmpty;
+                            if (destEmpty) return const SizedBox.shrink();
+                            return Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const SizedBox(height: 8),
+                                // Destination (boradigan joy) – faqat bitta lokatsiya bo‘lmaganda
+                                Row(
+                                  children: [
+                                    Container(
+                                      width: 22,
+                                      height: 22,
+                                      decoration: BoxDecoration(
+                                        color: AppThemeData.taxiBooking500,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Center(
+                                        child: Icon(
+                                          Icons.circle,
+                                          color: Colors.white,
+                                          size: 8,
+                                        ),
+                                      ),
                                     ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Text(
+                                        controller.destinationTextEditController.value.text.trim().isEmpty
+                                            ? "Boradigan manzil".tr
+                                            : controller.destinationTextEditController.value.text,
+                                        style: AppThemeData.mediumTextStyle(
+                                          fontSize: 13,
+                                          color: isDark ? AppThemeData.grey300 : AppThemeData.grey600,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ),
-                            ],
-                          ),
+                              ],
+                            );
+                          }),
                         ],
                       ),
                     ),
@@ -1152,6 +1152,13 @@ class CabBookingScreen extends StatelessWidget {
                         Expanded(
                           child: ElevatedButton(
                             onPressed: () async {
+                              if (auth.FirebaseAuth.instance.currentUser == null) {
+                                ShowToastDialog.showToast(
+                                  "Please login first".tr,
+                                );
+                                Get.to(() => const AuthScreen());
+                                return;
+                              }
                               if (controller.selectedVehicleType.value.id !=
                                   null) {
                                 controller.calculateTotalAmount();
@@ -2635,6 +2642,13 @@ class CabBookingScreen extends StatelessWidget {
                       RoundedButtonFill(
                         title: "Confirm Booking".tr,
                         onPress: () async {
+                          if (auth.FirebaseAuth.instance.currentUser == null) {
+                            ShowToastDialog.showToast(
+                              "Please login first".tr,
+                            );
+                            Get.to(() => const AuthScreen());
+                            return;
+                          }
                           // Wallet balansini tekshirish
                           if (controller.selectedPaymentMethod.value ==
                               "wallet") {
@@ -3234,13 +3248,13 @@ class CabBookingScreen extends StatelessWidget {
                           ),
                           padding: const EdgeInsets.all(10),
                           child: InkWell(
-                            onTap: () {
-                              controller.bottomSheetType.value = 'payment';
-                            },
-                            child: Row(
-                              children: [
-                                controller.selectedPaymentMethod.value ==
-                                        PaymentGateway.wallet.name
+                                  onTap: () {
+                                    controller.bottomSheetType.value = 'payment';
+                                  },
+                                  child: Row(
+                                    children: [
+                                      controller.selectedPaymentMethod.value ==
+                                              PaymentGateway.wallet.name
                                     ? cardDecorationScreen(
                                       controller,
                                       PaymentGateway.wallet,
@@ -3336,7 +3350,9 @@ class CabBookingScreen extends StatelessWidget {
                                 SizedBox(width: 22),
                                 Expanded(
                                   child: Text(
-                                    controller.selectedPaymentMethod.value.tr,
+                                    controller.selectedPaymentMethod.value.toLowerCase() == 'cod'
+                                        ? "Cash on Delivery".tr
+                                        : controller.selectedPaymentMethod.value.tr,
                                     textAlign: TextAlign.start,
                                     style: AppThemeData.boldTextStyle(
                                       fontSize: 16,
@@ -3561,74 +3577,14 @@ class CabBookingScreen extends StatelessWidget {
                     ),
                   ),
 
+                  // SOS tugmasi yashirilgan
+                  const SizedBox.shrink(),
                   Obx(() {
-                    if (controller.currentOrder.value.status ==
-                        Constant.orderInTransit) {
-                      return Column(
-                        children: [
-                          RoundedButtonFill(
-                            title: "SOS".tr,
-                            color: Colors.red.withOpacity(0.50),
-                            textColor: AppThemeData.grey50,
-                            isCenter: true,
-                            icon: const Icon(Icons.call, color: Colors.white),
-                            onPress: () async {
-                              ShowToastDialog.showLoader("Please wait...".tr);
-
-                              LocationData location =
-                                  await controller.currentLocation.value
-                                      .getLocation();
-
-                              await FireStoreUtils.getSOS(
-                                controller.currentOrder.value.id ?? '',
-                              ).then((value) async {
-                                if (value == false) {
-                                  await FireStoreUtils.setSos(
-                                    controller.currentOrder.value.id ?? '',
-                                    UserLocation(
-                                      latitude: location.latitude!,
-                                      longitude: location.longitude!,
-                                    ),
-                                  ).then((_) {
-                                    ShowToastDialog.closeLoader();
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          "Your SOS request has been submitted to admin"
-                                              .tr,
-                                        ),
-                                        backgroundColor: Colors.green,
-                                        duration: Duration(seconds: 3),
-                                      ),
-                                    );
-                                  });
-                                } else {
-                                  ShowToastDialog.closeLoader();
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        "Your SOS request is already submitted"
-                                            .tr,
-                                      ),
-                                      backgroundColor: Colors.red,
-                                      duration: Duration(seconds: 3),
-                                    ),
-                                  );
-                                }
-                              });
-                            },
-                          ),
-                          const SizedBox(height: 10),
-                        ],
-                      );
-                    } else {
-                      return const SizedBox.shrink();
-                    }
-                  }),
-                  Obx(() {
-                    if (controller.currentOrder.value.status ==
-                            Constant.orderInTransit &&
-                        controller.currentOrder.value.paymentStatus == false) {
+                    // Bitta nuqta zakazda: "Pay now" faqat haydovchi "Manzilga yetib keldik" bosgach (finalFare set bo'lganda)
+                    final inTransit = controller.currentOrder.value.status == Constant.orderInTransit;
+                    final unpaid = controller.currentOrder.value.paymentStatus == false;
+                    final canPaySinglePoint = controller.currentOrder.value.finalFare != null || !controller.isSinglePointOrder;
+                    if (inTransit && unpaid && canPaySinglePoint) {
                       return RoundedButtonFill(
                         title: "Pay Now".tr,
                         onPress: () async {
@@ -3795,6 +3751,11 @@ class CabBookingScreen extends StatelessWidget {
           children: [
             InkWell(
               onTap: () async {
+                if (auth.FirebaseAuth.instance.currentUser == null) {
+                  ShowToastDialog.showToast("Please login first".tr);
+                  Get.to(() => const AuthScreen());
+                  return;
+                }
                 // Wallet tanlanganda balansni tekshirish
                 if (value.name == PaymentGateway.wallet.name) {
                   // User ma'lumotlarini yangilash - eng so'nggi balansni olish
@@ -3826,6 +3787,25 @@ class CabBookingScreen extends StatelessWidget {
                 }
 
                 controller.selectedPaymentMethod.value = value.name;
+
+                // Buyurtma mavjud bo‘lsa Firestore (cab_booking_orders) da to‘lov usulini yangilash
+                if (controller.currentOrder.value.id != null &&
+                    controller.currentOrder.value.id!.isNotEmpty) {
+                  controller.currentOrder.value.paymentMethod = value.name;
+                  try {
+                    await FireStoreUtils.updateCabOrder(
+                        controller.currentOrder.value);
+                    developer.log(
+                      '[CAB_PAYMENT] To\'lov usuli yangilandi: orderId=${controller.currentOrder.value.id}, paymentMethod=${value.name}',
+                      name: 'cab_booking',
+                    );
+                  } catch (e) {
+                    developer.log(
+                      '[CAB_PAYMENT] Firestore yangilash xatosi: $e',
+                      name: 'cab_booking',
+                    );
+                  }
+                }
               },
               child: Row(
                 children: [
@@ -3915,8 +3895,26 @@ class CabBookingScreen extends StatelessWidget {
                     value: value.name,
                     groupValue: controller.selectedPaymentMethod.value,
                     activeColor: const Color(0xFFFF6839),
-                    onChanged: (value) {
-                      controller.selectedPaymentMethod.value = value.toString();
+                    onChanged: (val) async {
+                      if (val == null) return;
+                      controller.selectedPaymentMethod.value = val;
+                      if (controller.currentOrder.value.id != null &&
+                          controller.currentOrder.value.id!.isNotEmpty) {
+                        controller.currentOrder.value.paymentMethod = val;
+                        try {
+                          await FireStoreUtils.updateCabOrder(
+                              controller.currentOrder.value);
+                          developer.log(
+                            '[CAB_PAYMENT] To\'lov usuli yangilandi (Radio): orderId=${controller.currentOrder.value.id}, paymentMethod=$val',
+                            name: 'cab_booking',
+                          );
+                        } catch (e) {
+                          developer.log(
+                            '[CAB_PAYMENT] Firestore yangilash xatosi: $e',
+                            name: 'cab_booking',
+                          );
+                        }
+                      }
                     },
                   ),
                 ],

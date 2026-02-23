@@ -11,7 +11,9 @@ import '../../payment/createRazorPayOrderModel.dart';
 import '../../payment/rozorpayConroller.dart';
 import '../../themes/app_them_data.dart';
 import '../../themes/round_button_fill.dart';
+import '../../screen_ui/auth_screens/auth_screen.dart';
 import '../../themes/show_toast_dialog.dart';
+import 'package:firebase_auth/firebase_auth.dart' as auth;
 import '../multi_vendor_service/wallet_screen/wallet_screen.dart';
 
 class ParcelOrderConfirmationScreen extends StatelessWidget {
@@ -318,6 +320,11 @@ class ParcelOrderConfirmationScreen extends StatelessWidget {
                         RoundedButtonFill(
                           title: controller.paymentBy.value == "Sender" ? "Select Payment Method".tr : "Continue".tr,
                           onPress: () async {
+                            if (auth.FirebaseAuth.instance.currentUser == null) {
+                              ShowToastDialog.showToast("Please login first".tr);
+                              Get.to(() => const AuthScreen());
+                              return;
+                            }
                             if (controller.paymentBy.value == "Sender") {
                               Get.bottomSheet(
                                 paymentBottomSheet(context, controller, isDark), // your widget
@@ -478,6 +485,11 @@ class ParcelOrderConfirmationScreen extends StatelessWidget {
                 color: AppThemeData.taxiBooking300,
                 textColor: AppThemeData.grey900,
                 onPress: () async {
+                  if (auth.FirebaseAuth.instance.currentUser == null) {
+                    ShowToastDialog.showToast("Please login first".tr);
+                    Get.to(() => const AuthScreen());
+                    return;
+                  }
                   if (controller.selectedPaymentMethod.value == PaymentGateway.stripe.name) {
                     controller.stripeMakePayment(amount: controller.totalAmount.value.toString());
                   } else if (controller.selectedPaymentMethod.value == PaymentGateway.paypal.name) {

@@ -1,6 +1,5 @@
 import 'package:country_code_picker/country_code_picker.dart';
 import 'package:vendor/app/auth_screen/login_screen.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -138,88 +137,60 @@ class PhoneRegistrationScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 30),
                           RoundedButtonFill(
-                            title: "Register".tr,
+                            title: "Continue".tr,
                             color: AppThemeData.primary300,
                             textColor: AppThemeData.grey50,
                             onPress: controller.registerWithPhone,
                           ),
                           const SizedBox(height: 25),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Container(
-                                width: 52,
-                                height: 1,
-                                color: isDark
-                                    ? AppThemeData.greyDark300
-                                    : AppThemeData.grey300,
-                              ),
-                              const SizedBox(width: 15),
-                              Text(
-                                "or continue with".tr,
-                                style: TextStyle(
-                                  fontFamily: AppThemeData.regular,
-                                  color: isDark
-                                      ? AppThemeData.greyDark400
-                                      : AppThemeData.grey400,
-                                ),
-                              ),
-                              const SizedBox(width: 15),
-                              Container(
-                                width: 52,
-                                height: 1,
-                                color: isDark
-                                    ? AppThemeData.greyDark400
-                                    : AppThemeData.grey400,
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 25),
-                          RoundedButtonFill(
-                            title: "Email address".tr,
-                            color: isDark
-                                ? AppThemeData.greyDark200
-                                : AppThemeData.grey200,
-                            textColor: isDark
-                                ? AppThemeData.greyDark900
-                                : AppThemeData.grey900,
-                            onPress: () => Get.to(() => const LoginScreen()),
-                          ),
                         ],
                       ),
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: Center(
-                      child: Text.rich(
-                        TextSpan(
-                          text: "Already have an account?".tr,
-                          style: TextStyle(
-                            fontFamily: AppThemeData.medium,
+                  Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            width: 52,
+                            height: 1,
                             color: isDark
-                                ? AppThemeData.greyDark800
-                                : AppThemeData.grey800,
+                                ? AppThemeData.greyDark300
+                                : AppThemeData.grey300,
                           ),
-                          children: [
-                            TextSpan(
-                              text: "Sign in".tr,
-                              style: TextStyle(
-                                fontFamily: AppThemeData.medium,
-                                color: AppThemeData.primary300,
-                                decoration: TextDecoration.underline,
-                                decorationColor: AppThemeData.primary300,
-                                decorationStyle: TextDecorationStyle.solid,
-                              ),
-                              recognizer: TapGestureRecognizer()
-                                ..onTap = () {
-                                  Get.back();
-                                },
+                          const SizedBox(width: 15),
+                          Text(
+                            "or continue with".tr,
+                            style: TextStyle(
+                              fontFamily: AppThemeData.regular,
+                              color: isDark
+                                  ? AppThemeData.greyDark400
+                                  : AppThemeData.grey400,
                             ),
-                          ],
-                        ),
+                          ),
+                          const SizedBox(width: 15),
+                          Container(
+                            width: 52,
+                            height: 1,
+                            color: isDark
+                                ? AppThemeData.greyDark400
+                                : AppThemeData.grey400,
+                          ),
+                        ],
                       ),
-                    ),
+                      const SizedBox(height: 25),
+                      RoundedButtonFill(
+                        title: "Email address".tr,
+                        color: isDark
+                            ? AppThemeData.greyDark200
+                            : AppThemeData.grey200,
+                        textColor: isDark
+                            ? AppThemeData.greyDark900
+                            : AppThemeData.grey900,
+                        onPress: () => Get.to(() => const LoginScreen()),
+                      ),
+                    ],
                   ),
                 ],
               ),

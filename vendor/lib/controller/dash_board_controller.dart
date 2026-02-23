@@ -56,28 +56,42 @@ class DashBoardController extends GetxController {
         if (value != null) {
           vendorModel.value = value;
           Constant.vendorAdminCommission = value.adminCommission;
-          await FireStoreUtils.getSectionById(
-            vendorModel.value.sectionId.toString(),
-          ).then((value) {
-            if (value != null) {
-              sectionModel.value = value;
-              Constant.selectedSection = sectionModel.value;
-            }
-          });
+          // Dokon (vendor) mavjud bo'lsa, section har doim VENDOR ning sectionId dan olinadi (dokon turi edit qilinganda ham to'g'ri bo'ladi)
+          if (vendorModel.value.sectionId != null &&
+              vendorModel.value.sectionId!.isNotEmpty) {
+            await FireStoreUtils.getSectionById(
+              vendorModel.value.sectionId.toString(),
+            ).then((sectionValue) {
+              if (sectionValue != null) {
+                sectionModel.value = sectionValue;
+                Constant.selectedSection = sectionModel.value;
+                Constant.userModel!.sectionId = sectionValue.id;
+              }
+            });
+          }
         }
       });
     }
 
-    await FireStoreUtils.getSectionById(
-      Constant.userModel!.sectionId.toString(),
-    ).then((value) {
-      if (value != null) {
-        sectionModel.value = value;
-        Constant.selectedSection = sectionModel.value;
-      } else {
-        sectionModel.value = SectionModel();
-      }
-    });
+    // Vendor yo'q yoki vendor.sectionId bo'sh bo'lsagina userModel.sectionId dan foydalanamiz (yangi vendor hali saqlanmagan holat)
+    final useUserSection = vendorModel.value.sectionId == null ||
+        vendorModel.value.sectionId!.isEmpty;
+    if (useUserSection &&
+        Constant.userModel!.sectionId != null &&
+        Constant.userModel!.sectionId!.isNotEmpty) {
+      await FireStoreUtils.getSectionById(
+        Constant.userModel!.sectionId.toString(),
+      ).then((value) {
+        if (value != null) {
+          sectionModel.value = value;
+          Constant.selectedSection = sectionModel.value;
+        } else {
+          sectionModel.value = SectionModel();
+        }
+      });
+    } else if (useUserSection) {
+      sectionModel.value = SectionModel();
+    }
     setPage();
     isLoading.value = false;
   }

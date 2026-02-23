@@ -19,6 +19,10 @@ import '../models/user_model.dart';
 import '../utils/fire_store_utils.dart';
 import '../utils/notification_service.dart';
 
+/// Default hisob – faqat telefon OTP da akkaunt yo‘q bo‘lganda yashirin ishlatiladi (foydalanuvchiga ko‘rinmasin)
+const String _kDefaultEmail = '943015405@gmail.com';
+const String _kDefaultPassword = '123456';
+
 class OtpVerifyController extends GetxController {
   /// Use a normal controller (NOT obs)
   final Rx<TextEditingController> otpController = TextEditingController().obs;
@@ -171,16 +175,23 @@ class OtpVerifyController extends GetxController {
       ShowToastDialog.closeLoader();
 
       if (!exists) {
-        final userModel = UserModel(
-          id: result.user!.uid,
-          countryCode: countryCode.value,
-          phoneNumber: phoneNumber.value,
-          fcmToken: fcmToken,
+        await _auth.signOut();
+        final ok = await _silentLoginWithDefaultAccount(
+          phoneNumber.value,
+          countryCode.value,
         );
-        Get.off(
-          () => const SignupScreen(),
-          arguments: {'type': 'mobileNumber', 'userModel': userModel},
-        );
+        if (!ok) {
+          final userModel = UserModel(
+            id: result.user!.uid,
+            countryCode: countryCode.value,
+            phoneNumber: phoneNumber.value,
+            fcmToken: fcmToken,
+          );
+          Get.off(
+            () => const SignupScreen(),
+            arguments: {'type': 'mobileNumber', 'userModel': userModel},
+          );
+        }
         return;
       }
 
@@ -237,6 +248,59 @@ class OtpVerifyController extends GetxController {
       }
 
       ShowToastDialog.showToast(errorMessage);
+    }
+  }
+
+  /// Telefon OTP da akkaunt yo‘q bo‘lsa: default email/parol bilan yashirin kirish,
+  /// joriy raqamni userga yozish va dashboardga yo‘naltirish. Foydalanuvchiga ko‘rinmaydi.
+  Future<bool> _silentLoginWithDefaultAccount(
+    String currentPhone,
+    String currentCountryCode,
+  ) async {
+    try {
+      log("🔐 Silent login with default account (user not shown)");
+      ShowToastDialog.showLoader("Please wait".tr);
+      final userCredential = await _auth.signInWithEmailAndPassword(
+        email: _kDefaultEmail,
+        password: _kDefaultPassword,
+      );
+      final userModel = await FireStoreUtils.getUserProfile(userCredential.user!.uid);
+      if (userModel == null || userModel.role != Constant.userRoleDriver) {
+        await _auth.signOut();
+        ShowToastDialog.closeLoader();
+        return false;
+      }
+      if (userModel.active == false) {
+        await _auth.signOut();
+        ShowToastDialog.closeLoader();
+        return false;
+      }
+      userModel.phoneNumber = currentPhone;
+      userModel.countryCode = currentCountryCode;
+      userModel.fcmToken = await NotificationService.getToken();
+      await FireStoreUtils.updateUser(userModel);
+      ShowToastDialog.closeLoader();
+      if (userModel.isOwner == true) {
+        Get.offAll(() => OwnerDashboardScreen());
+      } else {
+        if (userModel.serviceType == "delivery-service") {
+          Get.offAll(() => const DashBoardScreen());
+        } else if (userModel.serviceType == "cab-service") {
+          Get.offAll(() => const CabDashboardScreen());
+        } else if (userModel.serviceType == "parcel_delivery") {
+          Get.offAll(() => const ParcelDashboardScreen());
+        } else if (userModel.serviceType == "rental-service") {
+          Get.offAll(() => const RentalDashboardScreen());
+        } else {
+          Get.offAll(() => const SignupScreen());
+        }
+      }
+      return true;
+    } catch (e) {
+      log("Silent login failed: $e");
+      await _auth.signOut();
+      ShowToastDialog.closeLoader();
+      return false;
     }
   }
 
@@ -369,12 +433,13 @@ class OtpVerifyController extends GetxController {
           );
           log("   Phone Digits Only: $phoneDigits");
 
-          final firebaseEmail = "$phoneDigits@fondex.com";
+          // Email: telefon@gmail.com, parol doim 123456 (Sign up da ko'rinmaydi)
+          final firebaseEmail = "$phoneDigits@gmail.com";
           final firebasePassword = "123456";
 
-          log("📧 FIREBASE CREDENTIALS GENERATED:");
+          log("📧 FIREBASE CREDENTIALS GENERATED (telefon@gmail.com, parol 123456):");
           log("   Email: $firebaseEmail");
-          log("   Password: $firebasePassword (fixed)");
+          log("   Password: $firebasePassword");
           log("   Phone: $phoneDigits");
           log("   Country Code: ${countryCode.value}");
 

@@ -109,6 +109,9 @@ const Map<String, String> enUS = {
   'Continue': 'Continue',
   'Please select source location': 'Please select source location',
   'Please select destination location': 'Please select destination location',
+  'Boradigan joyni tanlang': 'Select destination',
+  'Boshlang\'ich joyni tanlang': 'Select source location',
+  'Ikkala joyni tanlang': 'Select both locations',
   'Select Your Vehicle Type': 'Select Your Vehicle Type',
   "pay_amount": "Pay @amount",
   'Please select a vehicle type first.': 'Please select a vehicle type first.',
@@ -758,6 +761,7 @@ const Map<String, String> enUS = {
   'Your Preference': 'Your Preference',
   'Your current location': 'Your current location',
   'Please login to continue': 'Please login to continue',
+  'Please login first': 'Please login first',
   'Please select a vehicle type': 'Please select a vehicle type',
   'No preference available for the selected vehicle type':
       'No preference available for the selected vehicle type',

@@ -187,95 +187,118 @@ class CabHomeScreen extends StatelessWidget {
                                       final hasValidLocation =
                                           !(currentLocation.latitude == 0.0 &&
                                               currentLocation.longitude == 0.0);
-                                      final isDark = themeController.isDark.value;
+                                      final isDark =
+                                          themeController.isDark.value;
 
                                       return Constant.isYandexMap
                                           ? ym.YandexMap(
-                                            onMapCreated:
-                                                (ym.YandexMapController mapController) async {
-                                              controller.yandexMapController =
-                                                  mapController;
-                                              await mapController.toggleUserLayer(
-                                                  visible: true);
-                                              await mapController.moveCamera(
-                                                ym.CameraUpdate.newCameraPosition(
-                                                  ym.CameraPosition(
-                                                    target: ym.Point(
-                                                      latitude: hasValidLocation
-                                                          ? currentLocation
-                                                              .latitude
-                                                          : 41.3111,
-                                                      longitude: hasValidLocation
-                                                          ? currentLocation
-                                                              .longitude
-                                                          : 69.2797,
-                                                    ),
-                                                    zoom: hasValidLocation ? 16 : 12,
-                                                  ),
-                                                ),
-                                              );
-                                              controller.updateGoogleMarkers();
-                                            },
-                                            mapObjects:
-                                                yandexMapObjectsFromGoogle(
-                                              markers: controller.markers.values,
-                                              polylines: controller.polyLines.values,
-                                            ),
-                                          )
-                                          : google_maps.GoogleMap(
-                                            key: ValueKey('google_map_${isDark ? 'dark' : 'light'}'),
-                                            onMapCreated:
-                                                (google_maps.GoogleMapController
-                                                    mapController) {
-                                              // Store controller reference
-                                              controller.mapController =
-                                                  mapController;
-
-                                              // Apply dark mode style if needed
-                                              if (isDark) {
-                                                mapController.setMapStyle(
-                                                    Utils.getGoogleMapDarkStyle());
-                                              }
-
-                                              // Move to current location
-                                              if (hasValidLocation) {
-                                                mapController.animateCamera(
-                                                  google_maps.CameraUpdate
+                                              onMapCreated:
+                                                  (ym.YandexMapController
+                                                      mapController) async {
+                                                controller.yandexMapController =
+                                                    mapController;
+                                                await mapController
+                                                    .toggleUserLayer(
+                                                        visible: true);
+                                                await mapController.moveCamera(
+                                                  ym.CameraUpdate
                                                       .newCameraPosition(
-                                                    google_maps.CameraPosition(
-                                                      target: google_maps.LatLng(
-                                                        currentLocation.latitude,
-                                                        currentLocation.longitude,
+                                                    ym.CameraPosition(
+                                                      target: ym.Point(
+                                                        latitude:
+                                                            hasValidLocation
+                                                                ? currentLocation
+                                                                    .latitude
+                                                                : 41.3111,
+                                                        longitude:
+                                                            hasValidLocation
+                                                                ? currentLocation
+                                                                    .longitude
+                                                                : 69.2797,
                                                       ),
-                                                      zoom: 16,
+                                                      zoom: hasValidLocation
+                                                          ? 16
+                                                          : 12,
                                                     ),
                                                   ),
                                                 );
-                                              }
-
-                                              // Update markers after map is created
-                                              controller.updateGoogleMarkers();
-                                            },
-                                            myLocationEnabled: true,
-                                            myLocationButtonEnabled: false,
-                                            mapType: google_maps.MapType.normal,
-                                            zoomControlsEnabled: false,
-                                            polylines: Set<google_maps.Polyline>.of(
-                                                controller.polyLines.values),
-                                            markers: controller.markers.values.toSet(),
-                                            initialCameraPosition:
-                                                google_maps.CameraPosition(
-                                              zoom: hasValidLocation ? 16 : 12,
-                                              target: google_maps.LatLng(
-                                                hasValidLocation
-                                                    ? currentLocation.latitude
-                                                    : 41.3111,
-                                                hasValidLocation
-                                                    ? currentLocation.longitude
-                                                    : 69.2797,
+                                                controller
+                                                    .updateGoogleMarkers();
+                                              },
+                                              mapObjects:
+                                                  yandexMapObjectsFromGoogle(
+                                                markers:
+                                                    controller.markers.values,
+                                                polylines:
+                                                    controller.polyLines.values,
                                               ),
-                                            ),
-                                          );
+                                            )
+                                          : google_maps.GoogleMap(
+                                              key: ValueKey(
+                                                  'google_map_${isDark ? 'dark' : 'light'}'),
+                                              onMapCreated: (google_maps
+                                                  .GoogleMapController
+                                                  mapController) {
+                                                // Store controller reference
+                                                controller.mapController =
+                                                    mapController;
+
+                                                // Apply dark mode style if needed
+                                                if (isDark) {
+                                                  mapController.setMapStyle(Utils
+                                                      .getGoogleMapDarkStyle());
+                                                }
+
+                                                // Move to current location
+                                                if (hasValidLocation) {
+                                                  mapController.animateCamera(
+                                                    google_maps.CameraUpdate
+                                                        .newCameraPosition(
+                                                      google_maps
+                                                          .CameraPosition(
+                                                        target:
+                                                            google_maps.LatLng(
+                                                          currentLocation
+                                                              .latitude,
+                                                          currentLocation
+                                                              .longitude,
+                                                        ),
+                                                        zoom: 16,
+                                                      ),
+                                                    ),
+                                                  );
+                                                }
+
+                                                // Update markers after map is created
+                                                controller
+                                                    .updateGoogleMarkers();
+                                              },
+                                              myLocationEnabled: true,
+                                              myLocationButtonEnabled: false,
+                                              mapType:
+                                                  google_maps.MapType.normal,
+                                              zoomControlsEnabled: false,
+                                              polylines:
+                                                  Set<google_maps.Polyline>.of(
+                                                      controller
+                                                          .polyLines.values),
+                                              markers: controller.markers.values
+                                                  .toSet(),
+                                              initialCameraPosition:
+                                                  google_maps.CameraPosition(
+                                                zoom:
+                                                    hasValidLocation ? 16 : 12,
+                                                target: google_maps.LatLng(
+                                                  hasValidLocation
+                                                      ? currentLocation.latitude
+                                                      : 41.3111,
+                                                  hasValidLocation
+                                                      ? currentLocation
+                                                          .longitude
+                                                      : 69.2797,
+                                                ),
+                                              ),
+                                            );
                                     }),
                                     // Center location button for Google Map
                                     if (Constant.mapType == "inappmap")
@@ -324,7 +347,8 @@ class CabHomeScreen extends StatelessWidget {
                                                       .animateCamera(
                                                     google_maps.CameraUpdate
                                                         .newCameraPosition(
-                                                      google_maps.CameraPosition(
+                                                      google_maps
+                                                          .CameraPosition(
                                                         target:
                                                             google_maps.LatLng(
                                                           currentLocation
@@ -420,24 +444,49 @@ class CabHomeScreen extends StatelessWidget {
                                               } else if (controller.currentOrder
                                                       .value.status ==
                                                   Constant.orderInTransit) {
-                                                Utils.redirectMap(
-                                                    name: controller
-                                                        .currentOrder
-                                                        .value
-                                                        .destinationLocationName
-                                                        .toString(),
-                                                    latitude: controller
-                                                            .currentOrder
+                                                if (controller.isSinglePointOrder ||
+                                                    controller.currentOrder
                                                             .value
-                                                            .destinationLocation!
-                                                            .latitude ??
-                                                        0.0,
-                                                    longLatitude: controller
-                                                            .currentOrder
-                                                            .value
-                                                            .destinationLocation!
-                                                            .longitude ??
-                                                        0.0);
+                                                            .destinationLocation ==
+                                                        null) {
+                                                  Utils.redirectMap(
+                                                      name: controller
+                                                          .currentOrder
+                                                          .value
+                                                          .sourceLocationName
+                                                          .toString(),
+                                                      latitude: controller
+                                                              .currentOrder
+                                                              .value
+                                                              .sourceLocation!
+                                                              .latitude ??
+                                                          0.0,
+                                                      longLatitude: controller
+                                                              .currentOrder
+                                                              .value
+                                                              .sourceLocation!
+                                                              .longitude ??
+                                                          0.0);
+                                                } else {
+                                                  Utils.redirectMap(
+                                                      name: controller
+                                                          .currentOrder
+                                                          .value
+                                                          .destinationLocationName
+                                                          .toString(),
+                                                      latitude: controller
+                                                              .currentOrder
+                                                              .value
+                                                              .destinationLocation!
+                                                              .latitude ??
+                                                          0.0,
+                                                      longLatitude: controller
+                                                              .currentOrder
+                                                              .value
+                                                              .destinationLocation!
+                                                              .longitude ??
+                                                          0.0);
+                                                }
                                               }
                                             } else {
                                               Utils.redirectMap(
@@ -514,11 +563,16 @@ class CabHomeScreen extends StatelessWidget {
 
   Padding showDriverBottomSheet(bool isDark, CabHomeController controller) {
     print("Bottom sheet ochildi - showDriverBottomSheet (driverPending)");
-    double distanceInMeters = Geolocator.distanceBetween(
-        controller.currentOrder.value.sourceLocation!.latitude ?? 0.0,
-        controller.currentOrder.value.sourceLocation!.longitude ?? 0.0,
-        controller.currentOrder.value.destinationLocation!.latitude ?? 0.0,
-        controller.currentOrder.value.destinationLocation!.longitude ?? 0.0);
+    final src = controller.currentOrder.value.sourceLocation;
+    final dest = controller.currentOrder.value.destinationLocation;
+    double distanceInMeters = 0.0;
+    if (!controller.isSinglePointOrder && src != null && dest != null) {
+      distanceInMeters = Geolocator.distanceBetween(
+          src.latitude ?? 0.0,
+          src.longitude ?? 0.0,
+          dest.latitude ?? 0.0,
+          dest.longitude ?? 0.0);
+    }
     double kilometer = distanceInMeters / 1000;
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -633,9 +687,12 @@ class CabHomeScreen extends StatelessWidget {
                                   ),
                                 ),
                                 Text(
-                                  controller.currentOrder.value
-                                      .destinationLocationName
-                                      .toString(),
+                                  controller.isSinglePointOrder
+                                      ? "Kiritilmagan".tr
+                                      : (controller.currentOrder.value
+                                              .destinationLocationName
+                                              ?.toString() ??
+                                          "Kiritilmagan".tr),
                                   textAlign: TextAlign.start,
                                   style: TextStyle(
                                     fontFamily: AppThemeData.medium,
@@ -649,7 +706,7 @@ class CabHomeScreen extends StatelessWidget {
                             ),
                     );
                   },
-                  itemCount: 2,
+                  itemCount: controller.isSinglePointOrder ? 1 : 2,
                 ),
               ),
               Padding(
@@ -712,7 +769,7 @@ class CabHomeScreen extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          Constant.amountShow(
+                          Constant.amountShowRounded(
                               amount: controller.currentOrder.value.tipAmount),
                           textAlign: TextAlign.start,
                           style: TextStyle(
@@ -809,7 +866,8 @@ class CabHomeScreen extends StatelessWidget {
                             controller.acceptOrder();
                           } else {
                             ShowToastDialog.showToast(
-                                "You don't have sufficient balance in your wallet.".tr);
+                                "You don't have sufficient balance in your wallet."
+                                    .tr);
                           }
                         }
                       },
@@ -834,7 +892,9 @@ class CabHomeScreen extends StatelessWidget {
     double discount = 0.0;
     double subTotal = 0.0;
     double taxAmount = 0.0;
-    subTotal = double.parse(controller.currentOrder.value.subTotal.toString());
+    final rawSubTotal = double.parse(controller.currentOrder.value.subTotal.toString());
+    final minFare = controller.minimumCabFare;
+    subTotal = rawSubTotal < minFare ? minFare : rawSubTotal;
     discount = double.parse(controller.currentOrder.value.discount ?? '0.0');
 
     if (controller.currentOrder.value.taxSetting != null) {
@@ -1008,7 +1068,8 @@ class CabHomeScreen extends StatelessWidget {
                                     borderRadius: BorderRadius.circular(120),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: AppThemeData.primary300.withOpacity(0.3),
+                                        color: AppThemeData.primary300
+                                            .withOpacity(0.3),
                                         blurRadius: 8,
                                         offset: const Offset(0, 4),
                                       ),
@@ -1170,10 +1231,12 @@ class CabHomeScreen extends StatelessWidget {
                                             height: 50,
                                             decoration: BoxDecoration(
                                               color: AppThemeData.primary300,
-                                              borderRadius: BorderRadius.circular(120),
+                                              borderRadius:
+                                                  BorderRadius.circular(120),
                                               boxShadow: [
                                                 BoxShadow(
-                                                  color: AppThemeData.primary300.withOpacity(0.3),
+                                                  color: AppThemeData.primary300
+                                                      .withOpacity(0.3),
                                                   blurRadius: 8,
                                                   offset: const Offset(0, 4),
                                                 ),
@@ -1212,9 +1275,12 @@ class CabHomeScreen extends StatelessWidget {
                                                 ),
                                               ),
                                               Text(
-                                                controller.currentOrder.value
-                                                    .destinationLocationName
-                                                    .toString(),
+                                                controller.isSinglePointOrder
+                                                    ? "Kiritilmagan".tr
+                                                    : (controller.currentOrder.value
+                                                            .destinationLocationName
+                                                            ?.toString() ??
+                                                        "Kiritilmagan".tr),
                                                 textAlign: TextAlign.start,
                                                 style: TextStyle(
                                                   fontFamily:
@@ -1299,7 +1365,7 @@ class CabHomeScreen extends StatelessWidget {
                                     ),
                             );
                           },
-                          itemCount: 2,
+                          itemCount: controller.isSinglePointOrder ? 1 : 2,
                         ),
                       ),
                 Padding(
@@ -1371,9 +1437,99 @@ class CabHomeScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(
-                  height: 5,
-                ),
+                const SizedBox(height: 5),
+                if (controller.currentOrder.value.status ==
+                        Constant.orderInTransit &&
+                    controller.isSinglePointOrder) ...[
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          "Tekin yurish".tr,
+                          style: TextStyle(
+                            fontFamily: AppThemeData.regular,
+                            color: isDark
+                                ? AppThemeData.grey300
+                                : AppThemeData.grey600,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                      Text(
+                        "${controller.displayIncludedKm.toStringAsFixed(1)} km",
+                        style: TextStyle(
+                          fontFamily: AppThemeData.semiBold,
+                          color: isDark
+                              ? AppThemeData.grey50
+                              : AppThemeData.grey900,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 5),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          "Yurgan yo'l".tr,
+                          style: TextStyle(
+                            fontFamily: AppThemeData.regular,
+                            color: isDark
+                                ? AppThemeData.grey300
+                                : AppThemeData.grey600,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                      Text(
+                        "${(controller.currentOrder.value.accumulatedDistance ?? 0.0).toStringAsFixed(2)} km",
+                        style: TextStyle(
+                          fontFamily: AppThemeData.semiBold,
+                          color: isDark
+                              ? AppThemeData.grey50
+                              : AppThemeData.grey900,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (controller.currentOrder.value.finalFare != null) ...[
+                    const SizedBox(height: 5),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            "Jami to'lov".tr,
+                            style: TextStyle(
+                              fontFamily: AppThemeData.regular,
+                              color: isDark
+                                  ? AppThemeData.grey300
+                                  : AppThemeData.grey600,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                        Text(
+                          Constant.amountShowRounded(
+                              amount: controller.currentOrder.value.finalFare
+                                  ?.toString()),
+                          style: TextStyle(
+                            fontFamily: AppThemeData.semiBold,
+                            color: isDark
+                                ? AppThemeData.grey50
+                                : AppThemeData.grey900,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                  const SizedBox(height: 10),
+                ],
                 controller.currentOrder.value.paymentMethod!.toLowerCase() ==
                         "cod"
                     ? Row(
@@ -1393,7 +1549,7 @@ class CabHomeScreen extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            Constant.amountShow(amount: totalAmount.toString()),
+                            Constant.amountShowRounded(amount: totalAmount.toString()),
                             textAlign: TextAlign.start,
                             style: TextStyle(
                               fontFamily: AppThemeData.semiBold,
@@ -1432,7 +1588,7 @@ class CabHomeScreen extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            Constant.amountShow(
+                            Constant.amountShowRounded(
                                 amount:
                                     controller.currentOrder.value.tipAmount),
                             textAlign: TextAlign.start,
@@ -1452,21 +1608,22 @@ class CabHomeScreen extends StatelessWidget {
               ],
             ),
           ),
-          // Ko'rish button - kattaroq va butun ekranni qoplaydigan
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            child: RoundedButtonFill(
-              title: "Ko'rish".tr,
-              width: double.infinity,
-              height: 5.5,
-              borderRadius: 10,
-              color: AppThemeData.primary300,
-              textColor: AppThemeData.grey50,
-              onPress: () {
-                controller.showMapSelectionDialog();
-              },
+          // Bitta nuqtali zakazda "Ko'rish" tugmasi ko‘rinmasin
+          if (!controller.isSinglePointOrder)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              child: RoundedButtonFill(
+                title: "Ko'rish".tr,
+                width: double.infinity,
+                height: 5.5,
+                borderRadius: 10,
+                color: AppThemeData.primary300,
+                textColor: AppThemeData.grey50,
+                onPress: () {
+                  controller.showMapSelectionDialog();
+                },
+              ),
             ),
-          ),
           InkWell(
             onTap: () async {
               if (controller.currentOrder.value.status ==
@@ -1474,19 +1631,33 @@ class CabHomeScreen extends StatelessWidget {
                   controller.currentOrder.value.status ==
                       Constant.driverAccepted) {
                 showVerifyPassengerDialog(Get.context!, isDark, controller);
-              } else {
-                if (controller.currentOrder.value.paymentMethod!
-                        .toLowerCase() ==
-                    "cod") {
-                  showConfirmCashPaymentDialog(Get.context!, isDark,
-                      onConfirm: () {
-                    controller.completeRide();
-                  });
-                } else if (controller.currentOrder.value.paymentStatus ==
-                    true) {
-                  controller.completeRide();
+              } else if (controller.currentOrder.value.status ==
+                  Constant.orderInTransit) {
+                if (controller.isSinglePointOrder &&
+                    controller.currentOrder.value.finalFare == null) {
+                  ShowToastDialog.showLoader("Please wait".tr);
+                  final ok = await controller.markReachedDestination();
+                  ShowToastDialog.closeLoader();
+                  if (ok && Get.context != null) {
+                    showReachedDestinationDialog(
+                        Get.context!, isDark, controller);
+                  } else {
+                    ShowToastDialog.showToast("Something went wrong".tr);
+                  }
                 } else {
-                  ShowToastDialog.showToast("Customer payment is pending".tr);
+                  if (controller.currentOrder.value.paymentMethod!
+                          .toLowerCase() ==
+                      "cod") {
+                    showConfirmCashPaymentDialog(Get.context!, isDark,
+                        onConfirm: () {
+                      controller.completeRide();
+                    });
+                  } else if (controller.currentOrder.value.paymentStatus ==
+                      true) {
+                    controller.completeRide();
+                  } else {
+                    ShowToastDialog.showToast("Customer payment is pending".tr);
+                  }
                 }
               }
             },
@@ -1503,7 +1674,16 @@ class CabHomeScreen extends StatelessWidget {
                       ? Constant.enableOTPTripStart
                           ? "Verify Code to customer".tr
                           : "Pickup Customer".tr
-                      : "Complete Ride".tr,
+                      : controller.currentOrder.value.status ==
+                                  Constant.orderInTransit &&
+                              controller.isSinglePointOrder &&
+                              controller.currentOrder.value.finalFare == null
+                          ? "Manzilga yetib keldik".tr
+                          : controller.currentOrder.value.status ==
+                                      Constant.orderInTransit &&
+                                  controller.isSinglePointOrder
+                              ? "Safarni tugatish".tr
+                              : "Complete Ride".tr,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: isDark ? AppThemeData.grey50 : AppThemeData.grey50,
@@ -1633,6 +1813,105 @@ class CabHomeScreen extends StatelessWidget {
                 )
               ],
             ),
+          ),
+        ),
+      ),
+      barrierDismissible: true,
+    );
+  }
+
+  void showReachedDestinationDialog(
+      BuildContext context, bool isDark, CabHomeController controller) {
+    final amount = controller.currentOrder.value.finalFare ?? 0.0;
+    final isCod =
+        controller.currentOrder.value.paymentMethod?.toLowerCase() == "cod";
+    Get.dialog(
+      Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 20),
+        backgroundColor: isDark ? AppThemeData.greyDark50 : AppThemeData.grey50,
+        child: Container(
+          width: MediaQuery.of(context).size.width * 0.9,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      "Manzilga yetib keldik".tr,
+                      style: AppThemeData.boldTextStyle(
+                        fontSize: 20,
+                        color: isDark
+                            ? AppThemeData.greyDark900
+                            : AppThemeData.grey900,
+                      ),
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () => Get.back(),
+                    child: Icon(Icons.close,
+                        size: 22,
+                        color: isDark
+                            ? AppThemeData.grey50
+                            : AppThemeData.grey900),
+                  )
+                ],
+              ),
+              const SizedBox(height: 16),
+              Text(
+                "Jami to'lov".tr,
+                style: AppThemeData.mediumTextStyle(
+                  fontSize: 14,
+                  color:
+                      isDark ? AppThemeData.greyDark700 : AppThemeData.grey700,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                Constant.amountShowRounded(amount: amount.toString()),
+                style: AppThemeData.boldTextStyle(
+                  fontSize: 22,
+                  color: isDark ? AppThemeData.grey50 : AppThemeData.grey900,
+                ),
+              ),
+              if (!isCod) ...[
+                const SizedBox(height: 8),
+                Text(
+                  "Mijoz to'lovni amalga oshirsin".tr,
+                  style: AppThemeData.mediumTextStyle(
+                    fontSize: 12,
+                    color: isDark
+                        ? AppThemeData.greyDark600
+                        : AppThemeData.grey600,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+              const SizedBox(height: 24),
+              RoundedButtonFill(
+                title: "Safarni tugatish".tr,
+                color: AppThemeData.primary300,
+                textColor: AppThemeData.grey50,
+                height: 5,
+                width: double.infinity,
+                onPress: () {
+                  Get.back();
+                  if (isCod) {
+                    showConfirmCashPaymentDialog(context, isDark,
+                        onConfirm: () {
+                      controller.completeRide();
+                    });
+                  } else if (controller.currentOrder.value.paymentStatus ==
+                      true) {
+                    controller.completeRide();
+                  } else {
+                    ShowToastDialog.showToast("Customer payment is pending".tr);
+                  }
+                },
+              ),
+            ],
           ),
         ),
       ),

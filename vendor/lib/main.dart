@@ -6,6 +6,7 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get/get.dart';
 import 'package:vendor/app/splash_screen.dart';
 import 'package:vendor/controller/global_setting_controller.dart';
+import 'package:vendor/controller/locale_controller.dart';
 import 'package:vendor/firebase_options.dart';
 import 'package:vendor/service/audio_player_service.dart';
 import 'package:vendor/service/localization_service.dart';
@@ -39,6 +40,7 @@ void main() async {
   );
   await Preferences.initPref();
   Get.put(ThemeController());
+  Get.put(LocaleController());
   await configEasyLoading();
   runApp(const MyApp());
 }
@@ -120,7 +122,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
           ),
         ),
         localizationsDelegates: const [CountryLocalizations.delegate],
-        locale: LocalizationService.locale,
+        locale: Get.find<LocaleController>().locale.value,
         fallbackLocale: LocalizationService.locale,
         translations: LocalizationService(),
         builder: (context, child) {

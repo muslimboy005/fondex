@@ -22,6 +22,7 @@ class CollectionName {
   static const String referral = "referral";
   static const String vendorOrders = "vendor_orders";
   static const String ridesBooking = "rides";
+  static const String cabBookingOrders = "cab_booking_orders";
   static const String reviewAttributes = "review_attributes";
   static const String settings = "settings";
   static const String story = "story";

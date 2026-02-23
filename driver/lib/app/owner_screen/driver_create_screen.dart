@@ -385,6 +385,12 @@ class DriverCreateScreen extends StatelessWidget {
                                                       controller: controller.carPlatNumberEditingController.value,
                                                       hintText: 'Enter Car Plat Number'.tr,
                                                       textInputAction: TextInputAction.next,
+                                                      inputFormatters: [
+                                                        TextInputFormatter.withFunction(
+                                                            (oldValue, newValue) =>
+                                                                newValue.copyWith(
+                                                                    text: newValue.text.toUpperCase())),
+                                                      ],
                                                     ),
                                                   ],
                                                 )

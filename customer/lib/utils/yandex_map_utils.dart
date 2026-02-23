@@ -54,10 +54,22 @@ ym.BoundingBox yandexBoundsFromLatLngs(List<gmap.LatLng> points) {
   double? maxLng;
 
   for (final point in points) {
-    minLat = minLat == null ? point.latitude : (point.latitude < minLat ? point.latitude : minLat);
-    maxLat = maxLat == null ? point.latitude : (point.latitude > maxLat ? point.latitude : maxLat);
-    minLng = minLng == null ? point.longitude : (point.longitude < minLng ? point.longitude : minLng);
-    maxLng = maxLng == null ? point.longitude : (point.longitude > maxLng ? point.longitude : maxLng);
+    minLat =
+        minLat == null
+            ? point.latitude
+            : (point.latitude < minLat ? point.latitude : minLat);
+    maxLat =
+        maxLat == null
+            ? point.latitude
+            : (point.latitude > maxLat ? point.latitude : maxLat);
+    minLng =
+        minLng == null
+            ? point.longitude
+            : (point.longitude < minLng ? point.longitude : minLng);
+    maxLng =
+        maxLng == null
+            ? point.longitude
+            : (point.longitude > maxLng ? point.longitude : maxLng);
   }
 
   return ym.BoundingBox(
@@ -77,9 +89,15 @@ List<ym.MapObject> yandexMapObjectsFromGoogle({
       ym.PolylineMapObject(
         mapId: ym.MapObjectId('polyline_${polyline.polylineId.value}'),
         polyline: ym.Polyline(
-          points: polyline.points
-              .map((point) => ym.Point(latitude: point.latitude, longitude: point.longitude))
-              .toList(),
+          points:
+              polyline.points
+                  .map(
+                    (point) => ym.Point(
+                      latitude: point.latitude,
+                      longitude: point.longitude,
+                    ),
+                  )
+                  .toList(),
         ),
         strokeColor: polyline.color,
         strokeWidth: polyline.width.toDouble(),

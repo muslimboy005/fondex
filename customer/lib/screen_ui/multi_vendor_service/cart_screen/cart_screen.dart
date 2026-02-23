@@ -5,8 +5,10 @@ import 'package:customer/models/product_model.dart';
 import 'package:customer/models/tax_model.dart';
 import 'package:customer/payment/createRazorPayOrderModel.dart';
 import 'package:customer/payment/rozorpayConroller.dart';
+import 'package:customer/screen_ui/auth_screens/auth_screen.dart';
 import 'package:customer/screen_ui/location_enable_screens/address_list_screen.dart';
 import 'package:customer/screen_ui/multi_vendor_service/cart_screen/select_payment_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:customer/themes/app_them_data.dart';
 import 'package:customer/themes/responsive.dart';
 import 'package:customer/themes/round_button_fill.dart';
@@ -1806,6 +1808,11 @@ class CartScreen extends StatelessWidget {
                                             : AppThemeData.grey100,
                                     fontSizes: 16,
                                     onPress: () async {
+                                      if (auth.FirebaseAuth.instance.currentUser == null) {
+                                        ShowToastDialog.showToast("Please login first".tr);
+                                        Get.to(() => const AuthScreen());
+                                        return;
+                                      }
                                       if ((controller.couponAmount.value >=
                                               1) &&
                                           (controller.couponAmount.value >

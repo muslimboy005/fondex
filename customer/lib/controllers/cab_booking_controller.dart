@@ -41,6 +41,7 @@ import 'package:customer/payment/stripe_failed_model.dart';
 import 'package:customer/payment/xenditModel.dart';
 import 'package:customer/payment/xenditScreen.dart';
 import 'package:customer/service/fire_store_utils.dart';
+import 'package:customer/service/send_notification.dart';
 import 'package:customer/themes/show_toast_dialog.dart';
 import 'package:customer/utils/preferences.dart';
 import 'package:customer/utils/utils.dart';
@@ -145,6 +146,9 @@ class CabBookingController extends GetxController {
   // Focus node for source search field
   final FocusNode sourceFocusNode = FocusNode();
   final RxBool isSourceFocused = false.obs;
+
+  /// Ikkala joy ham tanlanganida "Davom etish" tugmasi yoqiladi (reaktiv)
+  final RxBool canProceedToVehicleSelection = false.obs;
   bool sourceFocusListenerAdded = false;
 
   // Map picking mode - xaritada joy tanlash rejimi
@@ -153,6 +157,10 @@ class CabBookingController extends GetxController {
   Rx<latlong.LatLng> tempPickedLocation = latlong.LatLng(0, 0).obs;
   RxString tempPickedAddress = ''.obs;
   RxBool isLoadingAddress = false.obs;
+
+  /// Bitta nuqta rejimida: har 12 sekundda joriy joyni orderga yozib, narxni yangilash
+  Timer? _liveSourceUpdateTimer;
+  static const _liveSourceUpdateInterval = Duration(seconds: 12);
 
   @override
   void onInit() {
@@ -199,6 +207,10 @@ class CabBookingController extends GetxController {
         setDepartureMarker(
           Constant.currentLocation!.latitude,
           Constant.currentLocation!.longitude,
+        );
+        _updateCanProceedToVehicleSelection();
+        log(
+          "CabHome [onInit] joriy lokatsiya o'rnatildi (departure): ${Constant.currentLocation!.latitude}, ${Constant.currentLocation!.longitude}",
         );
       }
 
@@ -305,18 +317,24 @@ class CabBookingController extends GetxController {
             String? validRideId;
 
             for (String id in userModel.value.inProgressOrderID!) {
-              final rideDoc =
+              var rideDoc =
                   await FireStoreUtils.fireStore
-                      .collection(CollectionName.rides)
+                      .collection(CollectionName.cabBookingOrders)
                       .doc(id)
                       .get();
-
+              if (!rideDoc.exists) {
+                rideDoc =
+                    await FireStoreUtils.fireStore
+                        .collection(CollectionName.rides)
+                        .doc(id)
+                        .get();
+              }
               if (rideDoc.exists &&
                   (rideDoc.data()?['rideType'] ?? '')
                           .toString()
                           .toLowerCase() ==
                       "ride") {
-                validRideId = userModel.value.inProgressOrderID!.first!;
+                validRideId = id;
                 break;
               }
             }
@@ -344,53 +362,202 @@ class CabBookingController extends GetxController {
                 Constant.currentLocation!.latitude,
                 Constant.currentLocation!.longitude,
               );
+              _updateCanProceedToVehicleSelection();
+              log(
+                "CabHome [userSnapshot] joriy lokatsiya o'rnatildi (departure)",
+              );
             }
           }
         });
   }
 
-  // Order listener ni sozlash
+  // Order listener (cab_booking_orders)
   void _setupOrderListener(String validRideId) {
     FireStoreUtils.fireStore
-        .collection(CollectionName.rides)
+        .collection(CollectionName.cabBookingOrders)
         .doc(validRideId)
         .snapshots()
         .listen((rideSnapshot) async {
-          if (!rideSnapshot.exists) return;
-
-          final rideData = rideSnapshot.data()!;
-          currentOrder.value = CabOrderModel.fromJson(rideData);
-          final status = currentOrder.value.status;
-
-          if (status == Constant.driverAccepted ||
-              status == Constant.orderInTransit) {
-            _setupDriverListener(currentOrder.value.driverId);
-          }
-
-          print("Current Ride Status: $status");
-          if (status == Constant.orderPlaced ||
-              status == Constant.driverPending ||
-              status == Constant.driverRejected ||
-              (status == Constant.orderAccepted &&
-                  currentOrder.value.driverId == null)) {
-            bottomSheetType.value = 'waitingForDriver';
-          } else if (status == Constant.driverAccepted ||
-              status == Constant.orderInTransit) {
-            bottomSheetType.value = 'driverDetails';
-            sourceTextEditController.value.text =
-                currentOrder.value.sourceLocationName ?? '';
-            destinationTextEditController.value.text =
-                currentOrder.value.destinationLocationName ?? '';
-            selectedPaymentMethod.value =
-                currentOrder.value.paymentMethod ?? '';
-            calculateTotalAmountAfterAccept();
-          } else if (status == Constant.orderCompleted) {
-            userModel.value.inProgressOrderID!.remove(validRideId);
-            await FireStoreUtils.updateUser(userModel.value);
-            bottomSheetType.value = 'location';
-            Get.back();
+          if (rideSnapshot.exists) {
+            _handleOrderSnapshot(rideSnapshot, validRideId);
           }
         });
+  }
+
+  void _handleOrderSnapshot(
+    DocumentSnapshot<Map<String, dynamic>> rideSnapshot,
+    String validRideId,
+  ) async {
+    if (!rideSnapshot.exists) return;
+    final rideData = rideSnapshot.data()!;
+    currentOrder.value = CabOrderModel.fromJson(rideData);
+    final status = currentOrder.value.status;
+
+    if (status == Constant.driverAccepted ||
+        status == Constant.orderInTransit) {
+      _setupDriverListener(currentOrder.value.driverId);
+    }
+
+    // Real-time lokatsiya va narx: faol order bo'lganda boshlash, tugasa to'xtatish
+    if (status == Constant.driverPending ||
+        status == Constant.driverAccepted ||
+        status == Constant.orderInTransit) {
+      _startLiveSourceLocationUpdates();
+    } else {
+      _stopLiveSourceLocationUpdates();
+    }
+
+    print("Current Ride Status: $status");
+    if (status == Constant.orderPlaced ||
+        status == Constant.driverPending ||
+        status == Constant.driverRejected ||
+        (status == Constant.orderAccepted &&
+            currentOrder.value.driverId == null)) {
+      bottomSheetType.value = 'waitingForDriver';
+    } else if (status == Constant.driverAccepted ||
+        status == Constant.orderInTransit) {
+      bottomSheetType.value = 'driverDetails';
+      sourceTextEditController.value.text =
+          currentOrder.value.sourceLocationName ?? '';
+      destinationTextEditController.value.text =
+          currentOrder.value.destinationLocationName ?? '';
+      selectedPaymentMethod.value = currentOrder.value.paymentMethod ?? '';
+      calculateTotalAmountAfterAccept();
+      if (status == Constant.orderInTransit &&
+          currentOrder.value.finalFare != null) {
+        log("📍 [Cab] Order updated: finalFare=${currentOrder.value.finalFare} – Hozir to'lov qilish ko'rinadi");
+      }
+    } else if (status == Constant.orderCompleted) {
+      _stopLiveSourceLocationUpdates();
+      userModel.value.inProgressOrderID!.remove(validRideId);
+      await FireStoreUtils.updateUser(userModel.value);
+      bottomSheetType.value = 'location';
+      Get.back();
+    }
+  }
+
+  void _stopLiveSourceLocationUpdates() {
+    _liveSourceUpdateTimer?.cancel();
+    _liveSourceUpdateTimer = null;
+  }
+
+  void _startLiveSourceLocationUpdates() {
+    if (currentOrder.value.id == null || currentOrder.value.id!.isEmpty) return;
+    _stopLiveSourceLocationUpdates();
+    _liveSourceUpdateTimer = Timer.periodic(
+      _liveSourceUpdateInterval,
+      (_) => _pushLiveSourceLocation(),
+    );
+    // Birinchi yangilashni darhol bajarish
+    _pushLiveSourceLocation();
+  }
+
+  /// OSRM orqali faqat masofa va vaqtni olish (xaritani o'zgartirmaslik)
+  Future<({double distanceKm, String durationStr})?> _fetchDistanceDurationOnly(
+    double srcLat,
+    double srcLng,
+    double destLat,
+    double destLng,
+  ) async {
+    final coordinates = '$srcLng,$srcLat;$destLng,$destLat';
+    final url = Uri.parse(
+      'https://router.project-osrm.org/route/v1/driving/$coordinates?overview=false',
+    );
+    try {
+      final response = await http.get(url).timeout(
+        const Duration(seconds: 8),
+        onTimeout: () => throw Exception('OSRM timeout'),
+      );
+      if (response.statusCode != 200) return null;
+      final decoded = json.decode(response.body);
+      if (decoded['routes'] == null ||
+          (decoded['routes'] as List).isEmpty) {
+        return null;
+      }
+      final dist = (decoded['routes'][0]['distance'] as num).toDouble();
+      final dur = (decoded['routes'][0]['duration'] as num).toDouble();
+      final distanceKm = Constant.distanceType.toLowerCase() == 'km'
+          ? dist / 1000.0
+          : dist / 1609.34;
+      final hours = dur ~/ 3600;
+      final minutes = ((dur % 3600) / 60).round();
+      final durationStr = '${hours}h ${minutes}m';
+      return (distanceKm: distanceKm, durationStr: durationStr);
+    } catch (e) {
+      log('_fetchDistanceDurationOnly error: $e');
+      return null;
+    }
+  }
+
+  Future<void> _pushLiveSourceLocation() async {
+    final orderId = currentOrder.value.id;
+    if (orderId == null || orderId.isEmpty) return;
+    final status = currentOrder.value.status;
+    if (status == Constant.orderCompleted ||
+        status == Constant.orderCancelled ||
+        status == Constant.orderRejected) {
+      _stopLiveSourceLocationUpdates();
+      return;
+    }
+    try {
+      final position = await Utils.getCurrentLocation();
+      if (position == null) return;
+      final srcLat = position.latitude;
+      final srcLng = position.longitude;
+      var destLat = currentOrder.value.destinationLocation?.latitude ?? 0.0;
+      var destLng = currentOrder.value.destinationLocation?.longitude ?? 0.0;
+      if (destLat == 0.0 && destLng == 0.0) {
+        destLat = srcLat;
+        destLng = srcLng;
+      }
+      final result = await _fetchDistanceDurationOnly(
+        srcLat,
+        srcLng,
+        destLat,
+        destLng,
+      );
+      if (result == null) return;
+      distance.value = result.distanceKm;
+      duration.value = result.durationStr;
+      final vt = currentOrder.value.vehicleType ?? selectedVehicleType.value;
+      subTotal.value = getAmount(vt);
+      discount.value = 0.0;
+      if (currentOrder.value.couponId != null &&
+          currentOrder.value.couponId!.isNotEmpty &&
+          selectedCouponModel.value.id != null) {
+        discount.value = Constant.calculateDiscount(
+          amount: subTotal.value.toString(),
+          offerModel: selectedCouponModel.value,
+        );
+      } else if (currentOrder.value.discount != null) {
+        discount.value = double.tryParse(
+              currentOrder.value.discount!.toString(),
+            ) ??
+            0.0;
+      }
+      taxAmount.value = 0.0;
+      final taxSetting = currentOrder.value.taxSetting ?? Constant.taxList;
+      for (var element in taxSetting) {
+        taxAmount.value += Constant.calculateTax(
+          amount: (subTotal.value - discount.value).toString(),
+          taxModel: element,
+        );
+      }
+      totalAmount.value =
+          (subTotal.value - discount.value) + taxAmount.value;
+
+      currentOrder.value.sourceLocation =
+          DestinationLocation(latitude: srcLat, longitude: srcLng);
+      currentOrder.value.distance = distance.value.toString();
+      currentOrder.value.duration = duration.value;
+      currentOrder.value.subTotal = subTotal.value.toString();
+      currentOrder.value.discount = discount.value.toString();
+      currentOrder.value.finalFare = totalAmount.value;
+      await FireStoreUtils.updateCabOrder(currentOrder.value);
+      update();
+    } catch (e) {
+      log('_pushLiveSourceLocation error: $e');
+    }
   }
 
   // Driver listener ni sozlash
@@ -865,26 +1032,34 @@ class CabBookingController extends GetxController {
       }
     }
 
+    final srcLat =
+        Constant.selectedMapType == 'osm'
+            ? departureLatLongOsm.value.latitude
+            : departureLatLong.value.latitude;
+    final srcLng =
+        Constant.selectedMapType == 'osm'
+            ? departureLatLongOsm.value.longitude
+            : departureLatLong.value.longitude;
+    final destLat =
+        Constant.selectedMapType == 'osm'
+            ? destinationLatLongOsm.value.latitude
+            : destinationLatLong.value.latitude;
+    final destLng =
+        Constant.selectedMapType == 'osm'
+            ? destinationLatLongOsm.value.longitude
+            : destinationLatLong.value.longitude;
+
     DestinationLocation sourceLocation = DestinationLocation(
-      latitude:
-          Constant.selectedMapType == 'osm'
-              ? departureLatLongOsm.value.latitude
-              : departureLatLong.value.latitude,
-      longitude:
-          Constant.selectedMapType == 'osm'
-              ? departureLatLongOsm.value.longitude
-              : departureLatLong.value.longitude,
+      latitude: srcLat,
+      longitude: srcLng,
     );
 
+    // Manzil tanlanmagan bo'lsa boshlang'ich joyni (joriy lokatsiya) manzil qilib ishlatamiz – haydovchi kelgach yo'lda aytish mumkin
+    final useDestLat = (destLat != 0.0 || destLng != 0.0) ? destLat : srcLat;
+    final useDestLng = (destLat != 0.0 || destLng != 0.0) ? destLng : srcLng;
     DestinationLocation destinationLocation = DestinationLocation(
-      latitude:
-          Constant.selectedMapType == 'osm'
-              ? destinationLatLongOsm.value.latitude
-              : destinationLatLong.value.latitude,
-      longitude:
-          Constant.selectedMapType == 'osm'
-              ? destinationLatLongOsm.value.longitude
-              : destinationLatLong.value.longitude,
+      latitude: useDestLat,
+      longitude: useDestLng,
     );
 
     CabOrderModel orderModel = CabOrderModel();
@@ -896,7 +1071,11 @@ class CabBookingController extends GetxController {
     orderModel.authorID = FireStoreUtils.getCurrentUid();
     orderModel.sourceLocationName = sourceTextEditController.value.text;
     orderModel.destinationLocationName =
-        destinationTextEditController.value.text;
+        (destinationTextEditController.value.text.trim().isEmpty)
+            ? (sourceTextEditController.value.text.trim().isEmpty
+                ? "Joriy joy"
+                : sourceTextEditController.value.text)
+            : destinationTextEditController.value.text;
 
     orderModel.sourceLocation = sourceLocation;
     orderModel.destinationLocation = destinationLocation;
@@ -931,8 +1110,14 @@ class CabBookingController extends GetxController {
     orderModel.otpCode =
         (maths.Random().nextInt(9000) + 1000)
             .toString(); // Generate a 4-digit OTP
-    orderModel.status = Constant.orderPlaced;
+    orderModel.status = Constant.driverPending;
     orderModel.scheduleDateTime = Timestamp.now();
+    // Cab booking package: bepul km va qo'shimcha km narxi (Comfort kabi NaN bo'lsa ham xavfsiz)
+    final vt = selectedVehicleType.value;
+    final included = vt.minimum_delivery_charges_within_km;
+    final perKm = vt.delivery_charges_per_km;
+    orderModel.cabIncludedKm = _safeVehicleNum(included, 0.0);
+    orderModel.cabExtraKmFare = _safeVehicleNum(perKm, 0.0);
     log("Order Model : ${orderModel.toJson()}");
 
     await FireStoreUtils.cabOrderPlace(orderModel);
@@ -941,21 +1126,92 @@ class CabBookingController extends GetxController {
     userModel.value.inProgressOrderID!.add(orderModel.id);
     await FireStoreUtils.updateUser(userModel.value);
 
+    _sendCabOrderNotificationToDrivers(orderModel);
+
     bottomSheetType.value = 'waitingForDriver';
+  }
+
+  Future<void> _sendCabOrderNotificationToDrivers(
+    CabOrderModel orderModel,
+  ) async {
+    try {
+      final sectionId =
+          orderModel.sectionId ?? Constant.sectionConstantModel?.id ?? '';
+      if (sectionId.isEmpty) return;
+      final drivers = await FireStoreUtils.getCabDriversForNotification(
+        sectionId,
+      );
+      final orderId = orderModel.id ?? '';
+      if (orderId.isEmpty) return;
+      final payload = <String, dynamic>{
+        'rideId': orderId,
+        'type': 'cab_new_order',
+      };
+      final title = 'New taxi order'.tr;
+      final body = 'New taxi booking request'.tr;
+      for (final driver in drivers) {
+        final token = driver.fcmToken?.trim();
+        if (token != null && token.isNotEmpty) {
+          await SendNotification.sendOneNotification(
+            token: token,
+            title: title,
+            body: body,
+            payload: payload,
+          );
+        }
+      }
+    } catch (e) {
+      log('_sendCabOrderNotificationToDrivers error: $e');
+    }
+  }
+
+  static double _safeVehicleNum(num? value, double def) {
+    if (value == null) return def;
+    final d = value.toDouble();
+    return d.isNaN || d.isInfinite ? def : d;
+  }
+
+  /// Bitta nuqta zakaz: jo'nash va tushish manzili bir xil (yoki faqat bitta manzil)
+  bool get isSinglePointOrder => isSinglePointOrderFor(currentOrder.value);
+  bool isSinglePointOrderFor(CabOrderModel? order) {
+    if (order == null) return false;
+    final src = order.sourceLocation;
+    final dest = order.destinationLocation;
+    if (src == null || dest == null) return true;
+    const eps = 1e-5;
+    final slat = (src.latitude as num?)?.toDouble() ?? 0.0;
+    final slng = (src.longitude as num?)?.toDouble() ?? 0.0;
+    final dlat = (dest.latitude as num?)?.toDouble() ?? 0.0;
+    final dlng = (dest.longitude as num?)?.toDouble() ?? 0.0;
+    return (slat - dlat).abs() < eps && (slng - dlng).abs() < eps;
   }
 
   double getAmount(VehicleType vehicleType) {
     final double currentDistance = distance.value;
-    if (currentDistance <=
-        (vehicleType.minimum_delivery_charges_within_km ?? 0)) {
-      return double.tryParse(vehicleType.minimum_delivery_charges.toString()) ??
-          0.0;
+    final double minimum = _safeVehicleNum(
+      vehicleType.minimum_delivery_charges,
+      0.0,
+    );
+    final double includedKm = _safeVehicleNum(
+      vehicleType.minimum_delivery_charges_within_km,
+      0.0,
+    );
+    double fare;
+    if (currentDistance <= includedKm) {
+      fare = minimum;
     } else {
-      return (vehicleType.delivery_charges_per_km ?? 0.0) * currentDistance;
+      fare = _safeVehicleNum(vehicleType.delivery_charges_per_km, 0.0) *
+          currentDistance;
     }
+    // minimum_delivery_charges_within_km NaN bo'lsa (0 ga aylanadi) yoki masofa kichik bo'lsa ham kamida minimum_delivery_charges (2000) ko'rsatiladi
+    final double minFare = minimum;
+    return fare < minFare ? minFare : fare;
   }
 
   void setDepartureMarker(double lat, double long) {
+    log(
+      "CabHome [setDepartureMarker] lat=$lat lng=$long mapType=${Constant.selectedMapType}",
+    );
     if (Constant.selectedMapType == 'osm') {
       _setOsmMarker(lat, long, isDeparture: true);
     } else {
@@ -997,6 +1253,9 @@ class CabBookingController extends GetxController {
   }
 
   void setDestinationMarker(double lat, double lng) {
+    log(
+      "CabHome [setDestinationMarker] lat=$lat lng=$lng mapType=${Constant.selectedMapType}",
+    );
     if (Constant.selectedMapType == 'osm') {
       _setOsmMarker(lat, lng, isDeparture: false);
     } else {
@@ -1066,6 +1325,37 @@ class CabBookingController extends GetxController {
       }
       osmMarker.add(marker);
     }
+    _updateCanProceedToVehicleSelection();
+  }
+
+  void _updateCanProceedToVehicleSelection() {
+    // Boshlang'ich joy (joriy lokatsiya yoki tanlangan) bo'lsa davom etish mumkin; manzil keyingi ekranda ham tanlanishi mumkin
+    bool hasDep;
+    bool hasDest;
+    if (Constant.selectedMapType == 'osm') {
+      hasDep =
+          departureLatLongOsm.value.latitude != 0.0 &&
+          departureLatLongOsm.value.longitude != 0.0;
+      hasDest =
+          destinationLatLongOsm.value.latitude != 0.0 &&
+          destinationLatLongOsm.value.longitude != 0.0;
+      log(
+        "CabHome [_updateCanProceed] OSM dep=(${departureLatLongOsm.value.latitude},${departureLatLongOsm.value.longitude}) dest=(${destinationLatLongOsm.value.latitude},${destinationLatLongOsm.value.longitude}) hasDep=$hasDep hasDest=$hasDest",
+      );
+    } else {
+      hasDep =
+          departureLatLong.value.latitude != 0.0 &&
+          departureLatLong.value.longitude != 0.0;
+      hasDest =
+          destinationLatLong.value.latitude != 0.0 &&
+          destinationLatLong.value.longitude != 0.0;
+      log(
+        "CabHome [_updateCanProceed] Google dep=(${departureLatLong.value.latitude},${departureLatLong.value.longitude}) dest=(${destinationLatLong.value.latitude},${destinationLatLong.value.longitude}) hasDep=$hasDep hasDest=$hasDest",
+      );
+    }
+    // Faqat boshlang'ich joy bo'lsa ham "Davom etish" mumkin (manzil CabBookingScreen da tanlanadi)
+    final value = hasDep;
+    canProceedToVehicleSelection.value = value;
   }
 
   void _setGoogleMarker(double lat, double lng, {required bool isDeparture}) {
@@ -1100,6 +1390,8 @@ class CabBookingController extends GetxController {
       ),
     );
     _scheduleMarkersRefresh();
+
+    _updateCanProceedToVehicleSelection();
 
     // Ikkala lokatsiya ham bo'lsa, yo'l chizish
     if (departureLatLong.value.latitude != 0 &&
@@ -1594,6 +1886,7 @@ class CabBookingController extends GetxController {
 
     // Clear polylines and route info if needed
     clearMapDataIfLocationsRemoved();
+    _updateCanProceedToVehicleSelection();
     update();
   }
 
@@ -1601,6 +1894,7 @@ class CabBookingController extends GetxController {
     destinationLatLongOsm.value = latlong.LatLng(0.0, 0.0);
     destinationLatLong.value = const LatLng(0.0, 0.0);
     destinationTextEditController.value.clear();
+    _updateCanProceedToVehicleSelection();
 
     if (Constant.selectedMapType == 'osm') {
       osmMarker.removeWhere(
@@ -2098,7 +2392,7 @@ class CabBookingController extends GetxController {
 
   @override
   void dispose() {
-    // TODO: implement dispose
+    _stopLiveSourceLocationUpdates();
     super.dispose();
   }
 
@@ -2230,10 +2524,10 @@ class CabBookingController extends GetxController {
       cashOnDeliverySettingModel.value = CodSettingModel(isEnabled: true);
     }
 
-    if (walletSettingModel.value.isEnabled == true) {
-      selectedPaymentMethod.value = PaymentGateway.wallet.name;
-    } else if (cashOnDeliverySettingModel.value.isEnabled == true) {
+    if (cashOnDeliverySettingModel.value.isEnabled == true) {
       selectedPaymentMethod.value = PaymentGateway.cod.name;
+    } else if (walletSettingModel.value.isEnabled == true) {
+      selectedPaymentMethod.value = PaymentGateway.wallet.name;
     } else if (stripeModel.value.isEnabled == true) {
       selectedPaymentMethod.value = PaymentGateway.stripe.name;
     } else if (payPalModel.value.isEnabled == true) {

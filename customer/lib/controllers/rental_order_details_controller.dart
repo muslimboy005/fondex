@@ -285,10 +285,10 @@ class RentalOrderDetailsController extends GetxController {
       walletSettingModel.value = WalletSettingModel.fromJson(jsonDecode(Preferences.getString(Preferences.walletSettings)));
       cashOnDeliverySettingModel.value = CodSettingModel.fromJson(jsonDecode(Preferences.getString(Preferences.codSettings)));
 
-      if (walletSettingModel.value.isEnabled == true) {
-        selectedPaymentMethod.value = PaymentGateway.wallet.name;
-      } else if (cashOnDeliverySettingModel.value.isEnabled == true) {
+      if (cashOnDeliverySettingModel.value.isEnabled == true) {
         selectedPaymentMethod.value = PaymentGateway.cod.name;
+      } else if (walletSettingModel.value.isEnabled == true) {
+        selectedPaymentMethod.value = PaymentGateway.wallet.name;
       } else if (stripeModel.value.isEnabled == true) {
         selectedPaymentMethod.value = PaymentGateway.stripe.name;
       } else if (payPalModel.value.isEnabled == true) {

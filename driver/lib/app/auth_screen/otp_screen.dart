@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:driver/app/auth_screen/login_screen.dart';
+import 'package:driver/app/auth_screen/auth_screen.dart';
 import 'package:driver/app/auth_screen/signup_screen.dart';
 import 'package:driver/app/cab_screen/cab_dashboard_screen.dart';
 import 'package:driver/app/dash_board_screen/dash_board_screen.dart';
@@ -197,7 +197,7 @@ class OtpScreen extends StatelessWidget {
                             TextSpan(
                                 recognizer: TapGestureRecognizer()
                                   ..onTap = () {
-                                    Get.offAll(const LoginScreen());
+                                    Get.offAll(const AuthScreen());
                                   },
                                 text: 'Log in'.tr,
                                 style: TextStyle(
@@ -273,11 +273,11 @@ class OtpScreen extends StatelessWidget {
                                       "This user is disable please contact to administrator"
                                           .tr);
                                   await FirebaseAuth.instance.signOut();
-                                  Get.offAll(const LoginScreen());
+                                  Get.offAll(const AuthScreen());
                                 }
                               } else {
                                 await FirebaseAuth.instance.signOut();
-                                Get.offAll(const LoginScreen());
+                                Get.offAll(const AuthScreen());
                                 ShowToastDialog.showToast(
                                     "Account already created in other application. You are not able login this application."
                                         .tr);

@@ -24,6 +24,16 @@ class VehicleType {
       this.minimum_delivery_charges_within_km,
       this.supportedVehicle});
 
+  /// Firestore'dagi NaN yoki noto'g'ri qiymatlarni 0 ga aylantiradi (masalan Comfort: minimum_delivery_charges_within_km = NaN)
+  static num _safeNum(dynamic value, num fallback) {
+    if (value == null) return fallback;
+    if (value is num) {
+      final d = value.toDouble();
+      return d.isNaN || d.isInfinite ? fallback : value;
+    }
+    return fallback;
+  }
+
   VehicleType.fromJson(Map<String, dynamic> json) {
     shortDescription = json['short_description'];
     vehicleIcon = json['vehicle_icon'];
@@ -32,9 +42,9 @@ class VehicleType {
     id = json['id'];
     isActive = json['isActive'];
     capacity = json['capacity'];
-    delivery_charges_per_km = json['delivery_charges_per_km'] ?? 0.0;
-    minimum_delivery_charges = json['minimum_delivery_charges'] ?? 0.0;
-    minimum_delivery_charges_within_km = json['minimum_delivery_charges_within_km'] ?? 0.0;
+    delivery_charges_per_km = _safeNum(json['delivery_charges_per_km'], 0.0);
+    minimum_delivery_charges = _safeNum(json['minimum_delivery_charges'], 0.0);
+    minimum_delivery_charges_within_km = _safeNum(json['minimum_delivery_charges_within_km'], 0.0);
     supportedVehicle = json['supported_vehicle'];
   }
 

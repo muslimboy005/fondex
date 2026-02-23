@@ -6,7 +6,7 @@ import '../../utils/preferences.dart';
 import '../constant/constant.dart';
 import '../controller/on_boarding_controller.dart';
 import '../themes/round_button_fill.dart';
-import 'auth_screen/login_screen.dart';
+import 'auth_screen/auth_screen.dart';
 
 class OnboardingScreen extends StatelessWidget {
   const OnboardingScreen({super.key});
@@ -144,7 +144,7 @@ class OnboardingScreen extends StatelessWidget {
 
   Future<void> _finish() async {
     await Preferences.setBoolean(Preferences.isFinishOnBoardingKey, true);
-    // Navigate to email login screen (for Android/iOS, go directly to LoginScreen)
-    Get.offAll(() => const LoginScreen());
+    // Logout va kirishda PhoneRegistrationScreen ochilishi uchun AuthScreen ga o'tamiz
+    Get.offAll(() => const AuthScreen());
   }
 }

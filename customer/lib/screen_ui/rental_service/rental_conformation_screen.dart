@@ -1,5 +1,7 @@
 import 'package:customer/constant/constant.dart';
+import 'package:customer/screen_ui/auth_screens/auth_screen.dart';
 import 'package:customer/models/coupon_model.dart';
+import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:customer/screen_ui/rental_service/rental_coupon_screen.dart';
 import 'package:customer/themes/show_toast_dialog.dart';
 import 'package:customer/utils/network_image_widget.dart';
@@ -302,6 +304,11 @@ class RentalConformationScreen extends StatelessWidget {
                           RoundedButtonFill(
                             title: "Book now".tr,
                             onPress: () {
+                              if (auth.FirebaseAuth.instance.currentUser == null) {
+                                ShowToastDialog.showToast("Please login first".tr);
+                                Get.to(() => const AuthScreen());
+                                return;
+                              }
                               controller.placeOrder();
                             },
                             color: AppThemeData.primary300,

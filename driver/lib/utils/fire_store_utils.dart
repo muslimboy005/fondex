@@ -533,6 +533,54 @@ class FireStoreUtils {
     return airPortList;
   }
 
+  /// car_model dan vehicle_type_id bo‘yicha noyob markalarni (car_make_id, car_make_name) oladi
+  static Future<List<CarMakes>> getCarMakesByVehicleTypeId(
+      String vehicleTypeId) async {
+    if (vehicleTypeId.isEmpty) return [];
+    final Set<String> seenIds = {};
+    final List<CarMakes> list = [];
+    try {
+      final snapshot = await fireStore
+          .collection(CollectionName.carModel)
+          .where('vehicle_type_id', isEqualTo: vehicleTypeId)
+          .where('isActive', isEqualTo: true)
+          .get();
+      for (final doc in snapshot.docs) {
+        final d = doc.data();
+        final id = (d['car_make_id'] ?? '').toString();
+        final name = (d['car_make_name'] ?? '').toString();
+        if (id.isNotEmpty && !seenIds.contains(id)) {
+          seenIds.add(id);
+          list.add(CarMakes(id: id, name: name, isActive: true));
+        }
+      }
+    } catch (e) {
+      log('getCarMakesByVehicleTypeId error: $e');
+    }
+    return list;
+  }
+
+  /// car_model dan vehicle_type_id va car_make_id bo‘yicha modellarni oladi
+  static Future<List<CarModel>> getCarModelsByVehicleTypeAndMake(
+      String vehicleTypeId, String carMakeId) async {
+    if (vehicleTypeId.isEmpty || carMakeId.isEmpty) return [];
+    final List<CarModel> list = [];
+    try {
+      final snapshot = await fireStore
+          .collection(CollectionName.carModel)
+          .where('vehicle_type_id', isEqualTo: vehicleTypeId)
+          .where('car_make_id', isEqualTo: carMakeId)
+          .where('isActive', isEqualTo: true)
+          .get();
+      for (final doc in snapshot.docs) {
+        list.add(CarModel.fromJson(doc.data()));
+      }
+    } catch (e) {
+      log('getCarModelsByVehicleTypeAndMake error: $e');
+    }
+    return list;
+  }
+
   static Future<List<VehicleType>> getCabVehicleType(String sectionId) async {
     List<VehicleType> airPortList = [];
     await fireStore
@@ -953,12 +1001,119 @@ class FireStoreUtils {
     log("setCabOrder :: ${orderModel.toJson()}");
     try {
       await fireStore
-          .collection(CollectionName.ridesBooking)
+          .collection(CollectionName.cabBookingOrders)
           .doc(orderModel.id)
           .set(orderModel.toJson(), SetOptions(merge: true));
       return true;
     } catch (error) {
       log("Failed to update cab order: $error");
+      return false;
+    }
+  }
+
+  /// Safar boshlanganda: status In Transit, startTime, startLocation, accumulatedDistance: 0, isTracking: true.
+  /// finalFare/finalDistance/extraKm/extraCharge tozalanadi – "Manzilga yetib keldik" tugmasi ko‘rinsin.
+  static Future<bool> updateCabOrderStartTrip({
+    required String orderId,
+    required Map<String, double> startLocation,
+  }) async {
+    try {
+      await fireStore.collection(CollectionName.cabBookingOrders).doc(orderId).update({
+        'status': Constant.orderInTransit,
+        'startTime': FieldValue.serverTimestamp(),
+        'startLocation': startLocation,
+        'accumulatedDistance': 0.0,
+        'isTracking': true,
+        'finalFare': FieldValue.delete(),
+        'finalDistance': FieldValue.delete(),
+        'extraKm': FieldValue.delete(),
+        'extraCharge': FieldValue.delete(),
+      });
+      return true;
+    } catch (e) {
+      log("updateCabOrderStartTrip error: $e");
+      return false;
+    }
+  }
+
+  /// Bir nuqtali zakazda: haydovchi "Manzilga yetib keldik" bosganda – faqat summa yangilanadi, status o‘zgarmaydi
+  static Future<bool> updateCabOrderReachedDestination({
+    required String orderId,
+    required double finalDistance,
+    required double finalFare,
+    required double extraKm,
+    required double extraCharge,
+  }) async {
+    try {
+      await fireStore.collection(CollectionName.cabBookingOrders).doc(orderId).update({
+        'finalDistance': finalDistance,
+        'finalFare': finalFare,
+        'extraKm': extraKm,
+        'extraCharge': extraCharge,
+        'subTotal': finalFare.toString(),
+      });
+      return true;
+    } catch (e) {
+      log("updateCabOrderReachedDestination error: $e");
+      return false;
+    }
+  }
+
+  /// Safar tugaganda: status Completed, endTime, isTracking: false, finalDistance, finalFare, extraKm, extraCharge
+  static Future<bool> updateCabOrderEndTrip({
+    required String orderId,
+    required double finalDistance,
+    required double finalFare,
+    required double extraKm,
+    required double extraCharge,
+  }) async {
+    try {
+      await fireStore.collection(CollectionName.cabBookingOrders).doc(orderId).update({
+        'status': Constant.orderCompleted,
+        'endTime': FieldValue.serverTimestamp(),
+        'isTracking': false,
+        'finalDistance': finalDistance,
+        'finalFare': finalFare,
+        'extraKm': extraKm,
+        'extraCharge': extraCharge,
+      });
+      return true;
+    } catch (e) {
+      log("updateCabOrderEndTrip error: $e");
+      return false;
+    }
+  }
+
+  /// Safar davomida har 12 sekundda: masofa, joylashuv va (ixtiyoriy) joriy summa yangilanadi
+  static Future<bool> updateCabOrderTracking({
+    required String orderId,
+    required double accumulatedDistance,
+    required double lat,
+    required double lng,
+    Map<String, dynamic>? driverWithCurrentLocation,
+    double? subTotal,
+    double? extraKm,
+    double? extraCharge,
+  }) async {
+    try {
+      final ref = fireStore.collection(CollectionName.cabBookingOrders).doc(orderId);
+      final Map<String, dynamic> updateData = {
+        'accumulatedDistance': accumulatedDistance,
+        'lastLocation': {'latitude': lat, 'longitude': lng},
+        'lastUpdateTime': FieldValue.serverTimestamp(),
+      };
+      if (driverWithCurrentLocation != null) {
+        updateData['driver'] = driverWithCurrentLocation;
+      }
+      if (subTotal != null) {
+        updateData['subTotal'] = subTotal.toString();
+      }
+      if (extraKm != null) updateData['extraKm'] = extraKm;
+      if (extraCharge != null) updateData['extraCharge'] = extraCharge;
+      await ref.update(updateData);
+      return true;
+    } catch (e) {
+      log("updateCabOrderTracking error: $e");
       return false;
     }
   }
@@ -1311,25 +1466,43 @@ class FireStoreUtils {
   //   return ChatVideoContainer(videoUrl: Url(url: downloadUrl.toString(), mime: metaData.contentType ?? 'video'), thumbnailUrl: thumbnailDownloadUrl);
   // }
 
+  /// Compress video to 720p @ 24fps to avoid MediaCodec 1080p60 NoSupport on some devices.
+  static Future<File> _compressChatVideo(File file) async {
+    try {
+      final MediaInfo? info = await VideoCompress.compressVideo(
+        file.path,
+        quality: VideoQuality.Res1280x720Quality,
+        deleteOrigin: false,
+        includeAudio: true,
+        frameRate: 24,
+      );
+      return info != null ? File(info.path!) : file;
+    } catch (_) {
+      return file;
+    }
+  }
+
   static Future<ChatVideoContainer?> uploadChatVideoToFireStorage(
     BuildContext context,
     File video,
   ) async {
     try {
+      ShowToastDialog.showLoader("Compressing video...".tr);
+      File fileToUpload = await _compressChatVideo(video);
       ShowToastDialog.showLoader("Uploading video...".tr);
       final String uniqueID = const Uuid().v4();
       final Reference videoRef = FirebaseStorage.instance.ref(
         'videos/$uniqueID.mp4',
       );
       final UploadTask uploadTask = videoRef.putFile(
-        video,
+        fileToUpload,
         SettableMetadata(contentType: 'video/mp4'),
       );
       await uploadTask;
       final String videoUrl = await videoRef.getDownloadURL();
       ShowToastDialog.showLoader("Generating thumbnail...".tr);
       File thumbnail = await VideoCompress.getFileThumbnail(
-        video.path,
+        fileToUpload.path,
         quality: 75, // 0 - 100
         position: -1, // Get the first frame
       );
@@ -1604,7 +1777,7 @@ class FireStoreUtils {
   ) async {
     bool isFirst = true;
     await fireStore
-        .collection(CollectionName.ridesBooking)
+        .collection(CollectionName.cabBookingOrders)
         .where('authorID', isEqualTo: orderModel.authorID)
         .get()
         .then((value) {
@@ -1997,7 +2170,7 @@ class FireStoreUtils {
 
   static Stream<List<CabOrderModel>> getCabDriverOrders(String driverId) {
     return fireStore
-        .collection(CollectionName.ridesBooking)
+        .collection(CollectionName.cabBookingOrders)
         .where('driverId', isEqualTo: driverId)
         .orderBy('createdAt', descending: true)
         .snapshots()
@@ -2014,6 +2187,7 @@ class FireStoreUtils {
     final List<String> collections = [
       CollectionName.parcelOrders,
       CollectionName.rentalOrders,
+      CollectionName.cabBookingOrders,
       CollectionName.ridesBooking,
       CollectionName.vendorOrders,
     ];
@@ -2044,7 +2218,7 @@ class FireStoreUtils {
     String driverId,
   ) async {
     Query query = fireStore
-        .collection(CollectionName.ridesBooking)
+        .collection(CollectionName.cabBookingOrders)
         .orderBy('createdAt', descending: true);
     if (driverId.isNotEmpty) {
       query = query.where('driverId', isEqualTo: driverId);

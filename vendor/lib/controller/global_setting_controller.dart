@@ -6,7 +6,6 @@ import 'package:vendor/constant/constant.dart';
 import 'package:vendor/models/currency_model.dart';
 import 'package:vendor/models/language_model.dart';
 import 'package:vendor/models/user_model.dart';
-import 'package:vendor/service/localization_service.dart';
 import 'package:vendor/utils/fire_store_utils.dart';
 import 'package:vendor/utils/notification_service.dart';
 import 'package:vendor/utils/preferences.dart';
@@ -27,38 +26,18 @@ class GlobalSettingController extends GetxController {
   }
 
   void setDefaultLanguage() {
-    if (Preferences.getString(
+    // LocaleController already loads saved locale in onInit; only ensure Preferences has a value if empty
+    final saved = Preferences.getString(Preferences.languageCodeKey).toString();
+    if (saved.isNotEmpty) return;
+    final defaultLanguage = LanguageModel(
+      slug: "uz",
+      isRtl: false,
+      title: "O'zbek",
+    );
+    Preferences.setString(
       Preferences.languageCodeKey,
-    ).toString().isNotEmpty) {
-      LanguageModel languageModel = Constant.getLanguage();
-      if (languageModel.slug == 'ru' || languageModel.slug == 'uz') {
-        LocalizationService().changeLocale(languageModel.slug.toString());
-      } else {
-        // Default to Uzbek if saved language is not ru or uz
-        LanguageModel defaultLanguage = LanguageModel(
-          slug: "uz",
-          isRtl: false,
-          title: "O'zbek",
-        );
-        Preferences.setString(
-          Preferences.languageCodeKey,
-          jsonEncode(defaultLanguage.toJson()),
-        );
-        LocalizationService().changeLocale("uz");
-      }
-    } else {
-      // Default to Uzbek if no language is saved
-      LanguageModel languageModel = LanguageModel(
-        slug: "uz",
-        isRtl: false,
-        title: "O'zbek",
-      );
-      Preferences.setString(
-        Preferences.languageCodeKey,
-        jsonEncode(languageModel.toJson()),
-      );
-      LocalizationService().changeLocale("uz");
-    }
+      jsonEncode(defaultLanguage.toJson()),
+    );
   }
 
   Future<void> getCurrentCurrency() async {

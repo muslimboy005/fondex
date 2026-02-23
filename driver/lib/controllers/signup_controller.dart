@@ -2,7 +2,7 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:driver/app/auth_screen/login_screen.dart';
+import 'package:driver/app/auth_screen/auth_screen.dart';
 import 'package:driver/app/cab_screen/cab_dashboard_screen.dart';
 import 'package:driver/app/dash_board_screen/dash_board_screen.dart';
 import 'package:driver/app/owner_screen/owner_dashboard_screen.dart';
@@ -86,10 +86,6 @@ class SignupController extends GetxController {
         zoneList.value = value;
       }
     });
-
-    await FireStoreUtils.getCarMakes().then((value) {
-      carMakesList.value = value;
-    });
   }
 
   Future<void> getSection() async {
@@ -103,9 +99,7 @@ class SignupController extends GetxController {
                     : "")
         .then((value) {
       sectionList.value = value;
-      if (sectionList.isNotEmpty) {
-        selectedSection.value = sectionList.first;
-      }
+      // Default tanlanmasin – faqat foydalanuvchi tanlaganda
     });
     await getVehicleType();
     ShowToastDialog.closeLoader();
@@ -114,29 +108,73 @@ class SignupController extends GetxController {
   Future<void> getVehicleType() async {
     ShowToastDialog.showLoader("Please wait".tr);
     cabVehicleType.clear();
+    carMakesList.clear();
+    carModelList.clear();
+    selectedCarMakes.value = CarMakes();
+    selectedCarModel.value = CarModel();
     if (selectedService.value == "Cab Service") {
-      await FireStoreUtils.getCabVehicleType(selectedSection.value.id.toString()).then((value) {
+      final sectionId = selectedSection.value.id?.toString() ?? '';
+      if (sectionId.isEmpty) {
+        ShowToastDialog.closeLoader();
+        return;
+      }
+      await FireStoreUtils.getCabVehicleType(sectionId).then((value) {
         cabVehicleType.value = value;
-        if (cabVehicleType.isNotEmpty) {
-          selectedVehicleType.value = cabVehicleType.first;
-        }
+        // Default tanlanmasin – faqat foydalanuvchi tanlaganda
       });
     } else if (selectedService.value == "Rental Service") {
-      await FireStoreUtils.getRentalVehicleType(selectedSection.value.id.toString()).then((value) {
+      await FireStoreUtils.getRentalVehicleType(
+              selectedSection.value.id.toString())
+          .then((value) {
         cabVehicleType.value = value;
-        if (cabVehicleType.isNotEmpty) {
-          selectedVehicleType.value = cabVehicleType.first;
-        }
+        // Default tanlanmasin – faqat foydalanuvchi tanlaganda
+      });
+      await FireStoreUtils.getCarMakes().then((value) {
+        carMakesList.value = value;
       });
     }
     ShowToastDialog.closeLoader();
   }
 
+  /// Cab: transport turi tanlangandan keyin shu turga tegishli markalarni car_model dan olish
+  Future<void> getCarMakesForCab() async {
+    final vehicleTypeId = selectedVehicleType.value.id?.toString() ?? '';
+    if (vehicleTypeId.isEmpty) return;
+    carMakesList.clear();
+    carModelList.clear();
+    selectedCarMakes.value = CarMakes();
+    selectedCarModel.value = CarModel();
+    final list = await FireStoreUtils.getCarMakesByVehicleTypeId(vehicleTypeId);
+    carMakesList.value = list;
+    // Default tanlanmasin – faqat foydalanuvchi tanlaganda
+  }
+
+  /// Cab: marka tanlangandan keyin shu tur + markaga tegishli modellarni olish
+  Future<void> getCarModelsForCab() async {
+    final vehicleTypeId = selectedVehicleType.value.id?.toString() ?? '';
+    final carMakeId = selectedCarMakes.value.id?.toString() ?? '';
+    if (vehicleTypeId.isEmpty || carMakeId.isEmpty) return;
+    carModelList.clear();
+    selectedCarModel.value = CarModel();
+    final list = await FireStoreUtils.getCarModelsByVehicleTypeAndMake(
+        vehicleTypeId, carMakeId);
+    carModelList.value = list;
+    // Default tanlanmasin – faqat foydalanuvchi tanlaganda
+  }
+
   Future<void> getCarModel() async {
+    if (selectedService.value == "Cab Service") {
+      ShowToastDialog.showLoader("Please wait".tr);
+      await getCarModelsForCab();
+      ShowToastDialog.closeLoader();
+      return;
+    }
     ShowToastDialog.showLoader("Please wait".tr);
     carModelList.clear();
     selectedCarModel.value = CarModel();
-    await FireStoreUtils.getCarModel(selectedCarMakes.value.name.toString()).then((value) {
+    await FireStoreUtils
+        .getCarModel(selectedCarMakes.value.name.toString())
+        .then((value) {
       carModelList.value = value;
     });
     ShowToastDialog.closeLoader();
@@ -147,6 +185,33 @@ class SignupController extends GetxController {
   }
 
   Future<void> signUp() async {
+    if (selectedService.value == "Cab Service") {
+      final sectionOk = selectedSection.value.id != null && selectedSection.value.id!.isNotEmpty;
+      final vehicleOk = selectedVehicleType.value.id != null && selectedVehicleType.value.id!.isNotEmpty;
+      final makeOk = selectedCarMakes.value.id != null && selectedCarMakes.value.id!.isNotEmpty;
+      final modelOk = selectedCarModel.value.id != null && selectedCarModel.value.id!.isNotEmpty;
+      if (!sectionOk || !vehicleOk || !makeOk || !modelOk) {
+        ShowToastDialog.showToast("Please select Section, Vehicle Type, Car Brand and Car Model.".tr);
+        return;
+      }
+    }
+    if (selectedService.value == "Rental Service") {
+      final sectionOk = selectedSection.value.id != null && selectedSection.value.id!.isNotEmpty;
+      final vehicleOk = selectedVehicleType.value.id != null && selectedVehicleType.value.id!.isNotEmpty;
+      final makeOk = selectedCarMakes.value.id != null && selectedCarMakes.value.id!.isNotEmpty;
+      final modelOk = selectedCarModel.value.id != null && selectedCarModel.value.id!.isNotEmpty;
+      if (!sectionOk || !vehicleOk || !makeOk || !modelOk) {
+        ShowToastDialog.showToast("Please select Section, Vehicle Type, Car Brand and Car Model.".tr);
+        return;
+      }
+    }
+    if (selectedService.value == "Parcel Service") {
+      final sectionOk = selectedSection.value.id != null && selectedSection.value.id!.isNotEmpty;
+      if (!sectionOk) {
+        ShowToastDialog.showToast("Please select Section.".tr);
+        return;
+      }
+    }
     ShowToastDialog.showLoader("Please wait".tr);
     if (type.value == "mobileNumber") {
       userModel.value.firstName = firstNameEditingController.value.text.toString();
@@ -216,7 +281,7 @@ class SignupController extends GetxController {
             }
           } else {
             ShowToastDialog.showToast("Thank you for sign up, your application is under approval so please wait till that approve.".tr);
-            Get.offAll(const LoginScreen());
+            Get.offAll(const AuthScreen());
           }
         },
       );
@@ -287,7 +352,7 @@ class SignupController extends GetxController {
                 }
               } else {
                 ShowToastDialog.showToast("Thank you for sign up, your application is under approval so please wait till that approve.".tr);
-                Get.offAll(const LoginScreen());
+                Get.offAll(const AuthScreen());
               }
             },
           );

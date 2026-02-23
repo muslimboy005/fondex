@@ -155,6 +155,12 @@ class Constant {
     }
   }
 
+  /// Cab narxini butun songa yaxlitlab ko'rsatish (driver tomonda)
+  static String amountShowRounded({required String? amount}) {
+    final v = double.tryParse(amount?.trim() ?? '0') ?? 0.0;
+    return amountShow(amount: v.round().toString());
+  }
+
   Future<Uint8List> getBytesFromUrl(String url, {int width = 100}) async {
     final http.Response response = await http.get(Uri.parse(url));
     if (response.statusCode != 200) {
@@ -434,8 +440,8 @@ class Constant {
   }
 
   static DateTime stringToDate(String openDineTime) {
-    return DateFormat('HH:mm').parse(DateFormat('HH:mm').format(
-        DateFormat("hh:mm a").parse(openDineTime.toLowerCase())));
+    return DateFormat('HH:mm').parse(DateFormat('HH:mm')
+        .format(DateFormat("hh:mm a").parse(openDineTime.toLowerCase())));
   }
 
   static LanguageModel getLanguage() {

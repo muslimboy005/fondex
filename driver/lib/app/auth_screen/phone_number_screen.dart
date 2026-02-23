@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:country_code_picker/country_code_picker.dart';
-import 'package:driver/app/auth_screen/login_screen.dart';
+import 'package:driver/app/auth_screen/auth_screen.dart';
 import 'package:driver/app/auth_screen/signup_screen.dart';
 import 'package:driver/constant/show_toast_dialog.dart';
 import 'package:driver/controllers/phone_number_controller.dart';
@@ -165,7 +165,7 @@ class PhoneNumberScreen extends StatelessWidget {
                             TextSpan(
                                 recognizer: TapGestureRecognizer()
                                   ..onTap = () {
-                                    Get.offAll(const LoginScreen());
+                                    Get.offAll(const AuthScreen());
                                   },
                                 text: 'E-mail'.tr,
                                 style: TextStyle(

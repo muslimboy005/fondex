@@ -131,20 +131,32 @@ class SubscriptionController extends GetxController {
 
   final Razorpay razorPay = Razorpay();
 
+  /// Bo'sh yoki noto'g'ri JSON da FormatException oldini oladi
+  static Map<String, dynamic> _safePrefJson(String key) {
+    try {
+      final s = Preferences.getString(key);
+      if (s.isEmpty) return {};
+      final decoded = jsonDecode(s);
+      return decoded is Map<String, dynamic> ? decoded : {};
+    } catch (_) {
+      return {};
+    }
+  }
+
   Future<void> getPaymentSettings() async {
     await FireStoreUtils.getPaymentSettingsData().then((value) {
-      stripeModel.value = StripeModel.fromJson(jsonDecode(Preferences.getString(Preferences.stripeSettings)));
-      payPalModel.value = PayPalModel.fromJson(jsonDecode(Preferences.getString(Preferences.paypalSettings)));
-      payStackModel.value = PayStackModel.fromJson(jsonDecode(Preferences.getString(Preferences.payStack)));
-      mercadoPagoModel.value = MercadoPagoModel.fromJson(jsonDecode(Preferences.getString(Preferences.mercadoPago)));
-      flutterWaveModel.value = FlutterWaveModel.fromJson(jsonDecode(Preferences.getString(Preferences.flutterWave)));
-      paytmModel.value = PaytmModel.fromJson(jsonDecode(Preferences.getString(Preferences.paytmSettings)));
-      payFastModel.value = PayFastModel.fromJson(jsonDecode(Preferences.getString(Preferences.payFastSettings)));
-      razorPayModel.value = RazorPayModel.fromJson(jsonDecode(Preferences.getString(Preferences.razorpaySettings)));
-      midTransModel.value = MidTrans.fromJson(jsonDecode(Preferences.getString(Preferences.midTransSettings)));
-      orangeMoneyModel.value = OrangeMoney.fromJson(jsonDecode(Preferences.getString(Preferences.orangeMoneySettings)));
-      xenditModel.value = Xendit.fromJson(jsonDecode(Preferences.getString(Preferences.xenditSettings)));
-      walletSettingModel.value = WalletSettingModel.fromJson(jsonDecode(Preferences.getString(Preferences.walletSettings)));
+      stripeModel.value = StripeModel.fromJson(_safePrefJson(Preferences.stripeSettings));
+      payPalModel.value = PayPalModel.fromJson(_safePrefJson(Preferences.paypalSettings));
+      payStackModel.value = PayStackModel.fromJson(_safePrefJson(Preferences.payStack));
+      mercadoPagoModel.value = MercadoPagoModel.fromJson(_safePrefJson(Preferences.mercadoPago));
+      flutterWaveModel.value = FlutterWaveModel.fromJson(_safePrefJson(Preferences.flutterWave));
+      paytmModel.value = PaytmModel.fromJson(_safePrefJson(Preferences.paytmSettings));
+      payFastModel.value = PayFastModel.fromJson(_safePrefJson(Preferences.payFastSettings));
+      razorPayModel.value = RazorPayModel.fromJson(_safePrefJson(Preferences.razorpaySettings));
+      midTransModel.value = MidTrans.fromJson(_safePrefJson(Preferences.midTransSettings));
+      orangeMoneyModel.value = OrangeMoney.fromJson(_safePrefJson(Preferences.orangeMoneySettings));
+      xenditModel.value = Xendit.fromJson(_safePrefJson(Preferences.xenditSettings));
+      walletSettingModel.value = WalletSettingModel.fromJson(_safePrefJson(Preferences.walletSettings));
       if (stripeModel.value.isEnabled == true) {
         Stripe.publishableKey = stripeModel.value.clientpublishableKey.toString();
         Stripe.merchantIdentifier = 'Fondex'.tr;

@@ -584,6 +584,11 @@ class AddRestaurantController extends GetxController {
         print("🔍 DEBUG: Updating existing vendor...");
         await FireStoreUtils.updateVendor(vendorModel.value);
         print("🔍 DEBUG: Vendor updated successfully");
+        // Dokon turi o'zgardi: selectedSection va userModel.sectionId ni yangilaymiz, mahsulot qo'shish va boshqa ekranlar to'g'ri tur ko'rsatadi
+        Constant.selectedSection = selectedSectionModel.value;
+        Constant.userModel!.sectionId = selectedSectionModel.value.id;
+        userModel.value.sectionId = selectedSectionModel.value.id;
+        await FireStoreUtils.updateUser(userModel.value);
       } else {
         // Create new vendor
         print("🔍 DEBUG: Creating new vendor...");
@@ -624,6 +629,10 @@ class AddRestaurantController extends GetxController {
 
         await FireStoreUtils.firebaseCreateNewVendor(vendorModel.value);
         print("🔍 DEBUG: New vendor created successfully");
+        Constant.selectedSection = selectedSectionModel.value;
+        Constant.userModel!.sectionId = selectedSectionModel.value.id;
+        userModel.value.sectionId = selectedSectionModel.value.id;
+        await FireStoreUtils.updateUser(userModel.value);
       }
 
       print(
