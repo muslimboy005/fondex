@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:developer' as developer;
+
 import 'package:bottom_picker/resources/extensions.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dropdown_search/dropdown_search.dart';
@@ -1209,30 +1212,36 @@ class HomeScreen extends StatelessWidget {
                                           },
                                         );
                                       } else {
-                                        ShowToastDialog.showLoader(
-                                          'Please wait...'.tr,
+                                        developer.log(
+                                          "🟢 [Restoran] Zakaz qabul qilindi: orderId=${orderModel.id}, avto qabul, courier backgroundda qidiriladi",
                                         );
-                                        await AudioPlayerService.playSound(
-                                          false,
-                                        );
-
-                                        // Send order to all available couriers
-                                        await FireStoreUtils.sendOrderToAllCouriers(
-                                          orderModel,
-                                        );
-
-                                        await FireStoreUtils.restaurantVendorWalletSet(
-                                          orderModel,
-                                        );
-                                        SendNotification.sendFcmMessage(
-                                          Constant.restaurantAccepted,
-                                          orderModel.author!.fcmToken
-                                              .toString(),
-                                          {},
-                                        );
-
-                                        ShowToastDialog.closeLoader();
+                                        orderModel.status =
+                                            Constant.orderAccepted;
+                                        await FireStoreUtils.updateOrder(
+                                            orderModel);
+                                        unawaited(AudioPlayerService.playSound(
+                                            false));
                                         Get.back();
+                                        final orderCopy = orderModel;
+                                        unawaited(Future<void>(() async {
+                                          try {
+                                            await FireStoreUtils
+                                                .sendOrderToAllCouriers(
+                                                    orderCopy);
+                                            await FireStoreUtils
+                                                .restaurantVendorWalletSet(
+                                                    orderCopy);
+                                            SendNotification.sendFcmMessage(
+                                              Constant.restaurantAccepted,
+                                              orderCopy.author!.fcmToken
+                                                  .toString(),
+                                              {},
+                                            );
+                                          } catch (e) {
+                                            developer.log(
+                                                'Background: courier/wallet/notification xatosi: $e');
+                                          }
+                                        }));
                                       }
                                     }
                                   }
@@ -1423,30 +1432,36 @@ class HomeScreen extends StatelessWidget {
                                             },
                                           );
                                         } else {
-                                          ShowToastDialog.showLoader(
-                                            'Please wait...'.tr,
+                                          developer.log(
+                                            "🟢 [Restoran] Zakaz qabul qilindi (2): orderId=${orderModel.id}, avto qabul, courier backgroundda qidiriladi",
                                           );
-                                          await AudioPlayerService.playSound(
-                                            false,
-                                          );
-
-                                          // Send order to all available couriers
-                                          await FireStoreUtils.sendOrderToAllCouriers(
-                                            orderModel,
-                                          );
-
-                                          await FireStoreUtils.restaurantVendorWalletSet(
-                                            orderModel,
-                                          );
-                                          SendNotification.sendFcmMessage(
-                                            Constant.restaurantAccepted,
-                                            orderModel.author!.fcmToken
-                                                .toString(),
-                                            {},
-                                          );
-
-                                          ShowToastDialog.closeLoader();
+                                          orderModel.status =
+                                              Constant.orderAccepted;
+                                          await FireStoreUtils.updateOrder(
+                                              orderModel);
+                                          unawaited(AudioPlayerService
+                                              .playSound(false));
                                           Get.back();
+                                          final orderCopy = orderModel;
+                                          unawaited(Future<void>(() async {
+                                            try {
+                                              await FireStoreUtils
+                                                  .sendOrderToAllCouriers(
+                                                      orderCopy);
+                                              await FireStoreUtils
+                                                  .restaurantVendorWalletSet(
+                                                      orderCopy);
+                                              SendNotification.sendFcmMessage(
+                                                Constant.restaurantAccepted,
+                                                orderCopy.author!.fcmToken
+                                                    .toString(),
+                                                {},
+                                              );
+                                            } catch (e) {
+                                              developer.log(
+                                                  'Background: courier/wallet/notification xatosi: $e');
+                                            }
+                                          }));
                                         }
                                       }
                                     }
@@ -3246,29 +3261,35 @@ class HomeScreen extends StatelessWidget {
                                   },
                                 );
                               } else {
-                                ShowToastDialog.showLoader('Please wait...'.tr);
+                                developer.log(
+                                  "🟢 [Restoran] Zakaz qabul qilindi (estimated time): orderId=${orderModel.id}, avto qabul, courier backgroundda qidiriladi",
+                                );
                                 orderModel.estimatedTimeToPrepare = controller
                                     .estimatedTimeController
                                     .value
                                     .text;
-                                await AudioPlayerService.playSound(false);
-
-                                // Send order to all available couriers
-                                await FireStoreUtils.sendOrderToAllCouriers(
-                                  orderModel,
-                                );
-
-                                await FireStoreUtils.restaurantVendorWalletSet(
-                                  orderModel,
-                                );
-                                SendNotification.sendFcmMessage(
-                                  Constant.restaurantAccepted,
-                                  orderModel.author!.fcmToken.toString(),
-                                  {},
-                                );
-
-                                ShowToastDialog.closeLoader();
+                                orderModel.status =
+                                    Constant.orderAccepted;
+                                await FireStoreUtils.updateOrder(orderModel);
+                                unawaited(AudioPlayerService.playSound(false));
                                 Get.back();
+                                final orderCopy = orderModel;
+                                unawaited(Future<void>(() async {
+                                  try {
+                                    await FireStoreUtils
+                                        .sendOrderToAllCouriers(orderCopy);
+                                    await FireStoreUtils
+                                        .restaurantVendorWalletSet(orderCopy);
+                                    SendNotification.sendFcmMessage(
+                                      Constant.restaurantAccepted,
+                                      orderCopy.author!.fcmToken.toString(),
+                                      {},
+                                    );
+                                  } catch (e) {
+                                    developer.log(
+                                        'Background: courier/wallet/notification xatosi: $e');
+                                  }
+                                }));
                               }
                             } else {
                               ShowToastDialog.showToast(

@@ -466,7 +466,7 @@ const Map<String, String> uzUZ = {
   "Call": "Qo'ng'iroq",
   "Cancel Payment?": "To'lovni bekor qilish?",
   "Check out eMart, your ultimate food delivery application!":
-      "eMart — eng yaxshi ovqat yetkazib berish ilovangizni ko'rib chiqing!",
+      "Fondex — eng yaxshi ovqat yetkazib berish ilovangizni ko'rib chiqing!",
   "Choose image from gallery": "Galereyadan rasm tanlash",
   "Choose video from gallery": "Galereyadan video tanlash",
   "Confirm Location": "Joylashuvni tasdiqlash",
@@ -601,10 +601,6 @@ const Map<String, String> uzUZ = {
       "Server xatosi. Iltimos, keyinroq qayta urinib ko'ring.",
   "Share & Support": "Ulashish va qo'llab-quvvatlash",
   "Share App": "Ilovani ulashish",
-  "Sign in to access your eMart account and manage your deliveries seamlessly.":
-      "Fondex hisobingizga kirib, yetkazib berishlaringizni qulay boshqaring.",
-  "Sign up now to start your journey as a eMart driver and begin earning with every delivery.":
-      "eMart haydovchisi sifatida safaringizni boshlash va har bir yetkazib berishdan daromad olish uchun hozir ro'yxatdan o'ting.",
   "Something want wrong please contact administrator":
       "Nimadir noto'g'ri ketdi, iltimos, administrator bilan bog'laning",
   "Something went wrong. Please try again.":

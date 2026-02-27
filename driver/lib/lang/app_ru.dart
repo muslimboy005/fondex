@@ -436,7 +436,7 @@ const Map<String, String> ruRU = {
   "Call": "Позвонить",
   "Cancel Payment?": "Отменить оплату?",
   "Check out eMart, your ultimate food delivery application!":
-      "Попробуйте eMart — доставка еды!",
+      "Попробуйте Fondex — доставка еды!",
   "Choose image from gallery": "Выбрать изображение из галереи",
   "Choose video from gallery": "Выбрать видео из галереи",
   "Confirm Location": "Подтвердить место",
@@ -565,10 +565,6 @@ const Map<String, String> ruRU = {
       "Ошибка сервера. Попробуйте позже.",
   "Share & Support": "Поделиться и поддержать",
   "Share App": "Поделиться приложением",
-  "Sign in to access your eMart account and manage your deliveries seamlessly.":
-      "Войдите в аккаунт eMart для управления доставками.",
-  "Sign up now to start your journey as a eMart driver and begin earning with every delivery.":
-      "Зарегистрируйтесь как водитель eMart и зарабатывайте на доставках.",
   "Something want wrong please contact administrator":
       "Произошла ошибка. Обратитесь к администратору",
   "Something went wrong. Please try again.":

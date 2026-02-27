@@ -77,21 +77,23 @@ class HomeController extends GetxController {
           for (var element in event.docs) {
             OrderModel orderModel = OrderModel.fromJson(element.data());
             allOrderList.add(orderModel);
-            newOrderList.value = allOrderList.where((p0) => p0.status == Constant.orderPlaced).toList();
-            acceptedOrderList.value = allOrderList
-                .where(
-                  (p0) =>
-                      p0.status == Constant.orderAccepted ||
-                      p0.status == Constant.driverPending ||
-                      p0.status == Constant.driverRejected ||
-                      p0.status == Constant.orderShipped ||
-                      p0.status == Constant.orderInTransit,
-                )
-                .toList();
-            completedOrderList.value = allOrderList.where((p0) => p0.status == Constant.orderCompleted).toList();
-            rejectedOrderList.value = allOrderList.where((p0) => p0.status == Constant.orderRejected).toList();
-            cancelledOrderList.value = allOrderList.where((p0) => p0.status == Constant.orderCancelled).toList();
           }
+          // Ro'yxatlarni to'liq allOrderList dan bir marta filtrlash (kuryer qabul qilganda ham "Qabul qilingan"da qoladi, faqat yetkazilgach "Tugallangan"ga o'tadi)
+          newOrderList.value = allOrderList.where((p0) => p0.status == Constant.orderPlaced).toList();
+          acceptedOrderList.value = allOrderList
+              .where(
+                (p0) =>
+                    p0.status == Constant.orderAccepted ||
+                    p0.status == Constant.driverPending ||
+                    p0.status == Constant.driverAccepted ||
+                    p0.status == Constant.driverRejected ||
+                    p0.status == Constant.orderShipped ||
+                    p0.status == Constant.orderInTransit,
+              )
+              .toList();
+          completedOrderList.value = allOrderList.where((p0) => p0.status == Constant.orderCompleted).toList();
+          rejectedOrderList.value = allOrderList.where((p0) => p0.status == Constant.orderRejected).toList();
+          cancelledOrderList.value = allOrderList.where((p0) => p0.status == Constant.orderCancelled).toList();
           update();
           if (newOrderList.isNotEmpty == true) {
             await AudioPlayerService.playSound(true);

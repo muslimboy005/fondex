@@ -1,6 +1,4 @@
 import 'package:country_code_picker/country_code_picker.dart';
-import 'package:driver/app/auth_screen/auth_screen.dart';
-import 'package:driver/app/auth_screen/phone_number_screen.dart';
 import 'package:driver/constant/show_toast_dialog.dart';
 import 'package:driver/controllers/signup_controller.dart';
 import 'package:driver/models/car_makes.dart';
@@ -12,7 +10,6 @@ import 'package:driver/themes/app_them_data.dart';
 import 'package:driver/themes/responsive.dart';
 import 'package:driver/themes/text_field_widget.dart';
 import 'package:driver/themes/theme_controller.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -51,7 +48,7 @@ class SignupScreen extends StatelessWidget {
                           fontFamily: AppThemeData.semiBold),
                     ),
                     Text(
-                      "Sign up now to start your journey as a eMart driver and begin earning with every delivery."
+                      "Sign up now to start your journey as a Fondex driver and begin earning with every delivery."
                           .tr,
                       style: TextStyle(
                           color: isDark
@@ -59,37 +56,38 @@ class SignupScreen extends StatelessWidget {
                               : AppThemeData.grey500,
                           fontFamily: AppThemeData.regular),
                     ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    Text.rich(
-                      TextSpan(
-                        children: [
-                          TextSpan(
-                              text: 'Already Have an account?'.tr,
-                              style: TextStyle(
-                                color: isDark
-                                    ? AppThemeData.grey50
-                                    : AppThemeData.grey900,
-                                fontFamily: AppThemeData.medium,
-                                fontWeight: FontWeight.w500,
-                              )),
-                          const WidgetSpan(child: SizedBox(width: 5)),
-                          TextSpan(
-                              recognizer: TapGestureRecognizer()
-                                ..onTap = () {
-                                  Get.offAll(const AuthScreen());
-                                },
-                              text: 'Log in'.tr,
-                              style: TextStyle(
-                                  color: AppThemeData.primary300,
-                                  fontFamily: AppThemeData.medium,
-                                  fontWeight: FontWeight.w500,
-                                  decoration: TextDecoration.underline,
-                                  decorationColor: AppThemeData.primary300)),
-                        ],
-                      ),
-                    ),
+                    // const SizedBox(
+                    //   height: 10,
+                    // ),
+                    // Text.rich(
+                    //   TextSpan(
+                    //     children: [
+                    //       TextSpan(
+                    //           text: 'Already Have an account?'.tr,
+                    //           style: TextStyle(
+                    //             color: isDark
+                    //                 ? AppThemeData.grey50
+                    //                 : AppThemeData.grey900,
+                    //             fontFamily: AppThemeData.medium,
+                    //             fontWeight: FontWeight.w500,
+                    //           )),
+                    //       const WidgetSpan(child: SizedBox(width: 5)),
+                    //       TextSpan(
+                    //           recognizer: TapGestureRecognizer()
+                    //             ..onTap = () {
+                    //               Get.offAll(const AuthScreen());
+                    //             },
+                    //           text: 'Log in'.tr,
+                    //           style: TextStyle(
+                    //               color: AppThemeData.primary300,
+                    //               fontFamily: AppThemeData.medium,
+                    //               fontWeight: FontWeight.w500,
+                    //               decoration: TextDecoration.underline,
+                    //               decorationColor: AppThemeData.primary300)),
+                    //     ],
+                    //   ),
+                    // ),
+
                     const SizedBox(
                       height: 20,
                     ),
@@ -1085,45 +1083,45 @@ class SignupScreen extends StatelessWidget {
             bottomNavigationBar: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text.rich(
-                      TextSpan(
-                        children: [
-                          TextSpan(
-                              text: 'Log in with'.tr,
-                              style: TextStyle(
-                                color: isDark
-                                    ? AppThemeData.grey50
-                                    : AppThemeData.grey900,
-                                fontFamily: AppThemeData.medium,
-                                fontWeight: FontWeight.w500,
-                              )),
-                          const WidgetSpan(
-                              child: SizedBox(
-                            width: 10,
-                          )),
-                          TextSpan(
-                              recognizer: TapGestureRecognizer()
-                                ..onTap = () {
-                                  Get.to(const PhoneNumberScreen());
-                                },
-                              text: 'Mobile Number'.tr,
-                              style: TextStyle(
-                                  color: AppThemeData.primary300,
-                                  fontFamily: AppThemeData.medium,
-                                  fontWeight: FontWeight.w500,
-                                  decoration: TextDecoration.underline,
-                                  decorationColor: AppThemeData.primary300)),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
+                // Column(
+                //   mainAxisSize: MainAxisSize.min,
+                //   children: [
+                //     Text.rich(
+                //       TextSpan(
+                //         children: [
+                //           TextSpan(
+                //               text: 'Log in with'.tr,
+                //               style: TextStyle(
+                //                 color: isDark
+                //                     ? AppThemeData.grey50
+                //                     : AppThemeData.grey900,
+                //                 fontFamily: AppThemeData.medium,
+                //                 fontWeight: FontWeight.w500,
+                //               )),
+                //           const WidgetSpan(
+                //               child: SizedBox(
+                //             width: 10,
+                //           )),
+                //           TextSpan(
+                //               recognizer: TapGestureRecognizer()
+                //                 ..onTap = () {
+                //                   Get.to(const PhoneRegistrationScreen());
+                //                 },
+                //               text: 'Mobile Number'.tr,
+                //               style: TextStyle(
+                //                   color: AppThemeData.primary300,
+                //                   fontFamily: AppThemeData.medium,
+                //                   fontWeight: FontWeight.w500,
+                //                   decoration: TextDecoration.underline,
+                //                   decorationColor: AppThemeData.primary300)),
+                //         ],
+                //       ),
+                //     ),
+                //   ],
+                // ),
+                // const SizedBox(
+                //   height: 10,
+                // ),
                 InkWell(
                   onTap: () {
                     if (controller.type.value == "mobileNumber") {

@@ -2190,18 +2190,81 @@ class FireStoreUtils {
     return ratingModelList;
   }
 
+  /// Fetch drivers with role=driver and serviceType=delivery-service, then filter in Dart (vendorID match OR vendorID null/empty, active, isActive).
+  static Future<List<UserModel>> _getDriversByRoleAndFilterInDart() async {
+    List<UserModel> driverList = [];
+    const String deliveryServiceType = 'delivery-service';
+    var snapshot = await fireStore
+        .collection(CollectionName.users)
+        .where('role', isEqualTo: Constant.userRoleDriver)
+        .where('serviceType', isEqualTo: deliveryServiceType)
+        .get();
+
+    log(
+      "getAvalibleDrivers :: delivery-service driverlar (role=driver, serviceType=$deliveryServiceType): ${snapshot.docs.length} ta",
+    );
+
+    for (var doc in snapshot.docs) {
+      try {
+        Map<String, dynamic>? data = doc.data() as Map<String, dynamic>?;
+        if (data == null) {
+          log("getAvalibleDrivers :: ⚠️ Driver ${doc.id} data is null, skipping");
+          continue;
+        }
+
+        var vendorID = data['vendorID'];
+        var active = data['active'];
+        var isActive = data['isActive'];
+        var serviceType = data['serviceType'];
+
+        bool belongsToVendor =
+            vendorID == Constant.userModel?.vendorID ||
+            vendorID == null ||
+            vendorID.toString().isEmpty;
+
+        if (belongsToVendor && active == true && isActive == true) {
+          driverList.add(UserModel.fromJson(data));
+          log(
+            "getAvalibleDrivers :: ✅ Driver ${doc.id} qo'shildi (serviceType=$serviceType, vendorID=$vendorID, active=$active, isActive=$isActive)",
+          );
+        } else {
+          log(
+            "getAvalibleDrivers :: Driver ${doc.id} o'tkazib yuborildi: vendorID=$vendorID, active=$active, isActive=$isActive (kerak: vendorID=${Constant.userModel?.vendorID} yoki bo'sh)",
+          );
+        }
+      } catch (e) {
+        log("getAvalibleDrivers :: Error processing driver ${doc.id}: $e");
+      }
+    }
+
+    try {
+      driverList.sort((a, b) {
+        if (a.createdAt == null && b.createdAt == null) return 0;
+        if (a.createdAt == null) return 1;
+        if (b.createdAt == null) return -1;
+        return b.createdAt!.compareTo(a.createdAt!);
+      });
+    } catch (sortError) {
+      log("getAvalibleDrivers :: Sort xatosi: $sortError");
+    }
+
+    log("getAvalibleDrivers :: Filtrdan keyin: ${driverList.length} ta driver");
+    return driverList;
+  }
+
   static Future<List<UserModel>> getAvalibleDrivers() async {
     List<UserModel> driverList = [];
     try {
       log("getAvalibleDrivers :: Starting search");
       log("getAvalibleDrivers :: vendorID=${Constant.userModel?.vendorID}");
-      log("getAvalibleDrivers :: role=${Constant.userRoleDriver}");
+      log("getAvalibleDrivers :: role=${Constant.userRoleDriver}, serviceType=delivery-service");
 
-      // Try with orderBy first (requires index)
+      // Try with orderBy first (requires index). Faqat delivery-service driverlar.
       var querySnapshot = await fireStore
           .collection(CollectionName.users)
           .where('vendorID', isEqualTo: Constant.userModel?.vendorID)
           .where('role', isEqualTo: Constant.userRoleDriver)
+          .where('serviceType', isEqualTo: 'delivery-service')
           .where('active', isEqualTo: true)
           .where('isActive', isEqualTo: true)
           .orderBy('createdAt', descending: true)
@@ -2215,109 +2278,29 @@ class FireStoreUtils {
         for (int i = 0; i < querySnapshot.docs.length; i++) {
           driverList.add(UserModel.fromJson(querySnapshot.docs[i].data()));
         }
+      } else {
+        // First query returned 0 docs — fetch drivers with serviceType=delivery-service and filter in Dart (vendorID match or empty)
+        log(
+          "getAvalibleDrivers :: Birinchi so'rov 0 qaytardi; faqat serviceType=delivery-service driverlar olinmoqda, vendorID bo'sh yoki mos bo'lganlar qo'shiladi",
+        );
+        driverList = await _getDriversByRoleAndFilterInDart();
       }
     } catch (e) {
-      // If index error, try without orderBy and sort in Dart
+      // If index error, try without orderBy: fetch all drivers by role and filter in Dart
       if (e.toString().contains('failed-precondition') ||
           e.toString().contains('index')) {
         log(
-          'Firestore index not ready for drivers, fetching without orderBy...',
+          'getAvalibleDrivers :: Firestore index xatosi, serviceType=delivery-service driverlar olinmoqda va Dart da filtrlanyapti...',
         );
         try {
-          // First, try to get all drivers (without vendorID filter to debug)
-          var allDriversByRoleSnapshot = await fireStore
-              .collection(CollectionName.users)
-              .where('role', isEqualTo: Constant.userRoleDriver)
-              .get();
-
-          log(
-            "getAvalibleDrivers :: Found ${allDriversByRoleSnapshot.docs.length} total drivers (all vendors, role=driver)",
-          );
-
-          // Now filter by vendorID, active and isActive in Dart
-          for (var doc in allDriversByRoleSnapshot.docs) {
-            try {
-              Map<String, dynamic>? data = doc.data() as Map<String, dynamic>?;
-              if (data == null) {
-                log(
-                  "getAvalibleDrivers :: ⚠️ Driver ${doc.id} data is null, skipping",
-                );
-                continue;
-              }
-
-              var vendorID = data['vendorID'];
-              var active = data['active'];
-              var isActive = data['isActive'];
-
-              // Check if driver belongs to this vendor (or has no vendorID - available for all vendors) and is active
-              bool belongsToVendor =
-                  vendorID == Constant.userModel?.vendorID ||
-                  vendorID == null ||
-                  vendorID.toString().isEmpty;
-
-              if (belongsToVendor && active == true && isActive == true) {
-                driverList.add(UserModel.fromJson(data));
-                log(
-                  "getAvalibleDrivers :: ✅ Driver ${doc.id} added to list (vendorID=$vendorID)",
-                );
-              }
-            } catch (e) {
-              log(
-                "getAvalibleDrivers :: Error processing driver ${doc.id}: $e",
-              );
-            }
-          }
-
-          // If still no drivers found, try without vendorID filter (for debugging)
-          if (driverList.isEmpty) {
-            log(
-              "getAvalibleDrivers :: ⚠️ No drivers found with vendorID filter, checking all active drivers...",
-            );
-            for (var doc in allDriversByRoleSnapshot.docs) {
-              try {
-                Map<String, dynamic>? data =
-                    doc.data() as Map<String, dynamic>?;
-                if (data == null) continue;
-
-                var vendorID = data['vendorID'];
-                var active = data['active'];
-                var isActive = data['isActive'];
-
-                if (active == true && isActive == true) {
-                  log(
-                    "getAvalibleDrivers :: Active driver found: ${doc.id}, vendorID=$vendorID (expected: ${Constant.userModel?.vendorID})",
-                  );
-                }
-              } catch (e) {
-                log(
-                  "getAvalibleDrivers :: Error checking driver ${doc.id}: $e",
-                );
-              }
-            }
-          }
-
-          // Sort by createdAt in Dart
-          try {
-            driverList.sort((a, b) {
-              if (a.createdAt == null && b.createdAt == null) return 0;
-              if (a.createdAt == null) return 1;
-              if (b.createdAt == null) return -1;
-              return b.createdAt!.compareTo(a.createdAt!); // descending
-            });
-          } catch (sortError) {
-            log("Error sorting drivers: $sortError");
-          }
-
-          log(
-            "getAvalibleDrivers :: After filtering: ${driverList.length} active drivers",
-          );
+          driverList = await _getDriversByRoleAndFilterInDart();
         } catch (fallbackError) {
           log(
-            "Error fetching drivers without orderBy: ${fallbackError.toString()}",
+            "getAvalibleDrivers :: Fallback xatosi: ${fallbackError.toString()}",
           );
         }
       } else {
-        log("Error fetching drivers: ${e.toString()}");
+        log("getAvalibleDrivers :: So'rov xatosi: ${e.toString()}");
       }
     }
 
@@ -2369,6 +2352,9 @@ class FireStoreUtils {
         log(
           "⚠️ [sendOrderToAllCouriers] Tekshirish: vendorID=${Constant.userModel?.vendorID}, role=driver, active=true, isActive=true",
         );
+        log(
+          "⚠️ [sendOrderToAllCouriers] Driver da vendorID bo'sh yoki shu restoran vendorID si bo'lishi kerak. Firestore: users → driver hujjati → vendorID maydoni.",
+        );
         return;
       }
 
@@ -2377,8 +2363,14 @@ class FireStoreUtils {
       );
 
       // Update order status to driverPending
+      log(
+        "📦 [sendOrderToAllCouriers] Order status driverPending ga o'zgartirilmoqda: ${orderModel.id}",
+      );
       orderModel.status = Constant.driverPending;
       await updateOrder(orderModel);
+      log(
+        "📦 [sendOrderToAllCouriers] Order yangilandi, courier larga yuborilmoqda...",
+      );
 
       // Send order to each courier
       for (UserModel courier in courierList) {

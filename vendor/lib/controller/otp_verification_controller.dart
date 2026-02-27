@@ -13,6 +13,7 @@ import 'package:http/http.dart' as http;
 import '../app/auth_screen/auth_screen.dart';
 import '../app/auth_screen/signup_screen.dart';
 import '../app/dash_board_screens/dash_board_screen.dart';
+import '../app/subscription_plan_screen/subscription_plan_screen.dart';
 import '../constant/constant.dart';
 import '../models/user_model.dart';
 import '../utils/fire_store_utils.dart';
@@ -671,12 +672,14 @@ class OtpVerifyController extends GetxController {
 
       ShowToastDialog.closeLoader();
 
-      log("🧭 Navigating to SignupScreen with pre-filled data...");
-      // Navigate to signup screen with pre-filled data (email, phone already set)
-      Get.offAll(
-        () => const SignupScreen(),
-        arguments: {'type': 'mobileNumber', 'userModel': userModel},
-      );
+      // Auto-register: go to dashboard/subscription without SignupScreen
+      log("🧭 Auto-register: navigating to dashboard/subscription...");
+      final sectionId = userModel.sectionId ?? '';
+      if (sectionId.isEmpty && Constant.isSubscriptionModelApplied == false) {
+        Get.offAll(() => const DashBoardScreen());
+      } else {
+        Get.offAll(() => const SubscriptionPlanScreen());
+      }
       log("✅ Navigation completed");
     } catch (e, stackTrace) {
       log("❌ FIREBASE REGISTRATION ERROR:");

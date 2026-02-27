@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:driver/app/auth_screen/phone_registration_screen.dart';
-import 'package:driver/app/auth_screen/signup_screen.dart';
 import 'package:driver/app/forgot_password_screen/forgot_password_screen.dart';
 import 'package:driver/constant/show_toast_dialog.dart';
 import 'package:driver/controllers/login_controller.dart';
@@ -10,7 +9,6 @@ import 'package:driver/themes/responsive.dart';
 import 'package:driver/themes/round_button_fill.dart';
 import 'package:driver/themes/text_field_widget.dart';
 import 'package:driver/themes/theme_controller.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
@@ -44,47 +42,48 @@ class LoginScreen extends StatelessWidget {
                         fontFamily: AppThemeData.semiBold),
                   ),
                   Text(
-                    "Sign in to access your eMart account and manage your deliveries seamlessly."
+                    "Sign in to access your Fondex account and manage your deliveries seamlessly."
                         .tr,
                     style: TextStyle(
                         color:
                             isDark ? AppThemeData.grey50 : AppThemeData.grey500,
                         fontFamily: AppThemeData.regular),
                   ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  Text.rich(
-                    TextSpan(
-                      children: [
-                        TextSpan(
-                            text: "Didn't Have an account?".tr,
-                            style: TextStyle(
-                              color: isDark
-                                  ? AppThemeData.grey50
-                                  : AppThemeData.grey900,
-                              fontFamily: AppThemeData.medium,
-                              fontWeight: FontWeight.w500,
-                            )),
-                        const WidgetSpan(
-                            child: SizedBox(
-                          width: 10,
-                        )),
-                        TextSpan(
-                            recognizer: TapGestureRecognizer()
-                              ..onTap = () {
-                                Get.to(const SignupScreen());
-                              },
-                            text: 'Sign up'.tr,
-                            style: TextStyle(
-                                color: AppThemeData.primary300,
-                                fontFamily: AppThemeData.medium,
-                                fontWeight: FontWeight.w500,
-                                decoration: TextDecoration.underline,
-                                decorationColor: AppThemeData.primary300)),
-                      ],
-                    ),
-                  ),
+                  // const SizedBox(
+                  //   height: 10,
+                  // ),
+                  // Text.rich(
+                  //   TextSpan(
+                  //     children: [
+                  //       TextSpan(
+                  //           text: "Didn't Have an account?".tr,
+                  //           style: TextStyle(
+                  //             color: isDark
+                  //                 ? AppThemeData.grey50
+                  //                 : AppThemeData.grey900,
+                  //             fontFamily: AppThemeData.medium,
+                  //             fontWeight: FontWeight.w500,
+                  //           )),
+                  //       const WidgetSpan(
+                  //           child: SizedBox(
+                  //         width: 10,
+                  //       )),
+                  //       TextSpan(
+                  //           recognizer: TapGestureRecognizer()
+                  //             ..onTap = () {
+                  //               Get.to(const SignupScreen());
+                  //             },
+                  //           text: 'Sign up'.tr,
+                  //           style: TextStyle(
+                  //               color: AppThemeData.primary300,
+                  //               fontFamily: AppThemeData.medium,
+                  //               fontWeight: FontWeight.w500,
+                  //               decoration: TextDecoration.underline,
+                  //               decorationColor: AppThemeData.primary300)),
+                  //     ],
+                  //   ),
+                  // ),
+
                   const SizedBox(
                     height: 32,
                   ),

@@ -1,5 +1,4 @@
 import 'package:country_code_picker/country_code_picker.dart';
-import 'package:driver/app/auth_screen/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -159,69 +158,69 @@ class PhoneRegistrationScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                  Padding(
-                      padding: const EdgeInsets.only(bottom: 10),
-                      child: Column(
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Container(
-                                width: 52,
-                                height: 1,
-                                color: isDark
-                                    ? AppThemeData.greyDark300
-                                    : AppThemeData.grey300,
-                              ),
-                              const SizedBox(width: 15),
-                              Text(
-                                "or continue with".tr,
-                                style: TextStyle(
-                                  fontFamily: AppThemeData.regular,
-                                  color: isDark
-                                      ? AppThemeData.greyDark400
-                                      : AppThemeData.grey400,
-                                ),
-                              ),
-                              const SizedBox(width: 15),
-                              Container(
-                                width: 52,
-                                height: 1,
-                                color: isDark
-                                    ? AppThemeData.greyDark400
-                                    : AppThemeData.grey400,
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 25),
-                          InkWell(
-                            onTap: () => Get.to(() => const LoginScreen()),
-                            child: Container(
-                              color: isDark
-                                  ? AppThemeData.greyDark200
-                                  : AppThemeData.grey200,
-                              width: Responsive.width(100, context),
-                              height: Responsive.width(16, context),
-                              child: Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 16),
-                                child: Text(
-                                  "Email address".tr,
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    color: isDark
-                                        ? AppThemeData.greyDark900
-                                        : AppThemeData.grey900,
-                                    fontSize: 16,
-                                    fontFamily: AppThemeData.medium,
-                                    fontWeight: FontWeight.w400,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      )),
+                  // Padding(
+                  //     padding: const EdgeInsets.only(bottom: 10),
+                  //     child: Column(
+                  //       children: [
+                  //         Row(
+                  //           mainAxisAlignment: MainAxisAlignment.center,
+                  //           children: [
+                  //             Container(
+                  //               width: 52,
+                  //               height: 1,
+                  //               color: isDark
+                  //                   ? AppThemeData.greyDark300
+                  //                   : AppThemeData.grey300,
+                  //             ),
+                  //             const SizedBox(width: 15),
+                  //             Text(
+                  //               "or continue with".tr,
+                  //               style: TextStyle(
+                  //                 fontFamily: AppThemeData.regular,
+                  //                 color: isDark
+                  //                     ? AppThemeData.greyDark400
+                  //                     : AppThemeData.grey400,
+                  //               ),
+                  //             ),
+                  //             const SizedBox(width: 15),
+                  //             Container(
+                  //               width: 52,
+                  //               height: 1,
+                  //               color: isDark
+                  //                   ? AppThemeData.greyDark400
+                  //                   : AppThemeData.grey400,
+                  //             ),
+                  //           ],
+                  //         ),
+                  //         const SizedBox(height: 25),
+                  //         InkWell(
+                  //           onTap: () => Get.to(() => const LoginScreen()),
+                  //           child: Container(
+                  //             color: isDark
+                  //                 ? AppThemeData.greyDark200
+                  //                 : AppThemeData.grey200,
+                  //             width: Responsive.width(100, context),
+                  //             height: Responsive.width(16, context),
+                  //             child: Padding(
+                  //               padding:
+                  //                   const EdgeInsets.symmetric(vertical: 16),
+                  //               child: Text(
+                  //                 "Email address".tr,
+                  //                 textAlign: TextAlign.center,
+                  //                 style: TextStyle(
+                  //                   color: isDark
+                  //                       ? AppThemeData.greyDark900
+                  //                       : AppThemeData.grey900,
+                  //                   fontSize: 16,
+                  //                   fontFamily: AppThemeData.medium,
+                  //                   fontWeight: FontWeight.w400,
+                  //                 ),
+                  //               ),
+                  //             ),
+                  //           ),
+                  //         ),
+                  //       ],
+                  //     )),
                 ],
               ),
             ),
