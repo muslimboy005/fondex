@@ -59,6 +59,12 @@ class Constant {
   static String appStoreLink = "";
   static String appVersion = "";
   static String storeUrl = "";
+
+  /// Vendor ilova store linklari (Firestore bo'sh bo'lsa ishlatiladi)
+  static const String vendorPlayStoreUrl =
+      'https://play.google.com/store/apps/details?id=felix.fondex.store';
+  static const String vendorAppStoreUrl =
+      'https://apps.apple.com/app/id6758948479';
   static String termsAndConditions = "";
   static String digitalProductFileSize = "10";
   static String privacyPolicy = "";

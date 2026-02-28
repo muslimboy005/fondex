@@ -11,6 +11,7 @@ import 'package:vendor/themes/app_them_data.dart';
 import 'package:vendor/themes/responsive.dart';
 import 'package:vendor/themes/round_button_fill.dart';
 import 'package:vendor/utils/network_image_widget.dart';
+import 'package:vendor/utils/version_check_utils.dart';
 
 class SubscriptionPlanScreen extends StatelessWidget {
   const SubscriptionPlanScreen({super.key});
@@ -19,10 +20,11 @@ class SubscriptionPlanScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final themeController = Get.find<ThemeController>();
     final isDark = themeController.isDark.value;
-    return GetX(
-      init: SubscriptionController(),
-      builder: (controller) {
-        return Scaffold(
+    return VersionCheckOnOpen(
+      child: GetX(
+        init: SubscriptionController(),
+        builder: (controller) {
+          return Scaffold(
           appBar: AppBar(
             backgroundColor: AppThemeData.primary300,
             centerTitle: false,
@@ -290,6 +292,7 @@ class SubscriptionPlanScreen extends StatelessWidget {
                 ),
         );
       },
+    ),
     );
   }
 }
@@ -748,5 +751,6 @@ class SubscriptionPlanWidget extends StatelessWidget {
         );
       },
     );
+    
   }
 }

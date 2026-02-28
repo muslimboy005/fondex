@@ -6,6 +6,7 @@ import 'package:vendor/app/subscription_plan_screen/subscription_plan_screen.dar
 import 'package:vendor/constant/constant.dart';
 import 'package:vendor/themes/app_them_data.dart';
 import 'package:vendor/themes/round_button_fill.dart';
+import 'package:vendor/utils/version_check_utils.dart';
 
 class AppNotAccessScreen extends StatelessWidget {
   const AppNotAccessScreen({super.key});
@@ -14,7 +15,8 @@ class AppNotAccessScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final themeController = Get.find<ThemeController>();
     final isDark = themeController.isDark.value;
-    return Scaffold(
+    return VersionCheckOnOpen(
+      child: Scaffold(
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -49,6 +51,7 @@ class AppNotAccessScreen extends StatelessWidget {
           ),
         ),
       ),
+    ),
     );
   }
 }

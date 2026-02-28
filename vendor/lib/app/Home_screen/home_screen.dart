@@ -1113,6 +1113,7 @@ class HomeScreen extends StatelessWidget {
                                             .toDate(),
                                       ),
                                     )) {
+                                      controller.initPrepareTimeForDialog();
                                       showDialog(
                                         context: context,
                                         builder: (BuildContext context) {
@@ -1130,121 +1131,20 @@ class HomeScreen extends StatelessWidget {
                                       );
                                     }
                                   } else {
-                                    if (Constant
-                                                .selectedSection!
-                                                .isProductDetails ==
-                                            true &&
-                                        Constant.selectedSection!.name ==
-                                            "Restaurants") {
-                                      showDialog(
-                                        context: context,
-                                        builder: (BuildContext context) {
-                                          return estimatedTimeDialog(
-                                            controller,
-                                            isDark,
-                                            orderModel,
-                                            context,
-                                          );
-                                        },
-                                      );
-                                    } else {
-                                      if ((Constant.isSubscriptionModelApplied ==
-                                                  true ||
-                                              Constant
-                                                      .vendorAdminCommission
-                                                      ?.isEnabled ==
-                                                  true) &&
-                                          controller
-                                                  .vendermodel
-                                                  .value
-                                                  .subscriptionPlan !=
-                                              null) {
-                                        if (controller
-                                                    .vendermodel
-                                                    .value
-                                                    .subscriptionTotalOrders !=
-                                                '-1' &&
-                                            controller
-                                                    .vendermodel
-                                                    .value
-                                                    .subscriptionTotalOrders !=
-                                                null) {
-                                          controller
-                                                  .vendermodel
-                                                  .value
-                                                  .subscriptionTotalOrders =
-                                              (int.parse(
-                                                        controller
-                                                            .vendermodel
-                                                            .value
-                                                            .subscriptionTotalOrders!,
-                                                      ) -
-                                                      1)
-                                                  .toString();
-                                          await FireStoreUtils.updateVendor(
-                                            controller.vendermodel.value,
-                                          );
-                                        }
-                                      }
-                                      if (Constant.isSelfDeliveryFeature ==
-                                              true &&
-                                          controller
-                                                  .vendermodel
-                                                  .value
-                                                  .isSelfDelivery ==
-                                              true &&
-                                          orderModel.takeAway == false) {
-                                        ShowToastDialog.showLoader(
-                                          'Please wait...'.tr,
+                                    controller.initPrepareTimeForDialog();
+                                    showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return estimatedTimeDialog(
+                                          controller,
+                                          isDark,
+                                          orderModel,
+                                          context,
                                         );
-                                        await controller.getAllDriverList();
-                                        ShowToastDialog.closeLoader();
-                                        Get.back();
-                                        showDialog(
-                                          // ignore: use_build_context_synchronously
-                                          context: context,
-                                          builder: (BuildContext context) {
-                                            return showListOfDeliverymenDialog(
-                                              controller,
-                                              isDark,
-                                              orderModel,
-                                            );
-                                          },
-                                        );
-                                      } else {
-                                        developer.log(
-                                          "🟢 [Restoran] Zakaz qabul qilindi: orderId=${orderModel.id}, avto qabul, courier backgroundda qidiriladi",
-                                        );
-                                        orderModel.status =
-                                            Constant.orderAccepted;
-                                        await FireStoreUtils.updateOrder(
-                                            orderModel);
-                                        unawaited(AudioPlayerService.playSound(
-                                            false));
-                                        Get.back();
-                                        final orderCopy = orderModel;
-                                        unawaited(Future<void>(() async {
-                                          try {
-                                            await FireStoreUtils
-                                                .sendOrderToAllCouriers(
-                                                    orderCopy);
-                                            await FireStoreUtils
-                                                .restaurantVendorWalletSet(
-                                                    orderCopy);
-                                            SendNotification.sendFcmMessage(
-                                              Constant.restaurantAccepted,
-                                              orderCopy.author!.fcmToken
-                                                  .toString(),
-                                              {},
-                                            );
-                                          } catch (e) {
-                                            developer.log(
-                                                'Background: courier/wallet/notification xatosi: $e');
-                                          }
-                                        }));
-                                      }
-                                    }
+                                      },
+                                    );
                                   }
+
 
                                   // if (orderModel.scheduleTime != null) {
                                   //   if (DateTime.now().isAtSameMomentOrAfter(
@@ -1333,6 +1233,7 @@ class HomeScreen extends StatelessWidget {
                                               .toDate(),
                                         ),
                                       )) {
+                                        controller.initPrepareTimeForDialog();
                                         showDialog(
                                           context: context,
                                           builder: (BuildContext context) {
@@ -1350,120 +1251,18 @@ class HomeScreen extends StatelessWidget {
                                         );
                                       }
                                     } else {
-                                      if (Constant
-                                                  .selectedSection!
-                                                  .isProductDetails ==
-                                              true &&
-                                          Constant.selectedSection!.name ==
-                                              "Restaurants") {
-                                        showDialog(
-                                          context: context,
-                                          builder: (BuildContext context) {
-                                            return estimatedTimeDialog(
-                                              controller,
-                                              isDark,
-                                              orderModel,
-                                              context,
-                                            );
-                                          },
-                                        );
-                                      } else {
-                                        if ((Constant.isSubscriptionModelApplied ==
-                                                    true ||
-                                                Constant
-                                                        .vendorAdminCommission
-                                                        ?.isEnabled ==
-                                                    true) &&
-                                            controller
-                                                    .vendermodel
-                                                    .value
-                                                    .subscriptionPlan !=
-                                                null) {
-                                          if (controller
-                                                      .vendermodel
-                                                      .value
-                                                      .subscriptionTotalOrders !=
-                                                  '-1' &&
-                                              controller
-                                                      .vendermodel
-                                                      .value
-                                                      .subscriptionTotalOrders !=
-                                                  null) {
-                                            controller
-                                                    .vendermodel
-                                                    .value
-                                                    .subscriptionTotalOrders =
-                                                (int.parse(
-                                                          controller
-                                                              .vendermodel
-                                                              .value
-                                                              .subscriptionTotalOrders!,
-                                                        ) -
-                                                        1)
-                                                    .toString();
-                                            await FireStoreUtils.updateVendor(
-                                              controller.vendermodel.value,
-                                            );
-                                          }
-                                        }
-                                        if (Constant.isSelfDeliveryFeature ==
-                                                true &&
-                                            controller
-                                                    .vendermodel
-                                                    .value
-                                                    .isSelfDelivery ==
-                                                true &&
-                                            orderModel.takeAway == false) {
-                                          ShowToastDialog.showLoader(
-                                            'Please wait...'.tr,
+                                      controller.initPrepareTimeForDialog();
+                                      showDialog(
+                                        context: context,
+                                        builder: (BuildContext context) {
+                                          return estimatedTimeDialog(
+                                            controller,
+                                            isDark,
+                                            orderModel,
+                                            context,
                                           );
-                                          await controller.getAllDriverList();
-                                          ShowToastDialog.closeLoader();
-                                          Get.back();
-                                          showDialog(
-                                            // ignore: use_build_context_synchronously
-                                            context: context,
-                                            builder: (BuildContext context) {
-                                              return showListOfDeliverymenDialog(
-                                                controller,
-                                                isDark,
-                                                orderModel,
-                                              );
-                                            },
-                                          );
-                                        } else {
-                                          developer.log(
-                                            "🟢 [Restoran] Zakaz qabul qilindi (2): orderId=${orderModel.id}, avto qabul, courier backgroundda qidiriladi",
-                                          );
-                                          orderModel.status =
-                                              Constant.orderAccepted;
-                                          await FireStoreUtils.updateOrder(
-                                              orderModel);
-                                          unawaited(AudioPlayerService
-                                              .playSound(false));
-                                          Get.back();
-                                          final orderCopy = orderModel;
-                                          unawaited(Future<void>(() async {
-                                            try {
-                                              await FireStoreUtils
-                                                  .sendOrderToAllCouriers(
-                                                      orderCopy);
-                                              await FireStoreUtils
-                                                  .restaurantVendorWalletSet(
-                                                      orderCopy);
-                                              SendNotification.sendFcmMessage(
-                                                Constant.restaurantAccepted,
-                                                orderCopy.author!.fcmToken
-                                                    .toString(),
-                                                {},
-                                              );
-                                            } catch (e) {
-                                              developer.log(
-                                                  'Background: courier/wallet/notification xatosi: $e');
-                                            }
-                                          }));
-                                        }
-                                      }
+                                        },
+                                      );
                                     }
                                   }
                                 },
@@ -3161,16 +2960,76 @@ class HomeScreen extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 20),
-                  TextFieldWidget(
-                    title: 'Estimated time to Prepare'.tr,
-                    inputFormatters: [MaskedInputFormatter('##:##')],
-                    controller: controller.estimatedTimeController.value,
-                    hintText: '00:00'.tr,
-                    textInputType: TextInputType.number,
-                    prefix: const Icon(Icons.alarm),
+                  Text(
+                    'Estimated time to Prepare'.tr,
+                    style: TextStyle(
+                      fontFamily: AppThemeData.medium,
+                      fontSize: 14,
+                      color: isDark ? AppThemeData.grey100 : AppThemeData.grey800,
+                    ),
                   ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Obx(() {
+                          return DropdownButtonFormField<int>(
+                            value: controller.prepareMinutes.value.clamp(0, 120),
+                            decoration: InputDecoration(
+                              labelText: 'Minut'.tr,
+                              prefixIcon: const Icon(Icons.timer_outlined),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            items: List.generate(121, (i) => i)
+                                .map((m) => DropdownMenuItem<int>(
+                                      value: m,
+                                      child: Text('$m min'),
+                                    ))
+                                .toList(),
+                            onChanged: (v) {
+                              if (v != null) {
+                                controller.prepareMinutes.value = v;
+                                controller.setPrepareTimeFromController();
+                              }
+                            },
+                          );
+                        }),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Obx(() {
+                          return DropdownButtonFormField<int>(
+                            value: controller.prepareSeconds.value.clamp(0, 59),
+                            decoration: InputDecoration(
+                              labelText: 'Sekund'.tr,
+                              prefixIcon: const Icon(Icons.schedule),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            items: List.generate(60, (i) => i)
+                                .map((s) => DropdownMenuItem<int>(
+                                      value: s,
+                                      child: Text('$s sec'),
+                                    ))
+                                .toList(),
+                            onChanged: (v) {
+                              if (v != null) {
+                                controller.prepareSeconds.value = v;
+                                controller.setPrepareTimeFromController();
+                              }
+                            },
+                          );
+                        }),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
                   Row(
                     children: [
                       Expanded(
@@ -3194,7 +3053,8 @@ class HomeScreen extends StatelessWidget {
                           color: AppThemeData.primary300,
                           textColor: AppThemeData.grey50,
                           onPress: () async {
-                            if (controller
+                              controller.setPrepareTimeFromController();
+                              if (controller
                                 .estimatedTimeController
                                 .value
                                 .text

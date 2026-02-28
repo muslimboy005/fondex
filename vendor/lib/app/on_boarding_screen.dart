@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../../themes/app_them_data.dart';
 import '../../utils/network_image_widget.dart';
 import '../../utils/preferences.dart';
+import '../../utils/version_check_utils.dart';
 import '../constant/constant.dart';
 import '../controller/on_boarding_controller.dart';
 import '../themes/round_button_fill.dart';
@@ -13,7 +14,8 @@ class OnboardingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GetX<OnboardingController>(
+    return VersionCheckOnOpen(
+      child: GetX<OnboardingController>(
       init: OnboardingController(),
       builder: (controller) {
         final pageCount = controller.onboardingList.length;
@@ -139,6 +141,7 @@ class OnboardingScreen extends StatelessWidget {
                 ),
         );
       },
+    ),
     );
   }
 

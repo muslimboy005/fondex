@@ -15,6 +15,22 @@ class HomeController extends GetxController {
   Rx<TextEditingController> courierCompanyName = TextEditingController().obs;
   Rx<TextEditingController> courierCompanyTrackingId = TextEditingController().obs;
 
+  /// Tayyorlash vaqti: daqiqa (0–120) va sekund (0–59)
+  RxInt prepareMinutes = 15.obs;
+  RxInt prepareSeconds = 0.obs;
+
+  void setPrepareTimeFromController() {
+    estimatedTimeController.value.text =
+        '${prepareMinutes.value.toString().padLeft(2, '0')}:${prepareSeconds.value.toString().padLeft(2, '0')}';
+  }
+
+  /// Tayyorlash vaqti dialogini ochishdan oldin chaqiriladi
+  void initPrepareTimeForDialog() {
+    prepareMinutes.value = 15;
+    prepareSeconds.value = 0;
+    setPrepareTimeFromController();
+  }
+
   RxInt selectedTabIndex = 0.obs;
 
   @override

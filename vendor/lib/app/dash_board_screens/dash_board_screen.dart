@@ -6,6 +6,7 @@ import 'package:vendor/constant/constant.dart';
 import 'package:vendor/constant/show_toast_dialog.dart';
 import 'package:vendor/controller/dash_board_controller.dart';
 import 'package:vendor/themes/app_them_data.dart';
+import 'package:vendor/utils/version_check_utils.dart';
 
 class DashBoardScreen extends StatelessWidget {
   const DashBoardScreen({super.key});
@@ -18,7 +19,8 @@ class DashBoardScreen extends StatelessWidget {
       return GetX(
         init: DashBoardController(),
         builder: (controller) {
-          return PopScope(
+          return VersionCheckOnOpen(
+            child: PopScope(
             canPop: controller.canPopNow.value,
             onPopInvoked: (didPop) {
               final now = DateTime.now();
@@ -138,6 +140,7 @@ class DashBoardScreen extends StatelessWidget {
                             ],
                     ),
                   ),
+            ),
           );
         },
       );
