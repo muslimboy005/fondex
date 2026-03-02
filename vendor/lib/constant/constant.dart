@@ -9,7 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:intl/intl.dart';
 import 'package:mailer/mailer.dart';
 import 'package:mailer/smtp_server.dart';
@@ -45,6 +45,16 @@ class Constant {
   static ZoneModel? selectedZone;
 
   static String mapAPIKey = "";
+  /// Yandex Geocoder API kaliti (geocode-maps.yandex.ru). Bo‘sh bo‘lsa mapAPIKey ishlatiladi.
+  static const String yandexGeocoderApiKey = 'd40481eb-0884-40a5-bde1-9cfb8d7cfa89';
+  /// O'zbekiston chegaralari – geocoding va xarita faqat shu hududda.
+  static const double uzSouth = 37.0;
+  static const double uzNorth = 45.6;
+  static const double uzWest = 56.0;
+  static const double uzEast = 73.5;
+  /// Toshkent markazi (boshlang'ich kamera)
+  static const double uzCenterLat = 41.31;
+  static const double uzCenterLng = 69.24;
   static String placeHolderImage = "";
   static String defaultCountryCode = "";
   static String defaultCountry = "";
@@ -71,23 +81,20 @@ class Constant {
   static String supportURL = "";
   static String minimumAmountToDeposit = "0.0";
   static String? referralAmount = "0.0";
-  static String? selectedMapType = "google";
+  static String? selectedMapType = "yandexMaps";
   static bool? storyEnable = true;
 
+  /// Faqat Yandex xarita
   static String normalizeSelectedMapType(String? value) {
     final raw = (value ?? '').toLowerCase().trim();
-    if (raw.isEmpty) return 'google';
-    if (raw.contains('osm') || raw.contains('openstreet')) return 'osm';
+    if (raw.isEmpty) return 'yandexMaps';
     if (raw.contains('yandex')) return 'yandexMaps';
-    if (raw.contains('google')) return 'google';
-    return value!;
+    return 'yandexMaps';
   }
 
-  static bool get isOsmMap =>
-      normalizeSelectedMapType(selectedMapType) == 'osm';
+  static bool get isOsmMap => false;
 
-  static bool get isYandexMap =>
-      normalizeSelectedMapType(selectedMapType) == 'yandexMaps';
+  static bool get isYandexMap => true;
 
   static bool? autoApproveVendor = true;
   static bool? autoApproveStore = true;

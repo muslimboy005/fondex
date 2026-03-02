@@ -202,35 +202,36 @@ class OtpVerificationScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: Center(
-                      child: Text.rich(
-                        TextSpan(
-                          text: "Didn't have an account?".tr,
-                          style: AppThemeData.mediumTextStyle(
-                            color: isDark
-                                ? AppThemeData.greyDark800
-                                : AppThemeData.grey800,
-                          ),
-                          children: [
-                            TextSpan(
-                              text: "Sign up".tr,
-                              style: TextStyle(
-                                fontFamily: AppThemeData.medium,
-                                color: AppThemeData.primary300,
-                                decoration: TextDecoration.underline,
-                                decorationColor: AppThemeData.primary300,
-                              ),
-                              recognizer: TapGestureRecognizer()
-                                ..onTap = () =>
-                                    Get.offAll(() => const SignupScreen()),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
+                  // Padding(
+                  //   padding: const EdgeInsets.only(bottom: 10),
+                  //   child: Center(
+                  //     child: Text.rich(
+                  //       TextSpan(
+                  //         text: "Didn't have an account?".tr,
+                  //         style: AppThemeData.mediumTextStyle(
+                  //           color: isDark
+                  //               ? AppThemeData.greyDark800
+                  //               : AppThemeData.grey800,
+                  //         ),
+                  //         children: [
+                  //           TextSpan(
+                  //             text: "Sign up".tr,
+                  //             style: TextStyle(
+                  //               fontFamily: AppThemeData.medium,
+                  //               color: AppThemeData.primary300,
+                  //               decoration: TextDecoration.underline,
+                  //               decorationColor: AppThemeData.primary300,
+                  //             ),
+                  //             recognizer: TapGestureRecognizer()
+                  //               ..onTap = () =>
+                  //                   Get.offAll(() => const SignupScreen()),
+                  //           ),
+                  //         ],
+                  //       ),
+                  //     ),
+                  //   ),
+                  // ),
+                
                 ],
               ),
             ),

@@ -6,10 +6,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:google_maps_place_picker_mb/google_maps_place_picker.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:multi_select_flutter/multi_select_flutter.dart';
 import 'package:vendor/app/add_restaurant_screen/qr_code_screen.dart';
@@ -25,7 +22,6 @@ import 'package:vendor/themes/round_button_fill.dart';
 import 'package:vendor/themes/text_field_widget.dart';
 import 'package:vendor/themes/theme_controller.dart';
 import 'package:vendor/utils/network_image_widget.dart';
-import 'package:vendor/widget/osm_map/map_picker_page.dart';
 import 'package:vendor/widget/yandex_map/map_picker_page.dart';
 
 class AddRestaurantScreen extends StatelessWidget {
@@ -418,97 +414,19 @@ class AddRestaurantScreen extends StatelessWidget {
                                 .isEmpty) {
                               Constant.checkPermission(
                                 onTap: () async {
-                                  ShowToastDialog.showLoader("Please wait".tr);
-                                  try {
-                                    await Geolocator.requestPermission();
-                                    await Geolocator.getCurrentPosition();
-                                    ShowToastDialog.closeLoader();
-                                    if (Constant.isOsmMap) {
-                                      final result = await Get.to(
-                                        () => MapPickerPage(),
-                                      );
-                                      if (result != null) {
-                                        final firstPlace = result;
-                                        final lat =
-                                            firstPlace.coordinates.latitude;
-                                        final lng =
-                                            firstPlace.coordinates.longitude;
-                                        final address = firstPlace.address;
-
-                                        controller.selectedLocation = LatLng(
-                                          lat,
-                                          lng,
-                                        );
-                                        controller
-                                            .addressController
-                                            .value
-                                            .text = address
-                                            .toString();
-                                        controller.isAddressEnable.value = true;
-                                      }
-                                    } else if (Constant.isYandexMap) {
-                                      final result = await Get.to(
-                                        () => const YandexMapPickerPage(),
-                                      );
-                                      if (result != null) {
-                                        final firstPlace = result;
-                                        final lat =
-                                            firstPlace.coordinates.latitude;
-                                        final lng =
-                                            firstPlace.coordinates.longitude;
-                                        final address = firstPlace.address;
-
-                                        controller.selectedLocation = LatLng(
-                                          lat,
-                                          lng,
-                                        );
-                                        controller
-                                            .addressController
-                                            .value
-                                            .text = address
-                                            .toString();
-                                        controller.isAddressEnable.value = true;
-                                      }
-                                    } else {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => PlacePicker(
-                                            apiKey: Constant.mapAPIKey,
-                                            onPlacePicked: (result) async {
-                                              controller
-                                                  .selectedLocation = LatLng(
-                                                result.geometry!.location.lat,
-                                                result.geometry!.location.lng,
-                                              );
-                                              controller
-                                                  .addressController
-                                                  .value
-                                                  .text = result
-                                                  .formattedAddress
-                                                  .toString();
-                                              controller.isAddressEnable.value =
-                                                  true;
-                                              Get.back();
-                                            },
-                                            initialPosition: const LatLng(
-                                              -33.8567844,
-                                              151.213108,
-                                            ),
-                                            useCurrentLocation: true,
-                                            selectInitialPosition: true,
-                                            usePinPointingSearch: true,
-                                            usePlaceDetailSearch: true,
-                                            zoomGesturesEnabled: true,
-                                            zoomControlsEnabled: true,
-                                            resizeToAvoidBottomInset:
-                                                false, // only works in page mode, less flickery, remove if wrong offsets
-                                          ),
-                                        ),
-                                      );
-                                    }
-                                  } catch (e) {
-                                    ShowToastDialog.closeLoader();
+                                  final result = await Get.to(
+                                    () => YandexMapPickerPage(
+                                      initialLocation: controller.selectedLocation,
+                                      initialAddress: null,
+                                    ),
+                                  );
+                                  if (result != null) {
+                                    final firstPlace = result;
+                                    controller.selectedLocation =
+                                        firstPlace.coordinates;
+                                    controller.addressController.value.text =
+                                        firstPlace.address;
+                                    controller.isAddressEnable.value = true;
                                   }
                                 },
                                 context: context,
@@ -530,109 +448,24 @@ class AddRestaurantScreen extends StatelessWidget {
                                   Constant.checkPermission(
                                     context: context,
                                     onTap: () async {
-                                      ShowToastDialog.showToast(
-                                        "Please wait...".tr,
+                                      final result = await Get.to(
+                                        () => YandexMapPickerPage(
+                                          initialLocation: controller.selectedLocation,
+                                          initialAddress: controller.addressController.value.text.isEmpty
+                                              ? null
+                                              : controller.addressController.value.text,
+                                        ),
                                       );
-                                      try {
-                                        await Geolocator.requestPermission();
-                                        await Geolocator.getCurrentPosition(
-                                          desiredAccuracy:
-                                              LocationAccuracy.high,
-                                        );
-                                        if (Constant.isOsmMap) {
-                                          final result = await Get.to(
-                                            () => MapPickerPage(),
-                                          );
-                                          if (result != null) {
-                                            final firstPlace = result;
-                                            final lat =
-                                                firstPlace.coordinates.latitude;
-                                            final lng = firstPlace
-                                                .coordinates
-                                                .longitude;
-                                            final address = firstPlace.address;
-
-                                            controller.selectedLocation =
-                                                LatLng(lat, lng);
-                                            controller
-                                                .addressController
-                                                .value
-                                                .text = address
-                                                .toString();
-                                            controller.isAddressEnable.value =
-                                                true;
-                                          }
-                                        } else if (Constant.isYandexMap) {
-                                          final result = await Get.to(
-                                            () => const YandexMapPickerPage(),
-                                          );
-                                          if (result != null) {
-                                            final firstPlace = result;
-                                            final lat =
-                                                firstPlace.coordinates.latitude;
-                                            final lng = firstPlace
-                                                .coordinates
-                                                .longitude;
-                                            final address = firstPlace.address;
-
-                                            controller.selectedLocation =
-                                                LatLng(lat, lng);
-                                            controller
-                                                .addressController
-                                                .value
-                                                .text = address
-                                                .toString();
-                                            controller.isAddressEnable.value =
-                                                true;
-                                          }
-                                        } else {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) => PlacePicker(
-                                                apiKey: Constant.mapAPIKey,
-                                                onPlacePicked: (result) async {
-                                                  controller.selectedLocation =
-                                                      LatLng(
-                                                        result
-                                                            .geometry!
-                                                            .location
-                                                            .lat,
-                                                        result
-                                                            .geometry!
-                                                            .location
-                                                            .lng,
-                                                      );
-                                                  controller
-                                                      .addressController
-                                                      .value
-                                                      .text = result
-                                                      .formattedAddress
-                                                      .toString();
-                                                  controller
-                                                          .isAddressEnable
-                                                          .value =
-                                                      true;
-                                                  Get.back();
-                                                },
-                                                initialPosition: const LatLng(
-                                                  -33.8567844,
-                                                  151.213108,
-                                                ),
-                                                useCurrentLocation: true,
-                                                selectInitialPosition: true,
-                                                usePinPointingSearch: true,
-                                                usePlaceDetailSearch: true,
-                                                zoomGesturesEnabled: true,
-                                                zoomControlsEnabled: true,
-                                                resizeToAvoidBottomInset:
-                                                    false, // only works in page mode, less flickery, remove if wrong offsets
-                                              ),
-                                            ),
-                                          );
-                                        }
-                                      } catch (e) {
-                                        print(e.toString());
+                                      if (result != null) {
+                                        final firstPlace = result;
+                                        controller.selectedLocation =
+                                            firstPlace.coordinates;
+                                        controller
+                                            .addressController
+                                            .value
+                                            .text = firstPlace.address;
+                                        controller.isAddressEnable.value =
+                                            true;
                                       }
                                     },
                                   );

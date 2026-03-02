@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:vendor/utils/version_check_utils.dart';
 import 'login_screen.dart';
 import 'phone_registration_screen.dart';
 
@@ -18,11 +17,9 @@ class AuthScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return VersionCheckOnOpen(
-      child: isMobileDevice
-          ? const PhoneRegistrationScreen()
-          : const LoginScreen(),
-    );
+    return isMobileDevice
+        ? const PhoneRegistrationScreen()
+        : const LoginScreen();
   }
 }
 

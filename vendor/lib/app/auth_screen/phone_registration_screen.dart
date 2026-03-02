@@ -147,51 +147,52 @@ class PhoneRegistrationScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                  Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            width: 52,
-                            height: 1,
-                            color: isDark
-                                ? AppThemeData.greyDark300
-                                : AppThemeData.grey300,
-                          ),
-                          const SizedBox(width: 15),
-                          Text(
-                            "or continue with".tr,
-                            style: TextStyle(
-                              fontFamily: AppThemeData.regular,
-                              color: isDark
-                                  ? AppThemeData.greyDark400
-                                  : AppThemeData.grey400,
-                            ),
-                          ),
-                          const SizedBox(width: 15),
-                          Container(
-                            width: 52,
-                            height: 1,
-                            color: isDark
-                                ? AppThemeData.greyDark400
-                                : AppThemeData.grey400,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 25),
-                      RoundedButtonFill(
-                        title: "Email address".tr,
-                        color: isDark
-                            ? AppThemeData.greyDark200
-                            : AppThemeData.grey200,
-                        textColor: isDark
-                            ? AppThemeData.greyDark900
-                            : AppThemeData.grey900,
-                        onPress: () => Get.to(() => const LoginScreen()),
-                      ),
-                    ],
-                  ),
+
+                  // Column(
+                  //   children: [
+                  //     Row(
+                  //       mainAxisAlignment: MainAxisAlignment.center,
+                  //       children: [
+                  //         Container(
+                  //           width: 52,
+                  //           height: 1,
+                  //           color: isDark
+                  //               ? AppThemeData.greyDark300
+                  //               : AppThemeData.grey300,
+                  //         ),
+                  //         const SizedBox(width: 15),
+                  //         Text(
+                  //           "or continue with".tr,
+                  //           style: TextStyle(
+                  //             fontFamily: AppThemeData.regular,
+                  //             color: isDark
+                  //                 ? AppThemeData.greyDark400
+                  //                 : AppThemeData.grey400,
+                  //           ),
+                  //         ),
+                  //         const SizedBox(width: 15),
+                  //         Container(
+                  //           width: 52,
+                  //           height: 1,
+                  //           color: isDark
+                  //               ? AppThemeData.greyDark400
+                  //               : AppThemeData.grey400,
+                  //         ),
+                  //       ],
+                  //     ),
+                  //     const SizedBox(height: 25),
+                  //     RoundedButtonFill(
+                  //       title: "Email address".tr,
+                  //       color: isDark
+                  //           ? AppThemeData.greyDark200
+                  //           : AppThemeData.grey200,
+                  //       textColor: isDark
+                  //           ? AppThemeData.greyDark900
+                  //           : AppThemeData.grey900,
+                  //       onPress: () => Get.to(() => const LoginScreen()),
+                  //     ),
+                  //   ],
+                  // ),
                 ],
               ),
             ),

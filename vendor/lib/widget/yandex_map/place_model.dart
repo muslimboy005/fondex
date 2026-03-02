@@ -7,11 +7,17 @@ class PlaceModel {
   PlaceModel({required this.coordinates, required this.address});
 
   factory PlaceModel.fromJson(Map<String, dynamic> json) {
-    return PlaceModel(coordinates: LatLng(json['lat'], json['lng']), address: json['address']);
+    return PlaceModel(
+        coordinates: LatLng(json['lat'], json['lng']),
+        address: json['address']);
   }
 
   Map<String, dynamic> toJson() {
-    return {'lat': coordinates.latitude, 'lng': coordinates.longitude, 'address': address};
+    return {
+      'lat': coordinates.latitude,
+      'lng': coordinates.longitude,
+      'address': address
+    };
   }
 
   @override
