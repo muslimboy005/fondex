@@ -8,9 +8,6 @@ import '../../controllers/theme_controller.dart';
 import '../../models/user_model.dart';
 import '../../service/fire_store_utils.dart';
 import '../../themes/app_them_data.dart';
-import 'package:flutter_map/flutter_map.dart' as fm;
-import 'package:google_maps_flutter/google_maps_flutter.dart' as gmap;
-import 'package:latlong2/latlong.dart' as osm;
 import 'package:yandex_mapkit/yandex_mapkit.dart' as ym;
 import 'package:customer/utils/yandex_map_utils.dart';
 
@@ -302,144 +299,25 @@ class CabOrderDetails extends StatelessWidget {
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(15),
                             child:
-                                Constant.isOsmMap
-                                    ? fm.FlutterMap(
-                                      options: fm.MapOptions(
-                                        initialCenter: osm.LatLng(
-                                          controller
-                                              .cabOrder
-                                              .value
-                                              .sourceLocation!
-                                              .latitude!,
-                                          controller
-                                              .cabOrder
-                                              .value
-                                              .sourceLocation!
-                                              .longitude!,
+                                ym.YandexMap(
+                                  onMapCreated: (ym.YandexMapController mapController) async {
+                                    await mapController.moveCamera(
+                                      ym.CameraUpdate.newCameraPosition(
+                                        ym.CameraPosition(
+                                          target: ym.Point(
+                                            latitude: controller.cabOrder.value.sourceLocation!.latitude!,
+                                            longitude: controller.cabOrder.value.sourceLocation!.longitude!,
+                                          ),
+                                          zoom: 13,
                                         ),
-                                        initialZoom: 13,
                                       ),
-                                      children: [
-                                        fm.TileLayer(
-                                          urlTemplate:
-                                              "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-                                        ),
-
-                                        // Only show polyline if points exist
-                                        if (controller.osmPolyline.isNotEmpty)
-                                          fm.PolylineLayer(
-                                            polylines: [
-                                              fm.Polyline(
-                                                points:
-                                                    controller.osmPolyline
-                                                        .toList(),
-                                                color: Colors.blue,
-                                                strokeWidth: 4,
-                                              ),
-                                            ],
-                                          ),
-
-                                        fm.MarkerLayer(
-                                          markers: [
-                                            fm.Marker(
-                                              point: osm.LatLng(
-                                                controller
-                                                    .cabOrder
-                                                    .value
-                                                    .sourceLocation!
-                                                    .latitude!,
-                                                controller
-                                                    .cabOrder
-                                                    .value
-                                                    .sourceLocation!
-                                                    .longitude!,
-                                              ),
-                                              width: 20,
-                                              height: 20,
-                                              child: Image.asset(
-                                                'assets/icons/ic_cab_pickup.png',
-                                                width: 10,
-                                                height: 10,
-                                              ),
-                                            ),
-                                            fm.Marker(
-                                              point: osm.LatLng(
-                                                controller
-                                                    .cabOrder
-                                                    .value
-                                                    .destinationLocation!
-                                                    .latitude!,
-                                                controller
-                                                    .cabOrder
-                                                    .value
-                                                    .destinationLocation!
-                                                    .longitude!,
-                                              ),
-                                              width: 20,
-                                              height: 20,
-                                              child: Image.asset(
-                                                'assets/icons/ic_cab_destination.png',
-                                                width: 10,
-                                                height: 10,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    )
-                                    : Constant.isYandexMap
-                                    ? ym.YandexMap(
-                                      onMapCreated: (
-                                        ym.YandexMapController mapController,
-                                      ) async {
-                                        await mapController.moveCamera(
-                                          ym.CameraUpdate.newCameraPosition(
-                                            ym.CameraPosition(
-                                              target: ym.Point(
-                                                latitude:
-                                                    controller
-                                                        .cabOrder
-                                                        .value
-                                                        .sourceLocation!
-                                                        .latitude!,
-                                                longitude:
-                                                    controller
-                                                        .cabOrder
-                                                        .value
-                                                        .sourceLocation!
-                                                        .longitude!,
-                                              ),
-                                              zoom: 13,
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                      mapObjects: yandexMapObjectsFromGoogle(
-                                        markers: controller.googleMarkers,
-                                        polylines: controller.googlePolylines,
-                                      ),
-                                    )
-                                    : gmap.GoogleMap(
-                                      initialCameraPosition:
-                                          gmap.CameraPosition(
-                                            target: gmap.LatLng(
-                                              controller
-                                                  .cabOrder
-                                                  .value
-                                                  .sourceLocation!
-                                                  .latitude!,
-                                              controller
-                                                  .cabOrder
-                                                  .value
-                                                  .sourceLocation!
-                                                  .longitude!,
-                                            ),
-                                            zoom: 13,
-                                          ),
-                                      polylines:
-                                          controller.googlePolylines.toSet(),
-                                      markers: controller.googleMarkers.toSet(),
-                                    ),
+                                    );
+                                  },
+                                  mapObjects: yandexMapObjectsFromMarkers(
+                                    markers: controller.yandexMarkers,
+                                    polylinePoints: controller.polylinePoints,
+                                  ),
+                                ),
                           ),
                         ),
                         controller.cabOrder.value.driver != null

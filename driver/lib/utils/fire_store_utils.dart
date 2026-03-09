@@ -54,7 +54,7 @@ import 'package:driver/utils/preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:geocoding/geocoding.dart';
+import 'package:driver/service/yandex_geocoding_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
@@ -91,16 +91,15 @@ class FireStoreUtils {
         .doc(uid)
         .get()
         .then((value) {
-          if (value.exists) {
-            isExist = true;
-          } else {
-            isExist = false;
-          }
-        })
-        .catchError((error) {
-          log("Failed to check user exist: $error");
-          isExist = false;
-        });
+      if (value.exists) {
+        isExist = true;
+      } else {
+        isExist = false;
+      }
+    }).catchError((error) {
+      log("Failed to check user exist: $error");
+      isExist = false;
+    });
     return isExist;
   }
 
@@ -111,14 +110,13 @@ class FireStoreUtils {
         .doc(uuid)
         .get()
         .then((value) {
-          if (value.exists) {
-            userModel = UserModel.fromJson(value.data()!);
-          }
-        })
-        .catchError((error) {
-          log("Failed to update user: $error");
-          userModel = null;
-        });
+      if (value.exists) {
+        userModel = UserModel.fromJson(value.data()!);
+      }
+    }).catchError((error) {
+      log("Failed to update user: $error");
+      userModel = null;
+    });
     return userModel;
   }
 
@@ -132,7 +130,7 @@ class FireStoreUtils {
         UserModel userModel = value;
         userModel.walletAmount =
             double.parse(userModel.walletAmount.toString()) +
-            double.parse(amount);
+                double.parse(amount);
         await FireStoreUtils.updateUser(userModel).then((value) {
           isAdded = value;
         });
@@ -143,9 +141,8 @@ class FireStoreUtils {
 
   static Future<bool> updateUser(UserModel userModel) async {
     try {
-      final docRef = fireStore
-          .collection(CollectionName.users)
-          .doc(userModel.id);
+      final docRef =
+          fireStore.collection(CollectionName.users).doc(userModel.id);
       final Map<String, dynamic> data = userModel.toJson();
 
       // First, merge the user's JSON to update/insert other fields safely
@@ -186,16 +183,15 @@ class FireStoreUtils {
         .where("type", isEqualTo: "driver")
         .get()
         .then((value) {
-          for (var element in value.docs) {
-            OnBoardingModel documentModel = OnBoardingModel.fromJson(
-              element.data(),
-            );
-            onBoardingModel.add(documentModel);
-          }
-        })
-        .catchError((error) {
-          log(error.toString());
-        });
+      for (var element in value.docs) {
+        OnBoardingModel documentModel = OnBoardingModel.fromJson(
+          element.data(),
+        );
+        onBoardingModel.add(documentModel);
+      }
+    }).catchError((error) {
+      log(error.toString());
+    });
     return onBoardingModel;
   }
 
@@ -228,12 +224,11 @@ class FireStoreUtils {
         .doc(walletTransactionModel.id)
         .set(walletTransactionModel.toJson())
         .then((value) {
-          isAdded = true;
-        })
-        .catchError((error) {
-          log("Failed to update user: $error");
-          isAdded = false;
-        });
+      isAdded = true;
+    }).catchError((error) {
+      log("Failed to update user: $error");
+      isAdded = false;
+    });
     return isAdded;
   }
 
@@ -244,101 +239,99 @@ class FireStoreUtils {
           .doc("globalSettings")
           .get()
           .then((value) async {
-            Constant.orderRingtoneUrl =
-                value.data()?['order_ringtone_url'] ?? '';
-            Constant.isSelfDeliveryFeature =
-                value.data()!['isSelfDelivery'] ?? false;
-            Constant.defaultCountryCode =
-                value.data()?['defaultCountryCode'] ?? '';
-            Constant.defaultCountry = value.data()?['defaultCountry'] ?? '';
-            Preferences.setString(
-              Preferences.orderRingtone,
-              Constant.orderRingtoneUrl,
-            );
-            AppThemeData.primary300 = Color(
-              int.parse(
-                value.data()!['app_driver_color'].replaceFirst("#", "0xff"),
-              ),
-            );
-            if (Constant.orderRingtoneUrl.isNotEmpty) {
-              await AudioPlayerService.initAudio();
-            }
-          });
+        Constant.orderRingtoneUrl = value.data()?['order_ringtone_url'] ?? '';
+        Constant.isSelfDeliveryFeature =
+            value.data()!['isSelfDelivery'] ?? false;
+        Constant.defaultCountryCode = value.data()?['defaultCountryCode'] ?? '';
+        Constant.defaultCountry = value.data()?['defaultCountry'] ?? '';
+        Preferences.setString(
+          Preferences.orderRingtone,
+          Constant.orderRingtoneUrl,
+        );
+        AppThemeData.primary300 = Color(
+          int.parse(
+            value.data()!['app_driver_color'].replaceFirst("#", "0xff"),
+          ),
+        );
+        if (Constant.orderRingtoneUrl.isNotEmpty) {
+          await AudioPlayerService.initAudio();
+        }
+      });
 
       fireStore
           .collection(CollectionName.settings)
           .doc("googleMapKey")
           .snapshots()
           .listen((event) {
-            if (event.exists) {
-              Constant.mapAPIKey = event.data()!["key"];
-            }
-          });
+        if (event.exists) {
+          Constant.mapAPIKey = event.data()!["key"];
+        }
+      });
 
       fireStore
           .collection(CollectionName.settings)
           .doc("notification_setting")
           .snapshots()
           .listen((event) {
-            if (event.exists) {
-              Constant.senderId = event.data()?["senderId"];
-              Constant.jsonNotificationFileURL = event.data()?["serviceJson"];
-            }
-          });
+        if (event.exists) {
+          Constant.senderId = event.data()?["senderId"];
+          Constant.jsonNotificationFileURL = event.data()?["serviceJson"];
+        }
+      });
 
       fireStore
           .collection(CollectionName.settings)
           .doc("RestaurantNearBy")
           .snapshots()
           .listen((event) {
-            if (event.exists) {
-              Constant.distanceType = event.data()!["distanceType"];
-            }
-          });
+        if (event.exists) {
+          Constant.distanceType = event.data()!["distanceType"];
+        }
+      });
 
       fireStore
           .collection(CollectionName.settings)
           .doc("maintenance_settings")
           .snapshots()
           .listen((event) {
-            if (event.exists && event.data() != null) {
-              Constant.isMaintenanceModeForDriver =
-                  event.data()?["isMaintenanceModeForDriver"] ?? false;
-            }
-          });
+        if (event.exists && event.data() != null) {
+          Constant.isMaintenanceModeForDriver =
+              event.data()?["isMaintenanceModeForDriver"] ?? false;
+        }
+      });
 
       fireStore
           .collection(CollectionName.settings)
           .doc("privacyPolicy")
           .snapshots()
           .listen((event) {
-            if (event.exists) {
-              Constant.privacyPolicy = event.data()!["privacy_policy"];
-            }
-          });
+        if (event.exists) {
+          Constant.privacyPolicy = event.data()!["privacy_policy"];
+        }
+      });
 
       fireStore
           .collection(CollectionName.settings)
           .doc("termsAndConditions")
           .snapshots()
           .listen((event) {
-            if (event.exists) {
-              Constant.termsAndConditions =
-                  event.data()?["terms_and_condition"] ?? '';
-            }
-          });
+        if (event.exists) {
+          Constant.termsAndConditions =
+              event.data()?["terms_and_condition"] ?? '';
+        }
+      });
 
       fireStore
           .collection(CollectionName.settings)
           .doc("Version")
           .snapshots()
           .listen((event) {
-            if (event.exists) {
-              Constant.googlePlayLink = event.data()!["googlePlayLink"] ?? '';
-              Constant.appStoreLink = event.data()!["appStoreLink"] ?? '';
-              Constant.appVersion = event.data()!["app_version"] ?? '';
-            }
-          });
+        if (event.exists) {
+          Constant.googlePlayLink = event.data()!["googlePlayLink"] ?? '';
+          Constant.appStoreLink = event.data()!["appStoreLink"] ?? '';
+          Constant.appVersion = event.data()!["app_version"] ?? '';
+        }
+      });
 
       // fireStore.collection(CollectionName.settings).doc('referral_amount').get().then((value) {
       //   Constant.referralAmount = value.data()!['referralAmount'];
@@ -349,59 +342,57 @@ class FireStoreUtils {
           .doc("emailSetting")
           .get()
           .then((value) {
-            if (value.exists) {
-              Constant.mailSettings = MailSettings.fromJson(value.data()!);
-            }
-          });
+        if (value.exists) {
+          Constant.mailSettings = MailSettings.fromJson(value.data()!);
+        }
+      });
 
       fireStore
           .collection(CollectionName.settings)
           .doc('placeHolderImage')
           .get()
           .then((value) {
-            Constant.placeHolderImage = value.data()!['image'];
-          });
+        Constant.placeHolderImage = value.data()!['image'];
+      });
 
       await FirebaseFirestore.instance
           .collection(CollectionName.settings)
           .doc("document_verification_settings")
           .get()
           .then((value) {
-            Constant.isDriverVerification = value
-                .data()!['isDriverVerification'];
-            Constant.isOwnerVerification = value.data()!['isOwnerVerification'];
-          });
+        Constant.isDriverVerification = value.data()!['isDriverVerification'];
+        Constant.isOwnerVerification = value.data()!['isOwnerVerification'];
+      });
 
       await FirebaseFirestore.instance
           .collection(CollectionName.settings)
           .doc("DriverNearBy")
           .get()
           .then((value) {
-            Constant.minimumDepositToRideAccept = value
-                .data()!['minimumDepositToRideAccept'];
-            Constant.ownerMinimumDepositToRideAccept = value
-                .data()!['ownerMinimumDepositToRideAccept'];
-            Constant.minimumAmountToWithdrawal = value
-                .data()!['minimumAmountToWithdrawal'];
-            Constant.driverLocationUpdate = value
-                .data()!['driverLocationUpdate'];
-            Constant.singleOrderReceive = value.data()!['singleOrderReceive'];
-            Constant.selectedMapType = Constant.normalizeSelectedMapType(
-              value.data()!["selectedMapType"],
-            );
-            Constant.mapType = Constant.normalizeMapType(
-              value.data()!["mapType"],
-            );
-            Constant.autoApproveDriver = value.data()!["auto_approve_driver"];
-            Constant.enableOTPTripStart = value.data()!["enableOTPTripStart"];
-            Constant.enableOTPTripStartForRental = value
-                .data()!["enableOTPTripStartForRental"];
-            Constant.parcelRadius = value.data()!["parcelRadius"];
-            Constant.rentalRadius = value.data()!["rentalRadius"];
-            log(
-              "Constant.singleOrderReceive :: ${Constant.singleOrderReceive}",
-            );
-          });
+        Constant.minimumDepositToRideAccept =
+            value.data()!['minimumDepositToRideAccept'];
+        Constant.ownerMinimumDepositToRideAccept =
+            value.data()!['ownerMinimumDepositToRideAccept'];
+        Constant.minimumAmountToWithdrawal =
+            value.data()!['minimumAmountToWithdrawal'];
+        Constant.driverLocationUpdate = value.data()!['driverLocationUpdate'];
+        Constant.singleOrderReceive = value.data()!['singleOrderReceive'];
+        Constant.selectedMapType = Constant.normalizeSelectedMapType(
+          value.data()!["selectedMapType"],
+        );
+        Constant.mapType = Constant.normalizeMapType(
+          value.data()!["mapType"],
+        );
+        Constant.autoApproveDriver = value.data()!["auto_approve_driver"];
+        Constant.enableOTPTripStart = value.data()!["enableOTPTripStart"];
+        Constant.enableOTPTripStartForRental =
+            value.data()!["enableOTPTripStartForRental"];
+        Constant.parcelRadius = value.data()!["parcelRadius"];
+        Constant.rentalRadius = value.data()!["rentalRadius"];
+        log(
+          "Constant.singleOrderReceive :: ${Constant.singleOrderReceive}",
+        );
+      });
     } catch (e) {
       log(e.toString());
     }
@@ -414,14 +405,13 @@ class FireStoreUtils {
         .where('publish', isEqualTo: true)
         .get()
         .then((value) {
-          for (var element in value.docs) {
-            ZoneModel ariPortModel = ZoneModel.fromJson(element.data());
-            airPortList.add(ariPortModel);
-          }
-        })
-        .catchError((error) {
-          log(error.toString());
-        });
+      for (var element in value.docs) {
+        ZoneModel ariPortModel = ZoneModel.fromJson(element.data());
+        airPortList.add(ariPortModel);
+      }
+    }).catchError((error) {
+      log(error.toString());
+    });
     return airPortList;
   }
 
@@ -432,14 +422,13 @@ class FireStoreUtils {
         .where('isActive', isEqualTo: true)
         .get()
         .then((value) {
-          for (var element in value.docs) {
-            CarMakes ariPortModel = CarMakes.fromJson(element.data());
-            airPortList.add(ariPortModel);
-          }
-        })
-        .catchError((error) {
-          log(error.toString());
-        });
+      for (var element in value.docs) {
+        CarMakes ariPortModel = CarMakes.fromJson(element.data());
+        airPortList.add(ariPortModel);
+      }
+    }).catchError((error) {
+      log(error.toString());
+    });
     return airPortList;
   }
 
@@ -449,14 +438,13 @@ class FireStoreUtils {
         .collection(CollectionName.parcelOrders)
         .where("driverId", isEqualTo: FireStoreUtils.getCurrentUid())
         .where(
-          "status",
-          whereIn: [
-            Constant.driverAccepted,
-            Constant.orderInTransit,
-            Constant.orderShipped,
-          ],
-        )
-        .get();
+      "status",
+      whereIn: [
+        Constant.driverAccepted,
+        Constant.orderInTransit,
+        Constant.orderShipped,
+      ],
+    ).get();
     await Future.forEach(currencyQuery.docs, (
       QueryDocumentSnapshot<Map<String, dynamic>> document,
     ) {
@@ -475,14 +463,13 @@ class FireStoreUtils {
         .collection(CollectionName.rentalOrders)
         .where("driverId", isEqualTo: FireStoreUtils.getCurrentUid())
         .where(
-          "status",
-          whereIn: [
-            Constant.driverAccepted,
-            Constant.orderInTransit,
-            Constant.orderShipped,
-          ],
-        )
-        .get();
+      "status",
+      whereIn: [
+        Constant.driverAccepted,
+        Constant.orderInTransit,
+        Constant.orderShipped,
+      ],
+    ).get();
     await Future.forEach(currencyQuery.docs, (
       QueryDocumentSnapshot<Map<String, dynamic>> document,
     ) {
@@ -522,14 +509,13 @@ class FireStoreUtils {
         .where('isActive', isEqualTo: true)
         .get()
         .then((value) {
-          for (var element in value.docs) {
-            CarModel ariPortModel = CarModel.fromJson(element.data());
-            airPortList.add(ariPortModel);
-          }
-        })
-        .catchError((error) {
-          log(error.toString());
-        });
+      for (var element in value.docs) {
+        CarModel ariPortModel = CarModel.fromJson(element.data());
+        airPortList.add(ariPortModel);
+      }
+    }).catchError((error) {
+      log(error.toString());
+    });
     return airPortList;
   }
 
@@ -589,11 +575,11 @@ class FireStoreUtils {
         .where("isActive", isEqualTo: true)
         .get()
         .then((value) {
-          for (var element in value.docs) {
-            VehicleType ariPortModel = VehicleType.fromJson(element.data());
-            airPortList.add(ariPortModel);
-          }
-        });
+      for (var element in value.docs) {
+        VehicleType ariPortModel = VehicleType.fromJson(element.data());
+        airPortList.add(ariPortModel);
+      }
+    });
     return airPortList;
   }
 
@@ -608,11 +594,11 @@ class FireStoreUtils {
         .where('isActive', isEqualTo: true)
         .get()
         .then((value) {
-          for (var element in value.docs) {
-            VehicleType ariPortModel = VehicleType.fromJson(element.data());
-            airPortList.add(ariPortModel);
-          }
-        });
+      for (var element in value.docs) {
+        VehicleType ariPortModel = VehicleType.fromJson(element.data());
+        airPortList.add(ariPortModel);
+      }
+    });
     return airPortList;
   }
 
@@ -624,15 +610,14 @@ class FireStoreUtils {
         .orderBy('date', descending: true)
         .get()
         .then((value) {
-          for (var element in value.docs) {
-            WalletTransactionModel walletTransactionModel =
-                WalletTransactionModel.fromJson(element.data());
-            walletTransactionList.add(walletTransactionModel);
-          }
-        })
-        .catchError((error) {
-          log(error.toString());
-        });
+      for (var element in value.docs) {
+        WalletTransactionModel walletTransactionModel =
+            WalletTransactionModel.fromJson(element.data());
+        walletTransactionList.add(walletTransactionModel);
+      }
+    }).catchError((error) {
+      log(error.toString());
+    });
     return walletTransactionList;
   }
 
@@ -642,181 +627,181 @@ class FireStoreUtils {
         .doc("payFastSettings")
         .get()
         .then((value) async {
-          if (value.exists) {
-            PayFastModel payFastModel = PayFastModel.fromJson(value.data()!);
-            await Preferences.setString(
-              Preferences.payFastSettings,
-              jsonEncode(payFastModel.toJson()),
-            );
-          }
-        });
+      if (value.exists) {
+        PayFastModel payFastModel = PayFastModel.fromJson(value.data()!);
+        await Preferences.setString(
+          Preferences.payFastSettings,
+          jsonEncode(payFastModel.toJson()),
+        );
+      }
+    });
     await fireStore
         .collection(CollectionName.settings)
         .doc("MercadoPago")
         .get()
         .then((value) async {
-          if (value.exists) {
-            MercadoPagoModel mercadoPagoModel = MercadoPagoModel.fromJson(
-              value.data()!,
-            );
-            await Preferences.setString(
-              Preferences.mercadoPago,
-              jsonEncode(mercadoPagoModel.toJson()),
-            );
-          }
-        });
+      if (value.exists) {
+        MercadoPagoModel mercadoPagoModel = MercadoPagoModel.fromJson(
+          value.data()!,
+        );
+        await Preferences.setString(
+          Preferences.mercadoPago,
+          jsonEncode(mercadoPagoModel.toJson()),
+        );
+      }
+    });
     await fireStore
         .collection(CollectionName.settings)
         .doc("paypalSettings")
         .get()
         .then((value) async {
-          if (value.exists) {
-            PayPalModel payPalModel = PayPalModel.fromJson(value.data()!);
-            await Preferences.setString(
-              Preferences.paypalSettings,
-              jsonEncode(payPalModel.toJson()),
-            );
-          }
-        });
+      if (value.exists) {
+        PayPalModel payPalModel = PayPalModel.fromJson(value.data()!);
+        await Preferences.setString(
+          Preferences.paypalSettings,
+          jsonEncode(payPalModel.toJson()),
+        );
+      }
+    });
     await fireStore
         .collection(CollectionName.settings)
         .doc("stripeSettings")
         .get()
         .then((value) async {
-          if (value.exists) {
-            StripeModel stripeModel = StripeModel.fromJson(value.data()!);
-            await Preferences.setString(
-              Preferences.stripeSettings,
-              jsonEncode(stripeModel.toJson()),
-            );
-          }
-        });
+      if (value.exists) {
+        StripeModel stripeModel = StripeModel.fromJson(value.data()!);
+        await Preferences.setString(
+          Preferences.stripeSettings,
+          jsonEncode(stripeModel.toJson()),
+        );
+      }
+    });
     await fireStore
         .collection(CollectionName.settings)
         .doc("flutterWave")
         .get()
         .then((value) async {
-          if (value.exists) {
-            FlutterWaveModel flutterWaveModel = FlutterWaveModel.fromJson(
-              value.data()!,
-            );
-            await Preferences.setString(
-              Preferences.flutterWave,
-              jsonEncode(flutterWaveModel.toJson()),
-            );
-          }
-        });
+      if (value.exists) {
+        FlutterWaveModel flutterWaveModel = FlutterWaveModel.fromJson(
+          value.data()!,
+        );
+        await Preferences.setString(
+          Preferences.flutterWave,
+          jsonEncode(flutterWaveModel.toJson()),
+        );
+      }
+    });
     await fireStore
         .collection(CollectionName.settings)
         .doc("payStack")
         .get()
         .then((value) async {
-          if (value.exists) {
-            PayStackModel payStackModel = PayStackModel.fromJson(value.data()!);
-            await Preferences.setString(
-              Preferences.payStack,
-              jsonEncode(payStackModel.toJson()),
-            );
-          }
-        });
+      if (value.exists) {
+        PayStackModel payStackModel = PayStackModel.fromJson(value.data()!);
+        await Preferences.setString(
+          Preferences.payStack,
+          jsonEncode(payStackModel.toJson()),
+        );
+      }
+    });
     await fireStore
         .collection(CollectionName.settings)
         .doc("PaytmSettings")
         .get()
         .then((value) async {
-          if (value.exists) {
-            PaytmModel paytmModel = PaytmModel.fromJson(value.data()!);
-            await Preferences.setString(
-              Preferences.paytmSettings,
-              jsonEncode(paytmModel.toJson()),
-            );
-          }
-        });
+      if (value.exists) {
+        PaytmModel paytmModel = PaytmModel.fromJson(value.data()!);
+        await Preferences.setString(
+          Preferences.paytmSettings,
+          jsonEncode(paytmModel.toJson()),
+        );
+      }
+    });
     await fireStore
         .collection(CollectionName.settings)
         .doc("walletSettings")
         .get()
         .then((value) async {
-          if (value.exists) {
-            WalletSettingModel walletSettingModel = WalletSettingModel.fromJson(
-              value.data()!,
-            );
-            await Preferences.setString(
-              Preferences.walletSettings,
-              jsonEncode(walletSettingModel.toJson()),
-            );
-          }
-        });
+      if (value.exists) {
+        WalletSettingModel walletSettingModel = WalletSettingModel.fromJson(
+          value.data()!,
+        );
+        await Preferences.setString(
+          Preferences.walletSettings,
+          jsonEncode(walletSettingModel.toJson()),
+        );
+      }
+    });
     await fireStore
         .collection(CollectionName.settings)
         .doc("razorpaySettings")
         .get()
         .then((value) async {
-          if (value.exists) {
-            RazorPayModel razorPayModel = RazorPayModel.fromJson(value.data()!);
-            await Preferences.setString(
-              Preferences.razorpaySettings,
-              jsonEncode(razorPayModel.toJson()),
-            );
-          }
-        });
+      if (value.exists) {
+        RazorPayModel razorPayModel = RazorPayModel.fromJson(value.data()!);
+        await Preferences.setString(
+          Preferences.razorpaySettings,
+          jsonEncode(razorPayModel.toJson()),
+        );
+      }
+    });
     await fireStore
         .collection(CollectionName.settings)
         .doc("CODSettings")
         .get()
         .then((value) async {
-          if (value.exists) {
-            CodSettingModel codSettingModel = CodSettingModel.fromJson(
-              value.data()!,
-            );
-            await Preferences.setString(
-              Preferences.codSettings,
-              jsonEncode(codSettingModel.toJson()),
-            );
-          }
-        });
+      if (value.exists) {
+        CodSettingModel codSettingModel = CodSettingModel.fromJson(
+          value.data()!,
+        );
+        await Preferences.setString(
+          Preferences.codSettings,
+          jsonEncode(codSettingModel.toJson()),
+        );
+      }
+    });
 
     await fireStore
         .collection(CollectionName.settings)
         .doc("midtrans_settings")
         .get()
         .then((value) async {
-          if (value.exists) {
-            MidTrans midTrans = MidTrans.fromJson(value.data()!);
-            await Preferences.setString(
-              Preferences.midTransSettings,
-              jsonEncode(midTrans.toJson()),
-            );
-          }
-        });
+      if (value.exists) {
+        MidTrans midTrans = MidTrans.fromJson(value.data()!);
+        await Preferences.setString(
+          Preferences.midTransSettings,
+          jsonEncode(midTrans.toJson()),
+        );
+      }
+    });
 
     await fireStore
         .collection(CollectionName.settings)
         .doc("orange_money_settings")
         .get()
         .then((value) async {
-          if (value.exists) {
-            OrangeMoney orangeMoney = OrangeMoney.fromJson(value.data()!);
-            await Preferences.setString(
-              Preferences.orangeMoneySettings,
-              jsonEncode(orangeMoney.toJson()),
-            );
-          }
-        });
+      if (value.exists) {
+        OrangeMoney orangeMoney = OrangeMoney.fromJson(value.data()!);
+        await Preferences.setString(
+          Preferences.orangeMoneySettings,
+          jsonEncode(orangeMoney.toJson()),
+        );
+      }
+    });
 
     await fireStore
         .collection(CollectionName.settings)
         .doc("xendit_settings")
         .get()
         .then((value) async {
-          if (value.exists) {
-            Xendit xendit = Xendit.fromJson(value.data()!);
-            await Preferences.setString(
-              Preferences.xenditSettings,
-              jsonEncode(xendit.toJson()),
-            );
-          }
-        });
+      if (value.exists) {
+        Xendit xendit = Xendit.fromJson(value.data()!);
+        await Preferences.setString(
+          Preferences.xenditSettings,
+          jsonEncode(xendit.toJson()),
+        );
+      }
+    });
 
     // Payme
     log(
@@ -827,42 +812,41 @@ class FireStoreUtils {
         .doc("paymeSettings")
         .get()
         .then((value) async {
+      log(
+        '🔵 [FireStoreUtils.getPaymentSettingsData] Payme: exists=${value.exists}',
+      );
+      if (value.exists) {
+        try {
+          PaymeModel paymeModel = PaymeModel.fromJson(value.data()!);
           log(
-            '🔵 [FireStoreUtils.getPaymentSettingsData] Payme: exists=${value.exists}',
+            '🔵 [FireStoreUtils.getPaymentSettingsData] Payme: isEnabled=${paymeModel.isEnabled ?? paymeModel.enable}',
           );
-          if (value.exists) {
-            try {
-              PaymeModel paymeModel = PaymeModel.fromJson(value.data()!);
-              log(
-                '🔵 [FireStoreUtils.getPaymentSettingsData] Payme: isEnabled=${paymeModel.isEnabled ?? paymeModel.enable}',
-              );
-              log(
-                '🔵 [FireStoreUtils.getPaymentSettingsData] Payme: merchant_id=${paymeModel.merchantId}',
-              );
-              await Preferences.setString(
-                Preferences.paymeSettings,
-                jsonEncode(paymeModel.toJson()),
-              );
-              log(
-                '✅ [FireStoreUtils.getPaymentSettingsData] Payme Preferences ga saqlandi',
-              );
-            } catch (e) {
-              log(
-                '❌ [FireStoreUtils.getPaymentSettingsData] Payme model o\'qish xatosi: $e',
-              );
-              log(
-                '🔵 [FireStoreUtils.getPaymentSettingsData] Payme: raw data=${value.data()}',
-              );
-            }
-          } else {
-            log(
-              '⚠️ [FireStoreUtils.getPaymentSettingsData] Payme: Document mavjud emas',
-            );
-          }
-        })
-        .catchError((e) {
-          log('❌ [FireStoreUtils.getPaymentSettingsData] Payme xatosi: $e');
-        });
+          log(
+            '🔵 [FireStoreUtils.getPaymentSettingsData] Payme: merchant_id=${paymeModel.merchantId}',
+          );
+          await Preferences.setString(
+            Preferences.paymeSettings,
+            jsonEncode(paymeModel.toJson()),
+          );
+          log(
+            '✅ [FireStoreUtils.getPaymentSettingsData] Payme Preferences ga saqlandi',
+          );
+        } catch (e) {
+          log(
+            '❌ [FireStoreUtils.getPaymentSettingsData] Payme model o\'qish xatosi: $e',
+          );
+          log(
+            '🔵 [FireStoreUtils.getPaymentSettingsData] Payme: raw data=${value.data()}',
+          );
+        }
+      } else {
+        log(
+          '⚠️ [FireStoreUtils.getPaymentSettingsData] Payme: Document mavjud emas',
+        );
+      }
+    }).catchError((e) {
+      log('❌ [FireStoreUtils.getPaymentSettingsData] Payme xatosi: $e');
+    });
   }
 
   static Future<VendorModel?> getVendorById(String vendorId) async {
@@ -873,10 +857,10 @@ class FireStoreUtils {
           .doc(vendorId)
           .get()
           .then((value) {
-            if (value.exists) {
-              vendorModel = VendorModel.fromJson(value.data()!);
-            }
-          });
+        if (value.exists) {
+          vendorModel = VendorModel.fromJson(value.data()!);
+        }
+      });
     } catch (e, s) {
       log('FireStoreUtils.firebaseCreateNewUser $e $s');
       return null;
@@ -892,10 +876,11 @@ class FireStoreUtils {
           .doc(orderId)
           .get()
           .then((value) {
-            if (value.exists) {
-              orderModel = OrderModel.fromJson(value.data()!);
-            }
-          });
+        if (value.exists) {
+          orderModel = OrderModel.fromJson(value.data()!);
+          orderModel!.id = value.id;
+        }
+      });
     } catch (e, s) {
       log('FireStoreUtils.firebaseCreateNewUser $e $s');
       return null;
@@ -911,10 +896,10 @@ class FireStoreUtils {
           .doc(sectionId)
           .get()
           .then((value) {
-            if (value.exists) {
-              orderModel = SectionModel.fromJson(value.data()!);
-            }
-          });
+        if (value.exists) {
+          orderModel = SectionModel.fromJson(value.data()!);
+        }
+      });
     } catch (e, s) {
       log('FireStoreUtils.firebaseCreateNewUser $e $s');
       return null;
@@ -930,10 +915,10 @@ class FireStoreUtils {
           .doc("DeliveryCharge")
           .get()
           .then((value) {
-            if (value.exists) {
-              deliveryCharge = DeliveryCharge.fromJson(value.data()!);
-            }
-          });
+        if (value.exists) {
+          deliveryCharge = DeliveryCharge.fromJson(value.data()!);
+        }
+      });
     } catch (e, s) {
       log('FireStoreUtils.firebaseCreateNewUser $e $s');
       return null;
@@ -943,24 +928,26 @@ class FireStoreUtils {
 
   static Future<List<TaxModel>?> getTaxList() async {
     List<TaxModel> taxList = [];
-    List<Placemark> placeMarks = await placemarkFromCoordinates(
+    final geocoding =
+        YandexGeocodingService(apiKey: Constant.yandexGeocodeApiKey);
+    final place = await geocoding.reverseGeocode(
       Constant.selectedLocation.location!.latitude!,
       Constant.selectedLocation.location!.longitude!,
     );
+    final country = place?.country ?? '';
     await fireStore
         .collection(CollectionName.tax)
-        .where('country', isEqualTo: placeMarks.first.country)
+        .where('country', isEqualTo: country)
         .where('enable', isEqualTo: true)
         .get()
         .then((value) {
-          for (var element in value.docs) {
-            TaxModel taxModel = TaxModel.fromJson(element.data());
-            taxList.add(taxModel);
-          }
-        })
-        .catchError((error) {
-          log(error.toString());
-        });
+      for (var element in value.docs) {
+        TaxModel taxModel = TaxModel.fromJson(element.data());
+        taxList.add(taxModel);
+      }
+    }).catchError((error) {
+      log(error.toString());
+    });
 
     return taxList;
   }
@@ -972,12 +959,11 @@ class FireStoreUtils {
         .doc(orderModel.id)
         .set(orderModel.toJson())
         .then((value) {
-          isAdded = true;
-        })
-        .catchError((error) {
-          log("Failed to update user: $error");
-          isAdded = false;
-        });
+      isAdded = true;
+    }).catchError((error) {
+      log("Failed to update user: $error");
+      isAdded = false;
+    });
     return isAdded;
   }
 
@@ -988,12 +974,11 @@ class FireStoreUtils {
         .doc(orderModel.id)
         .set(orderModel.toJson())
         .then((value) {
-          isAdded = true;
-        })
-        .catchError((error) {
-          log("Failed to update user: $error");
-          isAdded = false;
-        });
+      isAdded = true;
+    }).catchError((error) {
+      log("Failed to update user: $error");
+      isAdded = false;
+    });
     return isAdded;
   }
 
@@ -1018,7 +1003,10 @@ class FireStoreUtils {
     required Map<String, double> startLocation,
   }) async {
     try {
-      await fireStore.collection(CollectionName.cabBookingOrders).doc(orderId).update({
+      await fireStore
+          .collection(CollectionName.cabBookingOrders)
+          .doc(orderId)
+          .update({
         'status': Constant.orderInTransit,
         'startTime': FieldValue.serverTimestamp(),
         'startLocation': startLocation,
@@ -1045,7 +1033,10 @@ class FireStoreUtils {
     required double extraCharge,
   }) async {
     try {
-      await fireStore.collection(CollectionName.cabBookingOrders).doc(orderId).update({
+      await fireStore
+          .collection(CollectionName.cabBookingOrders)
+          .doc(orderId)
+          .update({
         'finalDistance': finalDistance,
         'finalFare': finalFare,
         'extraKm': extraKm,
@@ -1068,7 +1059,10 @@ class FireStoreUtils {
     required double extraCharge,
   }) async {
     try {
-      await fireStore.collection(CollectionName.cabBookingOrders).doc(orderId).update({
+      await fireStore
+          .collection(CollectionName.cabBookingOrders)
+          .doc(orderId)
+          .update({
         'status': Constant.orderCompleted,
         'endTime': FieldValue.serverTimestamp(),
         'isTracking': false,
@@ -1096,7 +1090,8 @@ class FireStoreUtils {
     double? extraCharge,
   }) async {
     try {
-      final ref = fireStore.collection(CollectionName.cabBookingOrders).doc(orderId);
+      final ref =
+          fireStore.collection(CollectionName.cabBookingOrders).doc(orderId);
       final Map<String, dynamic> updateData = {
         'accumulatedDistance': accumulatedDistance,
         'lastLocation': {'latitude': lat, 'longitude': lng},
@@ -1125,14 +1120,14 @@ class FireStoreUtils {
         .where('type', isEqualTo: type)
         .get()
         .then((value) {
-          print("------>");
-          if (value.docs.isNotEmpty) {
-            print(value.docs.first.data());
-            emailTemplateModel = EmailTemplateModel.fromJson(
-              value.docs.first.data(),
-            );
-          }
-        });
+      print("------>");
+      if (value.docs.isNotEmpty) {
+        print(value.docs.first.data());
+        emailTemplateModel = EmailTemplateModel.fromJson(
+          value.docs.first.data(),
+        );
+      }
+    });
     return emailTemplateModel;
   }
 
@@ -1144,15 +1139,13 @@ class FireStoreUtils {
 
     for (var element in orderModel.products!) {
       if (double.parse(element.discountPrice.toString()) <= 0) {
-        subTotal =
-            subTotal +
+        subTotal = subTotal +
             double.parse(element.price.toString()) *
                 double.parse(element.quantity.toString()) +
             (double.parse(element.extrasPrice.toString()) *
                 double.parse(element.quantity.toString()));
       } else {
-        subTotal =
-            subTotal +
+        subTotal = subTotal +
             double.parse(element.discountPrice.toString()) *
                 double.parse(element.quantity.toString()) +
             (double.parse(element.extrasPrice.toString()) *
@@ -1169,22 +1162,19 @@ class FireStoreUtils {
 
     if (orderModel.taxSetting != null) {
       for (var element in orderModel.taxSetting!) {
-        taxAmount =
-            taxAmount +
+        taxAmount = taxAmount +
             Constant.calculateTax(
-              amount:
-                  (subTotal -
-                          double.parse(orderModel.discount.toString()) -
-                          specialDiscount)
-                      .toString(),
+              amount: (subTotal -
+                      double.parse(orderModel.discount.toString()) -
+                      specialDiscount)
+                  .toString(),
               taxModel: element,
             );
       }
     }
 
     if (orderModel.deliveryCharge != null) {
-      deliveryCharge =
-          double.parse(orderModel.deliveryCharge.toString()) +
+      deliveryCharge = double.parse(orderModel.deliveryCharge.toString()) +
           double.parse(orderModel.tipAmount.toString());
     }
 
@@ -1323,22 +1313,22 @@ class FireStoreUtils {
         .where('type', isEqualTo: type)
         .get()
         .then((value) {
-          print("------>");
-          if (value.docs.isNotEmpty) {
-            print(value.docs.first.data());
+      print("------>");
+      if (value.docs.isNotEmpty) {
+        print(value.docs.first.data());
 
-            notificationModel = NotificationModel.fromJson(
-              value.docs.first.data(),
-            );
-          } else {
-            notificationModel = NotificationModel(
-              id: "",
-              message: "Notification setup is pending",
-              subject: "setup notification",
-              type: "",
-            );
-          }
-        });
+        notificationModel = NotificationModel.fromJson(
+          value.docs.first.data(),
+        );
+      } else {
+        notificationModel = NotificationModel(
+          id: "",
+          message: "Notification setup is pending",
+          subject: "setup notification",
+          type: "",
+        );
+      }
+    });
     return notificationModel;
   }
 
@@ -1369,16 +1359,15 @@ class FireStoreUtils {
         .where('enable', isEqualTo: true)
         .get()
         .then((value) {
-          for (var element in value.docs) {
-            DocumentModel documentModel = DocumentModel.fromJson(
-              element.data(),
-            );
-            documentList.add(documentModel);
-          }
-        })
-        .catchError((error) {
-          log(error.toString());
-        });
+      for (var element in value.docs) {
+        DocumentModel documentModel = DocumentModel.fromJson(
+          element.data(),
+        );
+        documentList.add(documentModel);
+      }
+    }).catchError((error) {
+      log(error.toString());
+    });
     return documentList;
   }
 
@@ -1389,10 +1378,10 @@ class FireStoreUtils {
         .doc(getCurrentUid())
         .get()
         .then((value) async {
-          if (value.exists) {
-            driverDocumentModel = DriverDocumentModel.fromJson(value.data()!);
-          }
-        });
+      if (value.exists) {
+        driverDocumentModel = DriverDocumentModel.fromJson(value.data()!);
+      }
+    });
     return driverDocumentModel;
   }
 
@@ -1402,8 +1391,8 @@ class FireStoreUtils {
         .doc(inboxModel.orderId)
         .set(inboxModel.toJson())
         .then((document) {
-          return inboxModel;
-        });
+      return inboxModel;
+    });
   }
 
   static Future addDriverChat(ConversationModel conversationModel) async {
@@ -1414,8 +1403,8 @@ class FireStoreUtils {
         .doc(conversationModel.id)
         .set(conversationModel.toJson())
         .then((document) {
-          return conversationModel;
-        });
+      return conversationModel;
+    });
   }
 
   static Future addRestaurantChat(ConversationModel conversationModel) async {
@@ -1426,8 +1415,8 @@ class FireStoreUtils {
         .doc(conversationModel.id)
         .set(conversationModel.toJson())
         .then((document) {
-          return conversationModel;
-        });
+      return conversationModel;
+    });
   }
 
   static Future<Url> uploadChatImageToFireStorage(
@@ -1437,8 +1426,8 @@ class FireStoreUtils {
     ShowToastDialog.showLoader("Please wait".tr);
     var uniqueID = const Uuid().v4();
     Reference upload = FirebaseStorage.instance.ref().child(
-      'images/$uniqueID.png',
-    );
+          'images/$uniqueID.png',
+        );
     UploadTask uploadTask = upload.putFile(image);
     var storageRef = (await uploadTask.whenComplete(() {})).ref;
     var downloadUrl = await storageRef.getDownloadURL();
@@ -1538,12 +1527,14 @@ class FireStoreUtils {
   static Future<String> uploadVideoThumbnailToFireStorage(File file) async {
     var uniqueID = const Uuid().v4();
     Reference upload = FirebaseStorage.instance.ref().child(
-      'thumbnails/$uniqueID.png',
-    );
+          'thumbnails/$uniqueID.png',
+        );
     UploadTask uploadTask = upload.putFile(file);
     var downloadUrl = await (await uploadTask.whenComplete(
       () {},
-    )).ref.getDownloadURL();
+    ))
+        .ref
+        .getDownloadURL();
     return downloadUrl.toString();
   }
 
@@ -1556,50 +1547,49 @@ class FireStoreUtils {
         .doc(getCurrentUid())
         .get()
         .then((value) async {
-          if (value.exists) {
-            DriverDocumentModel newDriverDocumentModel =
-                DriverDocumentModel.fromJson(value.data()!);
-            documentsList = newDriverDocumentModel.documents!;
-            var contain = newDriverDocumentModel.documents!.where(
-              (element) => element.documentId == documents.documentId,
-            );
-            if (contain.isEmpty) {
-              documentsList.add(documents);
+      if (value.exists) {
+        DriverDocumentModel newDriverDocumentModel =
+            DriverDocumentModel.fromJson(value.data()!);
+        documentsList = newDriverDocumentModel.documents!;
+        var contain = newDriverDocumentModel.documents!.where(
+          (element) => element.documentId == documents.documentId,
+        );
+        if (contain.isEmpty) {
+          documentsList.add(documents);
 
-              driverDocumentModel.id = getCurrentUid();
-              driverDocumentModel.type = "driver";
-              driverDocumentModel.documents = documentsList;
-            } else {
-              var index = newDriverDocumentModel.documents!.indexWhere(
-                (element) => element.documentId == documents.documentId,
-              );
+          driverDocumentModel.id = getCurrentUid();
+          driverDocumentModel.type = "driver";
+          driverDocumentModel.documents = documentsList;
+        } else {
+          var index = newDriverDocumentModel.documents!.indexWhere(
+            (element) => element.documentId == documents.documentId,
+          );
 
-              driverDocumentModel.id = getCurrentUid();
-              driverDocumentModel.type = "driver";
-              documentsList.removeAt(index);
-              documentsList.insert(index, documents);
-              driverDocumentModel.documents = documentsList;
-              isAdded = false;
-            }
-          } else {
-            documentsList.add(documents);
-            driverDocumentModel.id = getCurrentUid();
-            driverDocumentModel.type = "driver";
-            driverDocumentModel.documents = documentsList;
-          }
-        });
+          driverDocumentModel.id = getCurrentUid();
+          driverDocumentModel.type = "driver";
+          documentsList.removeAt(index);
+          documentsList.insert(index, documents);
+          driverDocumentModel.documents = documentsList;
+          isAdded = false;
+        }
+      } else {
+        documentsList.add(documents);
+        driverDocumentModel.id = getCurrentUid();
+        driverDocumentModel.type = "driver";
+        driverDocumentModel.documents = documentsList;
+      }
+    });
 
     await fireStore
         .collection(CollectionName.documentsVerify)
         .doc(getCurrentUid())
         .set(driverDocumentModel.toJson())
         .then((value) {
-          isAdded = true;
-        })
-        .catchError((error) {
-          isAdded = false;
-          log(error.toString());
-        });
+      isAdded = true;
+    }).catchError((error) {
+      isAdded = false;
+      log(error.toString());
+    });
 
     return isAdded;
   }
@@ -1611,12 +1601,12 @@ class FireStoreUtils {
         .where("userId", isEqualTo: getCurrentUid())
         .get()
         .then((value) async {
-          if (value.docs.isNotEmpty) {
-            withdrawMethodModel = WithdrawMethodModel.fromJson(
-              value.docs.first.data(),
-            );
-          }
-        });
+      if (value.docs.isNotEmpty) {
+        withdrawMethodModel = WithdrawMethodModel.fromJson(
+          value.docs.first.data(),
+        );
+      }
+    });
     return withdrawMethodModel;
   }
 
@@ -1643,16 +1633,15 @@ class FireStoreUtils {
         .orderBy('paidDate', descending: true)
         .get()
         .then((value) {
-          for (var element in value.docs) {
-            WithdrawalModel walletTransactionModel = WithdrawalModel.fromJson(
-              element.data(),
-            );
-            walletTransactionList.add(walletTransactionModel);
-          }
-        })
-        .catchError((error) {
-          log(error.toString());
-        });
+      for (var element in value.docs) {
+        WithdrawalModel walletTransactionModel = WithdrawalModel.fromJson(
+          element.data(),
+        );
+        walletTransactionList.add(walletTransactionModel);
+      }
+    }).catchError((error) {
+      log(error.toString());
+    });
     return walletTransactionList;
   }
 
@@ -1702,12 +1691,11 @@ class FireStoreUtils {
         .doc(userModel.id)
         .set(userModel.toJson())
         .whenComplete(() {
-          isUpdate = true;
-        })
-        .catchError((error) {
-          log("Failed to update user: $error");
-          isUpdate = false;
-        });
+      isUpdate = true;
+    }).catchError((error) {
+      log("Failed to update user: $error");
+      isUpdate = false;
+    });
     return isUpdate;
   }
 
@@ -1718,12 +1706,12 @@ class FireStoreUtils {
         .where('authorID', isEqualTo: orderModel.authorID)
         .get()
         .then((value) {
-          if (value.size == 1) {
-            isFirst = true;
-          } else {
-            isFirst = false;
-          }
-        });
+      if (value.size == 1) {
+        isFirst = true;
+      } else {
+        isFirst = false;
+      }
+    });
     return isFirst;
   }
 
@@ -1734,12 +1722,12 @@ class FireStoreUtils {
         .doc(orderModel.authorID)
         .get()
         .then((value) {
-          if (value.data() != null) {
-            referralModel = ReferralModel.fromJson(value.data()!);
-          } else {
-            return;
-          }
-        });
+      if (value.data() != null) {
+        referralModel = ReferralModel.fromJson(value.data()!);
+      } else {
+        return;
+      }
+    });
     if (referralModel != null) {
       if (referralModel!.referralBy != null &&
           referralModel!.referralBy!.isNotEmpty) {
@@ -1781,12 +1769,12 @@ class FireStoreUtils {
         .where('authorID', isEqualTo: orderModel.authorID)
         .get()
         .then((value) {
-          if (value.size == 1) {
-            isFirst = true;
-          } else {
-            isFirst = false;
-          }
-        });
+      if (value.size == 1) {
+        isFirst = true;
+      } else {
+        isFirst = false;
+      }
+    });
     return isFirst;
   }
 
@@ -1801,12 +1789,12 @@ class FireStoreUtils {
         .doc(orderModel.authorID)
         .get()
         .then((value) {
-          if (value.data() != null) {
-            referralModel = ReferralModel.fromJson(value.data()!);
-          } else {
-            return;
-          }
-        });
+      if (value.data() != null) {
+        referralModel = ReferralModel.fromJson(value.data()!);
+      } else {
+        return;
+      }
+    });
 
     if (referralModel != null) {
       if (referralModel!.referralBy != null &&
@@ -1816,51 +1804,49 @@ class FireStoreUtils {
             .doc(referralModel!.referralBy)
             .get()
             .then((value) async {
-              DocumentSnapshot<Map<String, dynamic>> userDocument = value;
-              if (userDocument.data() != null && userDocument.exists) {
-                try {
-                  UserModel user = UserModel.fromJson(userDocument.data()!);
-                  await fireStore
-                      .collection(CollectionName.users)
-                      .doc(user.id)
-                      .update({
-                        "wallet_amount":
-                            double.parse(user.walletAmount.toString()) +
-                            double.parse(
-                              sectionModel!.referralAmount.toString(),
-                            ),
-                      });
+          DocumentSnapshot<Map<String, dynamic>> userDocument = value;
+          if (userDocument.data() != null && userDocument.exists) {
+            try {
+              UserModel user = UserModel.fromJson(userDocument.data()!);
+              await fireStore
+                  .collection(CollectionName.users)
+                  .doc(user.id)
+                  .update({
+                "wallet_amount": double.parse(user.walletAmount.toString()) +
+                    double.parse(
+                      sectionModel!.referralAmount.toString(),
+                    ),
+              });
 
-                  WalletTransactionModel transactionModel =
-                      WalletTransactionModel(
-                        id: Constant.getUuid(),
-                        amount: double.parse(
-                          sectionModel!.referralAmount.toString(),
-                        ),
-                        date: Timestamp.now(),
-                        paymentMethod: "Referral Amount",
-                        transactionUser: "user",
-                        userId: referralModel!.referralBy.toString(),
-                        isTopup: true,
-                        note: "Wallet Top-up",
-                        paymentStatus: "success",
-                      );
+              WalletTransactionModel transactionModel = WalletTransactionModel(
+                id: Constant.getUuid(),
+                amount: double.parse(
+                  sectionModel!.referralAmount.toString(),
+                ),
+                date: Timestamp.now(),
+                paymentMethod: "Referral Amount",
+                transactionUser: "user",
+                userId: referralModel!.referralBy.toString(),
+                isTopup: true,
+                note: "Wallet Top-up",
+                paymentStatus: "success",
+              );
 
-                  await FireStoreUtils.setWalletTransaction(
-                    transactionModel,
-                  ).then((value) async {
-                    if (value == true) {
-                      await FireStoreUtils.updateUserWallet(
-                        amount: sectionModel!.referralAmount.toString(),
-                        userId: referralModel!.referralBy.toString(),
-                      ).then((value) {});
-                    }
-                  });
-                } catch (e) {
-                  log(e.toString());
+              await FireStoreUtils.setWalletTransaction(
+                transactionModel,
+              ).then((value) async {
+                if (value == true) {
+                  await FireStoreUtils.updateUserWallet(
+                    amount: sectionModel!.referralAmount.toString(),
+                    userId: referralModel!.referralBy.toString(),
+                  ).then((value) {});
                 }
-              }
-            });
+              });
+            } catch (e) {
+              log(e.toString());
+            }
+          }
+        });
       } else {
         return;
       }
@@ -1876,12 +1862,12 @@ class FireStoreUtils {
         .where('authorID', isEqualTo: orderModel.authorID)
         .get()
         .then((value) {
-          if (value.size == 1) {
-            isFirst = true;
-          } else {
-            isFirst = false;
-          }
-        });
+      if (value.size == 1) {
+        isFirst = true;
+      } else {
+        isFirst = false;
+      }
+    });
     return isFirst;
   }
 
@@ -1894,12 +1880,12 @@ class FireStoreUtils {
         .where('authorID', isEqualTo: orderModel.authorID)
         .get()
         .then((value) {
-          if (value.size == 1) {
-            isFirst = true;
-          } else {
-            isFirst = false;
-          }
-        });
+      if (value.size == 1) {
+        isFirst = true;
+      } else {
+        isFirst = false;
+      }
+    });
     return isFirst;
   }
 
@@ -1915,12 +1901,12 @@ class FireStoreUtils {
         .doc(orderModel.authorID)
         .get()
         .then((value) {
-          if (value.data() != null) {
-            referralModel = ReferralModel.fromJson(value.data()!);
-          } else {
-            return;
-          }
-        });
+      if (value.data() != null) {
+        referralModel = ReferralModel.fromJson(value.data()!);
+      } else {
+        return;
+      }
+    });
 
     if (referralModel != null) {
       if (referralModel!.referralBy != null &&
@@ -1930,52 +1916,50 @@ class FireStoreUtils {
             .doc(referralModel!.referralBy)
             .get()
             .then((value) async {
-              DocumentSnapshot<Map<String, dynamic>> userDocument = value;
-              if (userDocument.data() != null && userDocument.exists) {
-                try {
-                  UserModel user = UserModel.fromJson(userDocument.data()!);
-                  await fireStore
-                      .collection(CollectionName.users)
-                      .doc(user.id)
-                      .update({
-                        "wallet_amount":
-                            double.parse(user.walletAmount.toString()) +
-                            double.parse(
-                              sectionModel!.referralAmount.toString(),
-                            ),
-                      });
+          DocumentSnapshot<Map<String, dynamic>> userDocument = value;
+          if (userDocument.data() != null && userDocument.exists) {
+            try {
+              UserModel user = UserModel.fromJson(userDocument.data()!);
+              await fireStore
+                  .collection(CollectionName.users)
+                  .doc(user.id)
+                  .update({
+                "wallet_amount": double.parse(user.walletAmount.toString()) +
+                    double.parse(
+                      sectionModel!.referralAmount.toString(),
+                    ),
+              });
 
-                  WalletTransactionModel transactionModel =
-                      WalletTransactionModel(
-                        id: Constant.getUuid(),
-                        amount: double.parse(
-                          sectionModel!.referralAmount.toString(),
-                        ),
-                        date: Timestamp.now(),
-                        paymentMethod: "Referral Amount",
-                        transactionUser: "user",
-                        userId: referralModel!.referralBy.toString(),
-                        isTopup: true,
-                        note: "Wallet Top-up",
-                        paymentStatus: "success",
-                      );
+              WalletTransactionModel transactionModel = WalletTransactionModel(
+                id: Constant.getUuid(),
+                amount: double.parse(
+                  sectionModel!.referralAmount.toString(),
+                ),
+                date: Timestamp.now(),
+                paymentMethod: "Referral Amount",
+                transactionUser: "user",
+                userId: referralModel!.referralBy.toString(),
+                isTopup: true,
+                note: "Wallet Top-up",
+                paymentStatus: "success",
+              );
 
-                  await FireStoreUtils.setWalletTransaction(
-                    transactionModel,
-                  ).then((value) async {
-                    if (value == true) {
-                      await FireStoreUtils.updateUserWallet(
-                        amount: sectionModel!.referralAmount.toString(),
-                        userId: referralModel!.referralBy.toString(),
-                      ).then((value) {});
-                    }
-                  });
-                } catch (error) {
-                  log(error.toString());
+              await FireStoreUtils.setWalletTransaction(
+                transactionModel,
+              ).then((value) async {
+                if (value == true) {
+                  await FireStoreUtils.updateUserWallet(
+                    amount: sectionModel!.referralAmount.toString(),
+                    userId: referralModel!.referralBy.toString(),
+                  ).then((value) {});
                 }
-                print("data val");
-              }
-            });
+              });
+            } catch (error) {
+              log(error.toString());
+            }
+            print("data val");
+          }
+        });
       } else {
         return;
       }
@@ -1994,12 +1978,12 @@ class FireStoreUtils {
         .doc(orderModel.authorID)
         .get()
         .then((value) {
-          if (value.data() != null) {
-            referralModel = ReferralModel.fromJson(value.data()!);
-          } else {
-            return;
-          }
-        });
+      if (value.data() != null) {
+        referralModel = ReferralModel.fromJson(value.data()!);
+      } else {
+        return;
+      }
+    });
 
     if (referralModel != null) {
       if (referralModel!.referralBy != null &&
@@ -2009,52 +1993,50 @@ class FireStoreUtils {
             .doc(referralModel!.referralBy)
             .get()
             .then((value) async {
-              DocumentSnapshot<Map<String, dynamic>> userDocument = value;
-              if (userDocument.data() != null && userDocument.exists) {
-                try {
-                  UserModel user = UserModel.fromJson(userDocument.data()!);
-                  await fireStore
-                      .collection(CollectionName.users)
-                      .doc(user.id)
-                      .update({
-                        "wallet_amount":
-                            double.parse(user.walletAmount.toString()) +
-                            double.parse(
-                              sectionModel!.referralAmount.toString(),
-                            ),
-                      });
+          DocumentSnapshot<Map<String, dynamic>> userDocument = value;
+          if (userDocument.data() != null && userDocument.exists) {
+            try {
+              UserModel user = UserModel.fromJson(userDocument.data()!);
+              await fireStore
+                  .collection(CollectionName.users)
+                  .doc(user.id)
+                  .update({
+                "wallet_amount": double.parse(user.walletAmount.toString()) +
+                    double.parse(
+                      sectionModel!.referralAmount.toString(),
+                    ),
+              });
 
-                  WalletTransactionModel transactionModel =
-                      WalletTransactionModel(
-                        id: Constant.getUuid(),
-                        amount: double.parse(
-                          sectionModel!.referralAmount.toString(),
-                        ),
-                        date: Timestamp.now(),
-                        paymentMethod: "Referral Amount",
-                        transactionUser: "user",
-                        userId: referralModel!.referralBy.toString(),
-                        isTopup: true,
-                        note: "Wallet Top-up",
-                        paymentStatus: "success",
-                      );
+              WalletTransactionModel transactionModel = WalletTransactionModel(
+                id: Constant.getUuid(),
+                amount: double.parse(
+                  sectionModel!.referralAmount.toString(),
+                ),
+                date: Timestamp.now(),
+                paymentMethod: "Referral Amount",
+                transactionUser: "user",
+                userId: referralModel!.referralBy.toString(),
+                isTopup: true,
+                note: "Wallet Top-up",
+                paymentStatus: "success",
+              );
 
-                  await FireStoreUtils.setWalletTransaction(
-                    transactionModel,
-                  ).then((value) async {
-                    if (value == true) {
-                      await FireStoreUtils.updateUserWallet(
-                        amount: sectionModel!.referralAmount.toString(),
-                        userId: referralModel!.referralBy.toString(),
-                      ).then((value) {});
-                    }
-                  });
-                } catch (error) {
-                  log(error.toString());
+              await FireStoreUtils.setWalletTransaction(
+                transactionModel,
+              ).then((value) async {
+                if (value == true) {
+                  await FireStoreUtils.updateUserWallet(
+                    amount: sectionModel!.referralAmount.toString(),
+                    userId: referralModel!.referralBy.toString(),
+                  ).then((value) {});
                 }
-                print("data val");
-              }
-            });
+              });
+            } catch (error) {
+              log(error.toString());
+            }
+            print("data val");
+          }
+        });
       } else {
         return;
       }
@@ -2068,12 +2050,12 @@ class FireStoreUtils {
         .orderBy('createdAt', descending: true)
         .snapshots()
         .map((snapshot) {
-          return snapshot.docs.map((doc) {
-            log("===>");
-            print(doc.data());
-            return ParcelOrderModel.fromJson(doc.data());
-          }).toList();
-        });
+      return snapshot.docs.map((doc) {
+        log("===>");
+        print(doc.data());
+        return ParcelOrderModel.fromJson(doc.data());
+      }).toList();
+    });
   }
 
   static Future<List<ParcelCategory>> getParcelServiceCategory() async {
@@ -2084,16 +2066,16 @@ class FireStoreUtils {
         .orderBy('set_order', descending: false)
         .get()
         .then((value) {
-          for (var element in value.docs) {
-            try {
-              ParcelCategory category = ParcelCategory.fromJson(element.data());
-              parcelCategoryList.add(category);
-            } catch (e, stackTrace) {
-              print('getParcelServiceCategory parse error: ${element.id} $e');
-              print(stackTrace);
-            }
-          }
-        });
+      for (var element in value.docs) {
+        try {
+          ParcelCategory category = ParcelCategory.fromJson(element.data());
+          parcelCategoryList.add(category);
+        } catch (e, stackTrace) {
+          print('getParcelServiceCategory parse error: ${element.id} $e');
+          print(stackTrace);
+        }
+      }
+    });
     return parcelCategoryList;
   }
 
@@ -2111,10 +2093,10 @@ class FireStoreUtils {
         .doc(orderId)
         .get()
         .then((value) {
-          if (value.exists) {
-            orderModel = RentalOrderModel.fromJson(value.data()!);
-          }
-        });
+      if (value.exists) {
+        orderModel = RentalOrderModel.fromJson(value.data()!);
+      }
+    });
     return orderModel;
   }
 
@@ -2125,12 +2107,12 @@ class FireStoreUtils {
         .orderBy('createdAt', descending: true)
         .snapshots()
         .map((query) {
-          List<RentalOrderModel> ordersList = [];
-          for (var element in query.docs) {
-            ordersList.add(RentalOrderModel.fromJson(element.data()));
-          }
-          return ordersList;
-        });
+      List<RentalOrderModel> ordersList = [];
+      for (var element in query.docs) {
+        ordersList.add(RentalOrderModel.fromJson(element.data()));
+      }
+      return ordersList;
+    });
   }
 
   static Future<RatingModel?> getReviewsbyID(String orderId) async {
@@ -2141,13 +2123,12 @@ class FireStoreUtils {
         .where('orderid', isEqualTo: orderId)
         .get()
         .then((snapshot) {
-          if (snapshot.docs.isNotEmpty) {
-            ratingModel = RatingModel.fromJson(snapshot.docs.first.data());
-          }
-        })
-        .catchError((error) {
-          print('Error fetching review for provider: $error');
-        });
+      if (snapshot.docs.isNotEmpty) {
+        ratingModel = RatingModel.fromJson(snapshot.docs.first.data());
+      }
+    }).catchError((error) {
+      print('Error fetching review for provider: $error');
+    });
 
     return ratingModel;
   }
@@ -2175,12 +2156,12 @@ class FireStoreUtils {
         .orderBy('createdAt', descending: true)
         .snapshots()
         .map((query) {
-          List<CabOrderModel> ordersList = [];
-          for (var element in query.docs) {
-            ordersList.add(CabOrderModel.fromJson(element.data()));
-          }
-          return ordersList;
-        });
+      List<CabOrderModel> ordersList = [];
+      for (var element in query.docs) {
+        ordersList.add(CabOrderModel.fromJson(element.data()));
+      }
+      return ordersList;
+    });
   }
 
   static Future<dynamic> getOrderByIdFromAllCollections(String orderId) async {

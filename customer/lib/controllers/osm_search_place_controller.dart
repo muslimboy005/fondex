@@ -1,12 +1,27 @@
 import 'dart:developer';
+import 'package:customer/constant/constant.dart';
+import 'package:customer/service/yandex_geocoding_service.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
 import 'package:get/get.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+
+/// Manzil qidiruv natijasi (Yandex Geocoding orqali, O'zbekiston).
+class SearchSuggestion {
+  final String displayName;
+  final String address;
+  final double lat;
+  final double lng;
+
+  SearchSuggestion({
+    required this.displayName,
+    required this.address,
+    required this.lat,
+    required this.lng,
+  });
+}
 
 class OsmSearchPlaceController extends GetxController {
   Rx<TextEditingController> searchTxtController = TextEditingController().obs;
-  RxList<SearchInfo> suggestionsList = <SearchInfo>[].obs;
+  RxList<SearchSuggestion> suggestionsList = <SearchSuggestion>[].obs;
 
   @override
   void onInit() {
@@ -20,17 +35,26 @@ class OsmSearchPlaceController extends GetxController {
     fetchAddress(searchTxtController.value.text);
   }
 
-  Future<void> fetchAddress(text) async {
+  Future<void> fetchAddress(String text) async {
     log(":: fetchAddress :: $text");
+    if (text.trim().isEmpty || text.trim().length < 2) {
+      suggestionsList.value = [];
+      return;
+    }
     try {
-      String locale = 'en';
-      SharedPreferences sp = await SharedPreferences.getInstance();
-      if (sp.getString("languageCode") != null || sp.getString("languageCode")?.isNotEmpty == true) {
-        locale = sp.getString("languageCode") ?? "en";
-      }
-      suggestionsList.value = await addressSuggestion(text, locale: locale);
+      final geocoding = YandexGeocodingService(apiKey: Constant.yandexGeocodeApiKey);
+      final results = await geocoding.search(text.trim(), limit: 10);
+      suggestionsList.value = results.map((r) {
+        return SearchSuggestion(
+          displayName: r.displayName,
+          address: r.placemark?.formattedAddress ?? r.displayName,
+          lat: r.latLng.latitude,
+          lng: r.latLng.longitude,
+        );
+      }).toList();
     } catch (e) {
       log(e.toString());
+      suggestionsList.value = [];
     }
   }
 }

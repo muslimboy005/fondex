@@ -81,7 +81,9 @@ class DashBoardController extends GetxController {
         .then((value) async {
           await Future.forEach(value.docs, (QueryDocumentSnapshot<Map<String, dynamic>> element) {
             try {
-              orders.add(OrderModel.fromJson(element.data()));
+              final order = OrderModel.fromJson(element.data());
+              order.id = element.id;
+              orders.add(order);
             } catch (e, s) {
               print('watchOrdersStatus parse error ${element.id}$e $s');
             }

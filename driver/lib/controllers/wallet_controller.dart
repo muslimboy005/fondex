@@ -109,59 +109,65 @@ class WalletController extends GetxController {
   Rx<OrangeMoney> orangeMoneyModel = OrangeMoney().obs;
   Rx<Xendit> xenditModel = Xendit().obs;
 
+  /// Bo'sh yoki noto'g'ri JSON dan xavfsiz parse qiladi; xato bo'lsa null.
+  static T? _safeFromJson<T>(String jsonStr, T Function(Map<String, dynamic>) fromJson) {
+    if (jsonStr.isEmpty) return null;
+    try {
+      final map = jsonDecode(jsonStr) as Map<String, dynamic>?;
+      return map != null ? fromJson(map) : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// To'lov sozlamalarini Preferences (cache) dan o'qiydi – Firestore ishlamasa ham ishlatiladi.
+  void _loadPaymentSettingsFromPreferences() {
+    final payFast = _safeFromJson(Preferences.getString(Preferences.payFastSettings) ?? '', PayFastModel.fromJson);
+    if (payFast != null) payFastModel.value = payFast;
+    final mercado = _safeFromJson(Preferences.getString(Preferences.mercadoPago) ?? '', MercadoPagoModel.fromJson);
+    if (mercado != null) mercadoPagoModel.value = mercado;
+    final paypal = _safeFromJson(Preferences.getString(Preferences.paypalSettings) ?? '', PayPalModel.fromJson);
+    if (paypal != null) payPalModel.value = paypal;
+    final stripe = _safeFromJson(Preferences.getString(Preferences.stripeSettings) ?? '', StripeModel.fromJson);
+    if (stripe != null) stripeModel.value = stripe;
+    final flutterWave = _safeFromJson(Preferences.getString(Preferences.flutterWave) ?? '', FlutterWaveModel.fromJson);
+    if (flutterWave != null) flutterWaveModel.value = flutterWave;
+    final payStack = _safeFromJson(Preferences.getString(Preferences.payStack) ?? '', PayStackModel.fromJson);
+    if (payStack != null) payStackModel.value = payStack;
+    final razor = _safeFromJson(Preferences.getString(Preferences.razorpaySettings) ?? '', RazorPayModel.fromJson);
+    if (razor != null) razorPayModel.value = razor;
+    final midTrans = _safeFromJson(Preferences.getString(Preferences.midTransSettings) ?? '', MidTrans.fromJson);
+    if (midTrans != null) midTransModel.value = midTrans;
+    final orange = _safeFromJson(Preferences.getString(Preferences.orangeMoneySettings) ?? '', OrangeMoney.fromJson);
+    if (orange != null) orangeMoneyModel.value = orange;
+    final xendit = _safeFromJson(Preferences.getString(Preferences.xenditSettings) ?? '', Xendit.fromJson);
+    if (xendit != null) xenditModel.value = xendit;
+
+    final paymeJson = Preferences.getString(Preferences.paymeSettings) ?? '';
+    if (paymeJson.isNotEmpty) {
+      final payme = _safeFromJson(paymeJson, PaymeModel.fromJson);
+      if (payme != null) paymeModel.value = payme;
+    }
+
+    flutterStipe.Stripe.publishableKey =
+        stripeModel.value.clientpublishableKey.toString();
+    flutterStipe.Stripe.merchantIdentifier = 'eMart Driver';
+    flutterStipe.Stripe.instance.applySettings();
+    setRef();
+
+    razorPay.on(Razorpay.EVENT_PAYMENT_SUCCESS, handlePaymentSuccess);
+    razorPay.on(Razorpay.EVENT_EXTERNAL_WALLET, handleExternalWaller);
+    razorPay.on(Razorpay.EVENT_PAYMENT_ERROR, handlePaymentError);
+  }
+
   Future<void> getPaymentSettings() async {
-    await FireStoreUtils.getPaymentSettingsData().then(
-      (value) {
-        payFastModel.value = PayFastModel.fromJson(
-            jsonDecode(Preferences.getString(Preferences.payFastSettings)));
-        mercadoPagoModel.value = MercadoPagoModel.fromJson(
-            jsonDecode(Preferences.getString(Preferences.mercadoPago)));
-        payPalModel.value = PayPalModel.fromJson(
-            jsonDecode(Preferences.getString(Preferences.paypalSettings)));
-        stripeModel.value = StripeModel.fromJson(
-            jsonDecode(Preferences.getString(Preferences.stripeSettings)));
-        flutterWaveModel.value = FlutterWaveModel.fromJson(
-            jsonDecode(Preferences.getString(Preferences.flutterWave)));
-        payStackModel.value = PayStackModel.fromJson(
-            jsonDecode(Preferences.getString(Preferences.payStack)));
-        razorPayModel.value = RazorPayModel.fromJson(
-            jsonDecode(Preferences.getString(Preferences.razorpaySettings)));
-
-        midTransModel.value = MidTrans.fromJson(
-            jsonDecode(Preferences.getString(Preferences.midTransSettings)));
-        orangeMoneyModel.value = OrangeMoney.fromJson(
-            jsonDecode(Preferences.getString(Preferences.orangeMoneySettings)));
-        xenditModel.value = Xendit.fromJson(
-            jsonDecode(Preferences.getString(Preferences.xenditSettings)));
-
-        // Payme
-        try {
-          String paymeSettingsJson =
-              Preferences.getString(Preferences.paymeSettings);
-          log('🔵 [WalletController.getPaymentSettings] Payme settings JSON: $paymeSettingsJson');
-          if (paymeSettingsJson.isNotEmpty) {
-            paymeModel.value =
-                PaymeModel.fromJson(jsonDecode(paymeSettingsJson));
-            log('🔵 [WalletController.getPaymentSettings] Payme loaded: isEnabled=${paymeModel.value.isEnabled}, enable=${paymeModel.value.enable}');
-          } else {
-            log('⚠️ [WalletController.getPaymentSettings] Payme settings bo\'sh');
-          }
-        } catch (e) {
-          log('❌ [WalletController.getPaymentSettings] Payme settings parse error: $e');
-          debugPrint('Payme settings parse error: $e');
-        }
-
-        flutterStipe.Stripe.publishableKey =
-            stripeModel.value.clientpublishableKey.toString();
-        flutterStipe.Stripe.merchantIdentifier = 'eMart Driver';
-        flutterStipe.Stripe.instance.applySettings();
-        setRef();
-
-        razorPay.on(Razorpay.EVENT_PAYMENT_SUCCESS, handlePaymentSuccess);
-        razorPay.on(Razorpay.EVENT_EXTERNAL_WALLET, handleExternalWaller);
-        razorPay.on(Razorpay.EVENT_PAYMENT_ERROR, handlePaymentError);
-      },
-    );
+    try {
+      await FireStoreUtils.getPaymentSettingsData();
+    } catch (e, st) {
+      log('⚠️ [getPaymentSettings] Firestore mavjud emas, cache dan o\'qiladi: $e');
+      debugPrint('getPaymentSettings Firestore error: $e\n$st');
+    }
+    _loadPaymentSettingsFromPreferences();
   }
 
   Future<void> getWalletTransaction() async {
@@ -380,63 +386,67 @@ class WalletController extends GetxController {
   }
 
   Future<void> getPaymentMethod() async {
-    await FireStoreUtils.fireStore
-        .collection(CollectionName.settings)
-        .doc("razorpaySettings")
-        .get()
-        .then((user) {
-      try {
-        razorPayModel.value = RazorPayModel.fromJson(user.data() ?? {});
-      } catch (e) {
-        debugPrint(
-            'FireStoreUtils.getUserByID failed to parse user object ${user.id}');
-      }
-    });
-
-    await FireStoreUtils.fireStore
-        .collection(CollectionName.settings)
-        .doc("paypalSettings")
-        .get()
-        .then((paypalData) {
-      try {
-        payPalModel.value = PayPalModel.fromJson(paypalData.data() ?? {});
-      } catch (error) {
-        debugPrint(error.toString());
-      }
-    });
-
-    await FireStoreUtils.fireStore
-        .collection(CollectionName.settings)
-        .doc("stripeSettings")
-        .get()
-        .then((paypalData) {
-      try {
-        stripeModel.value = StripeModel.fromJson(paypalData.data() ?? {});
-      } catch (error) {
-        debugPrint(error.toString());
-      }
-    });
-
-    await FireStoreUtils.fireStore
-        .collection(CollectionName.settings)
-        .doc("flutterWave")
-        .get()
-        .then((paypalData) {
-      try {
-        flutterWaveModel.value =
-            FlutterWaveModel.fromJson(paypalData.data() ?? {});
-      } catch (error) {
-        debugPrint(error.toString());
-      }
-    });
-
-    await FireStoreUtils.getWithdrawMethod().then(
-      (value) {
-        if (value != null) {
-          withdrawMethodModel.value = value;
+    try {
+      await FireStoreUtils.fireStore
+          .collection(CollectionName.settings)
+          .doc("razorpaySettings")
+          .get()
+          .then((user) {
+        try {
+          razorPayModel.value = RazorPayModel.fromJson(user.data() ?? {});
+        } catch (e) {
+          debugPrint('getPaymentMethod razorpay parse: $e');
         }
-      },
-    );
+      });
+
+      await FireStoreUtils.fireStore
+          .collection(CollectionName.settings)
+          .doc("paypalSettings")
+          .get()
+          .then((paypalData) {
+        try {
+          payPalModel.value = PayPalModel.fromJson(paypalData.data() ?? {});
+        } catch (error) {
+          debugPrint(error.toString());
+        }
+      });
+
+      await FireStoreUtils.fireStore
+          .collection(CollectionName.settings)
+          .doc("stripeSettings")
+          .get()
+          .then((paypalData) {
+        try {
+          stripeModel.value = StripeModel.fromJson(paypalData.data() ?? {});
+        } catch (error) {
+          debugPrint(error.toString());
+        }
+      });
+
+      await FireStoreUtils.fireStore
+          .collection(CollectionName.settings)
+          .doc("flutterWave")
+          .get()
+          .then((paypalData) {
+        try {
+          flutterWaveModel.value =
+              FlutterWaveModel.fromJson(paypalData.data() ?? {});
+        } catch (error) {
+          debugPrint(error.toString());
+        }
+      });
+
+      await FireStoreUtils.getWithdrawMethod().then(
+        (value) {
+          if (value != null) {
+            withdrawMethodModel.value = value;
+          }
+        },
+      );
+    } catch (e, st) {
+      log('⚠️ [getPaymentMethod] Firestore mavjud emas: $e');
+      debugPrint('getPaymentMethod Firestore error: $e\n$st');
+    }
   }
 
   Future<void> walletTopUp() async {

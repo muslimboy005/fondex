@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'package:driver/app/splash_screen.dart';
 import 'package:driver/constant/show_toast_dialog.dart';
 import 'package:driver/models/car_makes.dart';
 import 'package:driver/models/car_model.dart';
@@ -14,7 +15,7 @@ class VehicleInformationController extends GetxController {
 
   Rx<UserModel> userModel = UserModel().obs;
 
-  RxList<String> service = ['Delivery Service', 'Cab Service', 'Parcel Service', 'Rental Service'].obs;
+  RxList<String> service = ['Delivery Service', 'Cab Service'].obs;
   RxString selectedService = ''.obs;
   RxString selectedValue = 'ride'.obs;
 
@@ -32,9 +33,28 @@ class VehicleInformationController extends GetxController {
 
   RxBool isLoading = false.obs;
 
+  /// Bitta instance – dropdown value ro‘yxatdagi element bilan bir xil bo‘lishi kerak
+  late final VehicleType placeholderVehicleType;
+  late final CarMakes placeholderCarMakes;
+  late final CarModel placeholderCarModel;
+
+  bool get isPlaceholderVehicleType =>
+      selectedVehicleType.value.id == null ||
+      selectedVehicleType.value.id.toString().isEmpty;
+
+  bool get isPlaceholderCarMakes =>
+      selectedCarMakes.value.id == null ||
+      selectedCarMakes.value.id.toString().isEmpty;
+  bool get isPlaceholderCarModel =>
+      selectedCarModel.value.id == null ||
+      selectedCarModel.value.id.toString().isEmpty;
+
   @override
   void onInit() {
     super.onInit();
+    placeholderVehicleType = VehicleType(id: null, name: 'Select Vehicle Type'.tr);
+    placeholderCarMakes = CarMakes(id: '', name: 'Select Car Brand'.tr, isActive: true);
+    placeholderCarModel = CarModel(id: null, name: 'Select car model'.tr, isActive: true);
     loadUserData();
   }
 
@@ -48,12 +68,14 @@ class VehicleInformationController extends GetxController {
         carPlatNumberEditingController.value.text = userModel.value.carNumber ?? '';
 
         selectedService.value = getReadableServiceType(userModel.value.serviceType!);
-
+        if (!service.contains(selectedService.value)) {
+          selectedService.value = 'Delivery Service';
+        }
         selectedValue.value = userModel.value.rideType ?? 'ride';
-        await getSection();
-        await getCarMakes();
 
-        if (userModel.value.sectionId != null) {
+        await getSection();
+
+        if (userModel.value.sectionId != null && sectionList.isNotEmpty) {
           selectedSection.value = sectionList.firstWhere(
             (e) => e.id == userModel.value.sectionId,
             orElse: () => sectionList.first,
@@ -62,34 +84,63 @@ class VehicleInformationController extends GetxController {
 
         await getVehicleType(selectedSection.value.id.toString());
 
-        if (userModel.value.vehicleId != null) {
-          selectedVehicleType.value = cabVehicleType.firstWhere(
-            (e) => e.id == userModel.value.vehicleId,
-            orElse: () => cabVehicleType.first,
-          );
+        if (userModel.value.vehicleId != null &&
+            userModel.value.vehicleId!.toString().trim().isNotEmpty &&
+            cabVehicleType.isNotEmpty) {
+          final matchList = cabVehicleType
+              .where((e) => e.id != null && e.id == userModel.value.vehicleId)
+              .toList();
+          if (matchList.isNotEmpty) {
+            selectedVehicleType.value = matchList.first;
+          } else {
+            selectedVehicleType.value = placeholderVehicleType;
+          }
+        } else {
+          selectedVehicleType.value = placeholderVehicleType;
         }
 
-        if (userModel.value.carMakes != null) {
-          selectedCarMakes.value = carMakesList.firstWhere(
-            (e) => e.name == userModel.value.carMakes,
-            orElse: () => carMakesList.first,
-          );
+        if (selectedService.value == "Cab Service") {
+          await getCarMakesForCab();
+          if (userModel.value.carMakes != null && carMakesList.isNotEmpty) {
+            final list = carMakesList.where((e) =>
+                (e.id != null && e.id.toString().isNotEmpty) &&
+                e.name == userModel.value.carMakes).toList();
+            if (list.isNotEmpty) selectedCarMakes.value = list.first;
+          }
           await getCarModel();
+          if (userModel.value.carName != null && carModelList.isNotEmpty) {
+            final list = carModelList.where((e) =>
+                (e.id != null && e.id.toString().isNotEmpty) &&
+                e.name == userModel.value.carName).toList();
+            if (list.isNotEmpty) selectedCarModel.value = list.first;
+          }
+        } else if (selectedService.value == "Rental Service") {
+          await getCarMakes();
+          if (userModel.value.carMakes != null && carMakesList.isNotEmpty) {
+            selectedCarMakes.value = carMakesList.firstWhere(
+              (e) => e.name == userModel.value.carMakes,
+              orElse: () => carMakesList.first,
+            );
+          }
+          await getCarModel();
+          if (userModel.value.carName != null && carModelList.isNotEmpty) {
+            final list = carModelList.where((e) =>
+                (e.id != null && e.id.toString().isNotEmpty) &&
+                e.name == userModel.value.carName).toList();
+            if (list.isNotEmpty) selectedCarModel.value = list.first;
+          }
         }
-
-        if (userModel.value.carName != null) {
-          selectedCarModel.value = carModelList.firstWhere(
-            (e) => e.name == userModel.value.carName,
-            orElse: () => carModelList.first,
-          );
-        }
-
-
       }
-    }  finally {
+    } finally {
       isLoading.value = false;
       update();
     }
+  }
+
+  /// Splash va boshqalarda tekshirish uchun bitta format (defis)
+  static String _normalizeServiceType(String? s) {
+    if (s == null || s.isEmpty) return '';
+    return s.replaceAll('_', '-');
   }
 
   Future<void> saveVehicleInformation() async {
@@ -98,37 +149,45 @@ class VehicleInformationController extends GetxController {
       return;
     }
 
-    if (carPlatNumberEditingController.value.text.trim().isEmpty) {
-      ShowToastDialog.showToast("Please enter car plate number".tr);
-      return;
-    }
+    final bool isDelivery = selectedService.value == 'Delivery Service';
 
-    if (selectedVehicleType.value.id == null) {
-      ShowToastDialog.showToast("Please select a vehicle type".tr);
-      return;
-    }
-
-    if (selectedCarMakes.value.id == null) {
-      ShowToastDialog.showToast("Please select a car brand".tr);
-      return;
-    }
-
-    if (selectedCarModel.value.id == null) {
-      ShowToastDialog.showToast("Please select a car model".tr);
-      return;
+    if (!isDelivery) {
+      if (carPlatNumberEditingController.value.text.trim().isEmpty) {
+        ShowToastDialog.showToast("Please enter car plate number".tr);
+        return;
+      }
+      if (isPlaceholderVehicleType) {
+        ShowToastDialog.showToast("Please select a vehicle type".tr);
+        return;
+      }
+      if (isPlaceholderCarMakes) {
+        ShowToastDialog.showToast("Please select a car brand".tr);
+        return;
+      }
+      if (isPlaceholderCarModel) {
+        ShowToastDialog.showToast("Please select a car model".tr);
+        return;
+      }
     }
 
     ShowToastDialog.showLoader("Updating vehicle information...".tr);
 
     try {
-      userModel.value.carNumber = carPlatNumberEditingController.value.text.trim();
-      userModel.value.serviceType = getServiceTypeKey(selectedService.value);
+      final String newServiceType = getServiceTypeKey(selectedService.value);
+      final String? oldServiceType = userModel.value.serviceType;
+
+      userModel.value.serviceType = newServiceType;
       userModel.value.sectionId = selectedSection.value.id;
-      userModel.value.vehicleType = selectedVehicleType.value.name;
-      userModel.value.vehicleId = selectedVehicleType.value.id;
-      userModel.value.carMakes = selectedCarMakes.value.name;
-      userModel.value.carName = selectedCarModel.value.name;
-      userModel.value.rideType = selectedValue.value;
+
+      if (!isDelivery) {
+        userModel.value.carNumber = carPlatNumberEditingController.value.text.trim();
+        userModel.value.vehicleType = selectedVehicleType.value.name;
+        userModel.value.vehicleId = selectedVehicleType.value.id;
+        userModel.value.carMakes = selectedCarMakes.value.name;
+        userModel.value.carName = selectedCarModel.value.name;
+        userModel.value.rideType = selectedValue.value;
+      }
+      // Delivery ga o'tganda avtomobil ma'lumotlarini null qilmaymiz – mavjud qiymatlar saqlanadi
 
       bool success = await FireStoreUtils.updateUser(userModel.value);
 
@@ -136,6 +195,11 @@ class VehicleInformationController extends GetxController {
 
       if (success) {
         ShowToastDialog.showToast("Vehicle information updated successfully.".tr);
+        final String oldNorm = _normalizeServiceType(oldServiceType);
+        final String newNorm = _normalizeServiceType(newServiceType);
+        if (oldNorm != newNorm) {
+          Get.offAll(() => const SplashScreen());
+        }
       } else {
         ShowToastDialog.showToast("Failed to update. Please try again.".tr);
       }
@@ -159,16 +223,63 @@ class VehicleInformationController extends GetxController {
     }
   }
 
+  /// Xizmat turi o'zgarganda: section va transport ma'lumotlarini qayta yuklash
+  Future<void> onServiceTypeChanged() async {
+    await getSection();
+    if (sectionList.isEmpty) return;
+    selectedSection.value = sectionList.first;
+    await getVehicleType(selectedSection.value.id.toString());
+    update();
+  }
+
   Future<void> getVehicleType(String sectionId) async {
     try {
       if (selectedService.value == "Cab Service") {
         cabVehicleType.value = await FireStoreUtils.getCabVehicleType(sectionId);
       } else if (selectedService.value == "Rental Service") {
         cabVehicleType.value = await FireStoreUtils.getRentalVehicleType(sectionId);
+      } else {
+        cabVehicleType.value = [placeholderVehicleType];
+        selectedVehicleType.value = placeholderVehicleType;
+        carMakesList.value = [placeholderCarMakes];
+        selectedCarMakes.value = placeholderCarMakes;
+        carModelList.value = [placeholderCarModel];
+        selectedCarModel.value = placeholderCarModel;
+        update();
+        return;
       }
-      if (cabVehicleType.isNotEmpty) selectedVehicleType.value = cabVehicleType.first;
+      final list = cabVehicleType.toList();
+      cabVehicleType.assignAll([placeholderVehicleType, ...list]);
+      selectedVehicleType.value = placeholderVehicleType;
+      if (selectedService.value == "Cab Service") {
+        await getCarMakesForCab();
+        await getCarModel();
+      }
     } catch (e) {
       log("Error loading vehicle types: $e");
+    }
+  }
+
+  /// Cab: transport turi tanlanganda shu turga tegishli markalarni yuklash (default tanlanmasin)
+  Future<void> getCarMakesForCab() async {
+    try {
+      final vehicleTypeId = selectedVehicleType.value.id?.toString() ?? '';
+      if (vehicleTypeId.isEmpty) {
+        carMakesList.value = [placeholderCarMakes];
+        selectedCarMakes.value = placeholderCarMakes;
+        carModelList.value = [placeholderCarModel];
+        selectedCarModel.value = placeholderCarModel;
+        update();
+        return;
+      }
+      final list = await FireStoreUtils.getCarMakesByVehicleTypeId(vehicleTypeId);
+      carMakesList.value = [placeholderCarMakes, ...list];
+      selectedCarMakes.value = placeholderCarMakes;
+      carModelList.value = [placeholderCarModel];
+      selectedCarModel.value = placeholderCarModel;
+      update();
+    } catch (e) {
+      log("Error loading car makes for cab: $e");
     }
   }
 
@@ -183,17 +294,34 @@ class VehicleInformationController extends GetxController {
 
   Future<void> getCarModel() async {
     try {
-      if (selectedCarMakes.value.name == null || selectedCarMakes.value.name!.isEmpty) {
-        carModelList.clear();
-        selectedCarModel.value = CarModel();
+      if (isPlaceholderCarMakes) {
+        carModelList.value = [placeholderCarModel];
+        selectedCarModel.value = placeholderCarModel;
+        update();
         return;
       }
 
-      carModelList.value = await FireStoreUtils.getCarModel(selectedCarMakes.value.name!);
-      if (carModelList.isNotEmpty) {
-        selectedCarModel.value = carModelList.first;
+      if (selectedService.value == "Cab Service") {
+        final vehicleTypeId = selectedVehicleType.value.id?.toString() ?? '';
+        final carMakeId = selectedCarMakes.value.id?.toString() ?? '';
+        if (vehicleTypeId.isEmpty || carMakeId.isEmpty) {
+          carModelList.value = [placeholderCarModel];
+          selectedCarModel.value = placeholderCarModel;
+          update();
+          return;
+        }
+        final list = await FireStoreUtils.getCarModelsByVehicleTypeAndMake(
+          vehicleTypeId,
+          carMakeId,
+        );
+        carModelList.value = [placeholderCarModel, ...list];
+        selectedCarModel.value = placeholderCarModel;
       } else {
-        selectedCarModel.value = CarModel();
+        final list = await FireStoreUtils.getCarModel(selectedCarMakes.value.name!);
+        carModelList.value = list.isNotEmpty
+            ? [placeholderCarModel, ...list]
+            : [placeholderCarModel];
+        selectedCarModel.value = placeholderCarModel;
       }
       update();
     } catch (e) {
@@ -204,16 +332,21 @@ class VehicleInformationController extends GetxController {
   String getReadableServiceType(String key) {
     switch (key) {
       case 'cab-service':
+      case 'cab_service':
         return 'Cab Service';
       case 'parcel_delivery':
         return 'Parcel Service';
       case 'rental-service':
+      case 'rental_service':
         return 'Rental Service';
+      case 'delivery-service':
+      case 'delivery_service':
       default:
         return 'Delivery Service';
     }
   }
 
+  /// Firestore va boshqalarda doim defis formatida: delivery-service, cab-service
   String getServiceTypeKey(String name) {
     switch (name) {
       case 'Cab Service':
@@ -223,7 +356,7 @@ class VehicleInformationController extends GetxController {
       case 'Rental Service':
         return 'rental-service';
       default:
-        return 'delivery_service';
+        return 'delivery-service';
     }
   }
 }

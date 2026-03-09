@@ -12,7 +12,7 @@ import 'package:customer/models/zone_model.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:geocoding/geocoding.dart';
+import 'package:customer/service/yandex_geocoding_service.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
@@ -450,14 +450,16 @@ class FireStoreUtils {
 
   static Future<List<TaxModel>?> getTaxList(String? sectionId) async {
     List<TaxModel> taxList = [];
-    List<Placemark> placeMarks = await placemarkFromCoordinates(
+    final geocoding = YandexGeocodingService(apiKey: Constant.yandexGeocodeApiKey);
+    final place = await geocoding.reverseGeocode(
       Constant.selectedLocation.location!.latitude ?? 0.0,
       Constant.selectedLocation.location!.longitude ?? 0.0,
     );
+    final country = place?.country ?? '';
     await fireStore
         .collection(CollectionName.tax)
         .where('sectionId', isEqualTo: sectionId)
-        .where('country', isEqualTo: placeMarks.first.country)
+        .where('country', isEqualTo: country)
         .where('enable', isEqualTo: true)
         .get()
         .then((value) {
@@ -2608,22 +2610,37 @@ class FireStoreUtils {
     return userModel;
   }
 
+  /// [vehicleId] berilsa, faqat shu mashina turidagi (masalan Comfort) haydovchilarga bildirishnoma yuboriladi.
   static Future<List<UserModel>> getCabDriversForNotification(
-    String sectionId,
-  ) async {
+    String sectionId, {
+    String? vehicleId,
+  }) async {
     List<UserModel> list = [];
     try {
       Query<Map<String, dynamic>> query = fireStore
           .collection(CollectionName.users)
           .where('role', isEqualTo: Constant.userRoleDriver);
       final snapshot = await query.get();
+      final orderVehicleIdStr = vehicleId?.toString().trim() ?? '';
       for (var doc in snapshot.docs) {
         final data = doc.data();
         final docSectionId = data['sectionId']?.toString() ?? '';
         if (docSectionId != sectionId) continue;
-        if (data['active'] == true || data['isActive'] == true) {
-          list.add(UserModel.fromJson(data));
+        // Faqat onlayn haydovchilarga; oflayn (isActive false/null) bo'lganlarga zakaz yuborilmaydi
+        final isActiveRaw = data['isActive'];
+        final isOnline = isActiveRaw == true ||
+            isActiveRaw == 'true' ||
+            isActiveRaw == 1;
+        if (!isOnline) continue;
+        // Hisob faol (active) bo'lishi kerak
+        if (data['active'] == false || data['active'] == 'false') continue;
+        if (orderVehicleIdStr.isNotEmpty) {
+          final driverVehicleId = data['vehicleId']?.toString().trim() ?? '';
+          if (driverVehicleId.isEmpty || driverVehicleId != orderVehicleIdStr) {
+            continue; // Faqat zakazdagi mashina turiga mos haydovchilar
+          }
         }
+        list.add(UserModel.fromJson(data));
       }
     } catch (e) {
       log("getCabDriversForNotification error: $e");

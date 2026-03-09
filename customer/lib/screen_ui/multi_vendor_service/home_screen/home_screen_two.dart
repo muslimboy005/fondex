@@ -20,12 +20,10 @@ import 'package:customer/themes/round_button_fill.dart';
 import 'package:customer/themes/text_field_widget.dart';
 import 'package:customer/utils/network_image_widget.dart';
 import 'package:customer/utils/preferences.dart';
-import 'package:customer/widget/osm_map/map_picker_page.dart';
 import 'package:customer/widget/place_picker/location_picker_screen.dart';
-import 'package:customer/widget/place_picker/selected_location_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:geocoding/geocoding.dart';
+import 'package:customer/service/yandex_geocoding_service.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -38,6 +36,7 @@ import '../../../widget/gradiant_text.dart';
 import '../../auth_screens/login_screen.dart';
 import '../advertisement_screens/all_advertisement_screen.dart';
 import '../cart_screen/cart_screen.dart';
+import '../wallet_screen/wallet_screen.dart';
 import '../restaurant_details_screen/restaurant_details_screen.dart';
 import '../scan_qrcode_screen/scan_qr_code_screen.dart';
 import '../search_screen/search_screen.dart';
@@ -155,48 +154,25 @@ class HomeScreenTwo extends StatelessWidget {
                                                             await Geolocator.getCurrentPosition();
                                                             ShowToastDialog.closeLoader();
 
-                                                            if (Constant.selectedMapType == 'osm') {
-                                                              final result = await Get.to(() => MapPickerPage());
-                                                              if (result != null) {
-                                                                final firstPlace = result;
-                                                                final lat = firstPlace.coordinates.latitude;
-                                                                final lng = firstPlace.coordinates.longitude;
-                                                                final address = firstPlace.address;
-
+                                                            Get.to(const LocationPickerScreen())!.then((value) async {
+                                                              if (value != null) {
+                                                                final selectedLocationModel = value;
                                                                 shippingAddress.addressAs = "Home";
-                                                                shippingAddress.locality = address.toString();
-                                                                shippingAddress.location = UserLocation(latitude: lat, longitude: lng);
+                                                                shippingAddress.location = UserLocation(
+                                                                  latitude: selectedLocationModel.latLng!.latitude,
+                                                                  longitude: selectedLocationModel.latLng!.longitude,
+                                                                );
+                                                                shippingAddress.locality = selectedLocationModel.address?.formattedAddress ?? "Picked from Map";
                                                                 Constant.selectedLocation = shippingAddress;
                                                                 controller.getData();
-                                                                Get.back();
                                                               }
-                                                            } else {
-                                                              Get.to(LocationPickerScreen())!.then((value) async {
-                                                                if (value != null) {
-                                                                  SelectedLocationModel selectedLocationModel = value;
-
-                                                                  shippingAddress.addressAs = "Home";
-                                                                  shippingAddress.location = UserLocation(
-                                                                    latitude: selectedLocationModel.latLng!.latitude,
-                                                                    longitude: selectedLocationModel.latLng!.longitude,
-                                                                  );
-                                                                  shippingAddress.locality = "Picked from Map"; // You can reverse-geocode
-
-                                                                  Constant.selectedLocation = shippingAddress;
-                                                                  controller.getData();
-                                                                }
-                                                              });
-                                                            }
-                                                          } catch (e) {
-                                                            await placemarkFromCoordinates(Constant.defaultLocationLat, Constant.defaultLocationLng).then((valuePlaceMaker) {
-                                                              Placemark placeMark = valuePlaceMaker[0];
-                                                              shippingAddress.addressAs = "Home";
-                                                              shippingAddress.location = UserLocation(latitude: Constant.defaultLocationLat, longitude: Constant.defaultLocationLng);
-                                                              String currentLocation =
-                                                                  "${placeMark.name}, ${placeMark.subLocality}, ${placeMark.locality}, ${placeMark.administrativeArea}, ${placeMark.postalCode}, ${placeMark.country}";
-                                                              shippingAddress.locality = currentLocation;
                                                             });
-
+                                                          } catch (e) {
+                                                            final yandexGeocoding = YandexGeocodingService(apiKey: Constant.yandexGeocodeApiKey);
+                                                            shippingAddress.addressAs = "Home";
+                                                            shippingAddress.location = UserLocation(latitude: Constant.defaultLocationLat, longitude: Constant.defaultLocationLng);
+                                                            final place = await yandexGeocoding.reverseGeocode(Constant.defaultLocationLat, Constant.defaultLocationLng);
+                                                            shippingAddress.locality = place?.formattedAddress ?? 'Unknown location';
                                                             Constant.selectedLocation = shippingAddress;
                                                             ShowToastDialog.closeLoader();
                                                             controller.getData();
@@ -229,22 +205,36 @@ class HomeScreenTwo extends StatelessWidget {
                                             ),
                                           ),
                                           const SizedBox(width: 5),
-                                          InkWell(
-                                            onTap: () async {
-                                              (await Get.to(const CartScreen()));
-                                              controller.getCartData();
-                                            },
-                                            child: ClipOval(
-                                              child: Container(
-                                                padding: const EdgeInsets.all(8.0),
-                                                color: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
-                                                child: SvgPicture.asset(
-                                                  "assets/icons/ic_shoping_cart.svg",
-                                                  colorFilter: ColorFilter.mode(isDark ? AppThemeData.grey50 : AppThemeData.grey900, BlendMode.srcIn),
+                                          Constant.walletSetting == true
+                                              ? InkWell(
+                                                  onTap: () => Get.to(const WalletScreen()),
+                                                  child: ClipOval(
+                                                    child: Container(
+                                                      padding: const EdgeInsets.all(8.0),
+                                                      color: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
+                                                      child: SvgPicture.asset(
+                                                        "assets/icons/ic_wallet.svg",
+                                                        colorFilter: ColorFilter.mode(isDark ? AppThemeData.grey50 : AppThemeData.grey900, BlendMode.srcIn),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                )
+                                              : InkWell(
+                                                  onTap: () async {
+                                                    (await Get.to(const CartScreen()));
+                                                    controller.getCartData();
+                                                  },
+                                                  child: ClipOval(
+                                                    child: Container(
+                                                      padding: const EdgeInsets.all(8.0),
+                                                      color: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
+                                                      child: SvgPicture.asset(
+                                                        "assets/icons/ic_shoping_cart.svg",
+                                                        colorFilter: ColorFilter.mode(isDark ? AppThemeData.grey50 : AppThemeData.grey900, BlendMode.srcIn),
+                                                      ),
+                                                    ),
+                                                  ),
                                                 ),
-                                              ),
-                                            ),
-                                          ),
                                         ],
                                       ),
                                       const SizedBox(height: 10),
@@ -528,12 +518,18 @@ class CategoryView extends StatelessWidget {
                     Get.to(const CategoryRestaurantScreen(), arguments: {"vendorCategoryModel": vendorCategoryModel, "dineIn": false});
                   },
                   child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       ClipOval(child: SizedBox(width: 60, height: 60, child: NetworkImageWidget(imageUrl: vendorCategoryModel.photo.toString(), fit: BoxFit.cover))),
-                      Text(
-                        "${vendorCategoryModel.title}",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(fontFamily: AppThemeData.medium, color: isDark ? AppThemeData.grey50 : AppThemeData.grey900, fontSize: 12),
+                      const SizedBox(height: 4),
+                      Expanded(
+                        child: Text(
+                          "${vendorCategoryModel.title}",
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(fontFamily: AppThemeData.medium, color: isDark ? AppThemeData.grey50 : AppThemeData.grey900, fontSize: 12),
+                        ),
                       ),
                     ],
                   ),

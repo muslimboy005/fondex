@@ -3,7 +3,6 @@ import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:google_maps_flutter/google_maps_flutter.dart' as gmap;
-import 'package:latlong2/latlong.dart' as osm;
 import '../constant/constant.dart';
 import '../models/cab_order_model.dart';
 import '../models/user_model.dart';
@@ -17,12 +16,8 @@ class CabOrderDetailsController extends GetxController {
 
   RxBool isLoading = false.obs;
 
-  // Google Maps Data
   RxSet<gmap.Marker> googleMarkers = <gmap.Marker>{}.obs;
   RxSet<gmap.Polyline> googlePolylines = <gmap.Polyline>{}.obs;
-
-  // OSM Data
-  RxList<osm.LatLng> osmPolyline = <osm.LatLng>[].obs;
 
   final String googleApiKey = Constant.mapAPIKey;
 
@@ -37,7 +32,6 @@ class CabOrderDetailsController extends GetxController {
       calculateTotalAmount();
       _setMarkers();
       _getGoogleRoute();
-      _getOsmRoute();
     }
   }
 
@@ -131,20 +125,4 @@ class CabOrderDetailsController extends GetxController {
     }
   }
 
-  /// OSM Route (OSRM API)
-  Future<void> _getOsmRoute() async {
-    final src = cabOrder.value.sourceLocation;
-    final dest = cabOrder.value.destinationLocation;
-
-    final url = "http://router.project-osrm.org/route/v1/driving/${src!.longitude},${src.latitude};${dest!.longitude},${dest.latitude}?overview=full&geometries=geojson";
-
-    final response = await http.get(Uri.parse(url));
-    final data = jsonDecode(response.body);
-
-    if (data["routes"].isNotEmpty) {
-      final coords = data["routes"][0]["geometry"]["coordinates"] as List<dynamic>;
-
-      osmPolyline.value = coords.map((c) => osm.LatLng(c[1].toDouble(), c[0].toDouble())).toList();
-    }
-  }
 }

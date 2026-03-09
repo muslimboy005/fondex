@@ -19,18 +19,14 @@ import 'package:customer/themes/responsive.dart';
 import 'package:customer/themes/round_button_fill.dart';
 import 'package:customer/utils/network_image_widget.dart';
 import 'package:customer/utils/preferences.dart';
-import 'package:customer/widget/osm_map/map_picker_page.dart';
 import 'package:customer/widget/place_picker/location_picker_screen.dart';
-import 'package:customer/widget/place_picker/selected_location_model.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart' as flutterMap;
+import 'package:customer/models/lat_lng.dart';
+import 'package:customer/service/yandex_geocoding_service.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:yandex_mapkit/yandex_mapkit.dart' as ym;
-import 'package:latlong2/latlong.dart' as location;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:customer/utils/yandex_map_utils.dart';
 
@@ -47,6 +43,7 @@ import '../../../widget/video_widget.dart';
 import '../../auth_screens/login_screen.dart';
 import '../advertisement_screens/all_advertisement_screen.dart';
 import '../cart_screen/cart_screen.dart';
+import '../wallet_screen/wallet_screen.dart';
 import '../product_detail_screen/product_detail_screen.dart';
 import '../restaurant_details_screen/restaurant_details_screen.dart';
 import '../scan_qrcode_screen/scan_qr_code_screen.dart';
@@ -251,119 +248,38 @@ class HomeScreen extends StatelessWidget {
                                                               await Geolocator.getCurrentPosition();
                                                               ShowToastDialog.closeLoader();
 
-                                                              if (Constant
-                                                                      .selectedMapType ==
-                                                                  'osm') {
-                                                                final result =
-                                                                    await Get.to(
-                                                                      () =>
-                                                                          MapPickerPage(),
-                                                                    );
-                                                                if (result !=
+                                                              Get.to(
+                                                                const LocationPickerScreen(),
+                                                              )!.then((
+                                                                value,
+                                                              ) async {
+                                                                if (value !=
                                                                     null) {
-                                                                  final firstPlace =
-                                                                      result;
-                                                                  final lat =
-                                                                      firstPlace
-                                                                          .coordinates
-                                                                          .latitude;
-                                                                  final lng =
-                                                                      firstPlace
-                                                                          .coordinates
-                                                                          .longitude;
-                                                                  final address =
-                                                                      firstPlace
-                                                                          .address;
-
-                                                                  shippingAddress
-                                                                          .addressAs =
-                                                                      "Home";
-                                                                  shippingAddress
-                                                                          .locality =
-                                                                      address
-                                                                          .toString();
-                                                                  shippingAddress
-                                                                          .location =
-                                                                      UserLocation(
-                                                                        latitude:
-                                                                            lat,
-                                                                        longitude:
-                                                                            lng,
-                                                                      );
-                                                                  Constant.selectedLocation =
-                                                                      shippingAddress;
-                                                                  controller
-                                                                      .getData();
-                                                                  Get.back();
+                                                                  final selectedLocationModel = value;
+                                                                  shippingAddress.addressAs = "Home";
+                                                                  shippingAddress.location = UserLocation(
+                                                                    latitude: selectedLocationModel.latLng!.latitude,
+                                                                    longitude: selectedLocationModel.latLng!.longitude,
+                                                                  );
+                                                                  shippingAddress.locality = selectedLocationModel.address?.formattedAddress ?? "Picked from Map";
+                                                                  Constant.selectedLocation = shippingAddress;
+                                                                  controller.getData();
                                                                 }
-                                                              } else {
-                                                                Get.to(
-                                                                  LocationPickerScreen(),
-                                                                )!.then((
-                                                                  value,
-                                                                ) async {
-                                                                  if (value !=
-                                                                      null) {
-                                                                    SelectedLocationModel
-                                                                    selectedLocationModel =
-                                                                        value;
-
-                                                                    shippingAddress
-                                                                            .addressAs =
-                                                                        "Home";
-                                                                    shippingAddress
-                                                                        .location = UserLocation(
-                                                                      latitude:
-                                                                          selectedLocationModel
-                                                                              .latLng!
-                                                                              .latitude,
-                                                                      longitude:
-                                                                          selectedLocationModel
-                                                                              .latLng!
-                                                                              .longitude,
-                                                                    );
-                                                                    shippingAddress
-                                                                            .locality =
-                                                                        "Picked from Map"; // You can reverse-geocode
-
-                                                                    Constant.selectedLocation =
-                                                                        shippingAddress;
-                                                                    controller
-                                                                        .getData();
-                                                                  }
-                                                                });
-                                                              }
+                                                              });
                                                             } catch (e) {
-                                                              await placemarkFromCoordinates(
+                                                              final yandexGeocoding = YandexGeocodingService(apiKey: Constant.yandexGeocodeApiKey);
+                                                              shippingAddress.location = UserLocation(
+                                                                latitude: Constant.defaultLocationLat,
+                                                                longitude: Constant.defaultLocationLng,
+                                                              );
+                                                              final place = await yandexGeocoding.reverseGeocode(
                                                                 Constant.defaultLocationLat,
                                                                 Constant.defaultLocationLng,
-                                                              ).then((
-                                                                valuePlaceMaker,
-                                                              ) {
-                                                                Placemark
-                                                                placeMark =
-                                                                    valuePlaceMaker[0];
-                                                                shippingAddress
-                                                                        .location =
-                                                                    UserLocation(
-                                                                      latitude:
-                                                                          Constant.defaultLocationLat,
-                                                                      longitude:
-                                                                          Constant.defaultLocationLng,
-                                                                    );
-                                                                String
-                                                                currentLocation =
-                                                                    "${placeMark.name}, ${placeMark.subLocality}, ${placeMark.locality}, ${placeMark.administrativeArea}, ${placeMark.postalCode}, ${placeMark.country}";
-                                                                shippingAddress
-                                                                        .locality =
-                                                                    currentLocation;
-                                                              });
-
-                                                              Constant.selectedLocation =
-                                                                  shippingAddress;
+                                                              );
+                                                              shippingAddress.locality = place?.formattedAddress ?? 'Unknown location';
+                                                              Constant.selectedLocation = shippingAddress;
                                                               ShowToastDialog.closeLoader();
-                                                              controller
-                                                                  .getData();
+                                                              controller.getData();
                                                             }
                                                           },
                                                           context: context,
@@ -410,86 +326,85 @@ class HomeScreen extends StatelessWidget {
                                               ),
                                             ),
                                             const SizedBox(width: 5),
-                                            Obx(
-                                              () => badges.Badge(
-                                                showBadge:
-                                                    cartItem.isEmpty
-                                                        ? false
-                                                        : true,
-                                                badgeContent: Text(
-                                                  "${cartItem.length}",
-                                                  style: TextStyle(
-                                                    fontSize: 14,
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                    fontFamily:
-                                                        AppThemeData.semiBold,
-                                                    fontWeight: FontWeight.w600,
-                                                    color:
-                                                        isDark
-                                                            ? AppThemeData
-                                                                .grey50
-                                                            : AppThemeData
-                                                                .grey50,
-                                                  ),
-                                                ),
-                                                badgeStyle: badges.BadgeStyle(
-                                                  shape:
-                                                      badges.BadgeShape.circle,
-                                                  badgeColor:
-                                                      AppThemeData.ecommerce300,
-                                                ),
-                                                child: InkWell(
-                                                  onTap: () async {
-                                                    (await Get.to(
-                                                      const CartScreen(),
-                                                    ));
-                                                    controller.getCartData();
-                                                  },
-                                                  child: ClipOval(
-                                                    child: Container(
-                                                      width: 42,
-                                                      height: 42,
-                                                      decoration: ShapeDecoration(
-                                                        shape: RoundedRectangleBorder(
-                                                          side: BorderSide(
-                                                            width: 1,
-                                                            color:
-                                                                isDark
-                                                                    ? AppThemeData
-                                                                        .grey700
-                                                                    : AppThemeData
-                                                                        .grey200,
+                                            Constant.walletSetting == true
+                                                ? InkWell(
+                                                    onTap: () => Get.to(const WalletScreen()),
+                                                    child: ClipOval(
+                                                      child: Container(
+                                                        width: 42,
+                                                        height: 42,
+                                                        decoration: ShapeDecoration(
+                                                          shape: RoundedRectangleBorder(
+                                                            side: BorderSide(
+                                                              width: 1,
+                                                              color: isDark ? AppThemeData.grey700 : AppThemeData.grey200,
+                                                            ),
+                                                            borderRadius: BorderRadius.circular(120),
                                                           ),
-                                                          borderRadius:
-                                                              BorderRadius.circular(
-                                                                120,
-                                                              ),
+                                                        ),
+                                                        child: Padding(
+                                                          padding: const EdgeInsets.all(8.0),
+                                                          child: SvgPicture.asset(
+                                                            "assets/icons/ic_wallet.svg",
+                                                            colorFilter: ColorFilter.mode(
+                                                              isDark ? AppThemeData.grey50 : AppThemeData.grey900,
+                                                              BlendMode.srcIn,
+                                                            ),
+                                                          ),
                                                         ),
                                                       ),
-                                                      child: Padding(
-                                                        padding:
-                                                            const EdgeInsets.all(
-                                                              8.0,
-                                                            ),
-                                                        child: SvgPicture.asset(
-                                                          "assets/icons/ic_shoping_cart.svg",
-                                                          colorFilter:
-                                                              ColorFilter.mode(
-                                                                isDark
-                                                                    ? AppThemeData
-                                                                        .grey50
-                                                                    : AppThemeData
-                                                                        .grey900,
-                                                                BlendMode.srcIn,
+                                                    ),
+                                                  )
+                                                : Obx(
+                                                    () => badges.Badge(
+                                                      showBadge: cartItem.isEmpty ? false : true,
+                                                      badgeContent: Text(
+                                                        "${cartItem.length}",
+                                                        style: TextStyle(
+                                                          fontSize: 14,
+                                                          overflow: TextOverflow.ellipsis,
+                                                          fontFamily: AppThemeData.semiBold,
+                                                          fontWeight: FontWeight.w600,
+                                                          color: isDark ? AppThemeData.grey50 : AppThemeData.grey50,
+                                                        ),
+                                                      ),
+                                                      badgeStyle: badges.BadgeStyle(
+                                                        shape: badges.BadgeShape.circle,
+                                                        badgeColor: AppThemeData.ecommerce300,
+                                                      ),
+                                                      child: InkWell(
+                                                        onTap: () async {
+                                                          (await Get.to(const CartScreen()));
+                                                          controller.getCartData();
+                                                        },
+                                                        child: ClipOval(
+                                                          child: Container(
+                                                            width: 42,
+                                                            height: 42,
+                                                            decoration: ShapeDecoration(
+                                                              shape: RoundedRectangleBorder(
+                                                                side: BorderSide(
+                                                                  width: 1,
+                                                                  color: isDark ? AppThemeData.grey700 : AppThemeData.grey200,
+                                                                ),
+                                                                borderRadius: BorderRadius.circular(120),
                                                               ),
+                                                            ),
+                                                            child: Padding(
+                                                              padding: const EdgeInsets.all(8.0),
+                                                              child: SvgPicture.asset(
+                                                                "assets/icons/ic_shoping_cart.svg",
+                                                                colorFilter: ColorFilter.mode(
+                                                                  isDark ? AppThemeData.grey50 : AppThemeData.grey900,
+                                                                  BlendMode.srcIn,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ),
                                                         ),
                                                       ),
                                                     ),
                                                   ),
-                                                ),
-                                              ),
-                                            ),
                                           ],
                                         ),
                                         const SizedBox(height: 10),
@@ -3051,76 +2966,37 @@ class MapView extends StatelessWidget {
         final initialLatLng =
             controller.homeController.allNearestRestaurant.isEmpty
                 ? LatLng(
-                  Constant.selectedLocation.location!.latitude ?? 45.521563,
-                  Constant.selectedLocation.location!.longitude ?? -122.677433,
+                  Constant.selectedLocation.location!.latitude ?? Constant.defaultLocationLat,
+                  Constant.selectedLocation.location!.longitude ?? Constant.defaultLocationLng,
                 )
                 : LatLng(
                   controller.homeController.allNearestRestaurant.first.latitude ??
-                      45.521563,
-                  controller
-                          .homeController
-                          .allNearestRestaurant
-                          .first
-                          .longitude ??
-                      -122.677433,
+                      Constant.defaultLocationLat,
+                  controller.homeController.allNearestRestaurant.first.longitude ??
+                      Constant.defaultLocationLng,
                 );
         return Stack(
           children: [
-            Constant.isOsmMap
-                ? flutterMap.FlutterMap(
-                  mapController: controller.osmMapController,
-                  options: flutterMap.MapOptions(
-                    initialCenter: location.LatLng(
-                      Constant.selectedLocation.location!.latitude ?? 0.0,
-                      Constant.selectedLocation.location!.longitude ?? 0.0,
+            ym.YandexMap(
+              onMapCreated: (ym.YandexMapController mapController) async {
+                controller.yandexMapController = mapController;
+                await mapController.toggleUserLayer(visible: true);
+                await mapController.moveCamera(
+                  ym.CameraUpdate.newCameraPosition(
+                    ym.CameraPosition(
+                      target: ym.Point(
+                        latitude: initialLatLng.latitude,
+                        longitude: initialLatLng.longitude,
+                      ),
+                      zoom: 18,
                     ),
-                    initialZoom: 10,
                   ),
-                  children: [
-                    flutterMap.TileLayer(
-                      urlTemplate:
-                          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                      userAgentPackageName: 'com.emart.app',
-                    ),
-                    flutterMap.MarkerLayer(markers: controller.osmMarker),
-                  ],
-                )
-                : Constant.isYandexMap
-                    ? ym.YandexMap(
-                      onMapCreated: (ym.YandexMapController mapController) async {
-                        controller.yandexMapController = mapController;
-                        await mapController.toggleUserLayer(visible: true);
-                        await mapController.moveCamera(
-                          ym.CameraUpdate.newCameraPosition(
-                            ym.CameraPosition(
-                              target: ym.Point(
-                                latitude: initialLatLng.latitude,
-                                longitude: initialLatLng.longitude,
-                              ),
-                              zoom: 18,
-                            ),
-                          ),
-                        );
-                      },
-                      mapObjects: yandexMapObjectsFromGoogle(
-                        markers: controller.markers.values,
-                      ),
-                    )
-                    : GoogleMap(
-                      mapType: MapType.terrain,
-                      myLocationEnabled: true,
-                      myLocationButtonEnabled: true,
-                      zoomControlsEnabled: false,
-                      markers: Set<Marker>.of(controller.markers.values),
-                      onMapCreated: (GoogleMapController mapController) {
-                        controller.mapController = mapController;
-                      },
-                      mapToolbarEnabled: true,
-                      initialCameraPosition: CameraPosition(
-                        zoom: 18,
-                        target: initialLatLng,
-                      ),
-                    ),
+                );
+              },
+              mapObjects: yandexMapObjectsFromMarkers(
+                markers: controller.yandexMarkers,
+              ),
+            ),
             controller.homeController.allNearestRestaurant.isEmpty
                 ? Container()
                 : Align(
@@ -3139,60 +3015,24 @@ class MapView extends StatelessWidget {
                                 viewportFraction: 0.88,
                               ),
                               onPageChanged: (value) async {
-                                if (Constant.isOsmMap) {
-                                  controller.osmMapController.move(
-                                    location.LatLng(
-                                      controller
-                                          .homeController
-                                          .allNearestRestaurant[value]
-                                          .latitude!,
-                                      controller
-                                          .homeController
-                                          .allNearestRestaurant[value]
-                                          .longitude!,
-                                    ),
-                                    16,
-                                  );
-                                } else if (Constant.isYandexMap) {
-                                  await controller.yandexMapController
-                                      ?.moveCamera(
-                                    ym.CameraUpdate.newCameraPosition(
-                                      ym.CameraPosition(
-                                        zoom: 18,
-                                        target: ym.Point(
-                                          latitude: controller
-                                              .homeController
-                                              .allNearestRestaurant[value]
-                                              .latitude!,
-                                          longitude: controller
-                                              .homeController
-                                              .allNearestRestaurant[value]
-                                              .longitude!,
-                                        ),
+                                await controller.yandexMapController
+                                    ?.moveCamera(
+                                  ym.CameraUpdate.newCameraPosition(
+                                    ym.CameraPosition(
+                                      zoom: 18,
+                                      target: ym.Point(
+                                        latitude: controller
+                                            .homeController
+                                            .allNearestRestaurant[value]
+                                            .latitude!,
+                                        longitude: controller
+                                            .homeController
+                                            .allNearestRestaurant[value]
+                                            .longitude!,
                                       ),
                                     ),
-                                  );
-                                } else {
-                                  CameraUpdate cameraUpdate =
-                                      CameraUpdate.newCameraPosition(
-                                        CameraPosition(
-                                          zoom: 18,
-                                          target: LatLng(
-                                            controller
-                                                .homeController
-                                                .allNearestRestaurant[value]
-                                                .latitude!,
-                                            controller
-                                                .homeController
-                                                .allNearestRestaurant[value]
-                                                .longitude!,
-                                          ),
-                                        ),
-                                      );
-                                  controller.mapController?.animateCamera(
-                                    cameraUpdate,
-                                  );
-                                }
+                                  ),
+                                );
                               },
                               itemCount:
                                   controller

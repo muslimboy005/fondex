@@ -5,7 +5,7 @@ import 'package:customer/models/provider_serivce_model.dart';
 import 'package:customer/screen_ui/auth_screens/login_screen.dart';
 import 'package:customer/service/fire_store_utils.dart';
 import 'package:get/get.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:customer/models/lat_lng.dart';
 import '../constant/constant.dart';
 
 class OnDemandHomeController extends GetxController {

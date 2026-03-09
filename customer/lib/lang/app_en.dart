@@ -102,6 +102,7 @@ const Map<String, String> enUS = {
   'Orders': 'Orders',
   'Profile': 'Profile',
   'Wallet': 'Wallet',
+  'Cart': 'Cart',
   'Service is unavailable at the selected address.':
       'Service is unavailable at the selected address.',
   'Pickup Location': 'Pickup Location',

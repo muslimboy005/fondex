@@ -27,6 +27,7 @@ class OrderListController extends GetxController {
         .then((value) {
       for (var element in value.docs) {
         OrderModel dailyEarningModel = OrderModel.fromJson(element.data());
+        dailyEarningModel.id = element.id;
         orderList.add(dailyEarningModel);
       }
     }).catchError((error) {

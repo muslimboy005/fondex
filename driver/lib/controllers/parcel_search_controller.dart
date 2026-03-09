@@ -57,10 +57,10 @@ class ParcelSearchController extends GetxController {
 
   void searchParcel() {
     searchParcelsOnce(
-      srcLat: Constant.selectedMapType == 'osm' ? departureLatLongOsm.value!.latitude : departureLatLong.value!.latitude,
-      srcLng: Constant.selectedMapType == 'osm' ? departureLatLongOsm.value!.longitude : departureLatLong.value!.longitude,
-      destLat: Constant.selectedMapType == 'osm' ? destinationLatLongOsm.value?.latitude : destinationLatLong.value?.latitude,
-      destLng: Constant.selectedMapType == 'osm' ? destinationLatLongOsm.value?.longitude : destinationLatLong.value?.longitude,
+      srcLat: departureLatLong.value!.latitude,
+      srcLng: departureLatLong.value!.longitude,
+      destLat: destinationLatLong.value?.latitude,
+      destLng: destinationLatLong.value?.longitude,
       date: pickUpDateTime.value, // required
     ).then(
       (event) {

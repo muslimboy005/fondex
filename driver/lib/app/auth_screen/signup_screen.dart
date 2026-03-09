@@ -1,4 +1,3 @@
-import 'package:country_code_picker/country_code_picker.dart';
 import 'package:driver/constant/show_toast_dialog.dart';
 import 'package:driver/controllers/signup_controller.dart';
 import 'package:driver/models/car_makes.dart';
@@ -14,8 +13,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-
-import '../../constant/constant.dart';
 
 class SignupScreen extends StatelessWidget {
   const SignupScreen({super.key});
@@ -783,86 +780,7 @@ class SignupScreen extends StatelessWidget {
                         ),
                       ],
                     ),
-                    // Hide email and phone fields for mobileNumber type
-                    controller.type.value == "mobileNumber"
-                        ? const SizedBox()
-                        : TextFieldWidget(
-                            title: 'Email Address'.tr,
-                            textInputType: TextInputType.emailAddress,
-                            controller: controller.emailEditingController.value,
-                            hintText: 'Enter Email Address'.tr,
-                            enable: controller.type.value != "mobileNumber"
-                                ? false
-                                : true,
-                            prefix: Padding(
-                              padding: const EdgeInsets.all(12),
-                              child: SvgPicture.asset(
-                                "assets/icons/ic_mail.svg",
-                                colorFilter: ColorFilter.mode(
-                                  isDark
-                                      ? AppThemeData.grey300
-                                      : AppThemeData.grey600,
-                                  BlendMode.srcIn,
-                                ),
-                              ),
-                            ),
-                            textInputAction: TextInputAction.next,
-                          ),
-                    controller.type.value == "mobileNumber"
-                        ? const SizedBox()
-                        : TextFieldWidget(
-                            title: 'Phone Number'.tr,
-                            controller:
-                                controller.phoneNUmberEditingController.value,
-                            hintText: 'Enter Phone Number'.tr,
-                            enable: true,
-                            textInputType:
-                                const TextInputType.numberWithOptions(
-                                    signed: true, decimal: true),
-                            textInputAction: TextInputAction.done,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.allow(
-                                  RegExp('[0-9]')),
-                            ],
-                            prefix: CountryCodePicker(
-                              enabled: true,
-                              onChanged: (value) {
-                                controller.countryCodeEditingController.value
-                                        .text =
-                                    value.dialCode ??
-                                        Constant.defaultCountryCode;
-                              },
-                              dialogTextStyle: TextStyle(
-                                  color: isDark
-                                      ? AppThemeData.grey50
-                                      : AppThemeData.grey900,
-                                  fontWeight: FontWeight.w500,
-                                  fontFamily: AppThemeData.medium),
-                              dialogBackgroundColor: isDark
-                                  ? AppThemeData.grey800
-                                  : AppThemeData.grey100,
-                              initialSelection: controller
-                                  .countryCodeEditingController.value.text,
-                              comparator: (a, b) =>
-                                  b.name!.compareTo(a.name.toString()),
-                              textStyle: TextStyle(
-                                  fontSize: 14,
-                                  color: isDark
-                                      ? AppThemeData.grey50
-                                      : AppThemeData.grey900,
-                                  fontFamily: AppThemeData.medium),
-                              searchDecoration: InputDecoration(
-                                  iconColor: isDark
-                                      ? AppThemeData.grey50
-                                      : AppThemeData.grey900),
-                              searchStyle: TextStyle(
-                                  color: isDark
-                                      ? AppThemeData.grey50
-                                      : AppThemeData.grey900,
-                                  fontWeight: FontWeight.w500,
-                                  fontFamily: AppThemeData.medium),
-                            ),
-                          ),
+                    // Email, telefon va parol OTP dan keyin default – kiritish maydonlari olib tashlandi
                     controller.selectedValue.value == "Company"
                         ? SizedBox()
                         : Column(
@@ -972,110 +890,6 @@ class SignupScreen extends StatelessWidget {
                     const SizedBox(
                       height: 10,
                     ),
-                    controller.type.value == "mobileNumber"
-                        ? const SizedBox()
-                        : Column(
-                            children: [
-                              TextFieldWidget(
-                                title: 'Password'.tr,
-                                controller:
-                                    controller.passwordEditingController.value,
-                                hintText: 'Enter Password'.tr,
-                                obscureText: controller.passwordVisible.value,
-                                prefix: Padding(
-                                  padding: const EdgeInsets.all(12),
-                                  child: SvgPicture.asset(
-                                    "assets/icons/ic_lock.svg",
-                                    colorFilter: ColorFilter.mode(
-                                      isDark
-                                          ? AppThemeData.grey300
-                                          : AppThemeData.grey600,
-                                      BlendMode.srcIn,
-                                    ),
-                                  ),
-                                ),
-                                suffix: Padding(
-                                  padding: const EdgeInsets.all(12),
-                                  child: InkWell(
-                                      onTap: () {
-                                        controller.passwordVisible.value =
-                                            !controller.passwordVisible.value;
-                                      },
-                                      child: controller.passwordVisible.value
-                                          ? SvgPicture.asset(
-                                              "assets/icons/ic_password_show.svg",
-                                              colorFilter: ColorFilter.mode(
-                                                isDark
-                                                    ? AppThemeData.grey300
-                                                    : AppThemeData.grey600,
-                                                BlendMode.srcIn,
-                                              ),
-                                            )
-                                          : SvgPicture.asset(
-                                              "assets/icons/ic_password_close.svg",
-                                              colorFilter: ColorFilter.mode(
-                                                isDark
-                                                    ? AppThemeData.grey300
-                                                    : AppThemeData.grey600,
-                                                BlendMode.srcIn,
-                                              ),
-                                            )),
-                                ),
-                                textInputAction: TextInputAction.next,
-                              ),
-                              TextFieldWidget(
-                                title: 'Confirm Password'.tr,
-                                controller: controller
-                                    .conformPasswordEditingController.value,
-                                hintText: 'Enter Confirm Password'.tr,
-                                obscureText:
-                                    controller.conformPasswordVisible.value,
-                                prefix: Padding(
-                                  padding: const EdgeInsets.all(12),
-                                  child: SvgPicture.asset(
-                                    "assets/icons/ic_lock.svg",
-                                    colorFilter: ColorFilter.mode(
-                                      isDark
-                                          ? AppThemeData.grey300
-                                          : AppThemeData.grey600,
-                                      BlendMode.srcIn,
-                                    ),
-                                  ),
-                                ),
-                                suffix: Padding(
-                                  padding: const EdgeInsets.all(12),
-                                  child: InkWell(
-                                      onTap: () {
-                                        controller
-                                                .conformPasswordVisible.value =
-                                            !controller
-                                                .conformPasswordVisible.value;
-                                      },
-                                      child: controller
-                                              .conformPasswordVisible.value
-                                          ? SvgPicture.asset(
-                                              "assets/icons/ic_password_show.svg",
-                                              colorFilter: ColorFilter.mode(
-                                                isDark
-                                                    ? AppThemeData.grey300
-                                                    : AppThemeData.grey600,
-                                                BlendMode.srcIn,
-                                              ),
-                                            )
-                                          : SvgPicture.asset(
-                                              "assets/icons/ic_password_close.svg",
-                                              colorFilter: ColorFilter.mode(
-                                                isDark
-                                                    ? AppThemeData.grey300
-                                                    : AppThemeData.grey600,
-                                                BlendMode.srcIn,
-                                              ),
-                                            )),
-                                ),
-                                textInputAction: TextInputAction.next,
-                              ),
-                            ],
-                          ),
                   ],
                 ),
               ),
@@ -1124,63 +938,16 @@ class SignupScreen extends StatelessWidget {
                 // ),
                 InkWell(
                   onTap: () {
-                    if (controller.type.value == "mobileNumber") {
-                      if (controller
-                          .firstNameEditingController.value.text.isEmpty) {
-                        ShowToastDialog.showToast("Please enter first name".tr);
-                      } else if (controller
-                          .lastNameEditingController.value.text.isEmpty) {
-                        ShowToastDialog.showToast("Please enter last name".tr);
-                      } else if (controller.type.value != "mobileNumber" &&
-                          controller
-                              .emailEditingController.value.text.isEmpty) {
-                        ShowToastDialog.showToast(
-                            "Please enter valid email".tr);
-                      } else if (controller.type.value != "mobileNumber" &&
-                          controller.phoneNUmberEditingController.value.text
-                              .isEmpty) {
-                        ShowToastDialog.showToast(
-                            "Please enter Phone number".tr);
-                      } else if (controller.selectedZone.value.id == null) {
-                        ShowToastDialog.showToast("Please select zone".tr);
-                      } else {
-                        controller.signUpWithEmailAndPassword();
-                      }
+                    if (controller
+                        .firstNameEditingController.value.text.isEmpty) {
+                      ShowToastDialog.showToast("Please enter first name".tr);
+                    } else if (controller
+                        .lastNameEditingController.value.text.isEmpty) {
+                      ShowToastDialog.showToast("Please enter last name".tr);
+                    } else if (controller.selectedZone.value.id == null) {
+                      ShowToastDialog.showToast("Please select zone".tr);
                     } else {
-                      if (controller
-                          .firstNameEditingController.value.text.isEmpty) {
-                        ShowToastDialog.showToast("Please enter first name".tr);
-                      } else if (controller
-                          .lastNameEditingController.value.text.isEmpty) {
-                        ShowToastDialog.showToast("Please enter last name".tr);
-                      } else if (controller
-                          .emailEditingController.value.text.isEmpty) {
-                        ShowToastDialog.showToast(
-                            "Please enter valid email".tr);
-                      } else if (controller
-                          .phoneNUmberEditingController.value.text.isEmpty) {
-                        ShowToastDialog.showToast(
-                            "Please enter Phone number".tr);
-                      } else if (controller
-                          .passwordEditingController.value.text.isEmpty) {
-                        ShowToastDialog.showToast("Please enter password".tr);
-                      } else if (controller.conformPasswordEditingController
-                          .value.text.isEmpty) {
-                        ShowToastDialog.showToast(
-                            "Please enter Confirm password".tr);
-                      } else if (controller
-                              .passwordEditingController.value.text !=
-                          controller
-                              .conformPasswordEditingController.value.text) {
-                        ShowToastDialog.showToast(
-                            "Password and Confirm password doesn't match".tr);
-                      } else if (controller.selectedValue.value ==
-                              "Individual" &&
-                          controller.selectedZone.value.id == null) {
-                        ShowToastDialog.showToast("Please select zone".tr);
-                      } else {
-                        controller.signUpWithEmailAndPassword();
-                      }
+                      controller.signUpWithEmailAndPassword();
                     }
                   },
                   child: Container(

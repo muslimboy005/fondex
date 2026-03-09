@@ -12,21 +12,13 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:yandex_mapkit/yandex_mapkit.dart' as ym;
-import 'package:flutter_map/flutter_map.dart' as flutterMap;
-import 'package:latlong2/latlong.dart' as latLng2;
 
 class DriverLocationController extends GetxController {
   RxBool isLoading = true.obs;
   RxList<UserModel> driverList = <UserModel>[].obs;
   RxSet<Marker> markers = <Marker>{}.obs;
 
-  /// OSM map data
-  final flutterMap.MapController osmMapController = flutterMap.MapController();
-  RxList<flutterMap.Marker> osmMarkers = <flutterMap.Marker>[].obs;
-  Rx<latLng2.LatLng> current = const latLng2.LatLng(41.3111, 69.2797).obs;
-
   BitmapDescriptor? driverIcon;
-  final Completer<GoogleMapController> mapController = Completer();
   ym.YandexMapController? yandexMapController;
 
   @override
@@ -59,16 +51,13 @@ class DriverLocationController extends GetxController {
     driverIcon = BitmapDescriptor.fromBytes(driverBytes);
   }
 
-  /// Update both Google Map + OSM markers
   void updateMarkers() {
     final newMarkers = <Marker>{};
-    final newOsmMarkers = <flutterMap.Marker>[];
 
     for (var driver in driverList) {
       final lat = driver.location?.latitude;
       final lng = driver.location?.longitude;
       if (lat != null && lng != null) {
-        // Google Map Marker
         newMarkers.add(
           Marker(
             markerId: MarkerId(driver.id ?? ''),
@@ -80,30 +69,10 @@ class DriverLocationController extends GetxController {
             onTap: () => _showDriverBottomSheet(Get.context!, driver),
           ),
         );
-
-        // OSM Marker
-        newOsmMarkers.add(flutterMap.Marker(
-          point: latLng2.LatLng(lat, lng),
-          width: 60,
-          height: 60,
-          child: GestureDetector(
-            onTap: () => _showDriverBottomSheet(Get.context!, driver),
-            child: Image.asset('assets/images/ic_cab.png', width: 45),
-          ),
-        ));
       }
     }
 
     markers.value = newMarkers;
-    osmMarkers.value = newOsmMarkers;
-
-    if (driverList.isNotEmpty) {
-      final first = driverList.first;
-      if (first.location != null) {
-        current.value = latLng2.LatLng(
-            first.location!.latitude!, first.location!.longitude!);
-      }
-    }
   }
 
   /// Show driver bottom sheet
@@ -197,34 +166,6 @@ class DriverLocationController extends GetxController {
     );
   }
 
-  /// Move camera for Google Map
-  Future<void> moveCameraToFirstDriver(
-      GoogleMapController mapController) async {
-    if (driverList.isNotEmpty) {
-      final firstDriver = driverList.first;
-      if (firstDriver.location?.latitude != null &&
-          firstDriver.location?.longitude != null) {
-        final position = CameraPosition(
-          target: LatLng(firstDriver.location!.latitude!,
-              firstDriver.location!.longitude!),
-          zoom: 15,
-        );
-        await mapController
-            .animateCamera(CameraUpdate.newCameraPosition(position));
-      }
-    }
-  }
-
-  /// Animate OSM map
-  void animateToSource() {
-    if (driverList.isNotEmpty && driverList.first.location != null) {
-      osmMapController.move(
-        latLng2.LatLng(driverList.first.location!.latitude!,
-            driverList.first.location!.longitude!),
-        14.5,
-      );
-    }
-  }
 }
 
 // import 'dart:async';

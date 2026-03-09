@@ -57,6 +57,8 @@ class Constant {
   static String rentalRadius = '0.0';
 
   static String mapAPIKey = "";
+  /// Yandex Geocoder API key (geocode-maps.yandex.ru)
+  static const String yandexGeocodeApiKey = 'd40481eb-0884-40a5-bde1-9cfb8d7cfa89';
   static String placeHolderImage = "";
   static String defaultCountryCode = "";
   static String defaultCountry = "";
@@ -112,17 +114,13 @@ class Constant {
   static String rentalAccepted = "rental_accepted";
   static String rentalCompleted = "rental_completed";
 
-  static String selectedMapType = 'google';
+  /// Driver faqat Yandex Map ishlatadi.
+  static String selectedMapType = 'yandexMaps';
   static String orderRingtoneUrl = '';
   static bool isSelfDeliveryFeature = false;
 
   static String normalizeSelectedMapType(String? value) {
-    final raw = (value ?? '').toLowerCase().trim();
-    if (raw.isEmpty) return 'google';
-    if (raw.contains('osm') || raw.contains('openstreet')) return 'osm';
-    if (raw.contains('yandex')) return 'yandexMaps';
-    if (raw.contains('google')) return 'google';
-    return value!;
+    return 'yandexMaps';
   }
 
   static String normalizeMapType(String? value) {
@@ -132,33 +130,36 @@ class Constant {
     if (raw.contains('yandex')) {
       return raw.contains('navi') ? 'yandexNavi' : 'yandexMaps';
     }
-    if (raw.contains('google') && raw.contains('go')) return 'googleGo';
-    if (raw.contains('google')) return 'google';
-    if (raw.contains('waze')) return 'waze';
-    if (raw.contains('mapswithme') || raw.contains('maps_with_me')) {
-      return 'mapswithme';
-    }
-    return value!;
+    return 'yandexMaps';
   }
 
-  static bool get isOsmMap =>
-      normalizeSelectedMapType(selectedMapType) == 'osm';
+  static bool get isOsmMap => false;
 
-  static bool get isYandexMap =>
-      normalizeSelectedMapType(selectedMapType) == 'yandexMaps';
+  static bool get isYandexMap => true;
+
+  /// Narxni 500 ga yuqoriga yaxlitlash: 1001→1500, 1501→2000
+  static double roundUpToNearest500(num? value) {
+    if (value == null || value <= 0) return 0.0;
+    return ((value / 500).ceil() * 500).toDouble();
+  }
 
   static String amountShow({required String? amount}) {
+    final v = amount == null || amount.toString().trim().isEmpty
+        ? 0.0
+        : (double.tryParse(amount.toString()) ?? 0.0);
+    final rounded = roundUpToNearest500(v);
+    final formatted = rounded.toStringAsFixed(currencyModel!.decimalDigits ?? 0);
     if (currencyModel!.symbolAtRight == true) {
-      return "${double.parse(amount.toString()).toStringAsFixed(currencyModel!.decimalDigits ?? 0)} ${currencyModel!.symbol.toString()}";
+      return "$formatted ${currencyModel!.symbol.toString()}";
     } else {
-      return "${currencyModel!.symbol.toString()} ${amount == null || amount.isEmpty ? "0.0" : double.parse(amount.toString()).toStringAsFixed(currencyModel!.decimalDigits ?? 0)}";
+      return "${currencyModel!.symbol.toString()} $formatted";
     }
   }
 
   /// Cab narxini butun songa yaxlitlab ko'rsatish (driver tomonda)
   static String amountShowRounded({required String? amount}) {
     final v = double.tryParse(amount?.trim() ?? '0') ?? 0.0;
-    return amountShow(amount: v.round().toString());
+    return amountShow(amount: v.toString());
   }
 
   Future<Uint8List> getBytesFromUrl(String url, {int width = 100}) async {

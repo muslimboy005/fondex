@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:developer';
 
 import 'package:driver/constant/collection_name.dart';
@@ -14,12 +13,10 @@ import 'package:driver/utils/utils.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_map/flutter_map.dart' as flutterMap;
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:yandex_mapkit/yandex_mapkit.dart' as ym;
-import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart' as location;
 import 'package:geolocator/geolocator.dart';
 import 'package:location/location.dart';
@@ -30,25 +27,25 @@ import '../models/order_model.dart';
 
 class HomeController extends GetxController {
   RxBool isLoading = true.obs;
-  flutterMap.MapController osmMapController = flutterMap.MapController();
-  RxList<flutterMap.Marker> osmMarkers = <flutterMap.Marker>[].obs;
 
   // Track order subscription to cancel previous ones
   StreamSubscription? _orderSubscription;
+  // Doimiy stream: driver dokumenti (yangi zakazlar orderRequestData da)
+  StreamSubscription? _driverSubscription;
 
   @override
   void onInit() {
     getArgument();
     setIcons();
-    getDriver();
+    listenToDriverAndOrders();
     requestLocationPermission();
     super.onInit();
   }
 
   @override
   void onClose() {
-    // Cancel order subscription to prevent memory leaks
     _orderSubscription?.cancel();
+    _driverSubscription?.cancel();
     super.onClose();
   }
 
@@ -163,17 +160,27 @@ class HomeController extends GetxController {
 
   Future<void> acceptOrder() async {
     log("🟢 [acceptOrder] Boshlandi");
+    final orderId = currentOrder.value.id;
+    if (orderId == null || orderId.isEmpty) {
+      log("❌ [acceptOrder] Order id bo‘sh – qabul qilish bekor qilindi");
+      ShowToastDialog.showToast("Order id not found. Please try again.".tr);
+      return;
+    }
     await AudioPlayerService.playSound(false);
     ShowToastDialog.showLoader("Please wait".tr);
-    driverModel.value.inProgressOrderID ?? [];
-    driverModel.value.orderRequestData!.remove(currentOrder.value.id);
-    driverModel.value.inProgressOrderID!.add(currentOrder.value.id);
+    driverModel.value.inProgressOrderID ??= [];
+    driverModel.value.orderRequestData ??= [];
+    driverModel.value.orderRequestData!.remove(orderId);
+    if (!driverModel.value.inProgressOrderID!.contains(orderId)) {
+      driverModel.value.inProgressOrderID!.add(orderId);
+    }
 
     await FireStoreUtils.updateUser(driverModel.value);
 
     currentOrder.value.status = Constant.driverAccepted;
     currentOrder.value.driverID = driverModel.value.id;
     currentOrder.value.driver = driverModel.value;
+    currentOrder.value.id = orderId;
 
     await FireStoreUtils.setOrder(currentOrder.value);
     log("🟢 [acceptOrder] Firestore yangilandi, status=${currentOrder.value.status}");
@@ -239,50 +246,51 @@ class HomeController extends GetxController {
 
   Future<void> clearMap() async {
     await AudioPlayerService.playSound(false);
-    if (Constant.selectedMapType != 'osm') {
-      markers.clear();
-      polyLines.clear();
-    } else {
-      osmMarkers.clear();
-      routePoints.clear();
-      // osmMapController = flutterMap.MapController();
-    }
+    markers.clear();
+    polyLines.clear();
     update();
   }
 
   Future<void> getCurrentOrder() async {
     final driver = driverModel.value;
     final currentId = currentOrder.value.id;
+    final requests = driver.orderRequestData;
+    final inProgress = driver.inProgressOrderID;
 
-    // 1️⃣ Reset if current order is invalid
+    // 1️⃣ Reset if current order is invalid (yo‘q ro‘yxatlarda)
     if (currentId != null &&
-        !(driver.orderRequestData?.contains(currentId) ?? false) &&
-        !(driver.inProgressOrderID?.contains(currentId) ?? false)) {
+        !(requests?.contains(currentId) ?? false) &&
+        !(inProgress?.contains(currentId) ?? false)) {
       await _resetCurrentOrder();
       return;
     }
 
-    // 2️⃣ Handle single-order mode
-    if (Constant.singleOrderReceive == true) {
-      final inProgress = driver.inProgressOrderID;
-      final requests = driver.orderRequestData;
-
-      if (inProgress != null && inProgress.isNotEmpty) {
-        _listenToOrder(inProgress.first);
-        return;
-      }
-
-      if (requests != null && requests.isNotEmpty) {
-        _listenToOrder(requests.first, checkInRequestData: true);
-        return;
-      }
+    // 2️⃣ Agar hozir ko‘rsatilayotgan buyurtma hali ham ro‘yxatlarda bo‘lsa, boshqasiga o‘tmaymiz.
+    // Driver stream tez-tez yangilanganda (location/accept) eski snapshot kelishi mumkin – dialog yopilmasin.
+    if (currentId != null &&
+        ((inProgress?.contains(currentId) ?? false) ||
+            (requests?.contains(currentId) ?? false))) {
+      return;
     }
 
-    // 3️⃣ Handle fallback (when orderModel has ID)
+    // 3️⃣ Avval inProgress (qabul qilingan), keyin orderRequestData (takliflar).
+    if (Constant.singleOrderReceive != true) return;
+    if (inProgress != null && inProgress.isNotEmpty) {
+      final id = inProgress.last;
+      if (id != currentId) _listenToOrder(id);
+      return;
+    }
+    if (requests != null && requests.isNotEmpty) {
+      final id = requests.last;
+      if (id != currentId) {
+        _listenToOrder(id, checkInRequestData: true);
+      }
+      return;
+    }
+
+    // 4️⃣ Fallback
     final fallbackId = orderModel.value.id;
-    if (fallbackId != null) {
-      _listenToOrder(fallbackId);
-    }
+    if (fallbackId != null) _listenToOrder(fallbackId);
   }
 
   Future<void> _resetCurrentOrder() async {
@@ -290,6 +298,14 @@ class HomeController extends GetxController {
     await clearMap();
     await AudioPlayerService.playSound(false);
     update();
+  }
+
+  /// 🔹 Bildirishnoma orqali kelgan orderId bo‘yicha stream boshlash.
+  /// Driver dokumenti yangilanmasa ham buyurtma ko‘rinadi.
+  void listenToOrderById(String orderId) {
+    if (orderId.isEmpty) return;
+    log("🟢 [listenToOrderById] orderId=$orderId – bildirishnoma orqali stream boshlandi");
+    _listenToOrder(orderId, checkInRequestData: false);
   }
 
   /// 🔹 Listen to Firestore order updates for a specific orderId
@@ -317,6 +333,9 @@ class HomeController extends GetxController {
       }
 
       final newOrder = OrderModel.fromJson(data);
+      // Firestore document id odatda data ichida bo‘lmaydi – asl buyurtma hujjati id sini ishlatamiz,
+      // aks holda .doc(null) yangi "nusxa" yaratib, asl buyurtma yangilanmaydi
+      newOrder.id = docSnapshot.id;
 
       // Check status in code instead of query filter
       if (newOrder.status == Constant.orderCancelled ||
@@ -363,17 +382,10 @@ class HomeController extends GetxController {
     print(
         "currentOrder.value.status :: ${currentOrder.value.id} :: ${currentOrder.value.status} :: ( ${orderModel.value.driver?.vendorID != null} :: ${orderModel.value.status})");
 
-    // Taksi kabi: xarita turidan qat'iy nazar yo'lni chizish (inappmap yoki boshqa)
     if (Constant.mapType == "inappmap") {
-      if (Constant.selectedMapType == "osm") {
-        log("🟡 [changeData] OSM yo'l chizilmoqda...");
-        await getOSMPolyline();
-        log("🟡 [changeData] getOSMPolyline tugadi, routePoints=${routePoints.length}");
-      } else {
-        log("🟡 [changeData] getDirections (Google/Yandex) chaqirilmoqda...");
-        await getDirections();
-        log("🟡 [changeData] getDirections tugadi");
-      }
+      log("🟡 [changeData] getDirections (Yandex) chaqirilmoqda...");
+      await getDirections();
+      log("🟡 [changeData] getDirections tugadi");
     } else {
       log("🟡 [changeData] mapType!=inappmap, getDirections chaqirilmoqda...");
       await getDirections();
@@ -390,8 +402,12 @@ class HomeController extends GetxController {
     log("🟡 [changeData] Tugadi");
   }
 
-  void getDriver() {
-    FireStoreUtils.fireStore
+  /// Doimiy stream: driver dokumentiga eshitadi. Yangi zakaz qo‘shilganda (orderRequestData)
+  /// backend yangilaganda stream yangilanadi, getCurrentOrder() yangi zakazni ko‘rsatadi.
+  /// Bildirishnoma kelmasa ham yangi zakaz shu orqali chiqadi.
+  void listenToDriverAndOrders() {
+    _driverSubscription?.cancel();
+    _driverSubscription = FireStoreUtils.fireStore
         .collection(CollectionName.users)
         .doc(FireStoreUtils.getCurrentUid())
         .snapshots()
@@ -400,12 +416,9 @@ class HomeController extends GetxController {
         if (event.exists) {
           driverModel.value = UserModel.fromJson(event.data()!);
 
-          // ✅ Always prioritize current GPS location if available
-          // This ensures driver marker shows current location, not stale Firestore data
           if (Constant.locationDataFinal != null &&
               Constant.locationDataFinal!.latitude != null &&
               Constant.locationDataFinal!.longitude != null) {
-            // Update driver model with current GPS location for accurate marker display
             driverModel.value.location = UserLocation(
               latitude: Constant.locationDataFinal!.latitude!,
               longitude: Constant.locationDataFinal!.longitude!,
@@ -418,7 +431,7 @@ class HomeController extends GetxController {
           if (driverModel.value.id != null) {
             isLoading.value = false;
             update();
-            log("🟢 [getDriver] stream yangilandi, changeData() chaqirilmoqda (restartda yo'l shu yerda chiziladi)");
+            log("🟢 [getDriver] stream yangilandi, changeData() va getCurrentOrder() chaqirilmoqda");
             changeData();
             getCurrentOrder();
           }
@@ -426,6 +439,8 @@ class HomeController extends GetxController {
       },
     );
   }
+
+  void getDriver() => listenToDriverAndOrders();
 
   GoogleMapController? mapController;
   ym.YandexMapController? yandexMapController;
@@ -440,18 +455,16 @@ class HomeController extends GetxController {
   BitmapDescriptor? taxiIcon;
 
   Future<void> setIcons() async {
-    if (!Constant.isOsmMap) {
-      final Uint8List departure = await Constant()
-          .getBytesFromAsset('assets/images/location_black3x.png', 100);
-      final Uint8List destination = await Constant()
-          .getBytesFromAsset('assets/images/location_orange3x.png', 100);
-      final Uint8List driver = await Constant()
-          .getBytesFromAsset('assets/images/food_delivery.png', 110);
+    final Uint8List departure = await Constant()
+        .getBytesFromAsset('assets/images/location_black3x.png', 100);
+    final Uint8List destination = await Constant()
+        .getBytesFromAsset('assets/images/location_orange3x.png', 100);
+    final Uint8List driver = await Constant()
+        .getBytesFromAsset('assets/images/food_delivery.png', 110);
 
-      departureIcon = BitmapDescriptor.fromBytes(departure);
-      destinationIcon = BitmapDescriptor.fromBytes(destination);
-      taxiIcon = BitmapDescriptor.fromBytes(driver);
-    }
+    departureIcon = BitmapDescriptor.fromBytes(departure);
+    destinationIcon = BitmapDescriptor.fromBytes(destination);
+    taxiIcon = BitmapDescriptor.fromBytes(driver);
   }
 
   Future<void> getDirections() async {
@@ -763,9 +776,18 @@ class HomeController extends GetxController {
 
     _updateCurrentLocationMarkers();
     try {
-      osmMapController.move(location.LatLng(lat, lng), 16);
+      if (yandexMapController != null && (lat != 0.0 || lng != 0.0)) {
+        yandexMapController!.moveCamera(
+          ym.CameraUpdate.newCameraPosition(
+            ym.CameraPosition(
+              target: ym.Point(latitude: lat, longitude: lng),
+              zoom: 16,
+            ),
+          ),
+        );
+      }
     } catch (e) {
-      debugPrint("OSM map move error: $e");
+      debugPrint("Yandex map move error: $e");
     }
   }
 
@@ -804,19 +826,7 @@ class HomeController extends GetxController {
       debugPrint(
           "📍 Final current.value = ${current.value.latitude}, ${current.value.longitude}");
 
-      // --- OSM Section ---
-      try {
-        setOsmMapMarker();
-
-        if (latLng.latitude != 0.0 || latLng.longitude != 0.0) {
-          osmMapController.move(
-              location.LatLng(latLng.latitude, latLng.longitude), 16);
-        }
-      } catch (e) {
-        print("OSM map move ignored (controller not ready): $e");
-      }
-
-      // --- GOOGLE / YANDEX MAP Section ---
+      // --- Yandex Map Section ---
       try {
         // Skip if icons are not loaded yet
         {
@@ -898,190 +908,6 @@ class HomeController extends GetxController {
   Rx<location.LatLng> destination =
       location.LatLng(0.0, 0.0).obs; // Destination (unset)
 
-  // Yandex Maps removed - using Google Maps instead
-  // Google Maps markers are handled via getDirections() method
-
-  void setOsmMapMarker() {
-    final markers = <flutterMap.Marker>[];
-    final order = currentOrder.value;
-
-    // Kurier marker — qizil (har doim ko'rsatiladi)
-    if (!(current.value.latitude == 0.0 && current.value.longitude == 0.0)) {
-      debugPrint(
-          "📍 Creating driver marker at: ${current.value.latitude}, ${current.value.longitude}");
-      markers.add(
-        flutterMap.Marker(
-          point: current.value,
-          width: 48,
-          height: 48,
-          rotate: true,
-          child: const Icon(
-            Icons.delivery_dining,
-            color: Colors.red,
-            size: 48,
-          ),
-        ),
-      );
-    } else {
-      debugPrint("⚠️ Driver location is 0,0 - marker not created");
-    }
-
-    // Restoran marker — yashil (barcha holatlarda)
-    if (order.vendor?.latitude != null && order.vendor?.longitude != null) {
-      final restaurantLat = order.vendor!.latitude ?? 0.0;
-      final restaurantLng = order.vendor!.longitude ?? 0.0;
-      if (!(restaurantLat == 0.0 && restaurantLng == 0.0)) {
-        markers.add(
-          flutterMap.Marker(
-            point: location.LatLng(restaurantLat, restaurantLng),
-            width: 40,
-            height: 40,
-            child: const Icon(
-              Icons.store_rounded,
-              color: Colors.green,
-              size: 40,
-            ),
-          ),
-        );
-        debugPrint("📍 Restaurant marker at: $restaurantLat, $restaurantLng");
-      }
-    }
-
-    // Mijoz (destination) marker — qizil (orderInTransit da ko'rinadi)
-    if (!(destination.value.latitude == 0.0 &&
-        destination.value.longitude == 0.0)) {
-      markers.add(
-        flutterMap.Marker(
-          point: destination.value,
-          width: 40,
-          height: 40,
-          child: const Icon(
-            Icons.person_pin_circle_rounded,
-            color: Colors.red,
-            size: 40,
-          ),
-        ),
-      );
-      debugPrint(
-          "📍 Destination marker at: ${destination.value.latitude}, ${destination.value.longitude}");
-    }
-
-    osmMarkers.value = markers;
-  }
-
-  Future<void> getOSMPolyline() async {
-    log("🟠 [getOSMPolyline] Boshlandi orderId=${currentOrder.value.id} status=${currentOrder.value.status}");
-    try {
-      if (currentOrder.value.id != null) {
-        final order = currentOrder.value;
-
-        // ✅ Use current GPS location if available, otherwise fallback to driver.location
-        UserLocation? driverLoc;
-        if (Constant.locationDataFinal != null &&
-            Constant.locationDataFinal!.latitude != null &&
-            Constant.locationDataFinal!.longitude != null) {
-          driverLoc = UserLocation(
-            latitude: Constant.locationDataFinal!.latitude!,
-            longitude: Constant.locationDataFinal!.longitude!,
-          );
-          log("🟠 [getOSMPolyline] GPS: ${driverLoc.latitude}, ${driverLoc.longitude}");
-        } else {
-          driverLoc = driverModel.value.location;
-          log("🟠 [getOSMPolyline] Firestore driver: ${driverLoc?.latitude}, ${driverLoc?.longitude}");
-        }
-
-        if (driverLoc == null) {
-          log("⚠️ [getOSMPolyline] Driver location null, chiqilmoqda");
-          return;
-        }
-
-        log("🟠 [getOSMPolyline] Order Status=${order.status} OrderId=${order.id}");
-
-        // Driver dan Restaurant gacha (driverPending, driverAccepted, orderShipped)
-        if (order.status == Constant.driverPending ||
-            order.status == Constant.driverAccepted ||
-            order.status == Constant.orderShipped) {
-          if (order.vendor?.latitude != null &&
-              order.vendor?.longitude != null) {
-            current.value = location.LatLng(
-              driverLoc.latitude ?? 0.0,
-              driverLoc.longitude ?? 0.0,
-            );
-            destination.value = location.LatLng(
-              order.vendor!.latitude ?? 0.0,
-              order.vendor!.longitude ?? 0.0,
-            );
-            log("🟠 [getOSMPolyline] Driver→Restaurant, setOsmMapMarker va fetchRoute...");
-            setOsmMapMarker();
-            update();
-            animateToSource();
-            await fetchRoute(current.value, destination.value);
-            log("🟠 [getOSMPolyline] fetchRoute tugadi, routePoints=${routePoints.length}");
-            setOsmMapMarker();
-            update();
-            log("🟠 [getOSMPolyline] Driver→Restaurant tugadi");
-          }
-        }
-        // Restaurant dan Mijozgacha (orderInTransit)
-        else if (order.status == Constant.orderInTransit) {
-          if (order.vendor?.latitude != null &&
-              order.vendor?.longitude != null &&
-              order.address?.location?.latitude != null &&
-              order.address?.location?.longitude != null) {
-            current.value = location.LatLng(
-              driverLoc.latitude ?? 0.0,
-              driverLoc.longitude ?? 0.0,
-            );
-            destination.value = location.LatLng(
-              order.address!.location!.latitude ?? 0.0,
-              order.address!.location!.longitude ?? 0.0,
-            );
-            print(
-                "📍 Restaurant → Customer: ${current.value} → ${destination.value}");
-            setOsmMapMarker();
-            update();
-            await fetchRoute(current.value, destination.value);
-            setOsmMapMarker();
-            update();
-            animateToSource();
-          }
-        } else {
-          log("⚠️ [getOSMPolyline] Noma'lum status: ${order.status}");
-        }
-      } else {
-        log("⚠️ [getOSMPolyline] currentOrder.id null");
-      }
-    } catch (e) {
-      log("❌ [getOSMPolyline] Error: $e");
-    }
-    log("🟠 [getOSMPolyline] Tugadi");
-  }
-
-  RxList<location.LatLng> routePoints = <location.LatLng>[].obs;
-
-  Future<void> fetchRoute(
-      location.LatLng source, location.LatLng destination) async {
-    final url = Uri.parse(
-      'https://router.project-osrm.org/route/v1/driving/${source.longitude},${source.latitude};${destination.longitude},${destination.latitude}?overview=full&geometries=geojson',
-    );
-
-    final response = await http.get(url);
-
-    if (response.statusCode == 200) {
-      final decoded = json.decode(response.body);
-      final geometry = decoded['routes'][0]['geometry']['coordinates'];
-
-      routePoints.clear();
-      for (var coord in geometry) {
-        final lon = coord[0];
-        final lat = coord[1];
-        routePoints.add(location.LatLng(lat, lon));
-      }
-    } else {
-      print("Failed to get route: ${response.body}");
-    }
-  }
-
   /// Open Yandex Maps directly with directions
   Future<void> showMapSelectionDialog() async {
     final order = currentOrder.value;
@@ -1130,24 +956,6 @@ class HomeController extends GetxController {
   }
 
   /// Open Google Maps with directions
-  Future<void> _openGoogleMaps(double originLat, double originLng,
-      double destLat, double destLng) async {
-    final url = Uri.parse(
-      'https://www.google.com/maps/dir/?api=1&origin=$originLat,$originLng&destination=$destLat,$destLng&travelmode=driving',
-    );
-
-    try {
-      if (await canLaunchUrl(url)) {
-        await launchUrl(url, mode: LaunchMode.externalApplication);
-      } else {
-        ShowToastDialog.showToast("Could not open Google Maps".tr);
-      }
-    } catch (e) {
-      debugPrint("Error opening Google Maps: $e");
-      ShowToastDialog.showToast("Error opening Google Maps".tr);
-    }
-  }
-
   /// Open Yandex Maps with directions
   Future<void> _openYandexMaps(double originLat, double originLng,
       double destLat, double destLng) async {

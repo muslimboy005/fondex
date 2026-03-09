@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:driver/app/wallet_screen/payment_list_screen.dart';
+import 'package:intl/intl.dart';
 import 'package:driver/constant/constant.dart';
 import 'package:driver/constant/show_toast_dialog.dart';
 import 'package:driver/controllers/wallet_controller.dart';
@@ -26,6 +27,32 @@ import '../cab_screen/cab_order_details.dart';
 import '../order_list_screen/order_details_screen.dart';
 import '../parcel_screen/parcel_order_details.dart';
 import '../rental_service/rental_order_details_screen.dart';
+
+/// Hamyon tranzaksiyasi note ni joriy tilga tarjima qiladi.
+String getTranslatedWalletNote(String? note, String? orderId) {
+  if (note == null || note.isEmpty) return 'Wallet Top-up'.tr;
+  final oid = orderId ?? '';
+  if (note.startsWith('Delivery charge credited for order #')) {
+    return 'Delivery charge credited for order #%s'.trArgs([oid]);
+  }
+  if (note.startsWith('Product amount debited from order #')) {
+    return 'Product amount debited from order #%s'.trArgs([oid]);
+  }
+  if (note.startsWith('You referral user has complete his this order #')) {
+    return 'You referral user has complete his this order #%s'.trArgs([oid]);
+  }
+  return note.tr;
+}
+
+/// Sanani joriy tilga mos formatda ko‘rsatadi. initializeDateFormatting(locale) main() da chaqirilgan bo‘lishi kerak.
+String formatWalletDate(Timestamp timestamp) {
+  final locale = Get.locale?.languageCode ?? 'en';
+  try {
+    return DateFormat('MMM dd,yyyy hh:mm aa', locale).format(timestamp.toDate());
+  } on Exception {
+    return DateFormat('MMM dd,yyyy hh:mm aa').format(timestamp.toDate());
+  }
+}
 
 class WalletScreen extends StatelessWidget {
   final bool? isAppBarShow;
@@ -1712,7 +1739,8 @@ class WalletScreen extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          transactionModel.note.toString().tr,
+                          getTranslatedWalletNote(
+                              transactionModel.note, transactionModel.orderId),
                           style: TextStyle(
                             fontSize: 16,
                             fontFamily: AppThemeData.semiBold,
@@ -1742,7 +1770,7 @@ class WalletScreen extends StatelessWidget {
                     height: 2,
                   ),
                   Text(
-                    Constant.timestampToDateTime(transactionModel.date!),
+                    formatWalletDate(transactionModel.date!),
                     style: TextStyle(
                         fontSize: 12,
                         fontFamily: AppThemeData.medium,

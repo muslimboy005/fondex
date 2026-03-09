@@ -1,18 +1,17 @@
 import 'package:driver/constant/constant.dart';
+import 'package:driver/service/yandex_geocoding_service.dart';
 import 'package:driver/themes/app_them_data.dart';
 import 'package:driver/themes/responsive.dart';
 import 'package:driver/themes/round_button_fill.dart';
 import 'package:driver/themes/theme_controller.dart';
 import 'package:driver/widget/place_picker/location_controller.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_google_places_hoc081098/flutter_google_places_hoc081098.dart';
-import 'package:flutter_google_places_hoc081098/google_maps_webservice_places.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:yandex_mapkit/yandex_mapkit.dart' as ym;
 import 'package:driver/utils/yandex_map_utils.dart';
 
-final GoogleMapsPlaces _places = GoogleMapsPlaces(apiKey: Constant.mapAPIKey);
+final YandexGeocodingService _yandexGeocoding = YandexGeocodingService(apiKey: Constant.yandexGeocodeApiKey);
 
 class LocationPickerScreen extends StatelessWidget {
   const LocationPickerScreen({super.key});
@@ -29,8 +28,7 @@ class LocationPickerScreen extends StatelessWidget {
               children: [
                 controller.selectedLocation.value == null
                     ? const Center(child: CircularProgressIndicator())
-                    : Constant.isYandexMap
-                        ? ym.YandexMap(
+                    : ym.YandexMap(
                             onMapCreated:
                                 (ym.YandexMapController mapController) async {
                               controller.yandexMapController = mapController;
@@ -86,40 +84,8 @@ class LocationPickerScreen extends StatelessWidget {
                                       ),
                                       opacity: 1.0,
                                     ),
-                                  ],
-                          )
-                        : GoogleMap(
-                            onMapCreated: (controllers) {
-                              controller.mapController = controllers;
-                            },
-                            initialCameraPosition: CameraPosition(
-                              target: controller.selectedLocation.value!,
-                              zoom: 15,
-                            ),
-                            onTap: (LatLng tappedPosition) {
-                              controller.selectedLocation.value = tappedPosition;
-                              controller.getAddressFromLatLng(tappedPosition);
-                            },
-                            markers: controller.selectedLocation.value == null
-                                ? {}
-                                : {
-                                    Marker(
-                                      markerId: const MarkerId("selected-location"),
-                                      position: controller.selectedLocation.value!,
-                                      onTap: () {
-                                        controller.getAddressFromLatLng(
-                                            controller.selectedLocation.value!);
-                                      },
-                                    )
-                                  },
-                            onCameraMove: controller.onMapMoved,
-                            onCameraIdle: () {
-                              if (controller.selectedLocation.value != null) {
-                                controller.getAddressFromLatLng(
-                                    controller.selectedLocation.value!);
-                              }
-                            },
-                          ),
+                                    ],
+                                  ),
                 Positioned(
                   top: 60,
                   left: 16,
@@ -150,33 +116,23 @@ class LocationPickerScreen extends StatelessWidget {
                       ),
                       GestureDetector(
                         onTap: () async {
-                          Prediction? p = await PlacesAutocomplete.show(
-                            context: context,
-                            apiKey: Constant.mapAPIKey,
-                            mode: Mode.overlay,
-                            language: "uz",
-                          );
-                          if (p != null) {
-                            final detail = await _places.getDetailsByPlaceId(p.placeId!);
-                            final lat = detail.result.geometry!.location.lat;
-                            final lng = detail.result.geometry!.location.lng;
-                            final LatLng pos = LatLng(lat, lng);
+                          final query = await _showSearchDialog(context);
+                          if (query == null || query.isEmpty) return;
+                          final results = await _yandexGeocoding.search(query, limit: 10);
+                          if (results.isEmpty) return;
+                          final picked = await _showResultsBottomSheet(context, results);
+                          if (picked != null) {
+                            final pos = LatLng(picked.latLng.latitude, picked.latLng.longitude);
                             controller.selectedLocation.value = pos;
-                            if (Constant.isYandexMap) {
-                              final yandexController = controller.yandexMapController;
-                              if (yandexController != null) {
-                                await yandexController.moveCamera(
-                                  ym.CameraUpdate.newCameraPosition(
-                                    ym.CameraPosition(
-                                      target: ym.Point(latitude: lat, longitude: lng),
-                                      zoom: 15,
-                                    ),
+                            final yandexController = controller.yandexMapController;
+                            if (yandexController != null) {
+                              await yandexController.moveCamera(
+                                ym.CameraUpdate.newCameraPosition(
+                                  ym.CameraPosition(
+                                    target: ym.Point(latitude: picked.latLng.latitude, longitude: picked.latLng.longitude),
+                                    zoom: 15,
                                   ),
-                                );
-                              }
-                            } else {
-                              controller.mapController?.animateCamera(
-                                CameraUpdate.newLatLngZoom(pos, 15),
+                                ),
                               );
                             }
                             controller.getAddressFromLatLng(pos);
@@ -239,4 +195,54 @@ class LocationPickerScreen extends StatelessWidget {
           );
         });
   }
+}
+
+Future<String?> _showSearchDialog(BuildContext context) async {
+  final controller = TextEditingController();
+  return showDialog<String>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: Text("Search place...".tr),
+      content: TextField(
+        controller: controller,
+        decoration: InputDecoration(hintText: "Manzil yoki joy nomini yozing"),
+        autofocus: true,
+        onSubmitted: (v) => Navigator.of(ctx).pop(v.trim().isEmpty ? null : v),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(ctx).pop(),
+          child: Text("Cancel".tr),
+        ),
+        TextButton(
+          onPressed: () => Navigator.of(ctx).pop(controller.text.trim().isEmpty ? null : controller.text.trim()),
+          child: Text("Search".tr),
+        ),
+      ],
+    ),
+  );
+}
+
+Future<GeocodeResult?> _showResultsBottomSheet(BuildContext context, List<GeocodeResult> results) async {
+  return showModalBottomSheet<GeocodeResult>(
+    context: context,
+    isScrollControlled: true,
+    builder: (ctx) => DraggableScrollableSheet(
+      initialChildSize: 0.5,
+      maxChildSize: 0.9,
+      minChildSize: 0.3,
+      expand: false,
+      builder: (_, scrollController) => ListView.builder(
+        controller: scrollController,
+        itemCount: results.length,
+        itemBuilder: (_, i) {
+          final r = results[i];
+          return ListTile(
+            title: Text(r.displayName),
+            onTap: () => Navigator.of(ctx).pop(r),
+          );
+        },
+      ),
+    ),
+  );
 }

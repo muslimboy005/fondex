@@ -105,22 +105,23 @@ class SplashController extends GetxController {
                     log("🚀 [SPLASH] Owner user - OwnerDashboardScreen ga o'tmoqda");
                     Get.offAll(() => OwnerDashboardScreen());
                   } else {
-                    log("🚀 [SPLASH] serviceType: ${userModel.serviceType}");
+                    final st = userModel.serviceType ?? '';
+                    log("🚀 [SPLASH] serviceType: $st");
 
-                    if (userModel.serviceType == "delivery-service") {
+                    if (st == "delivery_service" || st == "delivery-service") {
                       log("🚀 [SPLASH] DashBoardScreen ga o'tmoqda");
                       Get.offAll(() => const DashBoardScreen());
-                    } else if (userModel.serviceType == "cab-service") {
+                    } else if (st == "cab_service" || st == "cab-service") {
                       log("🚀 [SPLASH] CabDashboardScreen ga o'tmoqda");
                       Get.offAll(() => const CabDashboardScreen());
-                    } else if (userModel.serviceType == "parcel_delivery") {
+                    } else if (st == "parcel_delivery") {
                       log("🚀 [SPLASH] ParcelDashboardScreen ga o'tmoqda");
                       Get.offAll(() => const ParcelDashboardScreen());
-                    } else if (userModel.serviceType == "rental-service") {
+                    } else if (st == "rental_service" || st == "rental-service") {
                       log("🚀 [SPLASH] RentalDashboardScreen ga o'tmoqda");
                       Get.offAll(() => const RentalDashboardScreen());
                     } else {
-                      log("❌ [SPLASH] Noma'lum serviceType: ${userModel.serviceType} - AuthScreen ga o'tmoqda");
+                      log("❌ [SPLASH] Noma'lum serviceType: $st - AuthScreen ga o'tmoqda");
                       unawaited(FirebaseAuth.instance.signOut());
                       Get.offAll(const AuthScreen());
                     }

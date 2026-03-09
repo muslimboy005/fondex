@@ -81,6 +81,8 @@ class CabHomeController extends GetxController {
         return;
       }
       if (driverModel.value.orderCabRequestData != null) return;
+      // Oflayn haydovchiga yangi zakaz ko'rsatilmaydi (polling ham ishlamaydi)
+      if (driverModel.value.isActive != true) return;
       await _queryPendingOrdersForDriver();
       if (currentOrder.value.id != null && currentOrder.value.id!.isNotEmpty) {
         _pendingOrderPollTimer?.cancel();
@@ -215,9 +217,12 @@ class CabHomeController extends GetxController {
     if (src == null) return true;
     const eps = 1e-4;
     final slat = (src.latitude is num) ? (src.latitude as num).toDouble() : 0.0;
-    final slng = (src.longitude is num) ? (src.longitude as num).toDouble() : 0.0;
-    final dlat = (dest.latitude is num) ? (dest.latitude as num).toDouble() : 0.0;
-    final dlng = (dest.longitude is num) ? (dest.longitude as num).toDouble() : 0.0;
+    final slng =
+        (src.longitude is num) ? (src.longitude as num).toDouble() : 0.0;
+    final dlat =
+        (dest.latitude is num) ? (dest.latitude as num).toDouble() : 0.0;
+    final dlng =
+        (dest.longitude is num) ? (dest.longitude as num).toDouble() : 0.0;
     return (slat - dlat).abs() < eps && (slng - dlng).abs() < eps;
   }
 
@@ -259,14 +264,10 @@ class CabHomeController extends GetxController {
       return;
     }
 
-    final ok = await FireStoreUtils.updateCabOrderStartTrip(
+    await FireStoreUtils.updateCabOrderStartTrip(
       orderId: orderId,
       startLocation: {'latitude': lat, 'longitude': lng},
     );
-    if (!ok) {
-      currentOrder.value.status = Constant.orderInTransit;
-      await FireStoreUtils.setCabOrder(currentOrder.value);
-    }
 
     currentOrder.value.status = Constant.orderInTransit;
     currentOrder.value.startLocation =
@@ -281,9 +282,13 @@ class CabHomeController extends GetxController {
     _accumulatedKm = 0.0;
     _startTrackingTimer();
 
+    // Firestore va UI bir xil holatda qolishi uchun to'liq order yozamiz (bitta nuqtada "Mijozni olish" qayt chiqishining oldini olish)
+    await FireStoreUtils.setCabOrder(currentOrder.value);
+
     ShowToastDialog.closeLoader();
     Get.back();
     log("🚗 [onRideStatus] Safar boshlandi, finalFare tozalandi – Manzilga yetib keldik tugmasi ko'rinadi");
+    update();
     await changeData();
   }
 
@@ -299,6 +304,11 @@ class CabHomeController extends GetxController {
     if (orderId == null ||
         orderId.isEmpty ||
         currentOrder.value.isTracking != true) {
+      _stopTrackingTimer();
+      return;
+    }
+    // Manzilga yetib keldik bosilgandan keyin narx hisoblashdan to'xtatamiz
+    if (currentOrder.value.finalFare != null) {
       _stopTrackingTimer();
       return;
     }
@@ -343,12 +353,21 @@ class CabHomeController extends GetxController {
       order.vehicleType?.delivery_charges_per_km,
       0.0,
     );
-    final baseSubTotal = double.tryParse(order.subTotal ?? '0') ?? 0.0;
-    final extraKm = _accumulatedKm > includedKm ? _accumulatedKm - includedKm : 0.0;
+    final extraKm =
+        _accumulatedKm > includedKm ? _accumulatedKm - includedKm : 0.0;
     final extraCharge = extraKm * extraKmFare;
-    double currentFare = baseSubTotal + extraCharge;
-    final minFare = _safeKmOrFare(null, order.vehicleType?.minimum_delivery_charges, 0.0);
-    if (currentFare < minFare) currentFare = minFare;
+    final minFare =
+        _safeKmOrFare(null, order.vehicleType?.minimum_delivery_charges, 0.0);
+    // Bitta nuqtada: narx = chaqiruv narxi + yurgan yo'l to'lovi (yaxlitlangan), booking base ishlatilmaydi
+    double currentFare;
+    if (isSinglePointOrder) {
+      currentFare = minFare + Constant.roundUpToNearest500(extraCharge);
+    } else {
+      final baseSubTotal = double.tryParse(order.subTotal ?? '0') ?? 0.0;
+      currentFare = baseSubTotal + extraCharge;
+      if (currentFare < minFare) currentFare = minFare;
+      currentFare = Constant.roundUpToNearest500(currentFare);
+    }
 
     log("📍 [Cab] Tick orderId=$orderId km=${_accumulatedKm.toStringAsFixed(3)} fare=$currentFare extraKm=$extraKm");
 
@@ -401,6 +420,36 @@ class CabHomeController extends GetxController {
         0.0,
       );
 
+  /// UI: Chaqiruv narxi (minimum tarif)
+  double get displayCallOutFee => minimumCabFare;
+
+  /// UI: Yurgan yo'l to'lovi (yaxlitlangan). finalFare bo'lsa finalFare - chaqiruv, aks holda joriy extraCharge yaxlitlangan
+  double get displayDistanceFareRounded {
+    final minF = minimumCabFare;
+    final ff = currentOrder.value.finalFare;
+    if (ff != null) {
+      final distancePart = ff - minF;
+      return distancePart > 0
+          ? Constant.roundUpToNearest500(distancePart)
+          : 0.0;
+    }
+    final extraCh = currentOrder.value.extraCharge ?? 0.0;
+    return Constant.roundUpToNearest500(extraCh);
+  }
+
+  /// UI: Mijoz to'lovi (umumiy). finalFare bo'lsa shu; bitta nuqtada har doim chaqiruv + yurgan to'lovi
+  double get displayCustomerTotal {
+    final ff = currentOrder.value.finalFare;
+    if (ff != null) return ff;
+    // Bitta nuqtada: joriy ko'rsatish = chaqiruv narxi + yurgan yo'l to'lovi (order.subTotal eski booking dan bo'lishi mumkin)
+    if (isSinglePointOrder) {
+      return displayCallOutFee + displayDistanceFareRounded;
+    }
+    final st = double.tryParse(currentOrder.value.subTotal ?? '0') ?? 0.0;
+    final minF = minimumCabFare;
+    return st < minF ? minF : st;
+  }
+
   /// Bir nuqtali zakazda: "Manzilga yetib keldik" – faqat summa yangilanadi, mijoz to‘lovi ko‘rinadi
   Future<bool> markReachedDestination() async {
     try {
@@ -426,9 +475,17 @@ class CabHomeController extends GetxController {
       final extraKm =
           totalDistance > includedKm ? totalDistance - includedKm : 0.0;
       final extraCharge = extraKm * extraKmFare;
-      double finalFare = baseSubTotal + extraCharge;
-      final minFare = _safeKmOrFare(null, order.vehicleType?.minimum_delivery_charges, 0.0);
-      if (finalFare < minFare) finalFare = minFare;
+      final minFare =
+          _safeKmOrFare(null, order.vehicleType?.minimum_delivery_charges, 0.0);
+      // Bitta nuqtada: finalFare = chaqiruv narxi + yurgan yo'l to'lovi (yaxlitlangan), baseSubTotal ishlatilmaydi
+      double finalFare;
+      if (isSinglePointOrder) {
+        finalFare = minFare + Constant.roundUpToNearest500(extraCharge);
+      } else {
+        finalFare = baseSubTotal + extraCharge;
+        if (finalFare < minFare) finalFare = minFare;
+        finalFare = Constant.roundUpToNearest500(finalFare);
+      }
 
       log("📍 [Cab] markReachedDestination orderId=${order.id} totalKm=$totalDistance finalFare=$finalFare extraKm=$extraKm");
 
@@ -449,6 +506,7 @@ class CabHomeController extends GetxController {
       order.extraKm = extraKm;
       order.extraCharge = extraCharge;
       order.subTotal = finalFare.toString();
+      _stopTrackingTimer();
       update();
 
       final token = order.author?.fcmToken?.trim();
@@ -457,7 +515,10 @@ class CabHomeController extends GetxController {
           token: token,
           title: "Manzilga yetib kelingan".tr,
           body: "Hozir to'lov qilish".tr,
-          payload: {'type': 'cab_reached_destination', 'rideId': order.id ?? ''},
+          payload: {
+            'type': 'cab_reached_destination',
+            'rideId': order.id ?? ''
+          },
         );
         log("📍 [Cab] Sent FCM to customer: Hozir to'lov qilish");
       }
@@ -491,18 +552,24 @@ class CabHomeController extends GetxController {
       double extraKm;
       double extraCharge;
 
+      final minFare =
+          _safeKmOrFare(null, order.vehicleType?.minimum_delivery_charges, 0.0);
       if (order.finalFare != null && order.finalDistance != null) {
         finalFare = order.finalFare!;
         extraKm = order.extraKm ?? 0.0;
         extraCharge = order.extraCharge ?? 0.0;
       } else {
-        final subTotal = double.tryParse(order.subTotal ?? '0') ?? 0.0;
         extraKm = totalDistance > includedKm ? totalDistance - includedKm : 0.0;
         extraCharge = extraKm * extraKmFare;
-        finalFare = subTotal + extraCharge;
+        if (isSinglePointOrder) {
+          finalFare = minFare + Constant.roundUpToNearest500(extraCharge);
+        } else {
+          final subTotal = double.tryParse(order.subTotal ?? '0') ?? 0.0;
+          finalFare = subTotal + extraCharge;
+          if (finalFare < minFare) finalFare = minFare;
+          finalFare = Constant.roundUpToNearest500(finalFare);
+        }
       }
-      final minFare = _safeKmOrFare(null, order.vehicleType?.minimum_delivery_charges, 0.0);
-      if (finalFare < minFare) finalFare = minFare;
 
       if (order.id != null && order.id!.isNotEmpty) {
         await FireStoreUtils.updateCabOrderEndTrip(
@@ -534,6 +601,14 @@ class CabHomeController extends GetxController {
       driverModel.value.orderCabRequestData = null;
       await FireStoreUtils.setCabOrder(order);
       await FireStoreUtils.updateUser(driverModel.value);
+
+      currentOrder.value = CabOrderModel();
+      await clearMap();
+      source.value = location.LatLng(0.0, 0.0);
+      destination.value = location.LatLng(0.0, 0.0);
+      await updateGoogleMarkers();
+      _startPendingOrderPoll();
+      update();
 
       ShowToastDialog.closeLoader();
     } catch (e) {
@@ -748,6 +823,15 @@ class CabHomeController extends GetxController {
             }
           }
 
+          // Faqat haydovchining mashina turiga (vehicleId) mos zakazlarni ko'rsatish (masalan Comfort)
+          final orderVid = order.vehicleId?.toString().trim() ?? '';
+          final driverVid = driverModel.value.vehicleId?.toString().trim() ?? '';
+          if (orderVid.isNotEmpty && driverVid.isNotEmpty && orderVid != driverVid) {
+            print(
+                "🔍 [_queryPendingOrdersForDriver] Order vehicleId ($orderVid) haydovchi vehicleId ($driverVid) ga mos kelmaydi, o'tkazib yuborilmoqda");
+            continue;
+          }
+
           // This might be the order for this driver
           print(
               "🔍 [_queryPendingOrdersForDriver] Potensial order topildi: ${order.id}");
@@ -893,6 +977,16 @@ class CabHomeController extends GetxController {
         final data = docSnap.data();
         if (data != null) {
           currentOrder.value = CabOrderModel.fromJson(data);
+          // Zakaz faqat haydovchi mashina turiga (vehicleId) mos bo'lsa ko'rsatiladi (masalan Comfort)
+          final orderVid = currentOrder.value.vehicleId?.toString().trim() ?? '';
+          final driverVid = driverModel.value.vehicleId?.toString().trim() ?? '';
+          if (orderVid.isNotEmpty && driverVid.isNotEmpty && orderVid != driverVid) {
+            print("📄 [_handleOrderDoc] Order vehicleId ($orderVid) haydovchiga mos emas ($driverVid), o'tkazib yuborilmoqda");
+            currentOrder.value = CabOrderModel();
+            _startPendingOrderPoll();
+            update();
+            return;
+          }
           print("📄 [_handleOrderDoc] currentOrder yangilandi");
           print("📄 [_handleOrderDoc] Order ID: ${currentOrder.value.id}");
           print(
@@ -909,6 +1003,10 @@ class CabHomeController extends GetxController {
             await FireStoreUtils.updateUser(driverModel.value);
             currentOrder.value = CabOrderModel();
             await clearMap();
+            source.value = location.LatLng(0.0, 0.0);
+            destination.value = location.LatLng(0.0, 0.0);
+            await updateGoogleMarkers();
+            _startPendingOrderPoll();
             await AudioPlayerService.playSound(false);
             update();
             return;
@@ -920,6 +1018,10 @@ class CabHomeController extends GetxController {
             await FireStoreUtils.updateUser(driverModel.value);
             currentOrder.value = CabOrderModel();
             await clearMap();
+            source.value = location.LatLng(0.0, 0.0);
+            destination.value = location.LatLng(0.0, 0.0);
+            await updateGoogleMarkers();
+            _startPendingOrderPoll();
             await AudioPlayerService.playSound(false);
             update();
             return;
@@ -953,12 +1055,24 @@ class CabHomeController extends GetxController {
         final doc = qSnap.docs.first;
         final data = doc.data();
         currentOrder.value = CabOrderModel.fromJson(data);
+        final orderVid = currentOrder.value.vehicleId?.toString().trim() ?? '';
+        final driverVid = driverModel.value.vehicleId?.toString().trim() ?? '';
+        if (orderVid.isNotEmpty && driverVid.isNotEmpty && orderVid != driverVid) {
+          currentOrder.value = CabOrderModel();
+          _startPendingOrderPoll();
+          update();
+          return;
+        }
         await changeData();
         if (currentOrder.value.status == Constant.orderCompleted) {
           driverModel.value.inProgressOrderID = [];
           await FireStoreUtils.updateUser(driverModel.value);
           currentOrder.value = CabOrderModel();
           await clearMap();
+          source.value = location.LatLng(0.0, 0.0);
+          destination.value = location.LatLng(0.0, 0.0);
+          await updateGoogleMarkers();
+          _startPendingOrderPoll();
           await AudioPlayerService.playSound(false);
           update();
           return;
@@ -1064,6 +1178,13 @@ class CabHomeController extends GetxController {
 
         _updateCurrentLocationMarkers();
         if (driverModel.value.id != null) {
+          // Oflayn bo'lsa yangi zakaz ko'rsatilmaydi (orderCabRequestData va poll natijalari e'tiborsiz)
+          if (driverModel.value.isActive != true &&
+              (currentOrder.value.id == null || currentOrder.value.id!.isEmpty)) {
+            currentOrder.value = CabOrderModel();
+            update();
+            return;
+          }
           print("👤 [_onDriverSnapshot] getCurrentOrder chaqirilmoqda");
           await getCurrentOrder();
           await changeData();

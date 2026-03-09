@@ -171,10 +171,12 @@ class _FirestorePaginationState extends State<FirestorePagination> {
   StreamSubscription<QuerySnapshot>? _liveStreamSub;
 
   /// [ScrollController] to listen to scroll end and load more data.
-  late final ScrollController _controller = widget.controller ?? ScrollController();
+  late final ScrollController _controller =
+      widget.controller ?? ScrollController();
 
   /// [PageController] to listen to page changes and load more data.
-  late final PageController _pageController = widget.pageController ?? PageController();
+  late final PageController _pageController =
+      widget.pageController ?? PageController();
 
   /// Whether initial data is loading.
   bool _isInitialLoading = true;
@@ -240,7 +242,8 @@ class _FirestorePaginationState extends State<FirestorePagination> {
       // scroll to the bottom and load more data.
       if (_isInitialLoading || _isFetching || _isEnded) return;
       SchedulerBinding.instance.addPostFrameCallback((_) {
-        if (_controller.hasClients && _controller.position.maxScrollExtent <= 0) {
+        if (_controller.hasClients &&
+            _controller.position.maxScrollExtent <= 0) {
           _loadDocuments();
         }
       });
@@ -259,20 +262,22 @@ class _FirestorePaginationState extends State<FirestorePagination> {
       latestDocQuery = latestDocQuery.endBeforeDocument(_docs.first);
     }
 
-    _liveStreamSub = latestDocQuery.snapshots(includeMetadataChanges: true).listen(
-      (QuerySnapshot snapshot) async {
-        await tempSub?.cancel();
-        if (snapshot.docs.isEmpty || snapshot.docs.first.metadata.hasPendingWrites) return;
+    _liveStreamSub = latestDocQuery
+        .snapshots(includeMetadataChanges: true)
+        .listen((QuerySnapshot snapshot) async {
+          await tempSub?.cancel();
+          if (snapshot.docs.isEmpty ||
+              snapshot.docs.first.metadata.hasPendingWrites)
+            return;
 
-        _docs.insert(0, snapshot.docs.first);
+          _docs.insert(0, snapshot.docs.first);
 
-        // To handle newly added data after this curently loaded data.
-        await _setLiveListener();
+          // To handle newly added data after this curently loaded data.
+          await _setLiveListener();
 
-        // Set updates listener for the newly added data.
-        _loadDocuments(getMore: false);
-      },
-    );
+          // Set updates listener for the newly added data.
+          _loadDocuments(getMore: false);
+        });
   }
 
   /// To handle scroll end event and load more data.
@@ -309,27 +314,27 @@ class _FirestorePaginationState extends State<FirestorePagination> {
     return _isInitialLoading
         ? widget.initialLoader
         : _docs.isEmpty
-            ? widget.onEmpty
-            : BuildPagination(
-                items: _docs,
-                itemBuilder: widget.itemBuilder,
-                separatorBuilder: widget.separatorBuilder ?? separatorBuilder,
-                isLoading: _isFetching,
-                viewType: widget.viewType,
-                bottomLoader: widget.bottomLoader,
-                gridDelegate: widget.gridDelegate,
-                wrapOptions: widget.wrapOptions,
-                pageOptions: widget.pageOptions,
-                scrollDirection: widget.scrollDirection,
-                reverse: widget.reverse,
-                controller: _controller,
-                pageController: _pageController,
-                shrinkWrap: widget.shrinkWrap,
-                physics: widget.physics,
-                padding: widget.padding,
-                onPageChanged: (index) {
-                  if (index >= _docs.length - 1) _loadDocuments();
-                },
-              );
+        ? widget.onEmpty
+        : BuildPagination(
+          items: _docs,
+          itemBuilder: widget.itemBuilder,
+          separatorBuilder: widget.separatorBuilder ?? separatorBuilder,
+          isLoading: _isFetching,
+          viewType: widget.viewType,
+          bottomLoader: widget.bottomLoader,
+          gridDelegate: widget.gridDelegate,
+          wrapOptions: widget.wrapOptions,
+          pageOptions: widget.pageOptions,
+          scrollDirection: widget.scrollDirection,
+          reverse: widget.reverse,
+          controller: _controller,
+          pageController: _pageController,
+          shrinkWrap: widget.shrinkWrap,
+          physics: widget.physics,
+          padding: widget.padding,
+          onPageChanged: (index) {
+            if (index >= _docs.length - 1) _loadDocuments();
+          },
+        );
   }
 }

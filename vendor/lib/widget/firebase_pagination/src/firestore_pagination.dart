@@ -46,7 +46,9 @@ class FirestorePagination extends StatefulWidget {
     this.limit = 10,
     this.viewType = ViewType.list,
     this.isLive = false,
-    this.gridDelegate = const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
+    this.gridDelegate = const SliverGridDelegateWithFixedCrossAxisCount(
+      crossAxisCount: 2,
+    ),
     this.wrapOptions = const WrapOptions(),
     this.pageOptions = const PageOptions(),
     this.onEmpty = const EmptyScreen(),
@@ -169,10 +171,12 @@ class _FirestorePaginationState extends State<FirestorePagination> {
   StreamSubscription<QuerySnapshot>? _liveStreamSub;
 
   /// [ScrollController] to listen to scroll end and load more data.
-  late final ScrollController _controller = widget.controller ?? ScrollController();
+  late final ScrollController _controller =
+      widget.controller ?? ScrollController();
 
   /// [PageController] to listen to page changes and load more data.
-  late final PageController _pageController = widget.pageController ?? PageController();
+  late final PageController _pageController =
+      widget.pageController ?? PageController();
 
   /// Whether initial data is loading.
   bool _isInitialLoading = true;
@@ -211,7 +215,9 @@ class _FirestorePaginationState extends State<FirestorePagination> {
 
       // To set new updates listener for the existing data
       // or to set new live listener if the first document is removed.
-      final isDocRemoved = snapshot.docChanges.any((DocumentChange change) => change.type == DocumentChangeType.removed);
+      final isDocRemoved = snapshot.docChanges.any(
+        (DocumentChange change) => change.type == DocumentChangeType.removed,
+      );
 
       _isFetching = false;
       if (!isDocRemoved) {
@@ -236,7 +242,8 @@ class _FirestorePaginationState extends State<FirestorePagination> {
       // scroll to the bottom and load more data.
       if (_isInitialLoading || _isFetching || _isEnded) return;
       SchedulerBinding.instance.addPostFrameCallback((_) {
-        if (_controller.hasClients && _controller.position.maxScrollExtent <= 0) {
+        if (_controller.hasClients &&
+            _controller.position.maxScrollExtent <= 0) {
           _loadDocuments();
         }
       });
@@ -255,18 +262,22 @@ class _FirestorePaginationState extends State<FirestorePagination> {
       latestDocQuery = latestDocQuery.endBeforeDocument(_docs.first);
     }
 
-    _liveStreamSub = latestDocQuery.snapshots(includeMetadataChanges: true).listen((QuerySnapshot snapshot) async {
-      await tempSub?.cancel();
-      if (snapshot.docs.isEmpty || snapshot.docs.first.metadata.hasPendingWrites) return;
+    _liveStreamSub = latestDocQuery
+        .snapshots(includeMetadataChanges: true)
+        .listen((QuerySnapshot snapshot) async {
+          await tempSub?.cancel();
+          if (snapshot.docs.isEmpty ||
+              snapshot.docs.first.metadata.hasPendingWrites)
+            return;
 
-      _docs.insert(0, snapshot.docs.first);
+          _docs.insert(0, snapshot.docs.first);
 
-      // To handle newly added data after this curently loaded data.
-      await _setLiveListener();
+          // To handle newly added data after this curently loaded data.
+          await _setLiveListener();
 
-      // Set updates listener for the newly added data.
-      _loadDocuments(getMore: false);
-    });
+          // Set updates listener for the newly added data.
+          _loadDocuments(getMore: false);
+        });
   }
 
   /// To handle scroll end event and load more data.

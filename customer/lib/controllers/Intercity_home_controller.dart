@@ -4,7 +4,6 @@ import 'dart:io';
 import 'dart:math' as math;
 import 'dart:math' as maths;
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:customer/constant/collection_name.dart';
 import 'package:customer/constant/constant.dart';
@@ -40,10 +39,10 @@ import 'package:customer/payment/stripe_failed_model.dart';
 import 'package:customer/payment/xenditModel.dart';
 import 'package:customer/payment/xenditScreen.dart';
 import 'package:customer/service/fire_store_utils.dart';
+import 'package:customer/service/yandex_geocoding_service.dart';
 import 'package:customer/themes/show_toast_dialog.dart';
 import 'package:customer/utils/preferences.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart' as flutterMap;
 import 'package:flutter_paypal/flutter_paypal.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
@@ -51,10 +50,10 @@ import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:yandex_mapkit/yandex_mapkit.dart' as ym;
 import 'package:http/http.dart' as http;
-import 'package:latlong2/latlong.dart' as latlong;
 import 'package:location/location.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:uuid/uuid.dart';
+import 'package:customer/models/lat_lng.dart' as app_lat_lng;
 import 'package:customer/utils/yandex_map_utils.dart';
 
 import '../screen_ui/multi_vendor_service/wallet_screen/wallet_screen.dart';
@@ -65,7 +64,6 @@ class IntercityHomeController extends GetxController {
 
   GoogleMapController? mapController;
   ym.YandexMapController? yandexMapController;
-  final flutterMap.MapController mapOsmController = flutterMap.MapController();
 
   final Rx<TextEditingController> sourceTextEditController =
       TextEditingController().obs;
@@ -78,8 +76,7 @@ class IntercityHomeController extends GetxController {
   final Rx<Location> currentLocation = Location().obs;
 
   final RxSet<Marker> markers = <Marker>{}.obs;
-  final RxList<flutterMap.Marker> osmMarker = <flutterMap.Marker>[].obs;
-  final RxList<latlong.LatLng> routePoints = <latlong.LatLng>[].obs;
+  final RxList<app_lat_lng.LatLng> routePoints = <app_lat_lng.LatLng>[].obs;
   bool _isMarkersRefreshScheduled = false;
 
   final Rx<LatLng> currentPosition =
@@ -87,8 +84,6 @@ class IntercityHomeController extends GetxController {
 
   final Rx<LatLng> departureLatLong = const LatLng(0.0, 0.0).obs;
   final Rx<LatLng> destinationLatLong = const LatLng(0.0, 0.0).obs;
-  final Rx<latlong.LatLng> departureLatLongOsm = latlong.LatLng(0.0, 0.0).obs;
-  final Rx<latlong.LatLng> destinationLatLongOsm = latlong.LatLng(0.0, 0.0).obs;
 
   final RxBool isLoading = true.obs;
 
@@ -96,7 +91,6 @@ class IntercityHomeController extends GetxController {
   final RxString duration = ''.obs;
 
   BitmapDescriptor? departureIcon, destinationIcon, taxiIcon, stopIcon;
-  Widget? departureIconOsm, destinationIconOsm, taxiIconOsm, stopIconOsm;
 
   RxList<TaxModel> taxList = <TaxModel>[].obs;
   RxList<VehicleType> vehicleTypes = <VehicleType>[].obs;
@@ -126,10 +120,6 @@ class IntercityHomeController extends GetxController {
   }
 
   Future<void> initData() async {
-    if (Constant.selectedMapType == 'osm') {
-      mapOsmController;
-    }
-
     await setIcons();
     await FireStoreUtils.getPopularDestination().then((value) {
       popularDestination.value = value;
@@ -262,27 +252,7 @@ class IntercityHomeController extends GetxController {
       final destLat = order.destinationLocation?.latitude ?? 0.0;
       final destLng = order.destinationLocation?.longitude ?? 0.0;
 
-      if (Constant.selectedMapType == 'osm') {
-        /// For OpenStreetMap
-        routePoints.clear();
-
-        if (order.status == Constant.driverAccepted) {
-          // DRIVER → PICKUP
-          await fetchRouteWithWaypoints([
-            latlong.LatLng(driverLat, driverLng),
-            latlong.LatLng(pickupLat, pickupLng),
-          ]);
-        } else if (order.status == Constant.orderInTransit) {
-          // PICKUP → DESTINATION
-          await fetchRouteWithWaypoints([
-            latlong.LatLng(pickupLat, pickupLng),
-            latlong.LatLng(destLat, destLng),
-          ]);
-        }
-        updateRouteMarkers(driverModel);
-      } else {
-        /// For Google Maps
-        if (order.status == Constant.driverAccepted) {
+      if (order.status == Constant.driverAccepted) {
           await fetchGoogleRouteBetween(
             LatLng(driverLat, driverLng),
             LatLng(pickupLat, pickupLng),
@@ -293,8 +263,7 @@ class IntercityHomeController extends GetxController {
             LatLng(destLat, destLng),
           );
         }
-        updateRouteMarkers(driverModel);
-      }
+      updateRouteMarkers(driverModel);
     } catch (e) {
       print("Error in updateDriverRoute: $e");
     }
@@ -313,7 +282,6 @@ class IntercityHomeController extends GetxController {
       final destLng = order.destinationLocation?.longitude ?? 0.0;
 
       markers.clear();
-      osmMarker.clear();
 
       final departureBytes = await Constant().getBytesFromAsset(
         'assets/images/location_black3x.png',
@@ -338,70 +306,7 @@ class IntercityHomeController extends GetxController {
       destinationIcon = BitmapDescriptor.fromBytes(destinationBytes);
       taxiIcon = BitmapDescriptor.fromBytes(driverBytesRaw);
 
-      if (Constant.selectedMapType == 'osm') {
-        if (order.status == Constant.driverAccepted) {
-          osmMarker.addAll([
-            flutterMap.Marker(
-              point: latlong.LatLng(pickupLat, pickupLng),
-              width: 40,
-              height: 40,
-              child: Image.asset(
-                'assets/images/location_black3x.png',
-                width: 40,
-              ),
-            ),
-            flutterMap.Marker(
-              point: latlong.LatLng(driverLat, driverLng),
-              width: 45,
-              height: 45,
-              rotate: true,
-              child: CachedNetworkImage(
-                width: 50,
-                height: 50,
-                imageUrl: Constant.sectionConstantModel!.markerIcon.toString(),
-                placeholder: (context, url) => Constant.loader(),
-                errorWidget:
-                    (context, url, error) => SizedBox(
-                      width: 30,
-                      height: 30,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
-              ),
-            ),
-          ]);
-        } else if (order.status == Constant.orderInTransit) {
-          osmMarker.addAll([
-            flutterMap.Marker(
-              point: latlong.LatLng(destLat, destLng),
-              width: 40,
-              height: 40,
-              child: Image.asset(
-                'assets/images/location_orange3x.png',
-                width: 40,
-              ),
-            ),
-            flutterMap.Marker(
-              point: latlong.LatLng(driverLat, driverLng),
-              width: 45,
-              height: 45,
-              rotate: true,
-              child: CachedNetworkImage(
-                width: 50,
-                height: 50,
-                imageUrl: Constant.sectionConstantModel!.markerIcon.toString(),
-                placeholder: (context, url) => Constant.loader(),
-                errorWidget:
-                    (context, url, error) => SizedBox(
-                      width: 30,
-                      height: 30,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
-              ),
-            ),
-          ]);
-        }
-      } else {
-        if (order.status == Constant.driverAccepted) {
+      if (order.status == Constant.driverAccepted) {
           markers.addAll([
             Marker(
               markerId: const MarkerId("pickup"),
@@ -440,7 +345,6 @@ class IntercityHomeController extends GetxController {
             ),
           ]);
         }
-      }
 
       update();
     } catch (e) {
@@ -587,25 +491,13 @@ class IntercityHomeController extends GetxController {
 
   Future<void> placeOrder() async {
     DestinationLocation sourceLocation = DestinationLocation(
-      latitude:
-          Constant.selectedMapType == 'osm'
-              ? departureLatLongOsm.value.latitude
-              : departureLatLong.value.latitude,
-      longitude:
-          Constant.selectedMapType == 'osm'
-              ? departureLatLongOsm.value.longitude
-              : departureLatLong.value.longitude,
+      latitude: departureLatLong.value.latitude,
+      longitude: departureLatLong.value.longitude,
     );
 
     DestinationLocation destinationLocation = DestinationLocation(
-      latitude:
-          Constant.selectedMapType == 'osm'
-              ? destinationLatLongOsm.value.latitude
-              : destinationLatLong.value.latitude,
-      longitude:
-          Constant.selectedMapType == 'osm'
-              ? destinationLatLongOsm.value.longitude
-              : destinationLatLong.value.longitude,
+      latitude: destinationLatLong.value.latitude,
+      longitude: destinationLatLong.value.longitude,
     );
 
     CabOrderModel orderModel = CabOrderModel();
@@ -681,76 +573,33 @@ class IntercityHomeController extends GetxController {
     } else {
       fare = _safeVehicleNum(vehicleType.delivery_charges_per_km, 0.0) * currentDistance;
     }
-    // NaN yoki kichik masofa bo'lsa ham kamida minimum_delivery_charges (2000) ko'rsatiladi
-    return fare < minimum ? minimum : fare;
+    // NaN yoki kichik masofa bo'lsa ham kamida minimum_delivery_charges (2000) ko'rsatiladi; narx 500 ga yaxlitlanadi
+    final double raw = fare < minimum ? minimum : fare;
+    return Constant.roundUpToNearest500(raw);
   }
 
   void setDepartureMarker(double lat, double long) {
-    if (Constant.selectedMapType == 'osm') {
-      _setOsmMarker(lat, long, isDeparture: true);
-    } else {
-      _setGoogleMarker(lat, long, isDeparture: true);
-    }
+    _setGoogleMarker(lat, long, isDeparture: true);
   }
 
   void setDestinationMarker(double lat, double lng) {
-    if (Constant.selectedMapType == 'osm') {
-      _setOsmMarker(lat, lng, isDeparture: false);
-    } else {
-      _setGoogleMarker(lat, lng, isDeparture: false);
-    }
+    _setGoogleMarker(lat, lng, isDeparture: false);
   }
 
   void setStopMarker(double lat, double lng, int index) {
-    if (Constant.selectedMapType == 'osm') {
-      // Add new stop marker without clearing
-      osmMarker.add(
-        flutterMap.Marker(
-          point: latlong.LatLng(lat, lng),
-          width: 40,
-          height: 40,
-          child: stopIconOsm!,
+    final markerId = MarkerId('Stop $index');
+    markers.removeWhere((marker) => marker.markerId == markerId);
+    markers.add(
+      Marker(
+        markerId: markerId,
+        infoWindow: InfoWindow(
+          title: 'Stop ${String.fromCharCode(index + 65)}',
         ),
-      );
-
-      getDirections(isStopMarker: true);
-    } else {
-      final markerId = MarkerId('Stop $index');
-
-      markers.removeWhere((marker) => marker.markerId == markerId);
-      markers.add(
-        Marker(
-          markerId: markerId,
-          infoWindow: InfoWindow(
-            title: 'Stop ${String.fromCharCode(index + 65)}',
-          ),
-          position: LatLng(lat, lng),
-          icon: stopIcon!,
-        ),
-      );
-
-      getDirections();
-    }
-  }
-
-  void _setOsmMarker(double lat, double lng, {required bool isDeparture}) {
-    final marker = flutterMap.Marker(
-      point: latlong.LatLng(lat, lng),
-      width: 40,
-      height: 40,
-      child: isDeparture ? departureIconOsm! : destinationIconOsm!,
+        position: LatLng(lat, lng),
+        icon: stopIcon!,
+      ),
     );
-    if (isDeparture) {
-      departureLatLongOsm.value = latlong.LatLng(lat, lng);
-    } else {
-      destinationLatLongOsm.value = latlong.LatLng(lat, lng);
-    }
-    osmMarker.add(marker);
-    if (departureLatLongOsm.value.latitude != 0 &&
-        destinationLatLongOsm.value.latitude != 0) {
-      getDirections();
-      animateToSource(lat, lng);
-    }
+    getDirections();
   }
 
   void _setGoogleMarker(double lat, double lng, {required bool isDeparture}) {
@@ -836,56 +685,7 @@ class IntercityHomeController extends GetxController {
   }
 
   Future<void> getDirections({bool isStopMarker = false}) async {
-    if (Constant.selectedMapType == 'osm') {
-      final wayPoints = <latlong.LatLng>[];
-
-      // Only add valid source
-      if (departureLatLongOsm.value.latitude != 0.0 &&
-          departureLatLongOsm.value.longitude != 0.0) {
-        wayPoints.add(departureLatLongOsm.value);
-      }
-
-      // Only add valid destination
-      if (destinationLatLongOsm.value.latitude != 0.0 &&
-          destinationLatLongOsm.value.longitude != 0.0) {
-        wayPoints.add(destinationLatLongOsm.value);
-      }
-
-      if (!isStopMarker) osmMarker.clear();
-
-      // Add source marker
-      if (departureLatLongOsm.value.latitude != 0.0 &&
-          departureLatLongOsm.value.longitude != 0.0) {
-        osmMarker.add(
-          flutterMap.Marker(
-            point: departureLatLongOsm.value,
-            width: 40,
-            height: 40,
-            child: departureIconOsm!,
-          ),
-        );
-      }
-
-      // Add destination marker
-      if (destinationLatLongOsm.value.latitude != 0.0 &&
-          destinationLatLongOsm.value.longitude != 0.0) {
-        osmMarker.add(
-          flutterMap.Marker(
-            point: destinationLatLongOsm.value,
-            width: 40,
-            height: 40,
-            child: destinationIconOsm!,
-          ),
-        );
-      }
-
-      if (wayPoints.length >= 2) {
-        await fetchRouteWithWaypoints(wayPoints);
-      }
-    } else {
-      // Google Maps path
-      fetchGoogleRouteWithWaypoints();
-    }
+    fetchGoogleRouteWithWaypoints();
   }
 
   Future<void> fetchGoogleRouteWithWaypoints() async {
@@ -948,7 +748,7 @@ class IntercityHomeController extends GetxController {
     }
   }
 
-  Future<void> fetchRouteWithWaypoints(List<latlong.LatLng> points) async {
+  Future<void> fetchRouteWithWaypoints(List<app_lat_lng.LatLng> points) async {
     final coordinates = points
         .map((p) => '${p.longitude},${p.latitude}')
         .join(';');
@@ -967,7 +767,7 @@ class IntercityHomeController extends GetxController {
 
         routePoints.clear();
         routePoints.addAll(
-          geometry.map((coord) => latlong.LatLng(coord[1], coord[0])),
+          geometry.map((coord) => app_lat_lng.LatLng(coord[1], coord[0])),
         );
 
         if (Constant.distanceType.toLowerCase() == "KM".toLowerCase()) {
@@ -991,34 +791,11 @@ class IntercityHomeController extends GetxController {
   }
 
   void zoomToPolylineOSM() {
-    if (routePoints.isEmpty) return;
-    // LatLngBounds requires at least two points
-    final bounds = flutterMap.LatLngBounds(
-      routePoints.first,
-      routePoints.first,
+    if (routePoints.isEmpty || yandexMapController == null) return;
+    final bounds = yandexBoundsFromLatLngs(routePoints);
+    yandexMapController!.moveCamera(
+      ym.CameraUpdate.newGeometry(ym.Geometry.fromBoundingBox(bounds)),
     );
-    for (final point in routePoints) {
-      bounds.extend(point);
-    }
-    final center = bounds.center;
-    // Calculate zoom level to fit all points
-    double zoom = getBoundsZoomLevel(bounds);
-    mapOsmController.move(center, zoom);
-  }
-
-  double getBoundsZoomLevel(flutterMap.LatLngBounds bounds) {
-    // Simple heuristic: zoom out for larger bounds
-    final latDiff =
-        (bounds.northEast.latitude - bounds.southWest.latitude).abs();
-    final lngDiff =
-        (bounds.northEast.longitude - bounds.southWest.longitude).abs();
-    double maxDiff = math.max(latDiff, lngDiff);
-    if (maxDiff < 0.005) return 18.0;
-    if (maxDiff < 0.01) return 16.0;
-    if (maxDiff < 0.05) return 14.0;
-    if (maxDiff < 0.1) return 12.0;
-    if (maxDiff < 0.5) return 10.0;
-    return 8.0;
   }
 
   void addPolyLine(List<LatLng> points) {
@@ -1046,7 +823,8 @@ class IntercityHomeController extends GetxController {
     List<LatLng> points,
   ) async {
     if (yandexMapController == null || points.isEmpty) return;
-    final bounds = yandexBoundsFromLatLngs(points);
+    final appPoints = points.map((p) => app_lat_lng.LatLng(p.latitude, p.longitude)).toList();
+    final bounds = yandexBoundsFromLatLngs(appPoints);
     await yandexMapController!.moveCamera(
       ym.CameraUpdate.newGeometry(ym.Geometry.fromBoundingBox(bounds)),
     );
@@ -1075,71 +853,40 @@ class IntercityHomeController extends GetxController {
 
   Future<void> animateToSource(double lat, double long) async {
     final hasBothCoords =
-        departureLatLongOsm.value.latitude != 0.0 &&
-        destinationLatLongOsm.value.latitude != 0.0;
+        departureLatLong.value.latitude != 0.0 &&
+        destinationLatLong.value.longitude != 0.0 &&
+        destinationLatLong.value.latitude != 0.0 &&
+        destinationLatLong.value.longitude != 0.0;
 
     if (hasBothCoords) {
       await calculateZoomLevel(
-        source: departureLatLongOsm.value,
-        destination: destinationLatLongOsm.value,
+        source: app_lat_lng.LatLng(departureLatLong.value.latitude, departureLatLong.value.longitude),
+        destination: app_lat_lng.LatLng(destinationLatLong.value.latitude, destinationLatLong.value.longitude),
       );
-    } else {
-      mapOsmController.move(latlong.LatLng(lat, long), 10);
+    } else if (yandexMapController != null) {
+      await yandexMapController!.moveCamera(
+        ym.CameraUpdate.newCameraPosition(
+          ym.CameraPosition(
+            target: ym.Point(latitude: lat, longitude: long),
+            zoom: 10,
+          ),
+        ),
+      );
     }
   }
 
   RxMap<PolylineId, Polyline> polyLines = <PolylineId, Polyline>{}.obs;
 
   Future<void> calculateZoomLevel({
-    required latlong.LatLng source,
-    required latlong.LatLng destination,
+    required app_lat_lng.LatLng source,
+    required app_lat_lng.LatLng destination,
     double paddingFraction = 0.001,
   }) async {
-    final bounds = flutterMap.LatLngBounds.fromPoints([source, destination]);
-    final screenSize = Size(Get.width, Get.height * 0.5);
-    const double worldDimension = 256.0;
-    const double maxZoom = 10.0;
-
-    double latToRad(double lat) =>
-        math.log(
-          (1 + math.sin(lat * math.pi / 180)) /
-              (1 - math.sin(lat * math.pi / 180)),
-        ) /
-        2;
-
-    double computeZoom(double screenPx, double worldPx, double fraction) =>
-        math.log(screenPx / worldPx / fraction) / math.ln2;
-
-    final north = bounds.northEast.latitude;
-    final south = bounds.southWest.latitude;
-    final east = bounds.northEast.longitude;
-    final west = bounds.southWest.longitude;
-
-    final latDelta = (north - south).abs();
-    final lngDelta = (east - west).abs();
-
-    final center = bounds.center;
-
-    if (latDelta < 1e-6 || lngDelta < 1e-6) {
-      mapOsmController.move(center, maxZoom);
-    } else {
-      final latFraction = (latToRad(north) - latToRad(south)) / math.pi;
-      final lngFraction = ((east - west + 360) % 360) / 360;
-
-      final latZoom = computeZoom(
-        screenSize.height,
-        worldDimension,
-        latFraction + paddingFraction,
-      );
-      final lngZoom = computeZoom(
-        screenSize.width,
-        worldDimension,
-        lngFraction + paddingFraction,
-      );
-
-      final zoomLevel = math.min(latZoom, lngZoom).clamp(0.0, maxZoom);
-      mapOsmController.move(center, zoomLevel);
-    }
+    if (yandexMapController == null) return;
+    final bounds = yandexBoundsFromLatLngs([source, destination]);
+    await yandexMapController!.moveCamera(
+      ym.CameraUpdate.newGeometry(ym.Geometry.fromBoundingBox(bounds)),
+    );
   }
 
   Future<void> updateCameraLocation(
@@ -1179,46 +926,23 @@ class IntercityHomeController extends GetxController {
 
   Future<void> setIcons() async {
     try {
-      if (Constant.selectedMapType == 'osm') {
-        departureIconOsm = Image.asset(
-          "assets/icons/ic_cab_pickup.png",
-          width: 14,
-          height: 14,
-        );
-        destinationIconOsm = Image.asset(
-          "assets/icons/ic_cab_destination.png",
-          width: 14,
-          height: 14,
-        );
-        taxiIconOsm = Image.asset(
-          "assets/icons/ic_taxi.png",
-          width: 14,
-          height: 14,
-        );
-        stopIconOsm = Image.asset(
-          "assets/icons/ic_location.png",
-          width: 12,
-          height: 12,
-        );
-      } else {
-        const config = ImageConfiguration(size: Size(18, 18));
-        departureIcon = await BitmapDescriptor.fromAssetImage(
-          config,
-          "assets/icons/ic_cab_pickup.png",
-        );
-        destinationIcon = await BitmapDescriptor.fromAssetImage(
-          config,
-          "assets/icons/ic_cab_destination.png",
-        );
-        taxiIcon = await BitmapDescriptor.fromAssetImage(
-          config,
-          "assets/icons/ic_taxi.png",
-        );
-        stopIcon = await BitmapDescriptor.fromAssetImage(
-          config,
-          "assets/icons/ic_location.png",
-        );
-      }
+      const config = ImageConfiguration(size: Size(18, 18));
+      departureIcon = await BitmapDescriptor.fromAssetImage(
+        config,
+        "assets/icons/ic_cab_pickup.png",
+      );
+      destinationIcon = await BitmapDescriptor.fromAssetImage(
+        config,
+        "assets/icons/ic_cab_destination.png",
+      );
+      taxiIcon = await BitmapDescriptor.fromAssetImage(
+        config,
+        "assets/icons/ic_taxi.png",
+      );
+      stopIcon = await BitmapDescriptor.fromAssetImage(
+        config,
+        "assets/icons/ic_location.png",
+      );
     } catch (e) {
       print('Error loading icons: $e');
     }
@@ -1226,20 +950,14 @@ class IntercityHomeController extends GetxController {
 
   void clearMapDataIfLocationsRemoved() {
     final isSourceEmpty =
-        departureLatLongOsm.value.latitude == 0.0 &&
-        departureLatLongOsm.value.longitude == 0.0;
+        departureLatLong.value.latitude == 0.0 &&
+        departureLatLong.value.longitude == 0.0;
     final isDestinationEmpty =
-        destinationLatLongOsm.value.latitude == 0.0 &&
-        destinationLatLongOsm.value.longitude == 0.0;
+        destinationLatLong.value.latitude == 0.0 &&
+        destinationLatLong.value.longitude == 0.0;
 
     if (isSourceEmpty || isDestinationEmpty) {
-      // Clear polylines
       polyLines.clear();
-
-      // Clear OSM markers (if using OSM)
-      osmMarker.clear();
-
-      // Clear Google markers (if using Google Maps)
       markers.clear();
 
       // Clear route points (optional)
@@ -1252,19 +970,9 @@ class IntercityHomeController extends GetxController {
   }
 
   void removeSource() {
-    // Clear departure location and related data
-    departureLatLongOsm.value = latlong.LatLng(0.0, 0.0);
     departureLatLong.value = const LatLng(0.0, 0.0);
     sourceTextEditController.value.clear();
-
-    // Remove marker
-    if (Constant.selectedMapType == 'osm') {
-      osmMarker.removeWhere(
-        (marker) => marker.point == departureLatLongOsm.value,
-      );
-    } else {
-      markers.removeWhere((marker) => marker.markerId.value == 'Departure');
-    }
+    markers.removeWhere((marker) => marker.markerId.value == 'Departure');
 
     // Clear polylines and route info if needed
     clearMapDataIfLocationsRemoved();
@@ -1272,64 +980,37 @@ class IntercityHomeController extends GetxController {
   }
 
   void removeDestination() {
-    destinationLatLongOsm.value = latlong.LatLng(0.0, 0.0);
     destinationLatLong.value = const LatLng(0.0, 0.0);
     destinationTextEditController.value.clear();
-
-    if (Constant.selectedMapType == 'osm') {
-      osmMarker.removeWhere(
-        (marker) => marker.point == destinationLatLongOsm.value,
-      );
-    } else {
-      markers.removeWhere((marker) => marker.markerId.value == 'Destination');
-    }
+    markers.removeWhere((marker) => marker.markerId.value == 'Destination');
 
     clearMapDataIfLocationsRemoved();
     update();
   }
 
   Future<void> searchPlaceNameOSM() async {
-    final url = Uri.parse(
-      'https://nominatim.openstreetmap.org/reverse?lat=${departureLatLongOsm.value.latitude}&lon=${departureLatLongOsm.value.longitude}&format=json',
+    await _setAddressFromYandex(
+      departureLatLong.value.latitude,
+      departureLatLong.value.longitude,
     );
-
-    final response = await http.get(
-      url,
-      headers: {
-        'User-Agent': 'FlutterMapApp/1.0 (menil.siddhiinfosoft@gmail.com)',
-      },
-    );
-
-    if (response.statusCode == 200) {
-      log("response.body :: ${response.body}");
-      Map<String, dynamic> data = json.decode(response.body);
-      sourceTextEditController.value.text = data['display_name'] ?? '';
-    }
   }
 
   Future<void> searchPlaceNameGoogle() async {
-    final lat = departureLatLong.value.latitude;
-    final lng = departureLatLong.value.longitude;
-
-    final url = Uri.parse(
-      'https://maps.googleapis.com/maps/api/geocode/json?latlng=$lat,$lng&key=${Constant.mapAPIKey}',
+    await _setAddressFromYandex(
+      departureLatLong.value.latitude,
+      departureLatLong.value.longitude,
     );
+  }
 
-    final response = await http.get(url);
-
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      if (data['status'] == 'OK') {
-        final results = data['results'] as List;
-        if (results.isNotEmpty) {
-          final formattedAddress = results[0]['formatted_address'];
-          sourceTextEditController.value.text = formattedAddress;
-        }
-      } else {
-        log("Google API Error: ${data['status']}");
+  Future<void> _setAddressFromYandex(double lat, double lng) async {
+    try {
+      final geocoding = YandexGeocodingService(apiKey: Constant.yandexGeocodeApiKey);
+      final place = await geocoding.reverseGeocode(lat, lng);
+      if (place != null) {
+        sourceTextEditController.value.text = place.formattedAddress;
       }
-    } else {
-      log("HTTP Error: ${response.statusCode}");
+    } catch (e) {
+      log("Yandex Reverse Geocode Error: $e");
     }
   }
 

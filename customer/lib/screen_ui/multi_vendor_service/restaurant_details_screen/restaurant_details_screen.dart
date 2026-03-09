@@ -850,11 +850,9 @@ class RestaurantDetailsScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-              // Products Grid
+              // Products Grid (lazy-loaded to avoid building 291+ items at once)
               if (!controller.isLoading.value)
-                SliverToBoxAdapter(
-                  child: ProductListView(controller: controller),
-                ),
+                ProductListView.buildLazySliver(controller),
             ],
           ),
           // floatingActionButton: PopupMenuButton(
@@ -1297,12 +1295,138 @@ class ProductListView extends StatelessWidget {
 
   const ProductListView({super.key, required this.controller});
 
+  /// Lazy sliver: only visible category headers and product rows are built (fixes crash with 291+ products).
+  static Widget buildLazySliver(RestaurantDetailsController controller) {
+    return SliverPadding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      sliver: SliverList(
+        delegate: SliverChildBuilderDelegate(
+          (context, index) {
+            final themeController = Get.find<ThemeController>();
+            final isDark = themeController.isDark.value;
+            return _buildSliverItem(context, index, controller, isDark);
+          },
+          childCount: _computeTotalListItems(controller),
+        ),
+      ),
+    );
+  }
+
+  static int _computeTotalListItems(RestaurantDetailsController controller) {
+    int total = 0;
+    final categories = controller.vendorCategoryList;
+    for (int c = 0; c < categories.length; c++) {
+      final cat = categories[c];
+      final products = _getProductsForCategory(controller, cat);
+      if (products.isEmpty) continue;
+      total += 1; // header
+      total += (products.length + 1) ~/ 2; // rows of 2 products
+    }
+    return total;
+  }
+
+  static List<ProductModel> _getProductsForCategory(
+    RestaurantDetailsController controller,
+    VendorCategoryModel cat,
+  ) {
+    if (cat.id == RestaurantDetailsController.uncategorizedCategoryId) {
+      return controller.productList
+          .where((p0) => !controller.vendorCategoryList.any((c) =>
+              c.id != RestaurantDetailsController.uncategorizedCategoryId &&
+              c.id == p0.categoryID))
+          .toList();
+    }
+    return controller.productList
+        .where((p0) => p0.categoryID == cat.id)
+        .toList();
+  }
+
+  static Widget _buildSliverItem(
+    BuildContext context,
+    int index,
+    RestaurantDetailsController controller,
+    bool isDark,
+  ) {
+    final categories = controller.vendorCategoryList;
+    int current = 0;
+    for (int c = 0; c < categories.length; c++) {
+      final cat = categories[c];
+      final products = _getProductsForCategory(controller, cat);
+      if (products.isEmpty) continue;
+      if (index == current) {
+        if (!controller.categoryKeys.containsKey(cat.id.toString())) {
+          controller.categoryKeys[cat.id.toString()] = GlobalKey();
+        }
+        final key = controller.categoryKeys[cat.id.toString()]!;
+        return Padding(
+          key: key,
+          padding: const EdgeInsets.only(top: 24, bottom: 16),
+          child: Text(
+            "${cat.title} (${products.length})",
+            style: TextStyle(
+              fontSize: 20,
+              fontFamily: AppThemeData.semiBold,
+              fontWeight: FontWeight.w600,
+              color: isDark ? AppThemeData.grey50 : AppThemeData.grey900,
+            ),
+          ),
+        );
+      }
+      current += 1;
+      final rowCount = (products.length + 1) ~/ 2;
+      for (int r = 0; r < rowCount; r++) {
+        if (index == current) {
+          final i1 = r * 2;
+          final i2 = r * 2 + 1;
+          final p1 = products[i1];
+          final p2 = i2 < products.length ? products[i2] : null;
+          // Fixed height so Column+Expanded inside card gets bounded constraints (SliverList gives unbounded height).
+          const double cardHeight = 280;
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: SizedBox(
+                    height: cardHeight,
+                    child: _buildProductGridCard(
+                      context,
+                      p1,
+                      controller,
+                      isDark,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: p2 != null
+                      ? SizedBox(
+                          height: cardHeight,
+                          child: _buildProductGridCard(
+                            context,
+                            p2,
+                            controller,
+                            isDark,
+                          ),
+                        )
+                      : const SizedBox.shrink(),
+                ),
+              ],
+            ),
+          );
+        }
+        current += 1;
+      }
+    }
+    return const SizedBox.shrink();
+  }
+
   @override
   Widget build(BuildContext context) {
     final themeController = Get.find<ThemeController>();
     final isDark = themeController.isDark.value;
 
-    // Initialize category keys if not already done
     WidgetsBinding.instance.addPostFrameCallback((_) {
       for (var category in controller.vendorCategoryList) {
         if (!controller.categoryKeys.containsKey(category.id.toString())) {
@@ -1324,23 +1448,13 @@ class ProductListView extends StatelessWidget {
             VendorCategoryModel vendorCategoryModel =
                 controller.vendorCategoryList[categoryIndex];
 
-            // Get products for this category (or uncategorized)
             final categoryProducts =
-                vendorCategoryModel.id == RestaurantDetailsController.uncategorizedCategoryId
-                    ? controller.productList
-                        .where((p0) => !controller.vendorCategoryList
-                            .any((c) => c.id != RestaurantDetailsController.uncategorizedCategoryId && c.id == p0.categoryID))
-                        .toList()
-                    : controller.productList
-                        .where((p0) => p0.categoryID == vendorCategoryModel.id)
-                        .toList();
+                _getProductsForCategory(controller, vendorCategoryModel);
 
-            // Skip if no products in this category
             if (categoryProducts.isEmpty) {
               return const SizedBox.shrink();
             }
 
-            // Get or create key for this category
             final categoryKey =
                 controller.categoryKeys[vendorCategoryModel.id.toString()] ??
                 GlobalKey();
@@ -1368,7 +1482,6 @@ class ProductListView extends StatelessWidget {
                     ),
                   ),
                 ),
-                // Grid View for products
                 GridView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
@@ -1398,7 +1511,7 @@ class ProductListView extends StatelessWidget {
     );
   }
 
-  Widget _buildProductGridCard(
+  static Widget _buildProductGridCard(
     BuildContext context,
     ProductModel productModel,
     RestaurantDetailsController controller,
@@ -1492,6 +1605,8 @@ class ProductListView extends StatelessWidget {
                     fit: BoxFit.cover,
                     height: 130,
                     width: double.infinity,
+                    memCacheWidth: 300,
+                    memCacheHeight: 260,
                   ),
                 ),
                 // Gradient overlay
@@ -1719,7 +1834,7 @@ class ProductListView extends StatelessWidget {
     );
   }
 
-  Widget _buildAddToCartButton(
+  static Widget _buildAddToCartButton(
     BuildContext context,
     ProductModel productModel,
     RestaurantDetailsController controller,
@@ -1914,7 +2029,7 @@ class ProductListView extends StatelessWidget {
               }
               controller.update();
               controller.calculatePrice(productModel);
-              productDetailsBottomSheet(context, productModel);
+              ProductListView.productDetailsBottomSheet(context, productModel);
             },
           ),
         );
@@ -2042,7 +2157,7 @@ class ProductListView extends StatelessWidget {
     );
   }
 
-  Future productDetailsBottomSheet(
+  static Future<void> productDetailsBottomSheet(
     BuildContext context,
     ProductModel productModel,
   ) {

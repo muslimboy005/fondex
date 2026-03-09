@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:customer/constant/collection_name.dart';
 import 'package:customer/constant/constant.dart';
 import 'package:customer/models/order_model.dart';
@@ -9,29 +8,25 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:yandex_mapkit/yandex_mapkit.dart' as ym;
-import 'package:latlong2/latlong.dart' as location;
-import 'package:flutter_map/flutter_map.dart' as flutterMap;
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
-import 'package:http/http.dart' as http;
+import 'package:customer/models/lat_lng.dart' as app_lat_lng;
 import 'package:customer/utils/yandex_map_utils.dart';
 
 class LiveTrackingController extends GetxController {
   GoogleMapController? mapController;
   ym.YandexMapController? yandexMapController;
-  final flutterMap.MapController osmMapController = flutterMap.MapController();
 
   Rx<OrderModel> orderModel = OrderModel().obs;
   Rx<UserModel> driverUserModel = UserModel().obs;
   RxBool isLoading = true.obs;
 
-  Rx<location.LatLng> source = location.LatLng(0, 0).obs;
-  Rx<location.LatLng> destination = location.LatLng(0, 0).obs;
-  Rx<location.LatLng> driverCurrent = location.LatLng(0, 0).obs;
+  Rx<app_lat_lng.LatLng> source = app_lat_lng.LatLng(0, 0).obs;
+  Rx<app_lat_lng.LatLng> destination = app_lat_lng.LatLng(0, 0).obs;
+  Rx<app_lat_lng.LatLng> driverCurrent = app_lat_lng.LatLng(0, 0).obs;
 
-  RxList<location.LatLng> routePoints = <location.LatLng>[].obs;
+  RxList<app_lat_lng.LatLng> routePoints = <app_lat_lng.LatLng>[].obs;
   RxMap<MarkerId, Marker> markers = <MarkerId, Marker>{}.obs;
   RxMap<PolylineId, Polyline> polyLines = <PolylineId, Polyline>{}.obs;
-  RxList<flutterMap.Marker> osmMarkers = <flutterMap.Marker>[].obs;
 
   BitmapDescriptor? pickupIcon;
   BitmapDescriptor? dropoffIcon;
@@ -94,17 +89,17 @@ class LiveTrackingController extends GetxController {
   }
 
   Future<void> updateLiveTracking() async {
-    driverCurrent.value = location.LatLng(
+    driverCurrent.value = app_lat_lng.LatLng(
       driverUserModel.value.location?.latitude ?? 0.0,
       driverUserModel.value.location?.longitude ?? 0.0,
     );
 
-    source.value = location.LatLng(
+    source.value = app_lat_lng.LatLng(
       orderModel.value.vendor?.latitude ?? 0.0,
       orderModel.value.vendor?.longitude ?? 0.0,
     );
 
-    destination.value = location.LatLng(
+    destination.value = app_lat_lng.LatLng(
       orderModel.value.address?.location?.latitude ?? 0.0,
       orderModel.value.address?.location?.longitude ?? 0.0,
     );
@@ -120,104 +115,32 @@ class LiveTrackingController extends GetxController {
 
   Future<void> showDriverToRestaurantRoute() async {
     clearOldData();
-    if (Constant.selectedMapType == 'osm') {
-      await fetchRoute(driverCurrent.value, source.value);
-      addOsmMarkers(showPickup: true, showDrop: false);
-      animateToOSMLocation(driverCurrent.value);
-    } else {
-      await getPolyline(
-        sourceLatitude: driverCurrent.value.latitude,
-        sourceLongitude: driverCurrent.value.longitude,
-        destinationLatitude: source.value.latitude,
-        destinationLongitude: source.value.longitude,
-        showPickup: true,
-        showDrop: false,
-      );
-    }
+    await getPolyline(
+      sourceLatitude: driverCurrent.value.latitude,
+      sourceLongitude: driverCurrent.value.longitude,
+      destinationLatitude: source.value.latitude,
+      destinationLongitude: source.value.longitude,
+      showPickup: true,
+      showDrop: false,
+    );
   }
 
   Future<void> showDriverToCustomerRoute() async {
     clearOldData();
-    if (Constant.selectedMapType == 'osm') {
-      await fetchRoute(driverCurrent.value, destination.value);
-      addOsmMarkers(showPickup: false, showDrop: true);
-      animateToOSMLocation(driverCurrent.value);
-    } else {
-      await getPolyline(
-        sourceLatitude: driverCurrent.value.latitude,
-        sourceLongitude: driverCurrent.value.longitude,
-        destinationLatitude: destination.value.latitude,
-        destinationLongitude: destination.value.longitude,
-        showPickup: false,
-        showDrop: true,
-      );
-    }
+    await getPolyline(
+      sourceLatitude: driverCurrent.value.latitude,
+      sourceLongitude: driverCurrent.value.longitude,
+      destinationLatitude: destination.value.latitude,
+      destinationLongitude: destination.value.longitude,
+      showPickup: false,
+      showDrop: true,
+    );
   }
 
   void clearOldData() {
     markers.clear();
     polyLines.clear();
     routePoints.clear();
-  }
-
-  Future<void> fetchRoute(
-    location.LatLng source,
-    location.LatLng destination,
-  ) async {
-    final url = Uri.parse(
-      'https://router.project-osrm.org/route/v1/driving/${source.longitude},${source.latitude};${destination.longitude},${destination.latitude}?overview=full&geometries=geojson',
-    );
-    final response = await http.get(url);
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      final coords = data['routes'][0]['geometry']['coordinates'];
-      routePoints.value =
-          coords
-              .map<location.LatLng>(
-                (c) => location.LatLng(c[1].toDouble(), c[0].toDouble()),
-              )
-              .toList();
-    }
-  }
-
-  void animateToOSMLocation(location.LatLng loc) {
-    osmMapController.move(loc, 15);
-  }
-
-  void addOsmMarkers({bool showPickup = false, bool showDrop = false}) {
-    final List<flutterMap.Marker> tempMarkers = [
-      // Driver Marker
-      flutterMap.Marker(
-        point: driverCurrent.value,
-        width: 40,
-        height: 40,
-        child: Image.asset('assets/images/food_delivery.png'),
-      ),
-    ];
-
-    if (showPickup) {
-      tempMarkers.add(
-        flutterMap.Marker(
-          point: source.value,
-          width: 40,
-          height: 40,
-          child: Image.asset('assets/images/pickup.png'),
-        ),
-      );
-    }
-
-    if (showDrop) {
-      tempMarkers.add(
-        flutterMap.Marker(
-          point: destination.value,
-          width: 40,
-          height: 40,
-          child: Image.asset('assets/images/dropoff.png'),
-        ),
-      );
-    }
-
-    osmMarkers.value = tempMarkers;
   }
 
   Future<void> getPolyline({
@@ -302,8 +225,6 @@ class LiveTrackingController extends GetxController {
   }
 
   Future<void> addMarkerIcons() async {
-    if (Constant.selectedMapType == 'osm') return;
-
     pickupIcon = BitmapDescriptor.fromBytes(
       await Constant().getBytesFromAsset('assets/images/pickup.png', 100),
     );
@@ -337,7 +258,8 @@ class LiveTrackingController extends GetxController {
     if (points.isEmpty) return;
     if (Constant.isYandexMap) {
       if (yandexMapController == null) return;
-      final bounds = yandexBoundsFromLatLngs(points);
+      final appPoints = points.map((p) => app_lat_lng.LatLng(p.latitude, p.longitude)).toList();
+      final bounds = yandexBoundsFromLatLngs(appPoints);
       await yandexMapController!.moveCamera(
         ym.CameraUpdate.newGeometry(ym.Geometry.fromBoundingBox(bounds)),
       );

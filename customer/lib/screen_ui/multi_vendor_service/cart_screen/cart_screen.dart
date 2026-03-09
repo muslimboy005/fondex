@@ -28,7 +28,10 @@ import '../wallet_screen/wallet_screen.dart';
 import 'coupon_list_screen.dart';
 
 class CartScreen extends StatelessWidget {
-  const CartScreen({super.key});
+  /// Pastki nav orqali ochilganda back tugmasi ko'rinmasin (false). Boshqa joydan Get.to() bilan ochilganda true.
+  final bool showBackButton;
+
+  const CartScreen({super.key, this.showBackButton = true});
 
   @override
   Widget build(BuildContext context) {
@@ -43,6 +46,7 @@ class CartScreen extends StatelessWidget {
           appBar: AppBar(
             backgroundColor:
                 isDark ? AppThemeData.surfaceDark : AppThemeData.surface,
+            automaticallyImplyLeading: showBackButton,
           ),
           body:
               cartItem.isEmpty

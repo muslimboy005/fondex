@@ -16,13 +16,10 @@ import 'package:driver/utils/fire_store_utils.dart';
 import 'package:driver/utils/utils.dart';
 import 'package:driver/widget/my_separator.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart' as flutterMap;
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart' as google_maps;
 import 'package:yandex_mapkit/yandex_mapkit.dart' as ym;
-import 'package:latlong2/latlong.dart' as location;
 import 'package:timelines_plus/timelines_plus.dart';
 import 'package:driver/utils/yandex_map_utils.dart';
 
@@ -182,305 +179,57 @@ class HomeScreen extends StatelessWidget {
                             child: Constant.mapType == "inappmap"
                                 ? Stack(
                                     children: [
-                                      Constant.isOsmMap
-                                              ? Obx(() {
-                                                  // Get current location or use default (Tashkent)
-                                                  final currentLocation =
-                                                      controller.current.value;
-                                                  final hasValidLocation =
-                                                      !(currentLocation
-                                                                  .latitude ==
-                                                              0.0 &&
-                                                          currentLocation
-                                                                  .longitude ==
-                                                              0.0);
-                                                  final centerLocation =
-                                                      hasValidLocation
-                                                          ? currentLocation
-                                                          : location.LatLng(
-                                                              41.3111,
-                                                              69.2797); // Default: Tashkent
+                                      Obx(() {
+                                        final driverLat = controller.driverModel
+                                                .value.location?.latitude ??
+                                            0.0;
+                                        final driverLng = controller.driverModel
+                                                .value.location?.longitude ??
+                                            0.0;
+                                        final finalLat = Constant
+                                                .locationDataFinal?.latitude ??
+                                            driverLat;
+                                        final finalLng = Constant
+                                                .locationDataFinal?.longitude ??
+                                            driverLng;
 
-                                                  // Schedule a post-frame callback to ensure the FlutterMap has been built
-                                                  // before we attempt to move the map to the driver's location.
-                                                  WidgetsBinding.instance
-                                                      .addPostFrameCallback(
-                                                          (_) {
-                                                    try {
-                                                      if (hasValidLocation) {
-                                                        controller
-                                                            .animateToSource();
-                                                      }
-                                                    } catch (_) {}
-                                                  });
-
-                                                  return flutterMap.FlutterMap(
-                                                    mapController: controller
-                                                        .osmMapController,
-                                                    options:
-                                                        flutterMap.MapOptions(
-                                                      // center the OSM map on the controller's current position (updated by controller)
-                                                      initialCenter:
-                                                          centerLocation,
-                                                      initialZoom: 12,
-                                                    ),
-                                                    children: [
-                                                      flutterMap.TileLayer(
-                                                        urlTemplate:
-                                                            'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                                                        userAgentPackageName:
-                                                            'com.emart.app',
-                                                      ),
-                                                      // Always show osmMarkers (driver/current marker + pickup/dropoff when available)
-                                                      flutterMap.MarkerLayer(
-                                                          markers: controller
-                                                              .osmMarkers),
-                                                      if (controller.routePoints
-                                                              .isNotEmpty &&
-                                                          controller
-                                                                  .currentOrder
-                                                                  .value
-                                                                  .id !=
-                                                              null)
-                                                        flutterMap
-                                                            .PolylineLayer(
-                                                          polylines: [
-                                                            flutterMap.Polyline(
-                                                              points: controller
-                                                                  .routePoints,
-                                                              strokeWidth: 7.0,
-                                                              color: AppThemeData
-                                                                  .primary300,
-                                                            ),
-                                                          ],
-                                                        ),
-                                                    ],
-                                                  );
-                                                })
-                                              : Constant.isYandexMap
-                                                  ? Obx(() {
-                                                      final driverLat =
-                                                          controller
-                                                                  .driverModel
-                                                                  .value
-                                                                  .location
-                                                                  ?.latitude ??
-                                                              0.0;
-                                                      final driverLng =
-                                                          controller
-                                                                  .driverModel
-                                                                  .value
-                                                                  .location
-                                                                  ?.longitude ??
-                                                              0.0;
-                                                      final finalLat = Constant
-                                                              .locationDataFinal
-                                                              ?.latitude ??
-                                                          driverLat;
-                                                      final finalLng = Constant
-                                                              .locationDataFinal
-                                                              ?.longitude ??
-                                                          driverLng;
-
-                                                      return ym.YandexMap(
-                                                        onMapCreated:
-                                                            (ym.YandexMapController
-                                                                mapController) async {
-                                                          controller.yandexMapController =
-                                                              mapController;
-                                                          await mapController
-                                                              .toggleUserLayer(
-                                                                  visible: true);
-                                                          await mapController
-                                                              .moveCamera(
-                                                            ym.CameraUpdate
-                                                                .newCameraPosition(
-                                                              ym.CameraPosition(
-                                                                target: ym.Point(
-                                                                  latitude: finalLat != 0.0
-                                                                      ? finalLat
-                                                                      : 41.3111,
-                                                                  longitude: finalLng != 0.0
-                                                                      ? finalLng
-                                                                      : 69.2797,
-                                                                ),
-                                                                zoom: 15,
-                                                              ),
-                                                            ),
-                                                          );
-                                                        },
-                                                        mapObjects:
-                                                            yandexMapObjectsFromGoogle(
-                                                          markers: controller
-                                                              .markers.values,
-                                                          polylines: controller
-                                                              .polyLines.values,
-                                                        ),
-                                                      );
-                                                    })
-                                                  : Obx(() {
-                                                      final isDark = themeController.isDark.value;
-                                                      return google_maps.GoogleMap(
-                                                        key: ValueKey('google_map_${isDark ? 'dark' : 'light'}'),
-                                                        onMapCreated: (google_maps
-                                                            .GoogleMapController
-                                                            mapController) {
-                                                          controller.mapController =
-                                                              mapController;
-                                                          
-                                                          // Apply dark mode style if needed
-                                                          if (isDark) {
-                                                            mapController.setMapStyle(
-                                                                Utils.getGoogleMapDarkStyle());
-                                                          }
-                                                          
-                                                          // Use driver location or fallback to Constant.locationDataFinal or default location
-                                                          final driverLat =
-                                                              controller
-                                                                      .driverModel
-                                                                      .value
-                                                                      .location
-                                                                      ?.latitude ??
-                                                                  0.0;
-                                                          final driverLng =
-                                                              controller
-                                                                      .driverModel
-                                                                      .value
-                                                                      .location
-                                                                      ?.longitude ??
-                                                                  0.0;
-                                                          final finalLat = Constant
-                                                                  .locationDataFinal
-                                                                  ?.latitude ??
-                                                              driverLat;
-                                                          final finalLng = Constant
-                                                                  .locationDataFinal
-                                                                  ?.longitude ??
-                                                              driverLng;
-
-                                                          // If location is valid (not 0,0), animate to it
-                                                          if (finalLat != 0.0 ||
-                                                              finalLng != 0.0) {
-                                                            controller
-                                                                .mapController!
-                                                                .animateCamera(
-                                                              google_maps
-                                                                      .CameraUpdate
-                                                                  .newCameraPosition(
-                                                                google_maps.CameraPosition(
-                                                                    target: google_maps
-                                                                        .LatLng(
-                                                                            finalLat,
-                                                                            finalLng),
-                                                                    zoom: 15,
-                                                                    bearing: double
-                                                                        .parse(
-                                                                            '${controller.driverModel.value.rotation ?? '0.0'}')),
-                                                              ),
-                                                            );
-                                                          }
-                                                        },
-                                                        myLocationEnabled: true,
-                                                        myLocationButtonEnabled:
-                                                            true,
-                                                        mapType: google_maps
-                                                            .MapType.normal,
-                                                        zoomControlsEnabled: true,
-                                                        polylines: Set<
-                                                                google_maps
-                                                                .Polyline>.of(
-                                                            controller
-                                                                .polyLines.values),
-                                                        markers: controller
-                                                            .markers.values
-                                                            .toSet(),
-                                                        initialCameraPosition:
-                                                            google_maps
-                                                                .CameraPosition(
-                                                          zoom: 15,
-                                                          target:
-                                                              google_maps.LatLng(
-                                                            (controller
-                                                                            .driverModel
-                                                                            .value
-                                                                            .location
-                                                                            ?.latitude !=
-                                                                        null &&
-                                                                    controller
-                                                                            .driverModel
-                                                                            .value
-                                                                            .location!
-                                                                            .latitude !=
-                                                                        0.0)
-                                                                ? controller
-                                                                    .driverModel
-                                                                    .value
-                                                                    .location!
-                                                                    .latitude!
-                                                                : (Constant.locationDataFinal
-                                                                                ?.latitude !=
-                                                                            null &&
-                                                                        Constant.locationDataFinal!
-                                                                                .latitude !=
-                                                                            0.0)
-                                                                    ? Constant
-                                                                        .locationDataFinal!
-                                                                        .latitude!
-                                                                    : (Constant.userModel?.location?.latitude !=
-                                                                                null &&
-                                                                            Constant.userModel!.location!.latitude !=
-                                                                                0.0)
-                                                                        ? Constant
-                                                                            .userModel!
-                                                                            .location!
-                                                                            .latitude!
-                                                                        : 41.3111,
-                                                            (controller
-                                                                            .driverModel
-                                                                            .value
-                                                                            .location
-                                                                            ?.longitude !=
-                                                                        null &&
-                                                                    controller
-                                                                            .driverModel
-                                                                            .value
-                                                                            .location!
-                                                                            .longitude !=
-                                                                        0.0)
-                                                                ? controller
-                                                                    .driverModel
-                                                                    .value
-                                                                    .location!
-                                                                    .longitude!
-                                                                : (Constant.locationDataFinal
-                                                                                ?.longitude !=
-                                                                            null &&
-                                                                        Constant.locationDataFinal!
-                                                                                .longitude !=
-                                                                            0.0)
-                                                                    ? Constant
-                                                                        .locationDataFinal!
-                                                                        .longitude!
-                                                                    : (Constant.userModel?.location?.longitude !=
-                                                                                null &&
-                                                                            Constant.userModel!.location!.longitude !=
-                                                                                0.0)
-                                                                        ? Constant
-                                                                            .userModel!
-                                                                            .location!
-                                                                            .longitude!
-                                                                        : 69.2797,
-                                                          ),
-                                                        ),
-                                                      );
-                                                    }),
-                                      if (Constant.mapType == "inappmap" &&
-                                          Constant.isOsmMap)
+                                        return ym.YandexMap(
+                                          onMapCreated: (ym.YandexMapController
+                                              mapController) async {
+                                            controller.yandexMapController =
+                                                mapController;
+                                            await mapController.toggleUserLayer(
+                                                visible: true);
+                                            await mapController.moveCamera(
+                                              ym.CameraUpdate.newCameraPosition(
+                                                ym.CameraPosition(
+                                                  target: ym.Point(
+                                                    latitude: finalLat != 0.0
+                                                        ? finalLat
+                                                        : 41.3111,
+                                                    longitude: finalLng != 0.0
+                                                        ? finalLng
+                                                        : 69.2797,
+                                                  ),
+                                                  zoom: 15,
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                          mapObjects:
+                                              yandexMapObjectsFromGoogle(
+                                            markers: controller.markers.values,
+                                            polylines:
+                                                controller.polyLines.values,
+                                          ),
+                                        );
+                                      }),
+                                      if (Constant.mapType == "inappmap")
                                         Positioned(
                                           top: 20,
                                           right: 20,
                                           child: FloatingActionButton(
-                                            heroTag: 'center_osm',
+                                            heroTag: 'center_yandex',
                                             onPressed: () {
                                               try {
                                                 controller.animateToSource();
@@ -509,7 +258,7 @@ class HomeScreen extends StatelessWidget {
                                           height: 10,
                                         ),
                                         Text(
-                                          "${'Navigate with'.tr} ${Constant.mapType == "google" ? "Google Map" : Constant.mapType == "googleGo" ? "Google Go" : Constant.mapType == "waze" ? "Waze Map" : Constant.mapType == "mapswithme" ? "MapsWithMe Map" : Constant.mapType == "yandexNavi" ? "VandexNavi Map" : Constant.mapType == "yandexMaps" ? "Vandex Map" : ""}",
+                                          "${'Navigate with'.tr} Yandex Map",
                                           style: TextStyle(
                                               color: isDark
                                                   ? AppThemeData.grey50
@@ -519,7 +268,7 @@ class HomeScreen extends StatelessWidget {
                                                   AppThemeData.semiBold),
                                         ),
                                         Text(
-                                          "${'Easily find your destination with a single tap redirect to'.tr}  ${Constant.mapType == "google" ? "Google Map" : Constant.mapType == "googleGo" ? "Google Go" : Constant.mapType == "waze" ? "Waze Map" : Constant.mapType == "mapswithme" ? "MapsWithMe Map" : Constant.mapType == "yandexNavi" ? "VandexNavi Map" : Constant.mapType == "yandexMaps" ? "Vandex Map" : ""} ${'for seamless navigation.'.tr}",
+                                          "${'Easily find your destination with a single tap redirect to'.tr} Yandex Map ${'for seamless navigation.'.tr}",
                                           textAlign: TextAlign.center,
                                           style: TextStyle(
                                               color: isDark
@@ -532,9 +281,7 @@ class HomeScreen extends StatelessWidget {
                                           height: 30,
                                         ),
                                         RoundedButtonFill(
-                                          title:
-                                              "${'Redirect'.tr} ${Constant.mapType == "google" ? "Google Map" : Constant.mapType == "googleGo" ? "Google Go" : Constant.mapType == "waze" ? "Waze Map" : Constant.mapType == "mapswithme" ? "MapsWithMe Map" : Constant.mapType == "yandexNavi" ? "VandexNavi Map" : Constant.mapType == "yandexMaps" ? "Vandex Map" : ""}"
-                                                  ,
+                                          title: "${'Redirect'.tr} Yandex Map",
                                           width: 55,
                                           height: 5.5,
                                           color: AppThemeData.primary300,
@@ -549,72 +296,28 @@ class HomeScreen extends StatelessWidget {
                                                 if (controller.currentOrder
                                                         .value.status ==
                                                     Constant.orderShipped) {
+                                                  final o = controller.currentOrder.value;
                                                   Utils.redirectMap(
-                                                      name: controller
-                                                          .currentOrder
-                                                          .value
-                                                          .vendor!
-                                                          .title
-                                                          .toString(),
-                                                      latitude: controller
-                                                              .currentOrder
-                                                              .value
-                                                              .vendor!
-                                                              .latitude ??
-                                                          0.0,
-                                                      longLatitude: controller
-                                                              .currentOrder
-                                                              .value
-                                                              .vendor!
-                                                              .longitude ??
-                                                          0.0);
+                                                      name: o.vendor?.title?.toString() ?? '',
+                                                      latitude: o.vendor?.latitude ?? 0.0,
+                                                      longLatitude: o.vendor?.longitude ?? 0.0);
                                                 } else if (controller
                                                         .currentOrder
                                                         .value
                                                         .status ==
                                                     Constant.orderInTransit) {
+                                                  final o = controller.currentOrder.value;
                                                   Utils.redirectMap(
-                                                      name: controller
-                                                          .currentOrder
-                                                          .value
-                                                          .author!
-                                                          .firstName
-                                                          .toString(),
-                                                      latitude: controller
-                                                              .currentOrder
-                                                              .value
-                                                              .address!
-                                                              .location!
-                                                              .latitude ??
-                                                          0.0,
-                                                      longLatitude: controller
-                                                              .currentOrder
-                                                              .value
-                                                              .address!
-                                                              .location!
-                                                              .longitude ??
-                                                          0.0);
+                                                      name: o.author?.firstName?.toString() ?? '',
+                                                      latitude: o.address?.location?.latitude ?? 0.0,
+                                                      longLatitude: o.address?.location?.longitude ?? 0.0);
                                                 }
                                               } else {
+                                                final o = controller.currentOrder.value;
                                                 Utils.redirectMap(
-                                                    name: controller
-                                                        .currentOrder
-                                                        .value
-                                                        .author!
-                                                        .firstName
-                                                        .toString(),
-                                                    latitude: controller
-                                                            .currentOrder
-                                                            .value
-                                                            .vendor!
-                                                            .latitude ??
-                                                        0.0,
-                                                    longLatitude: controller
-                                                            .currentOrder
-                                                            .value
-                                                            .vendor!
-                                                            .longitude ??
-                                                        0.0);
+                                                    name: o.author?.firstName?.toString() ?? '',
+                                                    latitude: o.vendor?.latitude ?? 0.0,
+                                                    longLatitude: o.vendor?.longitude ?? 0.0);
                                               }
                                             }
                                           },
@@ -646,11 +349,12 @@ class HomeScreen extends StatelessWidget {
   }
 
   Padding showDriverBottomSheet(bool isDark, HomeController controller) {
-    double distanceInMeters = Geolocator.distanceBetween(
-        controller.currentOrder.value.vendor!.latitude ?? 0.0,
-        controller.currentOrder.value.vendor!.longitude ?? 0.0,
-        controller.currentOrder.value.address!.location!.latitude ?? 0.0,
-        controller.currentOrder.value.address!.location!.longitude ?? 0.0);
+    final order = controller.currentOrder.value;
+    final vLat = order.vendor?.latitude ?? 0.0;
+    final vLng = order.vendor?.longitude ?? 0.0;
+    final aLat = order.address?.location?.latitude ?? 0.0;
+    final aLng = order.address?.location?.longitude ?? 0.0;
+    double distanceInMeters = Geolocator.distanceBetween(vLat, vLng, aLat, aLng);
     double kilometer = distanceInMeters / 1000;
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -726,7 +430,7 @@ class HomeScreen extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  "${controller.currentOrder.value.vendor!.title}",
+                                  controller.currentOrder.value.vendor?.title ?? '',
                                   textAlign: TextAlign.start,
                                   style: TextStyle(
                                     fontFamily: AppThemeData.semiBold,
@@ -737,7 +441,7 @@ class HomeScreen extends StatelessWidget {
                                   ),
                                 ),
                                 Text(
-                                  "${controller.currentOrder.value.vendor!.location}",
+                                  controller.currentOrder.value.vendor?.location ?? '',
                                   textAlign: TextAlign.start,
                                   style: TextStyle(
                                     fontFamily: AppThemeData.medium,
@@ -764,8 +468,7 @@ class HomeScreen extends StatelessWidget {
                                   ),
                                 ),
                                 Text(
-                                  controller.currentOrder.value.author!
-                                      .fullName(),
+                                  controller.currentOrder.value.author?.fullName() ?? '',
                                   textAlign: TextAlign.start,
                                   style: TextStyle(
                                     fontFamily: AppThemeData.semiBold,
@@ -776,8 +479,7 @@ class HomeScreen extends StatelessWidget {
                                   ),
                                 ),
                                 Text(
-                                  controller.currentOrder.value.address!
-                                      .getFullAddress(),
+                                  controller.currentOrder.value.address?.getFullAddress() ?? '',
                                   textAlign: TextAlign.start,
                                   style: TextStyle(
                                     fontFamily: AppThemeData.medium,
@@ -872,9 +574,9 @@ class HomeScreen extends StatelessWidget {
                 height: 5,
               ),
               controller.currentOrder.value.tipAmount == null ||
-                      controller.currentOrder.value.tipAmount!.isEmpty ||
-                      double.parse(controller.currentOrder.value.tipAmount
-                              .toString()) <=
+                      (controller.currentOrder.value.tipAmount?.toString() ?? '').isEmpty ||
+                      (double.tryParse(controller.currentOrder.value.tipAmount
+                              ?.toString() ?? '0') ?? 0) <=
                           0
                   ? const SizedBox()
                   : Row(
@@ -958,49 +660,42 @@ class HomeScreen extends StatelessWidget {
     double subTotal = 0.0;
     double taxAmount = 0.0;
     double specialDiscount = 0.0;
+    final order = controller.currentOrder.value;
+    final products = order.products ?? [];
 
-    for (var element in controller.currentOrder.value.products!) {
-      if (double.parse(element.discountPrice.toString()) <= 0) {
-        subTotal = subTotal +
-            double.parse(element.price.toString()) *
-                double.parse(element.quantity.toString()) +
-            (double.parse(element.extrasPrice.toString()) *
-                double.parse(element.quantity.toString()));
+    for (var element in products) {
+      final discountPrice = double.tryParse(element.discountPrice.toString()) ?? 0;
+      final qty = double.tryParse(element.quantity.toString()) ?? 0;
+      final extras = double.tryParse(element.extrasPrice.toString()) ?? 0;
+      if (discountPrice <= 0) {
+        final price = double.tryParse(element.price.toString()) ?? 0;
+        subTotal = subTotal + price * qty + extras * qty;
       } else {
-        subTotal = subTotal +
-            double.parse(element.discountPrice.toString()) *
-                double.parse(element.quantity.toString()) +
-            (double.parse(element.extrasPrice.toString()) *
-                double.parse(element.quantity.toString()));
+        subTotal = subTotal + discountPrice * qty + extras * qty;
       }
     }
 
-    if (controller.currentOrder.value.taxSetting != null) {
-      for (var element in controller.currentOrder.value.taxSetting!) {
+    final discountVal = double.tryParse(order.discount.toString()) ?? 0;
+    if (order.taxSetting != null) {
+      for (var element in order.taxSetting!) {
         taxAmount = taxAmount +
             Constant.calculateTax(
-                amount: (subTotal -
-                        double.parse(
-                            controller.currentOrder.value.discount.toString()))
-                    .toString(),
+                amount: (subTotal - discountVal).toString(),
                 taxModel: element);
       }
     }
 
-    if (controller.currentOrder.value.specialDiscount != null &&
-        controller.currentOrder.value.specialDiscount!['special_discount'] !=
-            null) {
-      specialDiscount = double.parse(controller
-          .currentOrder.value.specialDiscount!['special_discount']
-          .toString());
+    if (order.specialDiscount != null &&
+        order.specialDiscount!['special_discount'] != null) {
+      specialDiscount = double.tryParse(
+              order.specialDiscount!['special_discount'].toString()) ??
+          0;
     }
 
-    totalAmount = subTotal -
-        double.parse(controller.currentOrder.value.discount.toString()) -
-        specialDiscount +
-        taxAmount +
-        double.parse(controller.currentOrder.value.deliveryCharge.toString()) +
-        double.parse(controller.currentOrder.value.tipAmount.toString());
+    final deliveryCharge = double.tryParse(order.deliveryCharge.toString()) ?? 0;
+    final tipAmount = double.tryParse(order.tipAmount.toString()) ?? 0;
+    totalAmount =
+        subTotal - discountVal - specialDiscount + taxAmount + deliveryCharge + tipAmount;
 
     return Container(
       color: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
@@ -1040,7 +735,7 @@ class HomeScreen extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  "${controller.currentOrder.value.vendor!.title}",
+                                  controller.currentOrder.value.vendor?.title ?? '',
                                   textAlign: TextAlign.start,
                                   style: TextStyle(
                                     fontFamily: AppThemeData.semiBold,
@@ -1051,7 +746,7 @@ class HomeScreen extends StatelessWidget {
                                   ),
                                 ),
                                 Text(
-                                  "${controller.currentOrder.value.vendor!.location}",
+                                  controller.currentOrder.value.vendor?.location ?? '',
                                   textAlign: TextAlign.start,
                                   style: TextStyle(
                                     fontFamily: AppThemeData.medium,
@@ -1069,9 +764,10 @@ class HomeScreen extends StatelessWidget {
                           ),
                           InkWell(
                             onTap: () {
-                              Constant.makePhoneCall(controller
-                                  .currentOrder.value.vendor!.phonenumber
-                                  .toString());
+                              final phone = controller.currentOrder.value.vendor?.phonenumber?.toString();
+                              if (phone != null && phone.isNotEmpty) {
+                                Constant.makePhoneCall(phone);
+                              }
                             },
                             child: Container(
                               width: 38,
@@ -1163,7 +859,7 @@ class HomeScreen extends StatelessWidget {
                                                 CrossAxisAlignment.start,
                                             children: [
                                               Text(
-                                                "${controller.currentOrder.value.vendor!.title}",
+                                                controller.currentOrder.value.vendor?.title ?? '',
                                                 textAlign: TextAlign.start,
                                                 style: TextStyle(
                                                   fontFamily:
@@ -1175,7 +871,7 @@ class HomeScreen extends StatelessWidget {
                                                 ),
                                               ),
                                               Text(
-                                                "${controller.currentOrder.value.vendor!.location}",
+                                                controller.currentOrder.value.vendor?.location ?? '',
                                                 textAlign: TextAlign.start,
                                                 style: TextStyle(
                                                   fontFamily:
@@ -1194,12 +890,10 @@ class HomeScreen extends StatelessWidget {
                                         ),
                                         InkWell(
                                           onTap: () {
-                                            Constant.makePhoneCall(controller
-                                                .currentOrder
-                                                .value
-                                                .vendor!
-                                                .phonenumber
-                                                .toString());
+                                            final phone = controller.currentOrder.value.vendor?.phonenumber?.toString();
+                                            if (phone != null && phone.isNotEmpty) {
+                                              Constant.makePhoneCall(phone);
+                                            }
                                           },
                                           child: Container(
                                             width: 42,
@@ -1260,9 +954,7 @@ class HomeScreen extends StatelessWidget {
                                                 ),
                                               ),
                                               Text(
-                                                controller
-                                                    .currentOrder.value.address!
-                                                    .getFullAddress(),
+                                                controller.currentOrder.value.address?.getFullAddress() ?? '',
                                                 textAlign: TextAlign.start,
                                                 style: TextStyle(
                                                   fontFamily:
@@ -1281,12 +973,10 @@ class HomeScreen extends StatelessWidget {
                                         ),
                                         InkWell(
                                           onTap: () {
-                                            Constant.makePhoneCall(controller
-                                                .currentOrder
-                                                .value
-                                                .author!
-                                                .phoneNumber
-                                                .toString());
+                                            final phone = controller.currentOrder.value.author?.phoneNumber?.toString();
+                                            if (phone != null && phone.isNotEmpty) {
+                                              Constant.makePhoneCall(phone);
+                                            }
                                           },
                                           child: Container(
                                             width: 42,
@@ -1324,36 +1014,38 @@ class HomeScreen extends StatelessWidget {
                                                         .currentOrder
                                                         .value
                                                         .authorID
-                                                        .toString());
+                                                        ?.toString() ?? '');
                                             UserModel? driver =
                                                 await FireStoreUtils
                                                     .getUserProfile(controller
                                                         .currentOrder
                                                         .value
                                                         .driverID
-                                                        .toString());
+                                                        ?.toString() ?? '');
 
                                             ShowToastDialog.closeLoader();
 
-                                            Get.to(const ChatScreen(),
-                                                arguments: {
-                                                  "customerName":
-                                                      customer!.fullName(),
-                                                  "restaurantName":
-                                                      driver!.fullName(),
-                                                  "orderId": controller
-                                                      .currentOrder.value.id,
-                                                  "restaurantId": driver.id,
-                                                  "customerId": customer.id,
-                                                  "customerProfileImage": customer
-                                                          .profilePictureURL ??
-                                                      "",
-                                                  "restaurantProfileImage":
-                                                      driver.profilePictureURL ??
-                                                          "",
-                                                  "token": customer.fcmToken,
-                                                  "chatType": "Driver",
-                                                });
+                                            if (customer != null && driver != null) {
+                                              Get.to(const ChatScreen(),
+                                                  arguments: {
+                                                    "customerName":
+                                                        customer.fullName(),
+                                                    "restaurantName":
+                                                        driver.fullName(),
+                                                    "orderId": controller
+                                                        .currentOrder.value.id,
+                                                    "restaurantId": driver.id,
+                                                    "customerId": customer.id,
+                                                    "customerProfileImage": customer
+                                                            .profilePictureURL ??
+                                                        "",
+                                                    "restaurantProfileImage":
+                                                        driver.profilePictureURL ??
+                                                            "",
+                                                    "token": customer.fcmToken,
+                                                    "chatType": "Driver",
+                                                  });
+                                            }
                                           },
                                           child: Container(
                                             width: 42,
@@ -1407,8 +1099,7 @@ class HomeScreen extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      controller.currentOrder.value.paymentMethod!
-                                  .toLowerCase() ==
+                      (controller.currentOrder.value.paymentMethod?.toLowerCase() ?? '') ==
                               "cod"
                           ? "Cash on delivery"
                           : "Online",
@@ -1425,7 +1116,7 @@ class HomeScreen extends StatelessWidget {
                 const SizedBox(
                   height: 5,
                 ),
-                controller.currentOrder.value.paymentMethod!.toLowerCase() ==
+                (controller.currentOrder.value.paymentMethod?.toLowerCase() ?? '') ==
                         "cod"
                     ? Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1461,9 +1152,9 @@ class HomeScreen extends StatelessWidget {
                   height: 5,
                 ),
                 controller.currentOrder.value.tipAmount == null ||
-                        controller.currentOrder.value.tipAmount!.isEmpty ||
-                        double.parse(controller.currentOrder.value.tipAmount
-                                .toString()) <=
+                        (controller.currentOrder.value.tipAmount?.toString() ?? '').isEmpty ||
+                        (double.tryParse(controller.currentOrder.value.tipAmount
+                                ?.toString() ?? '0') ?? 0) <=
                             0
                     ? const SizedBox()
                     : Row(

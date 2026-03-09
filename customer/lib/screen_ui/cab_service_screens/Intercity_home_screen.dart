@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:customer/controllers/Intercity_home_controller.dart';
 import 'package:customer/models/coupon_model.dart';
@@ -16,11 +14,9 @@ import 'package:customer/utils/utils.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:geocoding/geocoding.dart' as get_cord_address;
+import 'package:customer/service/yandex_geocoding_service.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:flutter_map/flutter_map.dart' as flutterMap;
-import 'package:latlong2/latlong.dart' as latlong;
 import 'package:yandex_mapkit/yandex_mapkit.dart' as ym;
 import 'package:customer/utils/yandex_map_utils.dart';
 import '../../constant/constant.dart';
@@ -31,7 +27,6 @@ import '../../themes/app_them_data.dart';
 import '../../themes/round_button_fill.dart';
 import '../../themes/show_toast_dialog.dart';
 import '../../themes/text_field_widget.dart';
-import '../../widget/osm_map/map_picker_page.dart';
 import '../../screen_ui/auth_screens/auth_screen.dart';
 import '../../widget/place_picker/location_picker_screen.dart';
 import '../../widget/place_picker/selected_location_model.dart';
@@ -53,66 +48,7 @@ class IntercityHomeScreen extends StatelessWidget {
                   ? Constant.loader()
                   : Stack(
                     children: [
-                      Constant.isOsmMap
-                          ? flutterMap.FlutterMap(
-                            mapController: controller.mapOsmController,
-                            options: flutterMap.MapOptions(
-                              initialCenter:
-                                  Constant.currentLocation != null
-                                      ? latlong.LatLng(
-                                        Constant.currentLocation!.latitude,
-                                        Constant.currentLocation!.longitude,
-                                      )
-                                      : controller.currentOrder.value.id != null
-                                      ? latlong.LatLng(
-                                        double.parse(
-                                          controller
-                                              .currentOrder
-                                              .value
-                                              .sourceLocation!
-                                              .latitude
-                                              .toString(),
-                                        ),
-                                        double.parse(
-                                          controller
-                                              .currentOrder
-                                              .value
-                                              .sourceLocation!
-                                              .longitude
-                                              .toString(),
-                                        ),
-                                      )
-                                      : latlong.LatLng(
-                                        41.4219057,
-                                        -102.0840772,
-                                      ),
-                              initialZoom: 14,
-                            ),
-                            children: [
-                              flutterMap.TileLayer(
-                                urlTemplate:
-                                    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                                userAgentPackageName:
-                                    Platform.isAndroid
-                                        ? "com.emart"
-                                        : "com.emart.ios",
-                              ),
-                              flutterMap.MarkerLayer(
-                                markers: controller.osmMarker,
-                              ),
-                              if (controller.routePoints.isNotEmpty)
-                                flutterMap.PolylineLayer(
-                                  polylines: [
-                                    flutterMap.Polyline(
-                                      points: controller.routePoints,
-                                      strokeWidth: 5.0,
-                                      color: Colors.blue,
-                                    ),
-                                  ],
-                                ),
-                            ],
-                          )
-                          : Constant.isYandexMap
+                      Constant.isYandexMap
                               ? ym.YandexMap(
                                 onMapCreated:
                                     (ym.YandexMapController mapController) async {
@@ -296,71 +232,28 @@ class IntercityHomeScreen extends StatelessWidget {
                           // Pickup Location
                           InkWell(
                             onTap: () async {
-                              if (Constant.selectedMapType == 'osm') {
-                                final result = await Get.to(
-                                  () => MapPickerPage(),
-                                );
-                                controller.sourceTextEditController.value.text =
-                                    '';
-                                final firstPlace = result;
-                                if (result != null) {
+                              Get.to(LocationPickerScreen())!.then((value) async {
+                                if (value != null) {
+                                  SelectedLocationModel selectedLocationModel = value;
                                   if (Constant.checkZoneCheck(
-                                        firstPlace.coordinates.latitude,
-                                        firstPlace.coordinates.longitude,
-                                      ) ==
-                                      true) {
-                                    final lat = firstPlace.coordinates.latitude;
-                                    final lng =
-                                        firstPlace.coordinates.longitude;
-                                    final address = firstPlace.address;
-                                    controller
-                                        .sourceTextEditController
-                                        .value
-                                        .text = address.toString();
-                                    controller.setDepartureMarker(lat, lng);
+                                        selectedLocationModel.latLng!.latitude,
+                                        selectedLocationModel.latLng!.longitude,
+                                      ) == true) {
+                                    controller.sourceTextEditController.value.text =
+                                        Utils.formatAddress(
+                                          selectedLocation: selectedLocationModel,
+                                        );
+                                    controller.setDepartureMarker(
+                                      selectedLocationModel.latLng!.latitude,
+                                      selectedLocationModel.latLng!.longitude,
+                                    );
                                   } else {
                                     ShowToastDialog.showToast(
-                                      "Service is unavailable at the selected address."
-                                          .tr,
+                                      "Service is unavailable at the selected address.".tr,
                                     );
                                   }
                                 }
-                              } else {
-                                Get.to(LocationPickerScreen())!.then((
-                                  value,
-                                ) async {
-                                  if (value != null) {
-                                    SelectedLocationModel
-                                    selectedLocationModel = value;
-
-                                    if (Constant.checkZoneCheck(
-                                          selectedLocationModel
-                                              .latLng!
-                                              .latitude,
-                                          selectedLocationModel
-                                              .latLng!
-                                              .longitude,
-                                        ) ==
-                                        true) {
-                                      controller
-                                          .sourceTextEditController
-                                          .value
-                                          .text = Utils.formatAddress(
-                                        selectedLocation: selectedLocationModel,
-                                      );
-                                      controller.setDepartureMarker(
-                                        selectedLocationModel.latLng!.latitude,
-                                        selectedLocationModel.latLng!.longitude,
-                                      );
-                                    } else {
-                                      ShowToastDialog.showToast(
-                                        "Service is unavailable at the selected address."
-                                            .tr,
-                                      );
-                                    }
-                                  }
-                                });
-                              }
+                              });
                             },
                             child: TextFieldWidget(
                               controller:
@@ -381,26 +274,7 @@ class IntercityHomeScreen extends StatelessWidget {
                           // Destination Location
                           InkWell(
                             onTap: () async {
-                              if (Constant.selectedMapType == 'osm') {
-                                final result = await Get.to(
-                                  () => MapPickerPage(),
-                                );
-                                if (result != null) {
-                                  controller
-                                      .destinationTextEditController
-                                      .value
-                                      .text = '';
-                                  final firstPlace = result;
-                                  final lat = firstPlace.coordinates.latitude;
-                                  final lng = firstPlace.coordinates.longitude;
-                                  final address = firstPlace.address;
-                                  controller
-                                      .destinationTextEditController
-                                      .value
-                                      .text = address.toString();
-                                  controller.setDestinationMarker(lat, lng);
-                                }
-                              } else {
+                              {
                                 Get.to(LocationPickerScreen())!.then((
                                   value,
                                 ) async {
@@ -489,56 +363,13 @@ class IntercityHomeScreen extends StatelessWidget {
                                         .popularDestination[index]
                                         .longitude !=
                                     null) {
-                              List<get_cord_address.Placemark> placeMarks =
-                                  await get_cord_address
-                                      .placemarkFromCoordinates(
-                                        controller
-                                                .popularDestination[index]
-                                                .latitude ??
-                                            0.0,
-                                        controller
-                                                .popularDestination[index]
-                                                .longitude ??
-                                            0.0,
-                                      );
+                              final lat = controller.popularDestination[index].latitude ?? 0.0;
+                              final lng = controller.popularDestination[index].longitude ?? 0.0;
+                              final geocoding = YandexGeocodingService(apiKey: Constant.yandexGeocodeApiKey);
+                              final address = await geocoding.getAddressFromLatLng(lat, lng);
 
-                              final address =
-                                  (placeMarks.first.subLocality!.isEmpty
-                                      ? ''
-                                      : "${placeMarks.first.subLocality}, ") +
-                                  (placeMarks.first.street!.isEmpty
-                                      ? ''
-                                      : "${placeMarks.first.street}, ") +
-                                  (placeMarks.first.name!.isEmpty
-                                      ? ''
-                                      : "${placeMarks.first.name}, ") +
-                                  (placeMarks
-                                          .first
-                                          .subAdministrativeArea!
-                                          .isEmpty
-                                      ? ''
-                                      : "${placeMarks.first.subAdministrativeArea}, ") +
-                                  (placeMarks.first.administrativeArea!.isEmpty
-                                      ? ''
-                                      : "${placeMarks.first.administrativeArea}, ") +
-                                  (placeMarks.first.country!.isEmpty
-                                      ? ''
-                                      : "${placeMarks.first.country}, ") +
-                                  (placeMarks.first.postalCode!.isEmpty
-                                      ? ''
-                                      : "${placeMarks.first.postalCode}, ");
-                              controller
-                                  .destinationTextEditController
-                                  .value
-                                  .text = address;
-                              controller.setDestinationMarker(
-                                controller.popularDestination[index].latitude ??
-                                    0.0,
-                                controller
-                                        .popularDestination[index]
-                                        .longitude ??
-                                    0.0,
-                              );
+                              controller.destinationTextEditController.value.text = address;
+                              controller.setDestinationMarker(lat, lng);
                             }
                           },
                           child: Padding(
@@ -1303,62 +1134,19 @@ class IntercityHomeScreen extends StatelessWidget {
                                       // Pickup Location
                                       InkWell(
                                         onTap: () async {
-                                          if (Constant.selectedMapType ==
-                                              'osm') {
-                                            final result = await Get.to(
-                                              () => MapPickerPage(),
-                                            );
-                                            if (result != null) {
-                                              controller
-                                                  .sourceTextEditController
-                                                  .value
-                                                  .text = '';
-                                              final firstPlace = result;
-                                              final lat =
-                                                  firstPlace
-                                                      .coordinates
-                                                      .latitude;
-                                              final lng =
-                                                  firstPlace
-                                                      .coordinates
-                                                      .longitude;
-                                              final address =
-                                                  firstPlace.address;
-                                              controller
-                                                  .sourceTextEditController
-                                                  .value
-                                                  .text = address.toString();
+                                          Get.to(LocationPickerScreen())!.then((value) async {
+                                            if (value != null) {
+                                              SelectedLocationModel selectedLocationModel = value;
+                                              controller.sourceTextEditController.value.text =
+                                                  Utils.formatAddress(
+                                                    selectedLocation: selectedLocationModel,
+                                                  );
                                               controller.setDepartureMarker(
-                                                lat,
-                                                lng,
+                                                selectedLocationModel.latLng!.latitude,
+                                                selectedLocationModel.latLng!.longitude,
                                               );
                                             }
-                                          } else {
-                                            Get.to(
-                                              LocationPickerScreen(),
-                                            )!.then((value) async {
-                                              if (value != null) {
-                                                SelectedLocationModel
-                                                selectedLocationModel = value;
-
-                                                controller
-                                                    .sourceTextEditController
-                                                    .value
-                                                    .text = Utils.formatAddress(
-                                                  selectedLocation:
-                                                      selectedLocationModel,
-                                                );
-                                                controller.setDepartureMarker(
-                                                  selectedLocationModel
-                                                      .latLng!
-                                                      .latitude,
-                                                  selectedLocationModel
-                                                      .latLng!
-                                                      .longitude,
-                                                );
-                                              }
-                                            });
-                                          }
+                                          });
                                         },
                                         child: TextFieldWidget(
                                           controller:
@@ -1383,62 +1171,19 @@ class IntercityHomeScreen extends StatelessWidget {
                                       // Destination Location
                                       InkWell(
                                         onTap: () async {
-                                          if (Constant.selectedMapType ==
-                                              'osm') {
-                                            final result = await Get.to(
-                                              () => MapPickerPage(),
-                                            );
-                                            if (result != null) {
-                                              controller
-                                                  .destinationTextEditController
-                                                  .value
-                                                  .text = '';
-                                              final firstPlace = result;
-                                              final lat =
-                                                  firstPlace
-                                                      .coordinates
-                                                      .latitude;
-                                              final lng =
-                                                  firstPlace
-                                                      .coordinates
-                                                      .longitude;
-                                              final address =
-                                                  firstPlace.address;
-                                              controller
-                                                  .destinationTextEditController
-                                                  .value
-                                                  .text = address.toString();
+                                          Get.to(LocationPickerScreen())!.then((value) async {
+                                            if (value != null) {
+                                              SelectedLocationModel selectedLocationModel = value;
+                                              controller.destinationTextEditController.value.text =
+                                                  Utils.formatAddress(
+                                                    selectedLocation: selectedLocationModel,
+                                                  );
                                               controller.setDestinationMarker(
-                                                lat,
-                                                lng,
+                                                selectedLocationModel.latLng!.latitude,
+                                                selectedLocationModel.latLng!.longitude,
                                               );
                                             }
-                                          } else {
-                                            Get.to(
-                                              LocationPickerScreen(),
-                                            )!.then((value) async {
-                                              if (value != null) {
-                                                SelectedLocationModel
-                                                selectedLocationModel = value;
-
-                                                controller
-                                                    .destinationTextEditController
-                                                    .value
-                                                    .text = Utils.formatAddress(
-                                                  selectedLocation:
-                                                      selectedLocationModel,
-                                                );
-                                                controller.setDestinationMarker(
-                                                  selectedLocationModel
-                                                      .latLng!
-                                                      .latitude,
-                                                  selectedLocationModel
-                                                      .latLng!
-                                                      .longitude,
-                                                );
-                                              }
-                                            });
-                                          }
+                                          });
                                         },
                                         child: TextFieldWidget(
                                           controller:
@@ -2164,7 +1909,6 @@ class IntercityHomeScreen extends StatelessWidget {
                         controller.bottomSheetType.value = "";
                         controller.polyLines.clear();
                         controller.markers.clear();
-                        controller.osmMarker.clear();
                         controller.routePoints.clear();
                         controller.sourceTextEditController.value.clear();
                         controller.destinationTextEditController.value.clear();
@@ -2173,14 +1917,6 @@ class IntercityHomeScreen extends StatelessWidget {
                           0.0,
                         );
                         controller.destinationLatLong.value = const LatLng(
-                          0.0,
-                          0.0,
-                        );
-                        controller.departureLatLongOsm.value = latlong.LatLng(
-                          0.0,
-                          0.0,
-                        );
-                        controller.destinationLatLongOsm.value = latlong.LatLng(
                           0.0,
                           0.0,
                         );
@@ -2457,8 +2193,7 @@ class IntercityHomeScreen extends StatelessWidget {
                             RoundedButtonBorder(
                               title:
                                   controller.driverModel.value.averageRating
-                                      .toStringAsFixed(1) ??
-                                  '',
+                                      .toStringAsFixed(1),
                               width: 20,
                               height: 3.5,
                               radius: 10,

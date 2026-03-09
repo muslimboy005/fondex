@@ -42,7 +42,7 @@ class SignupController extends GetxController {
 
   RxList<ZoneModel> zoneList = <ZoneModel>[].obs;
   Rx<ZoneModel> selectedZone = ZoneModel().obs;
-  RxList<String> service = ['Delivery Service', 'Cab Service', 'Parcel Service', 'Rental Service'].obs; // Option 2
+  RxList<String> service = ['Delivery Service', 'Cab Service'].obs;
   RxString selectedService = 'Delivery Service'.obs; // Default selected option
 
   RxList<SectionModel> sectionList = <SectionModel>[].obs;
@@ -76,8 +76,8 @@ class SignupController extends GetxController {
       if (type.value == "mobileNumber") {
         phoneNUmberEditingController.value.text = userModel.value.phoneNumber ?? "";
         countryCodeEditingController.value.text = userModel.value.countryCode ?? "+1";
-        emailEditingController.value.text = userModel.value.email ?? "";
-        // Password is not shown/asked, it's default "123456" in Firebase
+        emailEditingController.value.text = "${userModel.value.phoneNumber ?? ''}@gmail.com";
+        passwordEditingController.value.text = "123456";
       }
     }
 
@@ -216,7 +216,7 @@ class SignupController extends GetxController {
     if (type.value == "mobileNumber") {
       userModel.value.firstName = firstNameEditingController.value.text.toString();
       userModel.value.lastName = lastNameEditingController.value.text.toString();
-      userModel.value.email = emailEditingController.value.text.toString().toLowerCase();
+      userModel.value.email = "${userModel.value.phoneNumber ?? ''}@gmail.com";
       userModel.value.phoneNumber = phoneNUmberEditingController.value.text.toString();
       userModel.value.role = Constant.userRoleDriver;
       userModel.value.fcmToken = await NotificationService.getToken();

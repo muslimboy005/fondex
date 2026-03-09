@@ -8,6 +8,8 @@ import 'package:sqflite/sqflite.dart';
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
   static Database? _database;
+  /// Serialize all DB operations to avoid "database has been locked" when many run concurrently.
+  Future<void> _serial = Future.value();
 
   DatabaseHelper._init();
 
@@ -15,6 +17,13 @@ class DatabaseHelper {
     if (_database != null) return _database!;
     _database = await _initDB('cart.db');
     return _database!;
+  }
+
+  Future<T> _runSerial<T>(Future<T> Function() fn) async {
+    final prev = _serial;
+    final op = fn();
+    _serial = prev.then((_) => op).then((_) => null);
+    return prev.then((_) => op).then((f) => f);
   }
 
   Future<Database> _initDB(String filePath) async {
@@ -52,55 +61,67 @@ class DatabaseHelper {
   }
 
   Future<void> insertCartProduct(CartProductModel product) async {
-    log(product.toJson().toString());
-    final db = await instance.database;
-    await db.insert(
-      'cart_products',
-      product.toJson()
-        ..['variant_info'] = jsonEncode(product.variantInfo)
-        ..['extras'] = jsonEncode(product.extras),
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
+    return _runSerial(() async {
+      log(product.toJson().toString());
+      final db = await instance.database;
+      await db.insert(
+        'cart_products',
+        product.toJson()
+          ..['variant_info'] = jsonEncode(product.variantInfo)
+          ..['extras'] = jsonEncode(product.extras),
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    });
   }
 
   Future<List<CartProductModel>> fetchCartProducts() async {
-    final db = await instance.database;
-    final maps = await db.query('cart_products');
-    return List.generate(maps.length, (i) {
-      return CartProductModel.fromJson(maps[i]);
+    return _runSerial(() async {
+      final db = await instance.database;
+      final maps = await db.query('cart_products');
+      return List.generate(maps.length, (i) {
+        return CartProductModel.fromJson(maps[i]);
+      });
     });
   }
 
   Future<void> updateCartProduct(CartProductModel product) async {
-    log(product.toJson().toString());
-    final db = await instance.database;
-    await db.update(
-      'cart_products',
-      product.toJson()
-        ..['variant_info'] = jsonEncode(product.variantInfo)
-        ..['extras'] = jsonEncode(product.extras),
-      where: 'id = ?',
-      whereArgs: [product.id],
-    );
+    return _runSerial(() async {
+      log(product.toJson().toString());
+      final db = await instance.database;
+      await db.update(
+        'cart_products',
+        product.toJson()
+          ..['variant_info'] = jsonEncode(product.variantInfo)
+          ..['extras'] = jsonEncode(product.extras),
+        where: 'id = ?',
+        whereArgs: [product.id],
+      );
+    });
   }
 
   Future<void> deleteCartProduct(String id) async {
-    final db = await instance.database;
-    await db.delete(
-      'cart_products',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+    return _runSerial(() async {
+      final db = await instance.database;
+      await db.delete(
+        'cart_products',
+        where: 'id = ?',
+        whereArgs: [id],
+      );
+    });
   }
 
   Future close() async {
-    final db = await instance.database;
-    db.close();
+    return _runSerial(() async {
+      final db = await instance.database;
+      db.close();
+    });
   }
 
   Future<void> deleteAllCartProducts() async {
-    final db = await database;
-    cartItem.clear();
-    await db.delete('cart_products');
+    return _runSerial(() async {
+      final db = await database;
+      cartItem.clear();
+      await db.delete('cart_products');
+    });
   }
 }

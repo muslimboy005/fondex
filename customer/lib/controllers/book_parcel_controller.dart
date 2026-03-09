@@ -5,13 +5,13 @@ import 'package:customer/widget/geoflutterfire/src/geoflutterfire.dart';
 import 'package:dropdown_textfield/dropdown_textfield.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart' as latlong;
+import 'package:customer/models/lat_lng.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import '../constant/constant.dart';
+import '../service/yandex_geocoding_service.dart';
 import '../models/parcel_category.dart';
 import '../models/parcel_order_model.dart';
 import '../models/parcel_weight_model.dart';
@@ -133,9 +133,9 @@ class BookParcelController extends GetxController {
     try {
       await Geolocator.requestPermission();
       final position = await Geolocator.getCurrentPosition();
-      final placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
-      final place = placemarks.first;
-      final address = "${place.name}, ${place.subLocality}, ${place.locality}, ${place.administrativeArea}, ${place.postalCode}, ${place.country}";
+      final yandexGeocoding = YandexGeocodingService(apiKey: Constant.yandexGeocodeApiKey);
+      final place = await yandexGeocoding.reverseGeocode(position.latitude, position.longitude);
+      final address = place?.formattedAddress ?? '${position.latitude}, ${position.longitude}';
 
       final userLocation = UserLocation(latitude: position.latitude, longitude: position.longitude);
       senderLocation.value = userLocation;
@@ -195,8 +195,8 @@ class BookParcelController extends GetxController {
         print("Sender Location: ${senderLocation.value?.latitude}, ${senderLocation.value?.longitude}");
         print("Receiver Location: ${receiverLocation.value?.latitude}, ${receiverLocation.value?.longitude}");
         await fetchRouteWithWaypoints([
-          latlong.LatLng(senderLocation.value?.latitude ?? 0.0, senderLocation.value?.longitude ?? 0.0),
-          latlong.LatLng(receiverLocation.value?.latitude ?? 0.0, receiverLocation.value?.longitude ?? 0.0),
+          LatLng(senderLocation.value?.latitude ?? 0.0, senderLocation.value?.longitude ?? 0.0),
+          LatLng(receiverLocation.value?.latitude ?? 0.0, receiverLocation.value?.longitude ?? 0.0),
         ]);
       } else {
         await fetchGoogleRouteWithWaypoints();
@@ -313,7 +313,7 @@ class BookParcelController extends GetxController {
     }
   }
 
-  Future<void> fetchRouteWithWaypoints(List<latlong.LatLng> points) async {
+  Future<void> fetchRouteWithWaypoints(List<LatLng> points) async {
     final coordinates = points.map((p) => '${p.longitude},${p.latitude}').join(';');
     final url = Uri.parse('https://router.project-osrm.org/route/v1/driving/$coordinates?overview=full&geometries=geojson');
 

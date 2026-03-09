@@ -115,31 +115,77 @@ class RestaurantDetailsController extends GetxController {
     );
   }
 
-  // Scroll to category with animation
-  void scrollToCategory(String categoryId) {
-    final key = categoryKeys[categoryId];
-    if (key != null && key.currentContext != null) {
-      _isScrollingToCategory = true;
-      
-      Scrollable.ensureVisible(
-        key.currentContext!,
-        duration: const Duration(milliseconds: 500),
-        curve: Curves.easeInOut,
-        alignment: 0.0, // Align to top
-      ).then((_) {
-        // Reset flag after animation completes
-        Future.delayed(const Duration(milliseconds: 100), () {
-          _isScrollingToCategory = false;
-        });
-      });
-      
-      // Update selected category index
-      final index = vendorCategoryList.indexWhere((cat) => cat.id.toString() == categoryId);
-      if (index != -1) {
-        selectedCategoryIndex.value = index;
-        _scrollCategoryTabToVisible(index);
-      }
+  /// Heights used by lazy product list (must match restaurant_details_screen.dart).
+  static const double _kCategoryHeaderHeight = 65.0;
+  static const double _kProductRowHeight = 292.0; // card 280 + padding 12
+  /// SliverAppBar + category tabs — katta qurilmalarda ham kategoriya tepada chiqishi uchun.
+  static const double _kScrollContentTopOffset = 400.0;
+
+  int _getProductCountForCategory(VendorCategoryModel cat) {
+    if (cat.id == uncategorizedCategoryId) {
+      return productList
+          .where((p0) => !vendorCategoryList.any((c) =>
+              c.id != uncategorizedCategoryId && c.id == p0.categoryID))
+          .length;
     }
+    return productList.where((p0) => p0.categoryID == cat.id).length;
+  }
+
+  /// Scroll offset so category at [categoryIndex] is at the top (below app bar + tabs).
+  double getScrollOffsetForCategoryIndex(int categoryIndex) {
+    double offset = _kScrollContentTopOffset;
+    for (int i = 0; i < categoryIndex && i < vendorCategoryList.length; i++) {
+      final cat = vendorCategoryList[i];
+      final count = _getProductCountForCategory(cat);
+      if (count == 0) continue;
+      offset += _kCategoryHeaderHeight;
+      offset += ((count + 1) ~/ 2) * _kProductRowHeight;
+    }
+    return offset;
+  }
+
+  static const Duration _kScrollDuration = Duration(milliseconds: 300);
+
+  void _performScrollToCategory(int index) {
+    if (!scrollController.hasClients) return;
+    _isScrollingToCategory = true;
+    final offset = getScrollOffsetForCategoryIndex(index);
+    final maxExtent = scrollController.position.maxScrollExtent;
+    scrollController.animateTo(
+      offset.clamp(0.0, maxExtent),
+      duration: _kScrollDuration,
+      curve: Curves.easeInOut,
+    ).then((_) {
+      Future.delayed(const Duration(milliseconds: 50), () {
+        _isScrollingToCategory = false;
+      });
+    });
+  }
+
+  // Scroll to category — sarlavha tepada. Layout tayyor bo‘lgach scroll; ko‘p mahsulotda qayta scroll.
+  void scrollToCategory(String categoryId) {
+    final index = vendorCategoryList.indexWhere((cat) => cat.id.toString() == categoryId);
+    if (index == -1) return;
+
+    selectedCategoryIndex.value = index;
+    _scrollCategoryTabToVisible(index);
+
+    final hasManyProducts = productList.length >= 80;
+
+    // 1) Keyingi frame + qisqa kechikish — layout va lazy list tayyor bo‘lsin.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.delayed(const Duration(milliseconds: 150), () {
+        _performScrollToCategory(index);
+        // 2) Ko‘p mahsulotli ekranda (270 ta): list to‘liq build bo‘lgach yana bir marta scroll.
+        if (hasManyProducts) {
+          Future.delayed(const Duration(milliseconds: 500), () {
+            if (scrollController.hasClients) {
+              _performScrollToCategory(index);
+            }
+          });
+        }
+      });
+    });
   }
 
   void animateSlider() {
@@ -194,41 +240,43 @@ class RestaurantDetailsController extends GetxController {
       productList.value = [];
       return;
     }
-    await FireStoreUtils.getProductByVendorId(vendorId).then((value) {
-      if ((Constant.isSubscriptionModelApplied == true || vendorModel.value.adminCommission?.isEnabled == true) && vendorModel.value.subscriptionPlan != null) {
-        if (vendorModel.value.subscriptionPlan?.itemLimit == '-1') {
-          allProductList.value = value;
-          productList.value = value;
-        } else {
-          int selectedProduct =
-              value.length < int.parse(vendorModel.value.subscriptionPlan?.itemLimit ?? '0') ? (value.isEmpty ? 0 : (value.length)) : int.parse(vendorModel.value.subscriptionPlan?.itemLimit ?? '0');
-          allProductList.value = value.sublist(0, selectedProduct);
-          productList.value = value.sublist(0, selectedProduct);
-        }
-      } else {
+    final value = await FireStoreUtils.getProductByVendorId(vendorId);
+    if ((Constant.isSubscriptionModelApplied == true || vendorModel.value.adminCommission?.isEnabled == true) && vendorModel.value.subscriptionPlan != null) {
+      if (vendorModel.value.subscriptionPlan?.itemLimit == '-1') {
         allProductList.value = value;
         productList.value = value;
+      } else {
+        int selectedProduct =
+            value.length < int.parse(vendorModel.value.subscriptionPlan?.itemLimit ?? '0') ? (value.isEmpty ? 0 : (value.length)) : int.parse(vendorModel.value.subscriptionPlan?.itemLimit ?? '0');
+        allProductList.value = value.sublist(0, selectedProduct);
+        productList.value = value.sublist(0, selectedProduct);
       }
-    });
+    } else {
+      allProductList.value = value;
+      productList.value = value;
+    }
 
+    // Unique kategoriya IDlari — 148 ta alohida so‘rov o‘rniga bir marta parallel yuklash (tezroq)
+    final uniqueCategoryIds = productList.map((p) => p.categoryID?.toString() ?? '').where((id) => id.isNotEmpty).toSet().toList();
+    final categoryFutures = uniqueCategoryIds.map((id) => FireStoreUtils.getVendorCategoryById(id));
+    final results = await Future.wait([
+      Future.wait(categoryFutures),
+      FireStoreUtils.getBrandList(),
+    ]);
+    final categoryResults = results[0] as List<VendorCategoryModel?>;
+    brandList.value = results[1] as List<BrandsModel>;
     final knownCategoryIds = <String>{};
-    for (var element in productList) {
-      await FireStoreUtils.getVendorCategoryById(element.categoryID.toString()).then((value) {
-        if (value != null) {
-          vendorCategoryList.add(value);
-          knownCategoryIds.add(element.categoryID.toString());
-        }
-      });
+    for (var cat in categoryResults) {
+      if (cat != null) {
+        vendorCategoryList.add(cat);
+        knownCategoryIds.add(cat.id.toString());
+      }
     }
 
     final hasUncategorized = productList.any((p) => !knownCategoryIds.contains(p.categoryID.toString()));
     if (hasUncategorized) {
       vendorCategoryList.add(VendorCategoryModel(id: uncategorizedCategoryId, title: 'Other', description: ''));
     }
-
-    await FireStoreUtils.getBrandList().then((value) {
-      brandList.value = value;
-    });
 
     var seen = <String>{};
     vendorCategoryList.value = vendorCategoryList.where((element) => seen.add(element.id.toString())).toList();

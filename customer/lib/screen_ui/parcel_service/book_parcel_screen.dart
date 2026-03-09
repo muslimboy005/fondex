@@ -15,9 +15,7 @@ import '../../models/user_model.dart';
 import '../../themes/app_them_data.dart';
 import '../../themes/round_button_fill.dart';
 import '../../themes/text_field_widget.dart';
-import '../../widget/osm_map/map_picker_page.dart';
 import '../../widget/place_picker/location_picker_screen.dart';
-import '../../widget/place_picker/selected_location_model.dart';
 
 class BookParcelScreen extends StatelessWidget {
   const BookParcelScreen({super.key});
@@ -89,36 +87,17 @@ class BookParcelScreen extends StatelessWidget {
                   context: context,
                   controller: controller,
                   onTap: () async {
-                    if (Constant.selectedMapType == 'osm') {
-                      final result = await Get.to(() => MapPickerPage());
-                      if (result != null) {
-                        final firstPlace = result;
-
-                        if (Constant.checkZoneCheck(firstPlace.coordinates.latitude, firstPlace.coordinates.longitude) == true) {
-                          final address = firstPlace.address;
-                          final lat = firstPlace.coordinates.latitude;
-                          final lng = firstPlace.coordinates.longitude;
-                          controller.senderLocationController.value.text = address; // ✅
-                          controller.senderLocation.value = UserLocation(latitude: lat, longitude: lng); // ✅ <-- Add this
+                    Get.to(const LocationPickerScreen())!.then((value) async {
+                      if (value != null) {
+                        final selectedLocationModel = value;
+                        if (Constant.checkZoneCheck(selectedLocationModel.latLng!.latitude, selectedLocationModel.latLng!.longitude)) {
+                          controller.senderLocationController.value.text = Utils.formatAddress(selectedLocation: selectedLocationModel);
+                          controller.senderLocation.value = UserLocation(latitude: selectedLocationModel.latLng!.latitude, longitude: selectedLocationModel.latLng!.longitude);
                         } else {
                           ShowToastDialog.showToast("Service is unavailable at the selected address.".tr);
                         }
                       }
-                    } else {
-                      Get.to(LocationPickerScreen())!.then((value) async {
-                        if (value != null) {
-                          SelectedLocationModel selectedLocationModel = value;
-
-                          if (Constant.checkZoneCheck(selectedLocationModel.latLng!.latitude, selectedLocationModel.latLng!.longitude) == true) {
-                            controller.senderLocationController.value.text = Utils.formatAddress(selectedLocation: selectedLocationModel);
-                            controller.senderLocation.value = UserLocation(latitude: selectedLocationModel.latLng!.latitude, longitude: selectedLocationModel.latLng!.longitude);
-                          } else {
-                            ShowToastDialog.showToast("Service is unavailable at the selected address.".tr);
-                          }
-                          // ✅ <-- Add this
-                        }
-                      });
-                    }
+                    });
                   },
                 ),
                 const SizedBox(height: 16),
@@ -134,36 +113,17 @@ class BookParcelScreen extends StatelessWidget {
                   context: context,
                   controller: controller,
                   onTap: () async {
-                    if (Constant.selectedMapType == 'osm') {
-                      final result = await Get.to(() => MapPickerPage());
-                      if (result != null) {
-                        final firstPlace = result;
-
-                        if (Constant.checkZoneCheck(firstPlace.coordinates.latitude, firstPlace.coordinates.longitude) == true) {
-                          final lat = firstPlace.coordinates.latitude;
-                          final lng = firstPlace.coordinates.longitude;
-                          final address = firstPlace.address;
-
-                          controller.receiverLocationController.value.text = address; // ✅
-                          controller.receiverLocation.value = UserLocation(latitude: lat, longitude: lng);
+                    Get.to(const LocationPickerScreen())!.then((value) async {
+                      if (value != null) {
+                        final selectedLocationModel = value;
+                        if (Constant.checkZoneCheck(selectedLocationModel.latLng!.latitude, selectedLocationModel.latLng!.longitude)) {
+                          controller.receiverLocationController.value.text = Utils.formatAddress(selectedLocation: selectedLocationModel);
+                          controller.receiverLocation.value = UserLocation(latitude: selectedLocationModel.latLng!.latitude, longitude: selectedLocationModel.latLng!.longitude);
                         } else {
                           ShowToastDialog.showToast("Service is unavailable at the selected address.".tr);
                         }
                       }
-                    } else {
-                      Get.to(LocationPickerScreen())!.then((value) async {
-                        if (value != null) {
-                          SelectedLocationModel selectedLocationModel = value;
-
-                          if (Constant.checkZoneCheck(selectedLocationModel.latLng!.latitude, selectedLocationModel.latLng!.longitude) == true) {
-                            controller.receiverLocationController.value.text = Utils.formatAddress(selectedLocation: selectedLocationModel);
-                            controller.receiverLocation.value = UserLocation(latitude: selectedLocationModel.latLng!.latitude, longitude: selectedLocationModel.latLng!.longitude); // ✅ <-- Add this
-                          } else {
-                            ShowToastDialog.showToast("Service is unavailable at the selected address.".tr);
-                          }
-                        }
-                      });
-                    }
+                    });
                   },
                 ),
 

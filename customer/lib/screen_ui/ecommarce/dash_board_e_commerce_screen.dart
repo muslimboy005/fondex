@@ -49,7 +49,7 @@ class DashBoardEcommerceScreen extends StatelessWidget {
                       : [
                         navigationBarItem(isDark, index: 0, assetIcon: "assets/icons/ic_home_cab.svg", label: 'Home'.tr, controller: controller),
                         navigationBarItem(isDark, index: 1, assetIcon: "assets/icons/ic_fav.svg", label: 'Favourites'.tr, controller: controller),
-                        navigationBarItem(isDark, index: 2, assetIcon: "assets/icons/ic_wallet.svg", label: 'Wallet'.tr, controller: controller),
+                        navigationBarItem(isDark, index: 2, assetIcon: "assets/icons/ic_shoping_cart.svg", label: 'Cart'.tr, controller: controller),
                         navigationBarItem(isDark, index: 3, assetIcon: "assets/icons/ic_orders.svg", label: 'Orders'.tr, controller: controller),
                         navigationBarItem(isDark, index: 4, assetIcon: "assets/icons/ic_profile.svg", label: 'Profile'.tr, controller: controller),
                       ],

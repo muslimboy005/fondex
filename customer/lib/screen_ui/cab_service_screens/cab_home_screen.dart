@@ -5,14 +5,12 @@ import 'package:customer/controllers/theme_controller.dart';
 import 'package:customer/themes/app_them_data.dart';
 import 'package:customer/themes/text_field_widget.dart';
 import 'dart:async';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:flutter_map/flutter_map.dart' as flutterMap;
-import 'package:latlong2/latlong.dart' as latlong;
 import 'package:yandex_mapkit/yandex_mapkit.dart' as ym;
 import 'package:customer/utils/yandex_map_utils.dart';
+import 'package:customer/models/lat_lng.dart' as app_lat_lng;
 
 import 'cab_booking_screen.dart';
 
@@ -51,81 +49,8 @@ class _CabHomeScreenState extends State<CabHomeScreen> {
                       ? Constant.loader()
                       : Stack(
                         children: [
-                          // Map View
-                          Constant.isOsmMap
-                              ? flutterMap.FlutterMap(
-                                mapController: controller.mapOsmController,
-                                options: flutterMap.MapOptions(
-                                  initialCenter:
-                                      Constant.currentLocation != null
-                                          ? latlong.LatLng(
-                                            Constant.currentLocation!.latitude,
-                                            Constant.currentLocation!.longitude,
-                                          )
-                                          : latlong.LatLng(
-                                            41.4219057,
-                                            -102.0840772,
-                                          ),
-                                  initialZoom: 14,
-                                  onTap:
-                                      controller.isMapPickingMode.value
-                                          ? (tapPosition, point) {
-                                            controller
-                                                .getAddressFromPickedLocation(
-                                                  point.latitude,
-                                                  point.longitude,
-                                                );
-                                          }
-                                          : null,
-                                ),
-                                children: [
-                                  flutterMap.TileLayer(
-                                    urlTemplate:
-                                        'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                                    userAgentPackageName:
-                                        Platform.isAndroid
-                                            ? "com.emart.customer"
-                                            : "com.emart.customer.ios",
-                                  ),
-                                  flutterMap.MarkerLayer(
-                                    markers: controller.osmMarker,
-                                  ),
-                                  // Map picking marker
-                                  Obx(
-                                    () =>
-                                        controller.isMapPickingMode.value &&
-                                                controller
-                                                        .tempPickedLocation
-                                                        .value
-                                                        .latitude !=
-                                                    0
-                                            ? flutterMap.MarkerLayer(
-                                              markers: [
-                                                flutterMap.Marker(
-                                                  point:
-                                                      controller
-                                                          .tempPickedLocation
-                                                          .value,
-                                                  width: 50,
-                                                  height: 50,
-                                                  child: Icon(
-                                                    Icons.location_on,
-                                                    color:
-                                                        controller
-                                                                .isPickingSource
-                                                                .value
-                                                            ? Colors.green
-                                                            : Colors.red,
-                                                    size: 50,
-                                                  ),
-                                                ),
-                                              ],
-                                            )
-                                            : const SizedBox.shrink(),
-                                  ),
-                                ],
-                              )
-                              : Constant.isYandexMap
+                          // Map View (Yandex yoki Google)
+                          Constant.isYandexMap
                                   ? ym.YandexMap(
                                     onMapCreated:
                                         (ym.YandexMapController mapController) async {
@@ -952,20 +877,13 @@ class _CabHomeScreenState extends State<CabHomeScreen> {
                                         searchDebounce?.cancel();
                                         final trimmedValue = value.trim();
                                         if (trimmedValue.isNotEmpty &&
-                                            trimmedValue.length >= 4) {
+                                            trimmedValue.length >= 2) {
                                           searchDebounce = Timer(
                                             const Duration(milliseconds: 700),
                                             () {
-                                              if (Constant.selectedMapType ==
-                                                  'osm') {
-                                                controller.searchSourceOSM(
-                                                  trimmedValue,
-                                                );
-                                              } else {
-                                                controller.searchSourceGoogle(
-                                                  trimmedValue,
-                                                );
-                                              }
+                                              controller.searchSourceYandex(
+                                                trimmedValue,
+                                              );
                                             },
                                           );
                                         } else {
@@ -1065,8 +983,8 @@ class _CabHomeScreenState extends State<CabHomeScreen> {
                                                             .text
                                                             .trim()
                                                             .length <
-                                                        4
-                                                    ? "Please enter at least 4 characters"
+                                                        2
+                                                    ? "Kamida 2 ta belgi kiriting"
                                                         .tr
                                                     : "No results found".tr,
                                                 style:
@@ -1090,55 +1008,23 @@ class _CabHomeScreenState extends State<CabHomeScreen> {
                                                 '',
                                                 result['address'] ?? '',
                                                 () async {
-                                                  if (Constant
-                                                          .selectedMapType ==
-                                                      'osm') {
-                                                    final lat =
-                                                        result['lat'] as double;
-                                                    final lng =
-                                                        result['lon'] as double;
-                                                    controller
-                                                            .sourceTextEditController
-                                                            .value
-                                                            .text =
-                                                        result['address'] ?? '';
-                                                    controller
-                                                        .setDepartureMarker(
-                                                          lat,
-                                                          lng,
-                                                        );
+                                                  final lat = result['lat'] as double?;
+                                                  final lng = result['lon'] as double?;
+                                                  if (lat != null && lng != null) {
+                                                    controller.sourceTextEditController.value.text = result['address'] ?? '';
+                                                    controller.setDepartureMarker(lat, lng);
                                                   } else {
-                                                    final placeId =
-                                                        result['place_id']
-                                                            as String?;
+                                                    final placeId = result['place_id'] as String?;
                                                     if (placeId != null) {
-                                                      final details =
-                                                          await controller
-                                                              .getPlaceDetailsGoogle(
-                                                                placeId,
-                                                              );
+                                                      final details = await controller.getPlaceDetailsGoogle(placeId);
                                                       if (details != null) {
-                                                        controller
-                                                                .sourceTextEditController
-                                                                .value
-                                                                .text =
-                                                            details['address'] ??
-                                                            '';
-                                                        controller
-                                                            .setDepartureMarker(
-                                                              details['lat']
-                                                                  as double,
-                                                              details['lng']
-                                                                  as double,
-                                                            );
+                                                        controller.sourceTextEditController.value.text = details['address'] ?? '';
+                                                        controller.setDepartureMarker(details['lat'] as double, details['lng'] as double);
                                                       }
                                                     }
                                                   }
-                                                  controller.sourceFocusNode
-                                                      .unfocus();
-                                                  controller
-                                                      .isSourceFocused
-                                                      .value = false;
+                                                  controller.sourceFocusNode.unfocus();
+                                                  controller.isSourceFocused.value = false;
                                                 },
                                                 isDark,
                                               );
@@ -1170,21 +1056,13 @@ class _CabHomeScreenState extends State<CabHomeScreen> {
                                         searchDebounce?.cancel();
                                         final trimmedValue = value.trim();
                                         if (trimmedValue.isNotEmpty &&
-                                            trimmedValue.length >= 4) {
+                                            trimmedValue.length >= 2) {
                                           searchDebounce = Timer(
                                             const Duration(milliseconds: 700),
                                             () {
-                                              if (Constant.selectedMapType ==
-                                                  'osm') {
-                                                controller.searchDestinationOSM(
-                                                  trimmedValue,
-                                                );
-                                              } else {
-                                                controller
-                                                    .searchDestinationGoogle(
-                                                      trimmedValue,
-                                                    );
-                                              }
+                                              controller.searchDestinationYandex(
+                                                trimmedValue,
+                                              );
                                             },
                                           );
                                         } else {
@@ -1284,8 +1162,8 @@ class _CabHomeScreenState extends State<CabHomeScreen> {
                                                             .text
                                                             .trim()
                                                             .length <
-                                                        4
-                                                    ? "Please enter at least 4 characters"
+                                                        2
+                                                    ? "Kamida 2 ta belgi kiriting"
                                                         .tr
                                                     : "No results found".tr,
                                                 style:
@@ -1309,56 +1187,23 @@ class _CabHomeScreenState extends State<CabHomeScreen> {
                                                 '',
                                                 result['address'] ?? '',
                                                 () async {
-                                                  if (Constant
-                                                          .selectedMapType ==
-                                                      'osm') {
-                                                    final lat =
-                                                        result['lat'] as double;
-                                                    final lng =
-                                                        result['lon'] as double;
-                                                    controller
-                                                            .destinationTextEditController
-                                                            .value
-                                                            .text =
-                                                        result['address'] ?? '';
-                                                    controller
-                                                        .setDestinationMarker(
-                                                          lat,
-                                                          lng,
-                                                        );
+                                                  final lat = result['lat'] as double?;
+                                                  final lng = result['lon'] as double?;
+                                                  if (lat != null && lng != null) {
+                                                    controller.destinationTextEditController.value.text = result['address'] ?? '';
+                                                    controller.setDestinationMarker(lat, lng);
                                                   } else {
-                                                    final placeId =
-                                                        result['place_id']
-                                                            as String?;
+                                                    final placeId = result['place_id'] as String?;
                                                     if (placeId != null) {
-                                                      final details =
-                                                          await controller
-                                                              .getPlaceDetailsGoogle(
-                                                                placeId,
-                                                              );
+                                                      final details = await controller.getPlaceDetailsGoogle(placeId);
                                                       if (details != null) {
-                                                        controller
-                                                                .destinationTextEditController
-                                                                .value
-                                                                .text =
-                                                            details['address'] ??
-                                                            '';
-                                                        controller
-                                                            .setDestinationMarker(
-                                                              details['lat']
-                                                                  as double,
-                                                              details['lng']
-                                                                  as double,
-                                                            );
+                                                        controller.destinationTextEditController.value.text = details['address'] ?? '';
+                                                        controller.setDestinationMarker(details['lat'] as double, details['lng'] as double);
                                                       }
                                                     }
                                                   }
-                                                  controller
-                                                      .destinationFocusNode
-                                                      .unfocus();
-                                                  controller
-                                                      .isDestinationFocused
-                                                      .value = false;
+                                                  controller.destinationFocusNode.unfocus();
+                                                  controller.isDestinationFocused.value = false;
                                                 },
                                                 isDark,
                                               );
@@ -1389,16 +1234,10 @@ class _CabHomeScreenState extends State<CabHomeScreen> {
                         final isEnabled =
                             controller.canProceedToVehicleSelection.value;
                         // Qaysi joy tanlanmaganini ko'rsatish (lokatsiya avto tanlanganida aniqroq matn)
-                        final hasSource = Constant.selectedMapType == 'osm'
-                            ? (controller.departureLatLongOsm.value.latitude != 0.0 &&
-                                controller.departureLatLongOsm.value.longitude != 0.0)
-                            : (controller.departureLatLong.value.latitude != 0.0 &&
-                                controller.departureLatLong.value.longitude != 0.0);
-                        final hasDestination = Constant.selectedMapType == 'osm'
-                            ? (controller.destinationLatLongOsm.value.latitude != 0.0 &&
-                                controller.destinationLatLongOsm.value.longitude != 0.0)
-                            : (controller.destinationLatLong.value.latitude != 0.0 &&
-                                controller.destinationLatLong.value.longitude != 0.0);
+                        final hasSource = controller.departureLatLong.value.latitude != 0.0 &&
+                            controller.departureLatLong.value.longitude != 0.0;
+                        final hasDestination = controller.destinationLatLong.value.latitude != 0.0 &&
+                            controller.destinationLatLong.value.longitude != 0.0;
                         String hintText;
                         if (isEnabled) {
                           hintText = "Davom etish".tr;
@@ -1407,7 +1246,7 @@ class _CabHomeScreenState extends State<CabHomeScreen> {
                         } else if (!hasSource && hasDestination) {
                           hintText = "Boshlang'ich joyni tanlang".tr;
                         } else {
-                          hintText = "Ikkala joyni tanlang".tr;
+                          hintText = "Joriy lokatsiyani tanlang".tr;
                         }
 
                         debugPrint("CabHome [Tugma] hasSource=$hasSource hasDestination=$hasDestination isEnabled=$isEnabled hintText=$hintText");
@@ -1585,7 +1424,7 @@ class _CabHomeScreenState extends State<CabHomeScreen> {
             controller.isPickingSource.value = isSource;
             controller.isMapPickingMode.value = true;
             controller.tempPickedAddress.value = '';
-            controller.tempPickedLocation.value = latlong.LatLng(0, 0);
+            controller.tempPickedLocation.value = app_lat_lng.LatLng(0, 0);
 
             // Bottom sheet ni 0.18 ga pasaytirish
             if (_sheetController.isAttached) {

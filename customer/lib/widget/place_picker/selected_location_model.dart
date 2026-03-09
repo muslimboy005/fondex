@@ -1,15 +1,15 @@
-import 'package:geocoding/geocoding.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:customer/models/app_placemark.dart';
+import 'package:customer/models/lat_lng.dart';
 
 class SelectedLocationModel {
-  Placemark? address;
+  AppPlacemark? address;
   LatLng? latLng;
 
-  SelectedLocationModel({this.address,this.latLng});
+  SelectedLocationModel({this.address, this.latLng});
 
   SelectedLocationModel.fromJson(Map<String, dynamic> json) {
-    address = json['address'];
-    latLng = json['latLng'];
+    address = json['address'] as AppPlacemark?;
+    latLng = json['latLng'] as LatLng?;
   }
 
   Map<String, dynamic> toJson() {

@@ -1,7 +1,7 @@
 import 'package:bottom_picker/bottom_picker.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
-import 'package:geocoding/geocoding.dart';
+import 'package:customer/service/yandex_geocoding_service.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import '../../constant/constant.dart';
@@ -13,9 +13,7 @@ import '../../themes/app_them_data.dart';
 import '../../themes/round_button_fill.dart';
 import '../../themes/show_toast_dialog.dart';
 import '../../themes/text_field_widget.dart';
-import '../../widget/osm_map/map_picker_page.dart';
 import '../../widget/place_picker/location_picker_screen.dart';
-import '../../widget/place_picker/selected_location_model.dart';
 import '../location_enable_screens/address_list_screen.dart';
 
 class OnDemandBookingScreen extends StatelessWidget {
@@ -146,43 +144,20 @@ class OnDemandBookingScreen extends StatelessWidget {
                                         await Geolocator.getCurrentPosition();
                                         ShowToastDialog.closeLoader();
 
-                                        if (Constant.selectedMapType == 'osm') {
-                                          final result = await Get.to(() => MapPickerPage());
-                                          if (result != null) {
-                                            final firstPlace = result;
-                                            final lat = firstPlace.coordinates.latitude;
-                                            final lng = firstPlace.coordinates.longitude;
-                                            final address = firstPlace.address;
-
+                                        Get.to(const LocationPickerScreen())!.then((value) async {
+                                          if (value != null) {
+                                            final selectedLocationModel = value;
                                             shippingAddress.addressAs = "Home";
-                                            shippingAddress.locality = address.toString();
-                                            shippingAddress.location = UserLocation(latitude: lat, longitude: lng);
-
+                                            shippingAddress.location = UserLocation(latitude: selectedLocationModel.latLng!.latitude, longitude: selectedLocationModel.latLng!.longitude);
+                                            shippingAddress.locality = selectedLocationModel.address?.formattedAddress ?? "Picked from Map";
                                             controller.selectedAddress.value = shippingAddress;
-                                            Get.back();
                                           }
-                                        } else {
-                                          Get.to(LocationPickerScreen())!.then((value) async {
-                                            if (value != null) {
-                                              SelectedLocationModel selectedLocationModel = value;
-
-                                              shippingAddress.addressAs = "Home";
-                                              shippingAddress.location = UserLocation(latitude: selectedLocationModel.latLng!.latitude, longitude: selectedLocationModel.latLng!.longitude);
-                                              shippingAddress.locality = "Picked from Map";
-
-                                              controller.selectedAddress.value = shippingAddress;
-                                            }
-                                          });
-                                        }
-                                      } catch (e) {
-                                        await placemarkFromCoordinates(Constant.defaultLocationLat, Constant.defaultLocationLng).then((valuePlaceMaker) {
-                                          Placemark placeMark = valuePlaceMaker[0];
-                                          shippingAddress.location = UserLocation(latitude: Constant.defaultLocationLat, longitude: Constant.defaultLocationLng);
-                                          String currentLocation =
-                                              "${placeMark.name}, ${placeMark.subLocality}, ${placeMark.locality}, ${placeMark.administrativeArea}, ${placeMark.postalCode}, ${placeMark.country}";
-                                          shippingAddress.locality = currentLocation;
                                         });
-
+                                      } catch (e) {
+                                        final yandexGeocoding = YandexGeocodingService(apiKey: Constant.yandexGeocodeApiKey);
+                                        shippingAddress.location = UserLocation(latitude: Constant.defaultLocationLat, longitude: Constant.defaultLocationLng);
+                                        final place = await yandexGeocoding.reverseGeocode(Constant.defaultLocationLat, Constant.defaultLocationLng);
+                                        shippingAddress.locality = place?.formattedAddress ?? 'Unknown location';
                                         controller.selectedAddress.value = shippingAddress;
                                         ShowToastDialog.closeLoader();
                                       }

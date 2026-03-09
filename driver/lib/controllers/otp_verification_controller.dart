@@ -212,21 +212,20 @@ class OtpVerifyController extends GetxController {
       userModel.fcmToken = fcmToken;
       await FireStoreUtils.updateUser(userModel);
 
-      // Navigate based on isOwner and serviceType
+      // Navigate based on isOwner and serviceType (delivery_service yoki delivery-service)
+      final st = userModel.serviceType ?? '';
       if (userModel.isOwner == true) {
         Get.offAll(() => OwnerDashboardScreen());
+      } else if (st == "delivery_service" || st == "delivery-service") {
+        Get.offAll(() => const DashBoardScreen());
+      } else if (st == "cab_service" || st == "cab-service") {
+        Get.offAll(() => const CabDashboardScreen());
+      } else if (st == "parcel_delivery") {
+        Get.offAll(() => const ParcelDashboardScreen());
+      } else if (st == "rental_service" || st == "rental-service") {
+        Get.offAll(() => const RentalDashboardScreen());
       } else {
-        if (userModel.serviceType == "delivery-service") {
-          Get.offAll(() => const DashBoardScreen());
-        } else if (userModel.serviceType == "cab-service") {
-          Get.offAll(() => const CabDashboardScreen());
-        } else if (userModel.serviceType == "parcel_delivery") {
-          Get.offAll(() => const ParcelDashboardScreen());
-        } else if (userModel.serviceType == "rental-service") {
-          Get.offAll(() => const RentalDashboardScreen());
-        } else {
-          Get.offAll(() => const SignupScreen());
-        }
+        Get.offAll(() => const SignupScreen());
       }
     } catch (e, stackTrace) {
       log("❌ Firebase OTP Verification Error:");
@@ -280,20 +279,19 @@ class OtpVerifyController extends GetxController {
       userModel.fcmToken = await NotificationService.getToken();
       await FireStoreUtils.updateUser(userModel);
       ShowToastDialog.closeLoader();
+      final st = userModel.serviceType ?? '';
       if (userModel.isOwner == true) {
         Get.offAll(() => OwnerDashboardScreen());
+      } else if (st == "delivery_service" || st == "delivery-service") {
+        Get.offAll(() => const DashBoardScreen());
+      } else if (st == "cab_service" || st == "cab-service") {
+        Get.offAll(() => const CabDashboardScreen());
+      } else if (st == "parcel_delivery") {
+        Get.offAll(() => const ParcelDashboardScreen());
+      } else if (st == "rental_service" || st == "rental-service") {
+        Get.offAll(() => const RentalDashboardScreen());
       } else {
-        if (userModel.serviceType == "delivery-service") {
-          Get.offAll(() => const DashBoardScreen());
-        } else if (userModel.serviceType == "cab-service") {
-          Get.offAll(() => const CabDashboardScreen());
-        } else if (userModel.serviceType == "parcel_delivery") {
-          Get.offAll(() => const ParcelDashboardScreen());
-        } else if (userModel.serviceType == "rental-service") {
-          Get.offAll(() => const RentalDashboardScreen());
-        } else {
-          Get.offAll(() => const SignupScreen());
-        }
+        Get.offAll(() => const SignupScreen());
       }
       return true;
     } catch (e) {
@@ -725,23 +723,24 @@ class OtpVerifyController extends GetxController {
 
       ShowToastDialog.closeLoader();
 
-      // Navigate based on isOwner and serviceType
+      // Navigate based on isOwner and serviceType (qabul qilamiz: delivery_service yoki delivery-service)
       log("🧭 Checking user type...");
       if (userModel.isOwner == true) {
         log("   Navigating to Owner Dashboard...");
         Get.offAll(() => OwnerDashboardScreen());
       } else {
-        log("   Service Type: ${userModel.serviceType}");
-        if (userModel.serviceType == "delivery-service") {
+        final st = userModel.serviceType ?? '';
+        log("   Service Type: $st");
+        if (st == "delivery_service" || st == "delivery-service") {
           log("   Navigating to Delivery Dashboard...");
           Get.offAll(() => const DashBoardScreen());
-        } else if (userModel.serviceType == "cab-service") {
+        } else if (st == "cab_service" || st == "cab-service") {
           log("   Navigating to Cab Dashboard...");
           Get.offAll(() => const CabDashboardScreen());
-        } else if (userModel.serviceType == "parcel_delivery") {
+        } else if (st == "parcel_delivery") {
           log("   Navigating to Parcel Dashboard...");
           Get.offAll(() => const ParcelDashboardScreen());
-        } else if (userModel.serviceType == "rental-service") {
+        } else if (st == "rental_service" || st == "rental-service") {
           log("   Navigating to Rental Dashboard...");
           Get.offAll(() => const RentalDashboardScreen());
         } else {

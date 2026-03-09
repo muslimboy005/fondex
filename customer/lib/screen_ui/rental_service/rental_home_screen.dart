@@ -10,12 +10,10 @@ import '../../themes/round_button_fill.dart';
 import '../../themes/show_toast_dialog.dart';
 import '../../themes/text_field_widget.dart';
 import '../../utils/utils.dart';
-import '../../widget/osm_map/map_picker_page.dart';
 import '../../widget/place_picker/location_picker_screen.dart';
-import '../../widget/place_picker/selected_location_model.dart';
 import '../auth_screens/login_screen.dart';
 import '../multi_vendor_service/wallet_screen/wallet_screen.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart' as latlong;
+import 'package:customer/models/lat_lng.dart';
 
 class RentalHomeScreen extends StatelessWidget {
   const RentalHomeScreen({super.key});
@@ -104,74 +102,26 @@ class RentalHomeScreen extends StatelessWidget {
                           const SizedBox(height: 20),
                           InkWell(
                             onTap: () async {
-                              if (Constant.selectedMapType == 'osm') {
-                                final result = await Get.to(
-                                  () => MapPickerPage(),
-                                );
-                                if (result != null) {
-                                  final firstPlace = result;
-
+                              Get.to(const LocationPickerScreen())!.then((value) async {
+                                if (value != null) {
+                                  final selectedLocationModel = value;
                                   if (Constant.checkZoneCheck(
-                                        firstPlace.coordinates.latitude,
-                                        firstPlace.coordinates.longitude,
-                                      ) ==
-                                      true) {
-                                    final address = firstPlace.address;
-                                    final lat = firstPlace.coordinates.latitude;
-                                    final lng =
-                                        firstPlace.coordinates.longitude;
-                                    controller
-                                        .sourceTextEditController
-                                        .value
-                                        .text = address;
-                                    controller
-                                        .departureLatLongOsm
-                                        .value = latlong.LatLng(lat, lng);
+                                        selectedLocationModel.latLng!.latitude,
+                                        selectedLocationModel.latLng!.longitude,
+                                      )) {
+                                    controller.sourceTextEditController.value.text =
+                                        Utils.formatAddress(selectedLocation: selectedLocationModel);
+                                    controller.departureLatLong.value = LatLng(
+                                      selectedLocationModel.latLng!.latitude,
+                                      selectedLocationModel.latLng!.longitude,
+                                    );
                                   } else {
                                     ShowToastDialog.showToast(
-                                      "Service is unavailable at the selected address."
-                                          .tr,
+                                      "Service is unavailable at the selected address.".tr,
                                     );
                                   }
                                 }
-                              } else {
-                                Get.to(LocationPickerScreen())!.then((
-                                  value,
-                                ) async {
-                                  if (value != null) {
-                                    SelectedLocationModel
-                                    selectedLocationModel = value;
-
-                                    if (Constant.checkZoneCheck(
-                                          selectedLocationModel
-                                              .latLng!
-                                              .latitude,
-                                          selectedLocationModel
-                                              .latLng!
-                                              .longitude,
-                                        ) ==
-                                        true) {
-                                      controller
-                                          .sourceTextEditController
-                                          .value
-                                          .text = Utils.formatAddress(
-                                        selectedLocation: selectedLocationModel,
-                                      );
-                                      controller
-                                          .departureLatLong
-                                          .value = latlong.LatLng(
-                                        selectedLocationModel.latLng!.latitude,
-                                        selectedLocationModel.latLng!.longitude,
-                                      );
-                                    } else {
-                                      ShowToastDialog.showToast(
-                                        "Service is unavailable at the selected address."
-                                            .tr,
-                                      );
-                                    }
-                                  }
-                                });
-                              }
+                              });
                             },
                             hoverColor: Colors.transparent,
                             child: TextFieldWidget(

@@ -444,8 +444,10 @@ class CabHomeScreen extends StatelessWidget {
                                               } else if (controller.currentOrder
                                                       .value.status ==
                                                   Constant.orderInTransit) {
-                                                if (controller.isSinglePointOrder ||
-                                                    controller.currentOrder
+                                                if (controller
+                                                        .isSinglePointOrder ||
+                                                    controller
+                                                            .currentOrder
                                                             .value
                                                             .destinationLocation ==
                                                         null) {
@@ -567,11 +569,8 @@ class CabHomeScreen extends StatelessWidget {
     final dest = controller.currentOrder.value.destinationLocation;
     double distanceInMeters = 0.0;
     if (!controller.isSinglePointOrder && src != null && dest != null) {
-      distanceInMeters = Geolocator.distanceBetween(
-          src.latitude ?? 0.0,
-          src.longitude ?? 0.0,
-          dest.latitude ?? 0.0,
-          dest.longitude ?? 0.0);
+      distanceInMeters = Geolocator.distanceBetween(src.latitude ?? 0.0,
+          src.longitude ?? 0.0, dest.latitude ?? 0.0, dest.longitude ?? 0.0);
     }
     double kilometer = distanceInMeters / 1000;
     return Padding(
@@ -892,20 +891,25 @@ class CabHomeScreen extends StatelessWidget {
     double discount = 0.0;
     double subTotal = 0.0;
     double taxAmount = 0.0;
-    final rawSubTotal = double.parse(controller.currentOrder.value.subTotal.toString());
-    final minFare = controller.minimumCabFare;
-    subTotal = rawSubTotal < minFare ? minFare : rawSubTotal;
-    discount = double.parse(controller.currentOrder.value.discount ?? '0.0');
-
-    if (controller.currentOrder.value.taxSetting != null) {
-      for (var element in controller.currentOrder.value.taxSetting!) {
-        taxAmount = (taxAmount +
-            Constant.calculateTax(
-                amount: (subTotal - discount).toString(), taxModel: element));
+    final finalFare = controller.currentOrder.value.finalFare;
+    if (finalFare != null) {
+      subTotal = finalFare;
+      totalAmount = finalFare;
+    } else {
+      final rawSubTotal =
+          double.parse(controller.currentOrder.value.subTotal.toString());
+      final minFare = controller.minimumCabFare;
+      subTotal = rawSubTotal < minFare ? minFare : rawSubTotal;
+      discount = double.parse(controller.currentOrder.value.discount ?? '0.0');
+      if (controller.currentOrder.value.taxSetting != null) {
+        for (var element in controller.currentOrder.value.taxSetting!) {
+          taxAmount = (taxAmount +
+              Constant.calculateTax(
+                  amount: (subTotal - discount).toString(), taxModel: element));
+        }
       }
+      totalAmount = (subTotal - discount) + taxAmount;
     }
-
-    totalAmount = (subTotal - discount) + taxAmount;
 
     return Container(
       color: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
@@ -1277,7 +1281,9 @@ class CabHomeScreen extends StatelessWidget {
                                               Text(
                                                 controller.isSinglePointOrder
                                                     ? "Kiritilmagan".tr
-                                                    : (controller.currentOrder.value
+                                                    : (controller
+                                                            .currentOrder
+                                                            .value
                                                             .destinationLocationName
                                                             ?.toString() ??
                                                         "Kiritilmagan".tr),
@@ -1496,42 +1502,99 @@ class CabHomeScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                  if (controller.currentOrder.value.finalFare != null) ...[
-                    const SizedBox(height: 5),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            "Jami to'lov".tr,
-                            style: TextStyle(
-                              fontFamily: AppThemeData.regular,
-                              color: isDark
-                                  ? AppThemeData.grey300
-                                  : AppThemeData.grey600,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ),
-                        Text(
-                          Constant.amountShowRounded(
-                              amount: controller.currentOrder.value.finalFare
-                                  ?.toString()),
+                  const SizedBox(height: 5),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          "Yurgan yo'l to'lovi".tr,
                           style: TextStyle(
-                            fontFamily: AppThemeData.semiBold,
+                            fontFamily: AppThemeData.regular,
                             color: isDark
-                                ? AppThemeData.grey50
-                                : AppThemeData.grey900,
+                                ? AppThemeData.grey300
+                                : AppThemeData.grey600,
                             fontSize: 16,
                           ),
                         ),
-                      ],
-                    ),
-                  ],
+                      ),
+                      Text(
+                        Constant.amountShowRounded(
+                            amount: controller.displayDistanceFareRounded
+                                .toString()),
+                        style: TextStyle(
+                          fontFamily: AppThemeData.semiBold,
+                          color: isDark
+                              ? AppThemeData.grey50
+                              : AppThemeData.grey900,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 5),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          "Chaqiruv narxi".tr,
+                          style: TextStyle(
+                            fontFamily: AppThemeData.regular,
+                            color: isDark
+                                ? AppThemeData.grey300
+                                : AppThemeData.grey600,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                      Text(
+                        Constant.amountShowRounded(
+                            amount: controller.displayCallOutFee.toString()),
+                        style: TextStyle(
+                          fontFamily: AppThemeData.semiBold,
+                          color: isDark
+                              ? AppThemeData.grey50
+                              : AppThemeData.grey900,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 5),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          "Mijoz to'lovi".tr,
+                          style: TextStyle(
+                            fontFamily: AppThemeData.semiBold,
+                            color: isDark
+                                ? AppThemeData.grey300
+                                : AppThemeData.grey600,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                      Text(
+                        Constant.amountShowRounded(
+                            amount: controller.displayCustomerTotal.toString()),
+                        style: TextStyle(
+                          fontFamily: AppThemeData.semiBold,
+                          color: isDark
+                              ? AppThemeData.grey50
+                              : AppThemeData.grey900,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
+                  ),
                   const SizedBox(height: 10),
                 ],
                 controller.currentOrder.value.paymentMethod!.toLowerCase() ==
-                        "cod"
+                            "cod" &&
+                        !controller.isSinglePointOrder
                     ? Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -1549,7 +1612,9 @@ class CabHomeScreen extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            Constant.amountShowRounded(amount: totalAmount.toString()),
+                            Constant.amountShowRounded(
+                                amount:
+                                    controller.displayCustomerTotal.toString()),
                             textAlign: TextAlign.start,
                             style: TextStyle(
                               fontFamily: AppThemeData.semiBold,
@@ -1608,8 +1673,12 @@ class CabHomeScreen extends StatelessWidget {
               ],
             ),
           ),
-          // Bitta nuqtali zakazda "Ko'rish" tugmasi ko‘rinmasin
-          if (!controller.isSinglePointOrder)
+          // "Ko'rish": "Mijozni olish" ustida doim; ikki nuqtada "Sayohatni yakunlash" ustida ham. Bitta nuqtada "Manzilga yetib keldik"/"Safarni tugatish" ustida yo‘q.
+          if (controller.currentOrder.value.status == Constant.driverAccepted ||
+              controller.currentOrder.value.status == Constant.orderShipped ||
+              (controller.currentOrder.value.status ==
+                      Constant.orderInTransit &&
+                  !controller.isSinglePointOrder))
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               child: RoundedButtonFill(

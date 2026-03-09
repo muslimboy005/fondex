@@ -381,6 +381,8 @@ const Map<String, String> ruRU = {
   "Completed Delivery": "Доставлено",
   "Parcel Amount credited": "Сумма за посылку зачислена",
   "Order details not available": "Детали заказа недоступны",
+  "Order id not found. Please try again.":
+      "Идентификатор заказа не найден. Попробуйте снова.",
   "Bank Setup": "Настройка банка",
   "Bank Name": "Название банка",
   "Enter Bank Name": "Введите название банка",
@@ -680,4 +682,11 @@ const Map<String, String> ruRU = {
   "sent a message": "отправил сообщение",
   "something went wrong, please contact admin.":
       "Произошла ошибка. Обратитесь в поддержку.",
+  "Delivery charge credited for order #%s":
+      "За доставку заказа #%s зачислено",
+  "Product amount debited from order #%s":
+      "Сумма товара списана по заказу #%s",
+  "You referral user has complete his this order #%s":
+      "Приглашённый пользователь выполнил заказ #%s",
+  "Wallet Top-up": "Пополнение кошелька",
 };

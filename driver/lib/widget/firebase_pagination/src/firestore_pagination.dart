@@ -171,10 +171,12 @@ class _FirestorePaginationState extends State<FirestorePagination> {
   StreamSubscription<QuerySnapshot>? _liveStreamSub;
 
   /// [ScrollController] to listen to scroll end and load more data.
-  late final ScrollController _controller = widget.controller ?? ScrollController();
+  late final ScrollController _controller =
+      widget.controller ?? ScrollController();
 
   /// [PageController] to listen to page changes and load more data.
-  late final PageController _pageController = widget.pageController ?? PageController();
+  late final PageController _pageController =
+      widget.pageController ?? PageController();
 
   /// Whether initial data is loading.
   bool _isInitialLoading = true;
@@ -240,7 +242,8 @@ class _FirestorePaginationState extends State<FirestorePagination> {
       // scroll to the bottom and load more data.
       if (_isInitialLoading || _isFetching || _isEnded) return;
       SchedulerBinding.instance.addPostFrameCallback((_) {
-        if (_controller.hasClients && _controller.position.maxScrollExtent <= 0) {
+        if (_controller.hasClients &&
+            _controller.position.maxScrollExtent <= 0) {
           _loadDocuments();
         }
       });
@@ -259,10 +262,12 @@ class _FirestorePaginationState extends State<FirestorePagination> {
       latestDocQuery = latestDocQuery.endBeforeDocument(_docs.first);
     }
 
-    _liveStreamSub = latestDocQuery.snapshots(includeMetadataChanges: true).listen(
+    _liveStreamSub =
+        latestDocQuery.snapshots(includeMetadataChanges: true).listen(
       (QuerySnapshot snapshot) async {
         await tempSub?.cancel();
-        if (snapshot.docs.isEmpty || snapshot.docs.first.metadata.hasPendingWrites) return;
+        if (snapshot.docs.isEmpty ||
+            snapshot.docs.first.metadata.hasPendingWrites) return;
 
         _docs.insert(0, snapshot.docs.first);
 

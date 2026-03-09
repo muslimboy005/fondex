@@ -10,8 +10,22 @@ class NetworkImageWidget extends StatelessWidget {
   final BoxFit? fit;
   final double? borderRadius;
   final Color? color;
+  /// Limit cached image size in memory (pixels). Use for lists with many images to avoid OOM.
+  final int? memCacheWidth;
+  final int? memCacheHeight;
 
-  const NetworkImageWidget({super.key, this.height, this.width, this.fit, required this.imageUrl, this.borderRadius, this.errorWidget, this.color});
+  const NetworkImageWidget({
+    super.key,
+    this.height,
+    this.width,
+    this.fit,
+    required this.imageUrl,
+    this.borderRadius,
+    this.errorWidget,
+    this.color,
+    this.memCacheWidth,
+    this.memCacheHeight,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -21,6 +35,8 @@ class NetworkImageWidget extends StatelessWidget {
       height: height,
       width: width,
       color: color,
+      memCacheWidth: memCacheWidth,
+      memCacheHeight: memCacheHeight,
       progressIndicatorBuilder:
           (context, url, downloadProgress) => Center(child: SizedBox(height: 24, width: 24, child: CircularProgressIndicator(value: downloadProgress.progress))),
       errorWidget: (context, url, error) => errorWidget ?? Image.network(Constant.placeHolderImage, fit: fit ?? BoxFit.fitWidth, height: height, width: width),

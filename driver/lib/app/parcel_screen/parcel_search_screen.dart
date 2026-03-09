@@ -10,8 +10,6 @@ import 'package:driver/themes/text_field_widget.dart';
 import 'package:driver/themes/theme_controller.dart';
 import 'package:driver/utils/network_image_widget.dart';
 import 'package:driver/widget/dotted_line.dart';
-import 'package:driver/widget/osm_map/map_picker_page.dart';
-import 'package:driver/widget/osm_map/place_model.dart';
 import 'package:driver/widget/place_picker/location_picker_screen.dart';
 import 'package:driver/widget/place_picker/selected_location_model.dart';
 import 'package:flutter/material.dart';
@@ -55,25 +53,13 @@ class ParcelSearchScreen extends StatelessWidget {
                                 readOnly: true,
                                 controller: controller.sourceTextEditController.value,
                                 onClick: () async {
-                                  if (Constant.selectedMapType == 'osm') {
-                                    PlaceModel? result = await Get.to(() => MapPickerPage());
-                                    if (result != null) {
-                                      controller.sourceTextEditController.value.text = '';
-                                      final firstPlace = result;
-                                      final lat = firstPlace.coordinates.latitude;
-                                      final lng = firstPlace.coordinates.longitude;
-
-                                      controller.sourceTextEditController.value.text = result.address.toString();
-                                      controller.departureLatLongOsm.value = latlong.LatLng(lat, lng);
-                                    }
-                                  } else {
-                                    Get.to(LocationPickerScreen())!.then((value) async {
+                                  Get.to(LocationPickerScreen())!.then((value) async {
                                       if (value != null) {
                                         SelectedLocationModel selectedLocationModel = value;
 
                                         final place = selectedLocationModel.address;
 
-                                        // ✅ Build full readable address from Placemark fields
+                                        // Build full readable address from AppPlacemark (Yandex, lotin o'zbekcha)
                                         controller.sourceTextEditController.value
                                             .text = '${place?.name ?? ''}, ${place?.street ?? ''}, ${place?.subLocality ?? ''}, '
                                                 '${place?.locality ?? ''}, ${place?.administrativeArea ?? ''}, ${place?.postalCode ?? ''}, ${place?.country ?? ''}'
@@ -87,7 +73,6 @@ class ParcelSearchScreen extends StatelessWidget {
                                         );
                                       }
                                     });
-                                  }
                                 },
                                 hintText: 'Where you want to go?',
                                 prefix: Padding(
@@ -104,40 +89,26 @@ class ParcelSearchScreen extends StatelessWidget {
                                 readOnly: true,
                                 controller: controller.destinationTextEditController.value,
                                 onClick: () async {
-                                  if (Constant.selectedMapType == 'osm') {
-                                    PlaceModel? result = await Get.to(() => MapPickerPage());
-                                    if (result != null) {
-                                      controller.destinationTextEditController.value.text = '';
-                                      final firstPlace = result;
-                                      final lat = firstPlace.coordinates.latitude;
-                                      final lng = firstPlace.coordinates.longitude;
-                                      // ignore: unused_local_variable
-                                      final address = firstPlace.address;
-                                      controller.destinationTextEditController.value.text = result.address.toString();
-                                      controller.destinationLatLongOsm.value = latlong.LatLng(lat, lng);
-                                    }
-                                  } else {
-                                    Get.to(LocationPickerScreen())!.then(
-                                      (value) async {
-                                        if (value != null) {
-                                          SelectedLocationModel selectedLocationModel = value;
-                                          final place = selectedLocationModel.address;
+                                  Get.to(LocationPickerScreen())!.then(
+                                    (value) async {
+                                      if (value != null) {
+                                        SelectedLocationModel selectedLocationModel = value;
+                                        final place = selectedLocationModel.address;
 
-                                          controller.destinationTextEditController.value
-                                              .text = '${place?.name ?? ''}, ${place?.street ?? ''}, ${place?.subLocality ?? ''}, '
-                                                  '${place?.locality ?? ''}, ${place?.administrativeArea ?? ''}, ${place?.postalCode ?? ''}, ${place?.country ?? ''}'
-                                              .replaceAll(RegExp(r', ,|, , ,'), ',')
-                                              .trim()
-                                              .replaceAll(RegExp(r',+$'), '');
+                                        controller.destinationTextEditController.value
+                                            .text = '${place?.name ?? ''}, ${place?.street ?? ''}, ${place?.subLocality ?? ''}, '
+                                                '${place?.locality ?? ''}, ${place?.administrativeArea ?? ''}, ${place?.postalCode ?? ''}, ${place?.country ?? ''}'
+                                            .replaceAll(RegExp(r', ,|, , ,'), ',')
+                                            .trim()
+                                            .replaceAll(RegExp(r',+$'), '');
 
-                                          controller.destinationLatLong.value = latlong.LatLng(
-                                            selectedLocationModel.latLng!.latitude,
-                                            selectedLocationModel.latLng!.longitude,
-                                          );
-                                        }
-                                      },
-                                    );
-                                  }
+                                        controller.destinationLatLong.value = latlong.LatLng(
+                                          selectedLocationModel.latLng!.latitude,
+                                          selectedLocationModel.latLng!.longitude,
+                                        );
+                                      }
+                                    },
+                                  );
                                 },
                                 hintText: 'Where to?',
                                 prefix: Padding(

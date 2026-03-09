@@ -1,5 +1,3 @@
-import 'package:customer/screen_ui/auth_screens/sign_up_screen.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
@@ -215,37 +213,38 @@ class OtpVerificationScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: Center(
-                      child: Text.rich(
-                        TextSpan(
-                          text: "Didn't have an account?".tr,
-                          style: AppThemeData.mediumTextStyle(
-                            color:
-                                isDark
-                                    ? AppThemeData.greyDark800
-                                    : AppThemeData.grey800,
-                          ),
-                          children: [
-                            TextSpan(
-                              text: "Sign up".tr,
-                              style: AppThemeData.mediumTextStyle(
-                                color: AppThemeData.ecommerce300,
-                                decoration: TextDecoration.underline,
-                              ),
-                              recognizer:
-                                  TapGestureRecognizer()
-                                    ..onTap =
-                                        () => Get.offAll(
-                                          () => const SignUpScreen(),
-                                        ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
+
+                  // Padding(
+                  //   padding: const EdgeInsets.only(bottom: 10),
+                  //   child: Center(
+                  //     child: Text.rich(
+                  //       TextSpan(
+                  //         text: "Didn't have an account?".tr,
+                  //         style: AppThemeData.mediumTextStyle(
+                  //           color:
+                  //               isDark
+                  //                   ? AppThemeData.greyDark800
+                  //                   : AppThemeData.grey800,
+                  //         ),
+                  //         children: [
+                  //           TextSpan(
+                  //             text: "Sign up".tr,
+                  //             style: AppThemeData.mediumTextStyle(
+                  //               color: AppThemeData.ecommerce300,
+                  //               decoration: TextDecoration.underline,
+                  //             ),
+                  //             recognizer:
+                  //                 TapGestureRecognizer()
+                  //                   ..onTap =
+                  //                       () => Get.offAll(
+                  //                         () => const SignUpScreen(),
+                  //                       ),
+                  //           ),
+                  //         ],
+                  //       ),
+                  //     ),
+                  //   ),
+                  // ),
                 ],
               ),
             ),

@@ -35,6 +35,7 @@ class VehicleInformationScreen extends StatelessWidget {
                         children: [
                           const SizedBox(height: 10),
                           buildDropdown<String>(
+                            key: ValueKey<String>(controller.selectedService.value),
                             context: context,
                             title: "Service".tr,
                             value: controller.selectedService.value,
@@ -42,13 +43,13 @@ class VehicleInformationScreen extends StatelessWidget {
                             isDark: isDark,
                             enabled:
                                 controller.userModel.value.ownerId != null && controller.userModel.value.ownerId!.isNotEmpty ? false : true,
-                            // keep true for theme styling
-                            absorb: true,
-                            // new param
+                            absorb: false,
                             onChanged: (value) async {
-                              if (controller.userModel.value.isOwner == false) {
-                                controller.selectedService.value = value!;
-                                await controller.getSection();
+                              if (value == null) return;
+                              // isOwner null yoki false bo'lsa xizmatni o'zgartirishga ruxsat (faqat owner bo'lmasa)
+                              if (controller.userModel.value.isOwner != true) {
+                                controller.selectedService.value = value;
+                                await controller.onServiceTypeChanged();
                                 controller.update();
                               }
                             },
@@ -62,17 +63,16 @@ class VehicleInformationScreen extends StatelessWidget {
                             isDark: isDark,
                             enabled:
                                 controller.userModel.value.ownerId != null && controller.userModel.value.ownerId!.isNotEmpty ? false : true,
-                            // theme visible
                             absorb: true,
-                            // make non-editable
                             onChanged: (value) {
-                              if (controller.userModel.value.isOwner == false) {
+                              if (controller.userModel.value.isOwner != true) {
                                 controller.selectedSection.value = value!;
                                 controller.getVehicleType(controller.selectedSection.value.id.toString());
                                 controller.update();
                               }
                             },
                           ),
+                          if (controller.selectedService.value == "Cab Service") ...[
                           const SizedBox(height: 10),
                           buildDropdown<VehicleType>(
                             context: context,
@@ -82,8 +82,13 @@ class VehicleInformationScreen extends StatelessWidget {
                             isDark: isDark,
                             enabled:
                                 controller.userModel.value.ownerId != null && controller.userModel.value.ownerId!.isNotEmpty ? false : true,
-                            onChanged: (value) {
-                              controller.selectedVehicleType.value = value!;
+                            onChanged: (value) async {
+                              if (value == null) return;
+                              controller.selectedVehicleType.value = value;
+                              if (controller.selectedService.value == "Cab Service") {
+                                await controller.getCarMakesForCab();
+                                await controller.getCarModel();
+                              }
                               controller.update();
                             },
                           ),
@@ -132,6 +137,7 @@ class VehicleInformationScreen extends StatelessWidget {
                             ],
                           ),
                           const SizedBox(height: 10),
+                          ],
                           controller.selectedService.value == "Cab Service"
                               ? Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -246,6 +252,7 @@ class VehicleInformationScreen extends StatelessWidget {
   }
 
   Widget buildDropdown<T>({
+    Key? key,
     required BuildContext context,
     required String title,
     required T value,
@@ -256,6 +263,7 @@ class VehicleInformationScreen extends StatelessWidget {
     required Function(T?) onChanged,
   }) {
     return Column(
+      key: key,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(

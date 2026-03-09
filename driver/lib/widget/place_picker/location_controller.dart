@@ -1,18 +1,23 @@
 import 'package:driver/constant/constant.dart';
+import 'package:driver/models/app_placemark.dart';
+import 'package:driver/service/yandex_geocoding_service.dart';
 import 'package:driver/widget/place_picker/selected_location_model.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:geocoding/geocoding.dart';
 import 'package:flutter/material.dart';
 import 'package:yandex_mapkit/yandex_mapkit.dart' as ym;
 
 class LocationController extends GetxController {
-  GoogleMapController? mapController;
   ym.YandexMapController? yandexMapController;
   var selectedLocation = Rxn<LatLng>();
-  var selectedPlaceAddress = Rxn<Placemark>();
+  var selectedPlaceAddress = Rxn<AppPlacemark>();
   var address = "Move the map to select a location".obs;
+  late final YandexGeocodingService _geocoding;
+
+  LocationController() {
+    _geocoding = YandexGeocodingService(apiKey: Constant.yandexGeocodeApiKey);
+  }
   TextEditingController searchController = TextEditingController();
 
   RxString zipCode = ''.obs;
@@ -46,20 +51,16 @@ class LocationController extends GetxController {
   }
 
   Future<void> _moveCameraTo(LatLng target, {double zoom = 15}) async {
-    if (Constant.isYandexMap) {
-      final controller = yandexMapController;
-      if (controller == null) return;
-      await controller.moveCamera(
-        ym.CameraUpdate.newCameraPosition(
-          ym.CameraPosition(
-            target: ym.Point(latitude: target.latitude, longitude: target.longitude),
-            zoom: zoom,
-          ),
+    final controller = yandexMapController;
+    if (controller == null) return;
+    await controller.moveCamera(
+      ym.CameraUpdate.newCameraPosition(
+        ym.CameraPosition(
+          target: ym.Point(latitude: target.latitude, longitude: target.longitude),
+          zoom: zoom,
         ),
-      );
-    } else {
-      mapController?.animateCamera(CameraUpdate.newLatLngZoom(target, zoom));
-    }
+      ),
+    );
   }
 
   Future<void> getCurrentLocation() async {
@@ -89,18 +90,16 @@ class LocationController extends GetxController {
 
   Future<void> getAddressFromLatLng(LatLng latLng) async {
     try {
-      List<Placemark> placemarks =
-      await placemarkFromCoordinates(latLng.latitude, latLng.longitude);
-      if (placemarks.isNotEmpty) {
-        Placemark place = placemarks.first;
+      final place = await _geocoding.reverseGeocode(latLng.latitude, latLng.longitude);
+      if (place != null) {
         selectedPlaceAddress.value = place;
-        address.value = "${place.street}, ${place.locality}, ${place.administrativeArea}, ${place.country}";
+        address.value = place.formattedAddress;
       } else {
-        address.value = "Address not found";
+        address.value = "Manzil topilmadi";
       }
     } catch (e) {
       print("Error getting address: $e");
-      address.value = "Error getting address";
+      address.value = "Manzil olishda xato";
     }
   }
 
@@ -110,10 +109,9 @@ class LocationController extends GetxController {
 
   Future<void> getCoordinatesFromZipCode(String zipCode) async {
     try {
-      List<Location> locations = await locationFromAddress(zipCode);
-      if (locations.isNotEmpty) {
-        selectedLocation.value =
-            LatLng(locations.first.latitude, locations.first.longitude);
+      final latLng = await _geocoding.getCoordinatesFromAddress(zipCode);
+      if (latLng != null) {
+        selectedLocation.value = latLng;
       }
     } catch (e) {
       print("Error getting coordinates for ZIP code: $e");

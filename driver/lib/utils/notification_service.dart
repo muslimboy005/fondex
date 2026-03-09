@@ -175,66 +175,45 @@ class NotificationService {
                   print("🔔 [NOTIFICATION] CabHomeController topildi");
                   log("Notification: Triggering order refresh for cab controller");
 
-                  // Notification data ichidagi rideId ni tekshiramiz
                   final rideId = data["rideId"]?.toString() ?? "";
                   print("🔔 [NOTIFICATION] rideId: $rideId");
 
-                  // Agar rideId bo'lsa, to'g'ridan-to'g'ri order ni o'qib olamiz
-                  if (rideId.isNotEmpty) {
-                    print(
-                        "🔔 [NOTIFICATION] rideId dan order o'qilmoqda: $rideId");
-                    cabController.getOrderByRideId(rideId);
-                  }
-
-                  // First, refresh the driver document to get latest orderCabRequestData
                   final driverId = FireStoreUtils.getCurrentUid();
-                  print(
-                      "🔔 [NOTIFICATION] Driver ID: $driverId, getUserProfile chaqirilmoqda");
-
                   FireStoreUtils.getUserProfile(driverId).then((driverModel) {
-                    if (driverModel != null) {
-                      print("🔔 [NOTIFICATION] Driver document yangilandi");
-                      print(
-                          "🔔 [NOTIFICATION] orderCabRequestData: ${driverModel.orderCabRequestData?.id}");
-                      print(
-                          "🔔 [NOTIFICATION] orderCabRequestData status: ${driverModel.orderCabRequestData?.status}");
-                      cabController.driverModel.value = driverModel;
-                      log("Notification: Driver document refreshed, orderCabRequestData: ${driverModel.orderCabRequestData?.id}");
-
-                      // Agar orderCabRequestData hali null bo'lsa va rideId bo'lsa, yana sinab ko'ramiz
-                      if (driverModel.orderCabRequestData == null &&
-                          rideId.isNotEmpty) {
-                        print(
-                            "🔔 [NOTIFICATION] orderCabRequestData null, rideId dan yana sinab ko'ramiz");
-                        Future.delayed(const Duration(milliseconds: 500), () {
-                          cabController.getOrderByRideId(rideId);
-                        });
-                      }
-                    } else {
+                    if (driverModel == null) {
                       print("🔔 [NOTIFICATION] Driver document null");
+                      return;
                     }
-                  });
+                    cabController.driverModel.value = driverModel;
+                    // Oflayn haydovchiga zakaz ko'rsatilmaydi (barbar kelmasin)
+                    if (driverModel.isActive != true) {
+                      print("🔔 [NOTIFICATION] Haydovchi oflayn - zakaz yuklanmaydi");
+                      return;
+                    }
+                    print("🔔 [NOTIFICATION] Driver document yangilandi, orderCabRequestData: ${driverModel.orderCabRequestData?.id}");
+                    log("Notification: Driver document refreshed, orderCabRequestData: ${driverModel.orderCabRequestData?.id}");
 
-                  // Multiple attempts with increasing delays to ensure Firestore has updated
-                  Future.delayed(const Duration(milliseconds: 300), () {
-                    print(
-                        "🔔 [NOTIFICATION] 300ms delay - getCurrentOrder chaqirilmoqda");
-                    cabController.getCurrentOrder();
-                  });
-                  Future.delayed(const Duration(milliseconds: 500), () {
-                    print(
-                        "🔔 [NOTIFICATION] 500ms delay - getCurrentOrder chaqirilmoqda");
-                    cabController.getCurrentOrder();
-                  });
-                  Future.delayed(const Duration(milliseconds: 1000), () {
-                    print(
-                        "🔔 [NOTIFICATION] 1000ms delay - getCurrentOrder chaqirilmoqda");
-                    cabController.getCurrentOrder();
-                  });
-                  Future.delayed(const Duration(milliseconds: 2000), () {
-                    print(
-                        "🔔 [NOTIFICATION] 2000ms delay - getCurrentOrder chaqirilmoqda");
-                    cabController.getCurrentOrder();
+                    if (rideId.isNotEmpty) {
+                      print("🔔 [NOTIFICATION] rideId dan order o'qilmoqda: $rideId");
+                      cabController.getOrderByRideId(rideId);
+                    }
+                    if (driverModel.orderCabRequestData == null && rideId.isNotEmpty) {
+                      Future.delayed(const Duration(milliseconds: 500), () {
+                        cabController.getOrderByRideId(rideId);
+                      });
+                    }
+                    Future.delayed(const Duration(milliseconds: 300), () {
+                      cabController.getCurrentOrder();
+                    });
+                    Future.delayed(const Duration(milliseconds: 500), () {
+                      cabController.getCurrentOrder();
+                    });
+                    Future.delayed(const Duration(milliseconds: 1000), () {
+                      cabController.getCurrentOrder();
+                    });
+                    Future.delayed(const Duration(milliseconds: 2000), () {
+                      cabController.getCurrentOrder();
+                    });
                   });
                 } catch (e) {
                   print("🔔 [NOTIFICATION] Xatolik: $e");
@@ -261,11 +240,20 @@ class NotificationService {
                   print("🔔 [NOTIFICATION] HomeController topildi");
                   log("Notification: Triggering order refresh for home controller");
 
-                  // Notification data ichidagi orderId ni tekshiramiz
-                  final orderId = data["orderId"]?.toString() ?? "";
+                  // Notification data ichidagi orderId (orderId, order_id yoki id – new_delivery_order da id ishlatiladi)
+                  final orderId = data["orderId"]?.toString() ??
+                      data["order_id"]?.toString() ??
+                      data["id"]?.toString() ??
+                      "";
                   print("🔔 [NOTIFICATION] orderId: $orderId");
 
-                  // First, refresh the driver document to get latest orderRequestData and orderCabRequestData
+                  // Darhol orderId bo‘yicha stream boshlash – driver dokumenti yangilanmasa ham buyurtma chiqadi
+                  if (orderId.isNotEmpty) {
+                    print("🔔 [NOTIFICATION] listenToOrderById chaqirilmoqda: $orderId");
+                    homeController.listenToOrderById(orderId);
+                  }
+
+                  // Driver dokumentini yangilash (orderRequestData va boshqalar)
                   final driverId = FireStoreUtils.getCurrentUid();
                   print(
                       "🔔 [NOTIFICATION] Driver ID: $driverId, getUserProfile chaqirilmoqda (HomeController)");
@@ -276,43 +264,35 @@ class NotificationService {
                           "🔔 [NOTIFICATION] Driver document yangilandi (HomeController)");
                       print(
                           "🔔 [NOTIFICATION] orderRequestData: ${driverModel.orderRequestData}");
-                      print(
-                          "🔔 [NOTIFICATION] orderCabRequestData: ${driverModel.orderCabRequestData?.id}");
-                      print(
-                          "🔔 [NOTIFICATION] sectionId: ${driverModel.sectionId}");
                       homeController.driverModel.value = driverModel;
-                      log("Notification: Driver document refreshed, orderRequestData: ${driverModel.orderRequestData}, orderCabRequestData: ${driverModel.orderCabRequestData?.id}");
+                      log("Notification: Driver document refreshed, orderRequestData: ${driverModel.orderRequestData}");
 
-                      // Trigger getCurrentOrder to refresh the order
-                      // This will check both orderRequestData and orderCabRequestData
-                      homeController.getCurrentOrder();
+                      // Bildirishnomadan orderId kelgan bo‘lsa getCurrentOrder() chaqirmaymiz –
+                      // u birinchi buyurtmaga obuna bo‘lib listenToOrderById streamini bekor qiladi
+                      if (orderId.isEmpty) {
+                        homeController.getCurrentOrder();
+                      }
                     } else {
                       print(
                           "🔔 [NOTIFICATION] Driver document null (HomeController)");
                     }
                   });
 
-                  // Multiple attempts with increasing delays to ensure Firestore has updated
-                  Future.delayed(const Duration(milliseconds: 300), () {
-                    print(
-                        "🔔 [NOTIFICATION] 300ms delay - getCurrentOrder chaqirilmoqda (HomeController)");
-                    homeController.getCurrentOrder();
-                  });
-                  Future.delayed(const Duration(milliseconds: 500), () {
-                    print(
-                        "🔔 [NOTIFICATION] 500ms delay - getCurrentOrder chaqirilmoqda (HomeController)");
-                    homeController.getCurrentOrder();
-                  });
-                  Future.delayed(const Duration(milliseconds: 1000), () {
-                    print(
-                        "🔔 [NOTIFICATION] 1000ms delay - getCurrentOrder chaqirilmoqda (HomeController)");
-                    homeController.getCurrentOrder();
-                  });
-                  Future.delayed(const Duration(milliseconds: 2000), () {
-                    print(
-                        "🔔 [NOTIFICATION] 2000ms delay - getCurrentOrder chaqirilmoqda (HomeController)");
-                    homeController.getCurrentOrder();
-                  });
+                  // orderId bo‘lmaganda qolgan tekshiruvlar uchun getCurrentOrder (delay bilan)
+                  if (orderId.isEmpty) {
+                    Future.delayed(const Duration(milliseconds: 300), () {
+                      homeController.getCurrentOrder();
+                    });
+                    Future.delayed(const Duration(milliseconds: 500), () {
+                      homeController.getCurrentOrder();
+                    });
+                    Future.delayed(const Duration(milliseconds: 1000), () {
+                      homeController.getCurrentOrder();
+                    });
+                    Future.delayed(const Duration(milliseconds: 2000), () {
+                      homeController.getCurrentOrder();
+                    });
+                  }
                 } catch (e) {
                   print("🔔 [NOTIFICATION] Xatolik (HomeController): $e");
                   log("Error refreshing home order from notification: $e");
@@ -439,7 +419,31 @@ class NotificationService {
         "chatType": chatType, // must match ChatController
       });
     } else {
-      log("Unhandled notification type: ${data['type']}");
+      // Yangi buyurtma bildirishnomasi bosilganda – orderId bo‘yicha stream boshlash (kuryer buyurtmasi)
+      final orderIdFromPayload = data["orderId"]?.toString() ??
+          data["order_id"]?.toString() ??
+          data["id"]?.toString() ??
+          "";
+      final rideId = data["rideId"]?.toString() ?? "";
+      if (orderIdFromPayload.isNotEmpty &&
+          rideId.isEmpty &&
+          Get.isRegistered<HomeController>()) {
+        try {
+          Get.find<HomeController>().listenToOrderById(orderIdFromPayload);
+          log("Notification tap: listenToOrderById($orderIdFromPayload)");
+        } catch (e) {
+          log("Notification tap HomeController error: $e");
+        }
+      } else if (rideId.isNotEmpty && Get.isRegistered<CabHomeController>()) {
+        try {
+          Get.find<CabHomeController>().getOrderByRideId(rideId);
+          log("Notification tap: getOrderByRideId($rideId)");
+        } catch (e) {
+          log("Notification tap CabHomeController error: $e");
+        }
+      } else {
+        log("Unhandled notification type: ${data['type']}");
+      }
     }
   }
 }

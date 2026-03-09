@@ -11,7 +11,7 @@ import 'package:customer/models/vendor_model.dart';
 import 'package:customer/utils/preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:customer/models/lat_lng.dart';
 import '../models/banner_model.dart';
 import '../models/story_model.dart';
 import '../service/cart_provider.dart';

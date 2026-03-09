@@ -273,9 +273,6 @@
 // }
 
 import 'dart:async';
-import 'dart:convert';
-import 'dart:developer';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:driver/constant/collection_name.dart';
 import 'package:driver/constant/constant.dart';
 import 'package:driver/constant/show_toast_dialog.dart';
@@ -286,17 +283,12 @@ import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:yandex_mapkit/yandex_mapkit.dart' as ym;
 import 'package:latlong2/latlong.dart' as location;
-import 'package:flutter_map/flutter_map.dart' as flutterMap;
-import 'package:http/http.dart' as http;
-import 'package:flutter/material.dart';
 import 'package:driver/utils/yandex_map_utils.dart';
 import '../models/parcel_order_model.dart';
 import '../models/user_model.dart';
 
 class ParcelTrackingController extends GetxController {
-  GoogleMapController? mapController;
   ym.YandexMapController? yandexMapController;
-  final flutterMap.MapController osmMapController = flutterMap.MapController();
 
   Rx<UserModel> driverUserModel = UserModel().obs;
   Rx<ParcelOrderModel> orderModel = ParcelOrderModel().obs;
@@ -306,13 +298,8 @@ class ParcelTrackingController extends GetxController {
   StreamSubscription? orderSubscription;
   StreamSubscription? driverSubscription;
 
-  // Google Maps
   RxMap<MarkerId, Marker> markers = <MarkerId, Marker>{}.obs;
   RxMap<PolylineId, Polyline> polyLines = <PolylineId, Polyline>{}.obs;
-
-  // OSM Map
-  RxList<flutterMap.Marker> osmMarkers = <flutterMap.Marker>[].obs;
-  RxList<location.LatLng> routePoints = <location.LatLng>[].obs;
 
   BitmapDescriptor? pickupIcon;
   BitmapDescriptor? dropoffIcon;
@@ -383,11 +370,7 @@ class ParcelTrackingController extends GetxController {
   }
 
   void _updateTracking() {
-    if (Constant.isOsmMap) {
-      _updateOsmMap();
-    } else {
-      _updateGoogleMap();
-    }
+    _updateGoogleMap();
   }
 
   void _updateGoogleMap() async {
@@ -473,149 +456,28 @@ class ParcelTrackingController extends GetxController {
   }
 
   Future<void> _animateCameraBounds(LatLng src, LatLng dest) async {
-    if (Constant.isYandexMap) {
-      if (yandexMapController == null) return;
-      final bounds = yandexBoundsFromLatLngs([src, dest]);
-      await yandexMapController!.moveCamera(
-        ym.CameraUpdate.newGeometry(
-          ym.Geometry.fromBoundingBox(bounds),
-        ),
-      );
-      return;
-    }
-    if (mapController == null) return;
-
-    LatLngBounds bounds;
-    if (src.latitude > dest.latitude && src.longitude > dest.longitude) {
-      bounds = LatLngBounds(southwest: dest, northeast: src);
-    } else if (src.longitude > dest.longitude) {
-      bounds = LatLngBounds(
-          southwest: LatLng(src.latitude, dest.longitude),
-          northeast: LatLng(dest.latitude, src.longitude));
-    } else if (src.latitude > dest.latitude) {
-      bounds = LatLngBounds(
-          southwest: LatLng(dest.latitude, src.longitude),
-          northeast: LatLng(src.latitude, dest.longitude));
-    } else {
-      bounds = LatLngBounds(southwest: src, northeast: dest);
-    }
-
-    CameraUpdate cameraUpdate = CameraUpdate.newLatLngBounds(bounds, 60);
-    await mapController?.animateCamera(cameraUpdate);
-  }
-
-  void _updateOsmMap() async {
-    final driverLat =
-        driverUserModel.value.location?.latitude?.toDouble() ?? 0.0;
-    final driverLng =
-        driverUserModel.value.location?.longitude?.toDouble() ?? 0.0;
-
-    double? dstLat;
-    double? dstLng;
-
-    if (orderModel.value.status == Constant.driverAccepted) {
-      dstLat = orderModel.value.senderLatLong?.latitude?.toDouble();
-      dstLng = orderModel.value.senderLatLong?.longitude?.toDouble();
-    } else if ([Constant.orderInTransit].contains(orderModel.value.status)) {
-      dstLat = orderModel.value.receiverLatLong?.latitude?.toDouble();
-      dstLng = orderModel.value.receiverLatLong?.longitude?.toDouble();
-    } else {
-      return;
-    }
-
-    if (dstLng == null) return;
-
-    source.value = location.LatLng(driverLat, driverLng);
-    destination.value = location.LatLng(dstLat ?? 0.0, dstLng);
-
-    await _fetchOsmRoute(source.value, destination.value);
-
-    // Update OSM markers
-    osmMarkers.clear();
-    osmMarkers.add(
-      flutterMap.Marker(
-        point: source.value,
-        width: 40,
-        height: 40,
-        child: CachedNetworkImage(
-          width: 50,
-          height: 50,
-          imageUrl: Constant.sectionModel!.markerIcon.toString(),
-          placeholder: (context, url) => Constant.loader(),
-          errorWidget: (context, url, error) => SizedBox(
-            width: 30,
-            height: 30,
-            child: CircularProgressIndicator(strokeWidth: 2),
-          ),
-        ),
+    if (yandexMapController == null) return;
+    final bounds = yandexBoundsFromLatLngs([src, dest]);
+    await yandexMapController!.moveCamera(
+      ym.CameraUpdate.newGeometry(
+        ym.Geometry.fromBoundingBox(bounds),
       ),
     );
-
-    if (orderModel.value.status == Constant.driverAccepted) {
-      osmMarkers.add(
-        flutterMap.Marker(
-          point: location.LatLng(
-            orderModel.value.senderLatLong?.latitude?.toDouble() ?? 0.0,
-            orderModel.value.senderLatLong?.longitude?.toDouble() ?? 0.0,
-          ),
-          width: 40,
-          height: 40,
-          child: Image.asset('assets/images/pickup.png', width: 40),
-        ),
-      );
-    } else {
-      osmMarkers.add(
-        flutterMap.Marker(
-          point: location.LatLng(
-            orderModel.value.receiverLatLong?.latitude?.toDouble() ?? 0.0,
-            orderModel.value.receiverLatLong?.longitude?.toDouble() ?? 0.0,
-          ),
-          width: 40,
-          height: 40,
-          child: Image.asset('assets/images/dropoff.png', width: 40),
-        ),
-      );
-    }
-
-    osmMapController.move(source.value, 14);
-    update();
-  }
-
-  Future<void> _fetchOsmRoute(location.LatLng src, location.LatLng dest) async {
-    try {
-      final url = Uri.parse(
-          'https://router.project-osrm.org/route/v1/driving/${src.longitude},${src.latitude};${dest.longitude},${dest.latitude}?overview=full&geometries=geojson');
-      final response = await http.get(url);
-      if (response.statusCode == 200) {
-        final decoded = json.decode(response.body);
-        final geometry = decoded['routes'][0]['geometry']['coordinates'];
-        routePoints.clear();
-        for (var coord in geometry) {
-          final lon = coord[0];
-          final lat = coord[1];
-          routePoints.add(location.LatLng(lat, lon));
-        }
-      }
-    } catch (e) {
-      log("Error fetching OSM route: $e");
-    }
   }
 
   Future<void> _loadIcons() async {
-    if (!Constant.isOsmMap) {
-      pickupIcon = BitmapDescriptor.fromBytes(
-          await Constant().getBytesFromAsset('assets/images/pickup.png', 100));
-      dropoffIcon = BitmapDescriptor.fromBytes(
-          await Constant().getBytesFromAsset('assets/images/dropoff.png', 100));
-      driverIcon = BitmapDescriptor.fromBytes(
-          Constant.sectionModel!.markerIcon == null ||
-                  Constant.sectionModel!.markerIcon!.isEmpty
-              ? await Constant()
-                  .getBytesFromAsset('assets/images/ic_cab.png', 50)
-              : await Constant().getBytesFromUrl(
-                  Constant.sectionModel!.markerIcon.toString(),
-                  width: 120));
-    }
+    pickupIcon = BitmapDescriptor.fromBytes(
+        await Constant().getBytesFromAsset('assets/images/pickup.png', 100));
+    dropoffIcon = BitmapDescriptor.fromBytes(
+        await Constant().getBytesFromAsset('assets/images/dropoff.png', 100));
+    driverIcon = BitmapDescriptor.fromBytes(
+        Constant.sectionModel!.markerIcon == null ||
+                Constant.sectionModel!.markerIcon!.isEmpty
+            ? await Constant()
+                .getBytesFromAsset('assets/images/ic_cab.png', 50)
+            : await Constant().getBytesFromUrl(
+                Constant.sectionModel!.markerIcon.toString(),
+                width: 120));
   }
 }
 

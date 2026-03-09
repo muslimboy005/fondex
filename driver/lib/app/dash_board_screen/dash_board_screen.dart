@@ -8,6 +8,7 @@ import 'package:driver/app/order_list_screen/order_list_screen.dart';
 import 'package:driver/app/terms_and_condition/terms_and_condition_screen.dart';
 import 'package:driver/app/verification_screen/verification_screen.dart';
 import 'package:driver/app/wallet_screen/wallet_screen.dart';
+import 'package:driver/app/vehicle_information_screen/vehicle_information_screen.dart';
 import 'package:driver/app/withdraw_method_setup_screens/withdraw_method_setup_screen.dart';
 import 'package:driver/constant/constant.dart';
 import 'package:driver/constant/show_toast_dialog.dart';
@@ -131,12 +132,14 @@ class DashBoardScreen extends StatelessWidget {
                                 : controller.drawerIndex.value == 5
                                     ? const DriverInboxScreen()
                                     : controller.drawerIndex.value == 6
-                                        ? const ChangeLanguageScreen()
+                                        ? const VehicleInformationScreen()
                                         : controller.drawerIndex.value == 7
-                                            ? const TermsAndConditionScreen(
-                                                type: "temsandcondition")
-                                            : const TermsAndConditionScreen(
-                                                type: "privacy"),
+                                            ? const ChangeLanguageScreen()
+                                            : controller.drawerIndex.value == 8
+                                                ? const TermsAndConditionScreen(
+                                                    type: "temsandcondition")
+                                                : const TermsAndConditionScreen(
+                                                    type: "privacy"),
           );
         },
       );
@@ -258,6 +261,17 @@ class DrawerView extends StatelessWidget {
                                     controller.drawerIndex.value = 5;
                                   },
                                 ),
+                                _buildDivider(isDark),
+                                _buildMenuItem(
+                                  icon: Icons.directions_car_rounded,
+                                  title: 'Vehicle Information'.tr,
+                                  isDark: isDark,
+                                  isSelected: controller.drawerIndex.value == 6,
+                                  onTap: () {
+                                    Get.back();
+                                    controller.drawerIndex.value = 6;
+                                  },
+                                ),
                               ],
                             ),
                             const SizedBox(height: 24),
@@ -270,10 +284,10 @@ class DrawerView extends StatelessWidget {
                                   icon: Icons.language_rounded,
                                   title: 'Change Language'.tr,
                                   isDark: isDark,
-                                  isSelected: controller.drawerIndex.value == 6,
+                                  isSelected: controller.drawerIndex.value == 7,
                                   onTap: () {
                                     Get.back();
-                                    controller.drawerIndex.value = 6;
+                                    controller.drawerIndex.value = 7;
                                   },
                                 ),
                                 _buildDivider(isDark),
@@ -333,10 +347,10 @@ class DrawerView extends StatelessWidget {
                                   icon: Icons.description_rounded,
                                   title: 'Terms and Conditions'.tr,
                                   isDark: isDark,
-                                  isSelected: controller.drawerIndex.value == 7,
+                                  isSelected: controller.drawerIndex.value == 8,
                                   onTap: () {
                                     Get.back();
-                                    controller.drawerIndex.value = 7;
+                                    controller.drawerIndex.value = 8;
                                   },
                                 ),
                                 _buildDivider(isDark),
@@ -344,10 +358,10 @@ class DrawerView extends StatelessWidget {
                                   icon: Icons.privacy_tip_rounded,
                                   title: 'Privacy Policy'.tr,
                                   isDark: isDark,
-                                  isSelected: controller.drawerIndex.value == 8,
+                                  isSelected: controller.drawerIndex.value == 9,
                                   onTap: () {
                                     Get.back();
-                                    controller.drawerIndex.value = 8;
+                                    controller.drawerIndex.value = 9;
                                   },
                                 ),
                               ],

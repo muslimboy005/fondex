@@ -2,7 +2,6 @@ import 'package:customer/constant/constant.dart';
 import 'package:customer/controllers/live_tracking_controller.dart';
 import 'package:customer/themes/app_them_data.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart' as flutterMap;
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart' as gmap;
 import 'package:yandex_mapkit/yandex_mapkit.dart' as ym;
@@ -28,17 +27,7 @@ class LiveTrackingScreen extends StatelessWidget {
           backgroundColor: isDark ? AppThemeData.surfaceDark : AppThemeData.surface,
           appBar: AppBar(backgroundColor: isDark ? AppThemeData.surfaceDark : AppThemeData.surface, title: Text("Live Tracking".tr), centerTitle: false),
           body:
-              Constant.isOsmMap
-                  ? flutterMap.FlutterMap(
-                    mapController: controller.osmMapController,
-                    options: flutterMap.MapOptions(initialCenter: controller.driverCurrent.value, initialZoom: 14),
-                    children: [
-                      flutterMap.TileLayer(urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', userAgentPackageName: 'com.emart.customer'),
-                      if (controller.routePoints.isNotEmpty) flutterMap.PolylineLayer(polylines: [flutterMap.Polyline(points: controller.routePoints, strokeWidth: 5.0, color: Colors.blue)]),
-                      flutterMap.MarkerLayer(markers: controller.orderModel.value.id == null ? [] : controller.osmMarkers),
-                    ],
-                  )
-                  : Constant.isYandexMap
+              Constant.isYandexMap
                       ? ym.YandexMap(
                         onMapCreated: (ym.YandexMapController mapController) async {
                           controller.yandexMapController = mapController;

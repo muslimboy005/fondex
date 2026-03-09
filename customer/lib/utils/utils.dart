@@ -4,7 +4,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:get/get_utils/src/extensions/internacionalization.dart';
 import 'package:map_launcher/map_launcher.dart';
 import '../themes/show_toast_dialog.dart';
-import 'package:geocoding/geocoding.dart';
+import 'package:customer/service/yandex_geocoding_service.dart';
 import 'package:location/location.dart' as loc;
 
 class Utils {
@@ -46,13 +46,9 @@ class Utils {
 
   static Future<String> getAddressFromCoordinates(double lat, double lng) async {
     try {
-      List<Placemark> placemarks = await placemarkFromCoordinates(lat, lng);
-      if (placemarks.isNotEmpty) {
-        Placemark place = placemarks.first;
-        String address = "${place.name ?? ''}, ${place.subLocality ?? ''}, ${place.locality ?? ''}, ${place.administrativeArea ?? ''}, ${place.country ?? ''}";
-        return address;
-      }
-      return "Unknown location";
+      final service = YandexGeocodingService(apiKey: Constant.yandexGeocodeApiKey);
+      final place = await service.reverseGeocode(lat, lng);
+      return place?.formattedAddress ?? "Unknown location";
     } catch (e) {
       return "Unknown location";
     }
@@ -106,21 +102,8 @@ class Utils {
   }
 
   static String formatAddress({required SelectedLocationModel selectedLocation}) {
-    List<String> parts = [];
-
-    if (selectedLocation.address!.name != null && selectedLocation.address!.name!.isNotEmpty) parts.add(selectedLocation.address!.name!);
-    if (selectedLocation.address!.subThoroughfare != null && selectedLocation.address!.subThoroughfare!.isNotEmpty) parts.add(selectedLocation.address!.subThoroughfare!);
-    if (selectedLocation.address!.thoroughfare != null && selectedLocation.address!.thoroughfare!.isNotEmpty) parts.add(selectedLocation.address!.thoroughfare!);
-    if (selectedLocation.address!.subLocality != null && selectedLocation.address!.subLocality!.isNotEmpty) parts.add(selectedLocation.address!.subLocality!);
-    if (selectedLocation.address!.locality != null && selectedLocation.address!.locality!.isNotEmpty) parts.add(selectedLocation.address!.locality!);
-    if (selectedLocation.address!.subAdministrativeArea != null && selectedLocation.address!.subAdministrativeArea!.isNotEmpty) {
-      parts.add(selectedLocation.address!.subAdministrativeArea!);
-    }
-    if (selectedLocation.address!.administrativeArea != null && selectedLocation.address!.administrativeArea!.isNotEmpty) parts.add(selectedLocation.address!.administrativeArea!);
-    if (selectedLocation.address!.postalCode != null && selectedLocation.address!.postalCode!.isNotEmpty) parts.add(selectedLocation.address!.postalCode!);
-    if (selectedLocation.address!.country != null && selectedLocation.address!.country!.isNotEmpty) parts.add(selectedLocation.address!.country!);
-    if (selectedLocation.address!.isoCountryCode != null && selectedLocation.address!.isoCountryCode!.isNotEmpty) parts.add(selectedLocation.address!.isoCountryCode!);
-
-    return parts.join(', ');
+    final addr = selectedLocation.address;
+    if (addr == null) return selectedLocation.latLng != null ? '${selectedLocation.latLng!.latitude}, ${selectedLocation.latLng!.longitude}' : '';
+    return addr.formattedAddress;
   }
 }

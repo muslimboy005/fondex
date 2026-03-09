@@ -19,6 +19,8 @@ class ParcelDashboardController extends GetxController {
     } else {
       pageList.value = [const HomeParcelScreen(), const MyBookingScreen(), const WalletScreen(), const ProfileScreen()];
     }
+    final tab = Get.arguments?['tab'];
+    if (tab == 'bookings') selectedIndex.value = 1;
     super.onInit();
   }
 

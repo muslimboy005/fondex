@@ -16,6 +16,7 @@ import 'package:customer/screen_ui/ecommarce/all_category_product_screen.dart';
 import 'package:customer/screen_ui/location_enable_screens/address_list_screen.dart';
 import 'package:customer/screen_ui/multi_vendor_service/advertisement_screens/all_advertisement_screen.dart';
 import 'package:customer/screen_ui/multi_vendor_service/cart_screen/cart_screen.dart';
+import 'package:customer/screen_ui/multi_vendor_service/wallet_screen/wallet_screen.dart';
 import 'package:customer/screen_ui/multi_vendor_service/home_screen/category_restaurant_screen.dart';
 import 'package:customer/screen_ui/multi_vendor_service/home_screen/restaurant_list_screen.dart'
     show RestaurantListScreen;
@@ -29,13 +30,11 @@ import 'package:customer/themes/round_button_border.dart';
 import 'package:customer/themes/show_toast_dialog.dart';
 import 'package:customer/themes/text_field_widget.dart';
 import 'package:customer/utils/network_image_widget.dart';
-import 'package:customer/widget/osm_map/map_picker_page.dart';
 import 'package:customer/widget/place_picker/location_picker_screen.dart';
-import 'package:customer/widget/place_picker/selected_location_model.dart';
 import 'package:customer/widget/video_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:geocoding/geocoding.dart';
+import 'package:customer/service/yandex_geocoding_service.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -118,64 +117,30 @@ class HomeECommerceScreen extends StatelessWidget {
                             await Geolocator.getCurrentPosition();
                             ShowToastDialog.closeLoader();
 
-                            if (Constant.selectedMapType == 'osm') {
-                              final result = await Get.to(
-                                () => MapPickerPage(),
-                              );
-                              if (result != null) {
-                                final firstPlace = result;
-                                final lat = firstPlace.coordinates.latitude;
-                                final lng = firstPlace.coordinates.longitude;
-                                final address = firstPlace.address;
-
+                            Get.to(const LocationPickerScreen())!.then((value) async {
+                              if (value != null) {
+                                final selectedLocationModel = value;
                                 shippingAddress.addressAs = "Home";
-                                shippingAddress.locality = address.toString();
                                 shippingAddress.location = UserLocation(
-                                  latitude: lat,
-                                  longitude: lng,
+                                  latitude: selectedLocationModel.latLng!.latitude,
+                                  longitude: selectedLocationModel.latLng!.longitude,
                                 );
+                                shippingAddress.locality = selectedLocationModel.address?.formattedAddress ?? "Picked from Map";
                                 Constant.selectedLocation = shippingAddress;
                                 controller.getData();
-                                Get.back();
                               }
-                            } else {
-                              Get.to(LocationPickerScreen())!.then((
-                                value,
-                              ) async {
-                                if (value != null) {
-                                  SelectedLocationModel selectedLocationModel =
-                                      value;
-
-                                  shippingAddress.addressAs = "Home";
-                                  shippingAddress.location = UserLocation(
-                                    latitude:
-                                        selectedLocationModel.latLng!.latitude,
-                                    longitude:
-                                        selectedLocationModel.latLng!.longitude,
-                                  );
-                                  shippingAddress.locality =
-                                      "Picked from Map"; // You can reverse-geocode
-
-                                  Constant.selectedLocation = shippingAddress;
-                                  controller.getData();
-                                }
-                              });
-                            }
+                            });
                           } catch (e) {
-                            await placemarkFromCoordinates(
+                            final yandexGeocoding = YandexGeocodingService(apiKey: Constant.yandexGeocodeApiKey);
+                            shippingAddress.location = UserLocation(
+                              latitude: Constant.defaultLocationLat,
+                              longitude: Constant.defaultLocationLng,
+                            );
+                            final place = await yandexGeocoding.reverseGeocode(
                               Constant.defaultLocationLat,
                               Constant.defaultLocationLng,
-                            ).then((valuePlaceMaker) {
-                              Placemark placeMark = valuePlaceMaker[0];
-                              shippingAddress.location = UserLocation(
-                                latitude: Constant.defaultLocationLat,
-                                longitude: Constant.defaultLocationLng,
-                              );
-                              String currentLocation =
-                                  "${placeMark.name}, ${placeMark.subLocality}, ${placeMark.locality}, ${placeMark.administrativeArea}, ${placeMark.postalCode}, ${placeMark.country}";
-                              shippingAddress.locality = currentLocation;
-                            });
-
+                            );
+                            shippingAddress.locality = place?.formattedAddress ?? 'Unknown location';
                             Constant.selectedLocation = shippingAddress;
                             ShowToastDialog.closeLoader();
                             controller.getData();
@@ -216,64 +181,87 @@ class HomeECommerceScreen extends StatelessWidget {
               ],
             ),
             actions: [
-              Obx(
-                () => Padding(
-                  padding: const EdgeInsets.only(right: 15.0, left: 10),
-                  child: badges.Badge(
-                    showBadge: true,
-                    badgeContent: Text(
-                      "${cartItem.length}",
-                      style: TextStyle(
-                        fontSize: 14,
-                        overflow: TextOverflow.ellipsis,
-                        fontFamily: AppThemeData.semiBold,
-                        fontWeight: FontWeight.w600,
-                        color:
-                            isDark ? AppThemeData.grey50 : AppThemeData.grey50,
-                      ),
-                    ),
-                    badgeStyle: badges.BadgeStyle(
-                      shape: badges.BadgeShape.circle,
-                      badgeColor: AppThemeData.info300,
-                    ),
-                    child: InkWell(
-                      onTap: () async {
-                        (await Get.to(const CartScreen()));
-                        controller.getCartData();
-                      },
-                      child: ClipOval(
-                        child: Container(
-                          width: 30,
-                          height: 30,
-                          decoration: ShapeDecoration(
-                            shape: RoundedRectangleBorder(
-                              side: BorderSide(
-                                width: 1,
-                                color:
-                                    isDark
-                                        ? AppThemeData.grey700
-                                        : AppThemeData.grey200,
+              Padding(
+                padding: const EdgeInsets.only(right: 15.0, left: 10),
+                child: Constant.walletSetting == true
+                    ? InkWell(
+                        onTap: () => Get.to(const WalletScreen()),
+                        child: ClipOval(
+                          child: Container(
+                            width: 30,
+                            height: 30,
+                            decoration: ShapeDecoration(
+                              shape: RoundedRectangleBorder(
+                                side: BorderSide(
+                                  width: 1,
+                                  color: isDark ? AppThemeData.grey700 : AppThemeData.grey200,
+                                ),
+                                borderRadius: BorderRadius.circular(120),
                               ),
-                              borderRadius: BorderRadius.circular(120),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: SvgPicture.asset(
+                                "assets/icons/ic_wallet.svg",
+                                colorFilter: ColorFilter.mode(
+                                  isDark ? AppThemeData.grey50 : AppThemeData.grey50,
+                                  BlendMode.srcIn,
+                                ),
+                              ),
                             ),
                           ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: SvgPicture.asset(
-                              "assets/icons/ic_shoping_cart.svg",
-                              colorFilter: ColorFilter.mode(
-                                isDark
-                                    ? AppThemeData.grey50
-                                    : AppThemeData.grey50,
-                                BlendMode.srcIn,
+                        ),
+                      )
+                    : Obx(
+                        () => badges.Badge(
+                          showBadge: true,
+                          badgeContent: Text(
+                            "${cartItem.length}",
+                            style: TextStyle(
+                              fontSize: 14,
+                              overflow: TextOverflow.ellipsis,
+                              fontFamily: AppThemeData.semiBold,
+                              fontWeight: FontWeight.w600,
+                              color: isDark ? AppThemeData.grey50 : AppThemeData.grey50,
+                            ),
+                          ),
+                          badgeStyle: badges.BadgeStyle(
+                            shape: badges.BadgeShape.circle,
+                            badgeColor: AppThemeData.info300,
+                          ),
+                          child: InkWell(
+                            onTap: () async {
+                              (await Get.to(const CartScreen()));
+                              controller.getCartData();
+                            },
+                            child: ClipOval(
+                              child: Container(
+                                width: 30,
+                                height: 30,
+                                decoration: ShapeDecoration(
+                                  shape: RoundedRectangleBorder(
+                                    side: BorderSide(
+                                      width: 1,
+                                      color: isDark ? AppThemeData.grey700 : AppThemeData.grey200,
+                                    ),
+                                    borderRadius: BorderRadius.circular(120),
+                                  ),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: SvgPicture.asset(
+                                    "assets/icons/ic_shoping_cart.svg",
+                                    colorFilter: ColorFilter.mode(
+                                      isDark ? AppThemeData.grey50 : AppThemeData.grey50,
+                                      BlendMode.srcIn,
+                                    ),
+                                  ),
+                                ),
                               ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                  ),
-                ),
               ),
             ],
             bottom: PreferredSize(

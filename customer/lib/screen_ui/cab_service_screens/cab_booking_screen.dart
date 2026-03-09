@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:developer' as developer;
-import 'dart:io';
 import 'package:customer/models/coupon_model.dart';
 import 'package:customer/models/tax_model.dart';
 import 'package:customer/models/vehicle_type.dart';
@@ -18,8 +17,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:flutter_map/flutter_map.dart' as flutterMap;
-import 'package:latlong2/latlong.dart' as latlong;
 import 'package:yandex_mapkit/yandex_mapkit.dart' as ym;
 import 'package:customer/utils/yandex_map_utils.dart';
 import '../../constant/constant.dart';
@@ -32,7 +29,6 @@ import '../../themes/app_them_data.dart';
 import '../../themes/round_button_fill.dart';
 import '../../themes/show_toast_dialog.dart';
 import '../../themes/text_field_widget.dart';
-import '../../widget/osm_map/map_picker_page.dart';
 import '../../screen_ui/auth_screens/auth_screen.dart';
 import '../../widget/place_picker/location_picker_screen.dart';
 import '../../widget/place_picker/selected_location_model.dart';
@@ -54,66 +50,7 @@ class CabBookingScreen extends StatelessWidget {
                   ? Constant.loader()
                   : Stack(
                     children: [
-                      Constant.isOsmMap
-                          ? flutterMap.FlutterMap(
-                            mapController: controller.mapOsmController,
-                            options: flutterMap.MapOptions(
-                              initialCenter:
-                                  Constant.currentLocation != null
-                                      ? latlong.LatLng(
-                                        Constant.currentLocation!.latitude,
-                                        Constant.currentLocation!.longitude,
-                                      )
-                                      : controller.currentOrder.value.id != null
-                                      ? latlong.LatLng(
-                                        double.parse(
-                                          controller
-                                              .currentOrder
-                                              .value
-                                              .sourceLocation!
-                                              .latitude
-                                              .toString(),
-                                        ),
-                                        double.parse(
-                                          controller
-                                              .currentOrder
-                                              .value
-                                              .sourceLocation!
-                                              .longitude
-                                              .toString(),
-                                        ),
-                                      )
-                                      : latlong.LatLng(
-                                        41.4219057,
-                                        -102.0840772,
-                                      ),
-                              initialZoom: 10,
-                            ),
-                            children: [
-                              flutterMap.TileLayer(
-                                urlTemplate:
-                                    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                                userAgentPackageName:
-                                    Platform.isAndroid
-                                        ? "com.emart.customer"
-                                        : "com.emart.customer.ios",
-                              ),
-                              flutterMap.MarkerLayer(
-                                markers: controller.osmMarker,
-                              ),
-                              if (controller.routePoints.isNotEmpty)
-                                flutterMap.PolylineLayer(
-                                  polylines: [
-                                    flutterMap.Polyline(
-                                      points: controller.routePoints,
-                                      strokeWidth: 5.0,
-                                      color: Colors.blue,
-                                    ),
-                                  ],
-                                ),
-                            ],
-                          )
-                          : Constant.isYandexMap
+                      Constant.isYandexMap
                           ? ym.YandexMap(
                             onMapCreated: (
                               ym.YandexMapController mapController,
@@ -307,11 +244,7 @@ class CabBookingScreen extends StatelessWidget {
       final query = controller.destinationTextEditController.value.text;
       if (query.isNotEmpty && query.length >= 3) {
         searchDebounce = Timer(const Duration(milliseconds: 500), () {
-          if (Constant.selectedMapType == 'osm') {
-            controller.searchDestinationOSM(query);
-          } else {
-            controller.searchDestinationGoogle(query);
-          }
+          controller.searchDestinationYandex(query);
         });
       } else {
         controller.destinationSearchResults.clear();
@@ -471,22 +404,22 @@ class CabBookingScreen extends StatelessWidget {
                   // Origin Location
                   InkWell(
                     onTap: () async {
-                      if (Constant.selectedMapType == 'osm') {
-                        final result = await Get.to(() => MapPickerPage());
-                        if (result != null) {
-                          controller.sourceTextEditController.value.text = '';
-                          final firstPlace = result;
+                      Get.to(LocationPickerScreen())!.then((value) async {
+                        if (value != null) {
+                          SelectedLocationModel selectedLocationModel = value;
                           if (Constant.checkZoneCheck(
-                                firstPlace.coordinates.latitude,
-                                firstPlace.coordinates.longitude,
+                                selectedLocationModel.latLng!.latitude,
+                                selectedLocationModel.latLng!.longitude,
                               ) ==
                               true) {
-                            final lat = firstPlace.coordinates.latitude;
-                            final lng = firstPlace.coordinates.longitude;
-                            final address = firstPlace.address;
                             controller.sourceTextEditController.value.text =
-                                address.toString();
-                            controller.setDepartureMarker(lat, lng);
+                                Utils.formatAddress(
+                                  selectedLocation: selectedLocationModel,
+                                );
+                            controller.setDepartureMarker(
+                              selectedLocationModel.latLng!.latitude,
+                              selectedLocationModel.latLng!.longitude,
+                            );
                           } else {
                             ShowToastDialog.showToast(
                               "Service is unavailable at the selected address."
@@ -494,34 +427,7 @@ class CabBookingScreen extends StatelessWidget {
                             );
                           }
                         }
-                      } else {
-                        Get.to(LocationPickerScreen())!.then((value) async {
-                          if (value != null) {
-                            SelectedLocationModel selectedLocationModel = value;
-                            if (Constant.checkZoneCheck(
-                                  selectedLocationModel.latLng!.latitude,
-                                  selectedLocationModel.latLng!.longitude,
-                                ) ==
-                                true) {
-                              controller
-                                  .sourceTextEditController
-                                  .value
-                                  .text = Utils.formatAddress(
-                                selectedLocation: selectedLocationModel,
-                              );
-                              controller.setDepartureMarker(
-                                selectedLocationModel.latLng!.latitude,
-                                selectedLocationModel.latLng!.longitude,
-                              );
-                            } else {
-                              ShowToastDialog.showToast(
-                                "Service is unavailable at the selected address."
-                                    .tr,
-                              );
-                            }
-                          }
-                        });
-                      }
+                      });
                     },
                     child: TextFieldWidget(
                       controller: controller.sourceTextEditController.value,
@@ -558,11 +464,7 @@ class CabBookingScreen extends StatelessWidget {
                           searchDebounce = Timer(
                             const Duration(milliseconds: 500),
                             () {
-                              if (Constant.selectedMapType == 'osm') {
-                                controller.searchDestinationOSM(value);
-                              } else {
-                                controller.searchDestinationGoogle(value);
-                              }
+                              controller.searchDestinationYandex(value);
                             },
                           );
                         } else {
@@ -1848,62 +1750,19 @@ class CabBookingScreen extends StatelessWidget {
                                       // Pickup Location
                                       InkWell(
                                         onTap: () async {
-                                          if (Constant.selectedMapType ==
-                                              'osm') {
-                                            final result = await Get.to(
-                                              () => MapPickerPage(),
-                                            );
-                                            if (result != null) {
-                                              controller
-                                                  .sourceTextEditController
-                                                  .value
-                                                  .text = '';
-                                              final firstPlace = result;
-                                              final lat =
-                                                  firstPlace
-                                                      .coordinates
-                                                      .latitude;
-                                              final lng =
-                                                  firstPlace
-                                                      .coordinates
-                                                      .longitude;
-                                              final address =
-                                                  firstPlace.address;
-                                              controller
-                                                  .sourceTextEditController
-                                                  .value
-                                                  .text = address.toString();
+                                          Get.to(LocationPickerScreen())!.then((value) async {
+                                            if (value != null) {
+                                              SelectedLocationModel selectedLocationModel = value;
+                                              controller.sourceTextEditController.value.text =
+                                                  Utils.formatAddress(
+                                                    selectedLocation: selectedLocationModel,
+                                                  );
                                               controller.setDepartureMarker(
-                                                lat,
-                                                lng,
+                                                selectedLocationModel.latLng!.latitude,
+                                                selectedLocationModel.latLng!.longitude,
                                               );
                                             }
-                                          } else {
-                                            Get.to(
-                                              LocationPickerScreen(),
-                                            )!.then((value) async {
-                                              if (value != null) {
-                                                SelectedLocationModel
-                                                selectedLocationModel = value;
-
-                                                controller
-                                                    .sourceTextEditController
-                                                    .value
-                                                    .text = Utils.formatAddress(
-                                                  selectedLocation:
-                                                      selectedLocationModel,
-                                                );
-                                                controller.setDepartureMarker(
-                                                  selectedLocationModel
-                                                      .latLng!
-                                                      .latitude,
-                                                  selectedLocationModel
-                                                      .latLng!
-                                                      .longitude,
-                                                );
-                                              }
-                                            });
-                                          }
+                                          });
                                         },
                                         child: TextFieldWidget(
                                           controller:
@@ -1928,62 +1787,19 @@ class CabBookingScreen extends StatelessWidget {
                                       // Destination Location
                                       InkWell(
                                         onTap: () async {
-                                          if (Constant.selectedMapType ==
-                                              'osm') {
-                                            final result = await Get.to(
-                                              () => MapPickerPage(),
-                                            );
-                                            if (result != null) {
-                                              controller
-                                                  .destinationTextEditController
-                                                  .value
-                                                  .text = '';
-                                              final firstPlace = result;
-                                              final lat =
-                                                  firstPlace
-                                                      .coordinates
-                                                      .latitude;
-                                              final lng =
-                                                  firstPlace
-                                                      .coordinates
-                                                      .longitude;
-                                              final address =
-                                                  firstPlace.address;
-                                              controller
-                                                  .destinationTextEditController
-                                                  .value
-                                                  .text = address.toString();
+                                          Get.to(LocationPickerScreen())!.then((value) async {
+                                            if (value != null) {
+                                              SelectedLocationModel selectedLocationModel = value;
+                                              controller.destinationTextEditController.value.text =
+                                                  Utils.formatAddress(
+                                                    selectedLocation: selectedLocationModel,
+                                                  );
                                               controller.setDestinationMarker(
-                                                lat,
-                                                lng,
+                                                selectedLocationModel.latLng!.latitude,
+                                                selectedLocationModel.latLng!.longitude,
                                               );
                                             }
-                                          } else {
-                                            Get.to(
-                                              LocationPickerScreen(),
-                                            )!.then((value) async {
-                                              if (value != null) {
-                                                SelectedLocationModel
-                                                selectedLocationModel = value;
-
-                                                controller
-                                                    .destinationTextEditController
-                                                    .value
-                                                    .text = Utils.formatAddress(
-                                                  selectedLocation:
-                                                      selectedLocationModel,
-                                                );
-                                                controller.setDestinationMarker(
-                                                  selectedLocationModel
-                                                      .latLng!
-                                                      .latitude,
-                                                  selectedLocationModel
-                                                      .latLng!
-                                                      .longitude,
-                                                );
-                                              }
-                                            });
-                                          }
+                                          });
                                         },
                                         child: TextFieldWidget(
                                           controller:
@@ -2751,7 +2567,6 @@ class CabBookingScreen extends StatelessWidget {
                         controller.bottomSheetType.value = "";
                         controller.polyLines.clear();
                         controller.markers.clear();
-                        controller.osmMarker.clear();
                         controller.routePoints.clear();
                         controller.sourceTextEditController.value.clear();
                         controller.destinationTextEditController.value.clear();
@@ -2760,14 +2575,6 @@ class CabBookingScreen extends StatelessWidget {
                           0.0,
                         );
                         controller.destinationLatLong.value = const LatLng(
-                          0.0,
-                          0.0,
-                        );
-                        controller.departureLatLongOsm.value = latlong.LatLng(
-                          0.0,
-                          0.0,
-                        );
-                        controller.destinationLatLongOsm.value = latlong.LatLng(
                           0.0,
                           0.0,
                         );

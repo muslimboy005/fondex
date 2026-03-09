@@ -1,9 +1,9 @@
 import 'package:customer/screen_ui/parcel_service/parcel_dashboard_screen.dart';
+import 'package:customer/screen_ui/service_home_screen/service_list_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:customer/themes/app_them_data.dart';
 import 'package:customer/themes/round_button_fill.dart';
-import '../../controllers/parcel_dashboard_controller.dart';
 import '../../controllers/theme_controller.dart';
 
 class OrderSuccessfullyPlaced extends StatelessWidget {
@@ -11,7 +11,6 @@ class OrderSuccessfullyPlaced extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final parcelOrder = Get.arguments['parcelOrder'];
     final themeController = Get.find<ThemeController>();
     final isDark = themeController.isDark.value;
     return Scaffold(
@@ -46,11 +45,9 @@ class OrderSuccessfullyPlaced extends StatelessWidget {
                 RoundedButtonFill(
                   title: "Track Your Order".tr,
                   onPress: () {
-                    print("Tracking Order: $parcelOrder");
-                    //Get.to(() => TrackOrderScreen(), arguments: {'order': parcelOrder});
-                    Get.offAll(const ParcelDashboardScreen());
-                    ParcelDashboardController controller = Get.put(ParcelDashboardController());
-                    controller.selectedIndex.value = 1;
+                    // ServiceList as root — back bosilganda ilovadan chiqib ketmaslik uchun
+                    Get.offAll(() => const ServiceListScreen());
+                    Get.to(() => const ParcelDashboardScreen(), arguments: {'tab': 'bookings'});
                   },
                   color: AppThemeData.primary300,
                   textColor: AppThemeData.grey900,

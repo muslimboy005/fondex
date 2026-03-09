@@ -10,7 +10,7 @@ import 'package:customer/widget/geoflutterfire/src/geoflutterfire.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart' as latlong;
+import 'package:customer/models/lat_lng.dart';
 import '../constant/constant.dart';
 import '../models/payment_model/cod_setting_model.dart';
 import '../models/payment_model/flutter_wave_model.dart';
@@ -31,7 +31,6 @@ import '../service/fire_store_utils.dart';
 import '../themes/show_toast_dialog.dart';
 import '../utils/preferences.dart';
 import '../utils/utils.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart' as gmaps;
 
 class RentalHomeController extends GetxController {
   RxBool isLoading = false.obs;
@@ -54,8 +53,7 @@ class RentalHomeController extends GetxController {
 
   final RxString selectedPaymentMethod = ''.obs;
 
-  final Rx<gmaps.LatLng> departureLatLong = gmaps.LatLng(0.0, 0.0).obs;
-  final Rx<latlong.LatLng> departureLatLongOsm = latlong.LatLng(0.0, 0.0).obs;
+  final Rx<LatLng> departureLatLong = LatLng(0.0, 0.0).obs;
 
   @override
   void onInit() {
@@ -73,15 +71,7 @@ class RentalHomeController extends GetxController {
       if (position != null) {
         Constant.currentLocation = position;
 
-        // Set default coordinates for Google or OSM
-        departureLatLong.value = gmaps.LatLng(
-          position.latitude,
-          position.longitude,
-        );
-        departureLatLongOsm.value = latlong.LatLng(
-          position.latitude,
-          position.longitude,
-        );
+        departureLatLong.value = LatLng(position.latitude, position.longitude);
 
         // Get readable address
         String address = await Utils.getAddressFromCoordinates(
@@ -138,11 +128,11 @@ class RentalHomeController extends GetxController {
     DestinationLocation sourceLocation = DestinationLocation(
       latitude:
           Constant.selectedMapType == 'osm'
-              ? departureLatLongOsm.value.latitude
+              ? departureLatLong.value.latitude
               : departureLatLong.value.latitude,
       longitude:
           Constant.selectedMapType == 'osm'
-              ? departureLatLongOsm.value.longitude
+              ? departureLatLong.value.longitude
               : departureLatLong.value.longitude,
     );
 
@@ -199,18 +189,18 @@ class RentalHomeController extends GetxController {
 
   void setDepartureMarker(double lat, double lng) {
     if (Constant.selectedMapType == 'osm') {
-      departureLatLongOsm.value = latlong.LatLng(lat, lng);
+      departureLatLong.value = LatLng(lat, lng);
     } else {
-      departureLatLong.value = gmaps.LatLng(lat, lng);
+      departureLatLong.value = LatLng(lat, lng);
     }
   }
 
   // final Rx<LatLng> departureLatLong = const LatLng(0.0, 0.0).obs;
-  // final Rx<latlong.LatLng> departureLatLongOsm = latlong.LatLng(0.0, 0.0).obs;
+  // final Rx<latlong.LatLng> departureLatLong = latlong.LatLng(0.0, 0.0).obs;
 
   // void setDepartureMarker(double lat, double long) {
   //   if (Constant.selectedMapType == 'osm') {
-  //     departureLatLongOsm.value = latlong.LatLng(lat, long);
+  //     departureLatLong.value = latlong.LatLng(lat, long);
   //   } else {
   //     departureLatLong.value = LatLng(lat, long);
   //   }

@@ -1,9 +1,8 @@
 import 'package:customer/constant/constant.dart';
-import 'package:customer/controllers/dash_board_controller.dart';
-import 'package:customer/controllers/dash_board_ecommarce_controller.dart';
 import 'package:customer/controllers/order_placing_controller.dart';
 import 'package:customer/models/cart_product_model.dart';
 import 'package:customer/screen_ui/ecommarce/dash_board_e_commerce_screen.dart';
+import 'package:customer/screen_ui/service_home_screen/service_list_screen.dart';
 import 'package:customer/themes/app_them_data.dart';
 import 'package:customer/themes/round_button_fill.dart';
 import 'package:flutter/material.dart';
@@ -200,14 +199,12 @@ class OrderPlacingScreen extends StatelessWidget {
                         textColor: AppThemeData.grey50,
                         fontSizes: 16,
                         onPress: () async {
+                          // ServiceList as root, keyin Dashboard — back bosilganda ilovadan chiqib ketmaslik uchun
+                          Get.offAll(() => const ServiceListScreen());
                           if (Constant.sectionConstantModel!.serviceTypeFlag == "ecommerce-service") {
-                            Get.offAll(const DashBoardEcommerceScreen());
-                            DashBoardEcommerceController controller = Get.put(DashBoardEcommerceController());
-                            controller.selectedIndex.value = 3;
+                            Get.to(() => const DashBoardEcommerceScreen(), arguments: {'tab': 'orders'});
                           } else {
-                            Get.offAll(const DashBoardScreen());
-                            DashBoardController controller = Get.put(DashBoardController());
-                            controller.selectedIndex.value = 3;
+                            Get.to(() => const DashBoardScreen(), arguments: {'tab': 'orders'});
                           }
                         },
                       )

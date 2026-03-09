@@ -3,9 +3,7 @@ import 'package:customer/models/user_model.dart';
 import 'package:customer/service/fire_store_utils.dart';
 import 'package:customer/themes/show_toast_dialog.dart';
 import 'package:customer/utils/utils.dart';
-import 'package:customer/widget/osm_map/map_picker_page.dart';
 import 'package:customer/widget/place_picker/location_picker_screen.dart';
-import 'package:customer/widget/place_picker/selected_location_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -98,57 +96,17 @@ class EnterManuallyLocationScreen extends StatelessWidget {
                               Constant.checkPermission(
                                 context: context,
                                 onTap: () async {
-                                  if (Constant.selectedMapType == 'osm') {
-                                    final result = await Get.to(
-                                      () => MapPickerPage(),
-                                    );
-                                    if (result != null) {
-                                      final firstPlace = result;
-                                      final lat =
-                                          firstPlace.coordinates.latitude;
-                                      final lng =
-                                          firstPlace.coordinates.longitude;
-                                      final address = firstPlace.address;
-
-                                      controller
-                                          .localityEditingController
-                                          .value
-                                          .text = address.toString();
+                                  Get.to(const LocationPickerScreen())!.then((value) async {
+                                    if (value != null) {
+                                      final selectedLocationModel = value;
+                                      controller.localityEditingController.value.text =
+                                          Utils.formatAddress(selectedLocation: selectedLocationModel);
                                       controller.location.value = UserLocation(
-                                        latitude: lat,
-                                        longitude: lng,
+                                        latitude: selectedLocationModel.latLng!.latitude,
+                                        longitude: selectedLocationModel.latLng!.longitude,
                                       );
                                     }
-                                  } else {
-                                    Get.to(LocationPickerScreen())!.then((
-                                      value,
-                                    ) async {
-                                      if (value != null) {
-                                        SelectedLocationModel
-                                        selectedLocationModel = value;
-
-                                        controller
-                                            .localityEditingController
-                                            .value
-                                            .text = Utils.formatAddress(
-                                          selectedLocation:
-                                              selectedLocationModel,
-                                        );
-                                        controller
-                                            .location
-                                            .value = UserLocation(
-                                          latitude:
-                                              selectedLocationModel
-                                                  .latLng!
-                                                  .latitude,
-                                          longitude:
-                                              selectedLocationModel
-                                                  .latLng!
-                                                  .longitude,
-                                        );
-                                      }
-                                    });
-                                  }
+                                  });
                                 },
                               );
                             },
@@ -163,60 +121,18 @@ class EnterManuallyLocationScreen extends StatelessWidget {
                                   Constant.checkPermission(
                                     context: context,
                                     onTap: () async {
-                                      if (Constant.selectedMapType == 'osm') {
-                                        final result = await Get.to(
-                                          () => MapPickerPage(),
-                                        );
-                                        if (result != null) {
-                                          final firstPlace = result;
-                                          final lat =
-                                              firstPlace.coordinates.latitude;
-                                          final lng =
-                                              firstPlace.coordinates.longitude;
-                                          final address = firstPlace.address;
-
-                                          controller
-                                              .localityEditingController
-                                              .value
-                                              .text = address.toString();
-                                          controller
-                                              .location
-                                              .value = UserLocation(
-                                            latitude: lat,
-                                            longitude: lng,
+                                      Get.to(const LocationPickerScreen())!.then((value) async {
+                                        if (value != null) {
+                                          final selectedLocationModel = value;
+                                          controller.localityEditingController.value.text =
+                                              Utils.formatAddress(selectedLocation: selectedLocationModel);
+                                          controller.location.value = UserLocation(
+                                            latitude: selectedLocationModel.latLng!.latitude,
+                                            longitude: selectedLocationModel.latLng!.longitude,
                                           );
+                                          Get.back();
                                         }
-                                      } else {
-                                        Get.to(LocationPickerScreen())!.then((
-                                          value,
-                                        ) async {
-                                          if (value != null) {
-                                            SelectedLocationModel
-                                            selectedLocationModel = value;
-
-                                            controller
-                                                .localityEditingController
-                                                .value
-                                                .text = Utils.formatAddress(
-                                              selectedLocation:
-                                                  selectedLocationModel,
-                                            );
-                                            controller
-                                                .location
-                                                .value = UserLocation(
-                                              latitude:
-                                                  selectedLocationModel
-                                                      .latLng!
-                                                      .latitude,
-                                              longitude:
-                                                  selectedLocationModel
-                                                      .latLng!
-                                                      .longitude,
-                                            );
-                                            Get.back();
-                                          }
-                                        });
-                                      }
+                                      });
                                     },
                                   );
                                 },

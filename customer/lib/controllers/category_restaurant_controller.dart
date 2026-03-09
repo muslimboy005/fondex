@@ -1,6 +1,6 @@
 import 'package:customer/constant/constant.dart';
 import 'package:customer/models/vendor_model.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:customer/models/lat_lng.dart';
 import '../models/vendor_category_model.dart';
 import '../service/fire_store_utils.dart';
 import 'package:get/get.dart';

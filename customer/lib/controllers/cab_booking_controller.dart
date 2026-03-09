@@ -4,7 +4,6 @@ import 'dart:developer';
 import 'dart:io';
 import 'dart:math' as math;
 import 'dart:math' as maths;
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:customer/constant/collection_name.dart';
 import 'package:customer/constant/constant.dart';
@@ -41,12 +40,12 @@ import 'package:customer/payment/stripe_failed_model.dart';
 import 'package:customer/payment/xenditModel.dart';
 import 'package:customer/payment/xenditScreen.dart';
 import 'package:customer/service/fire_store_utils.dart';
+import 'package:customer/service/yandex_geocoding_service.dart';
 import 'package:customer/service/send_notification.dart';
 import 'package:customer/themes/show_toast_dialog.dart';
 import 'package:customer/utils/preferences.dart';
 import 'package:customer/utils/utils.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart' as flutterMap;
 import 'package:flutter_paypal/flutter_paypal.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
@@ -54,10 +53,10 @@ import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:yandex_mapkit/yandex_mapkit.dart' as ym;
 import 'package:http/http.dart' as http;
-import 'package:latlong2/latlong.dart' as latlong;
 import 'package:location/location.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:uuid/uuid.dart';
+import 'package:customer/models/lat_lng.dart' as app_lat_lng;
 import 'package:customer/utils/yandex_map_utils.dart';
 import '../screen_ui/multi_vendor_service/wallet_screen/wallet_screen.dart';
 import '../themes/app_them_data.dart';
@@ -65,7 +64,6 @@ import '../themes/app_them_data.dart';
 class CabBookingController extends GetxController {
   GoogleMapController? mapController;
   ym.YandexMapController? yandexMapController;
-  final flutterMap.MapController mapOsmController = flutterMap.MapController();
 
   final Rx<TextEditingController> sourceTextEditController =
       TextEditingController().obs;
@@ -78,8 +76,7 @@ class CabBookingController extends GetxController {
   final Rx<Location> currentLocation = Location().obs;
 
   final RxSet<Marker> markers = <Marker>{}.obs;
-  final RxList<flutterMap.Marker> osmMarker = <flutterMap.Marker>[].obs;
-  final RxList<latlong.LatLng> routePoints = <latlong.LatLng>[].obs;
+  final RxList<app_lat_lng.LatLng> routePoints = <app_lat_lng.LatLng>[].obs;
   bool _isMarkersRefreshScheduled = false;
 
   final Rx<LatLng> currentPosition =
@@ -87,8 +84,6 @@ class CabBookingController extends GetxController {
 
   final Rx<LatLng> departureLatLong = const LatLng(0.0, 0.0).obs;
   final Rx<LatLng> destinationLatLong = const LatLng(0.0, 0.0).obs;
-  final Rx<latlong.LatLng> departureLatLongOsm = latlong.LatLng(0.0, 0.0).obs;
-  final Rx<latlong.LatLng> destinationLatLongOsm = latlong.LatLng(0.0, 0.0).obs;
 
   // 2 bosqichli loading - UI tez ko'rinadi, ma'lumotlar keyin to'ldiriladi
   final RxBool isLoading = true.obs;
@@ -104,7 +99,6 @@ class CabBookingController extends GetxController {
   final RxString duration = ''.obs;
 
   BitmapDescriptor? departureIcon, destinationIcon, taxiIcon, stopIcon;
-  Widget? departureIconOsm, destinationIconOsm, taxiIconOsm, stopIconOsm;
 
   RxList<TaxModel> taxList = <TaxModel>[].obs;
   RxList<VehicleType> vehicleTypes = <VehicleType>[].obs;
@@ -121,8 +115,6 @@ class CabBookingController extends GetxController {
   RxDouble discount = 0.0.obs;
   RxDouble taxAmount = 0.0.obs;
   RxDouble totalAmount = 0.0.obs;
-
-  bool isOsmMapReady = false;
 
   Rx<CouponModel> selectedCouponModel = CouponModel().obs;
 
@@ -154,7 +146,7 @@ class CabBookingController extends GetxController {
   // Map picking mode - xaritada joy tanlash rejimi
   RxBool isMapPickingMode = false.obs;
   RxBool isPickingSource = true.obs; // true = source, false = destination
-  Rx<latlong.LatLng> tempPickedLocation = latlong.LatLng(0, 0).obs;
+  Rx<app_lat_lng.LatLng> tempPickedLocation = app_lat_lng.LatLng(0, 0).obs;
   RxString tempPickedAddress = ''.obs;
   RxBool isLoadingAddress = false.obs;
 
@@ -170,6 +162,33 @@ class CabBookingController extends GetxController {
   }
 
   // Optimizatsiya qilingan initData - parallel loading va lazy loading
+  /// Xaritadan tanlangan lokatsiya (Constant.selectedLocation) mavjud va to'g'ri bo'lsa true.
+  bool _hasValidSelectedLocation() {
+    final loc = Constant.selectedLocation.location;
+    if (loc == null) return false;
+    final lat = loc.latitude;
+    final lng = loc.longitude;
+    return lat != null && lng != null && (lat != 0.0 || lng != 0.0);
+  }
+
+  /// Boshlang'ich joy uchun latitude: avvalo xaritadan tanlangan, keyin GPS, keyin default.
+  double? _effectiveDepartureLat() {
+    if (_hasValidSelectedLocation()) {
+      return Constant.selectedLocation.location!.latitude;
+    }
+    if (Constant.currentLocation != null) return Constant.currentLocation!.latitude;
+    return Constant.defaultLocationLat;
+  }
+
+  /// Boshlang'ich joy uchun longitude: avvalo xaritadan tanlangan, keyin GPS, keyin default.
+  double? _effectiveDepartureLng() {
+    if (_hasValidSelectedLocation()) {
+      return Constant.selectedLocation.location!.longitude;
+    }
+    if (Constant.currentLocation != null) return Constant.currentLocation!.longitude;
+    return Constant.defaultLocationLng;
+  }
+
   Future<void> initData() async {
     try {
       // 1. Kritik bo'lmagan operatsiyalarni parallel bajarish
@@ -191,26 +210,20 @@ class CabBookingController extends GetxController {
         futures.add(_loadVehicleTypes());
       }
 
-      // Location setup - parallel
-      if (Constant.currentLocation != null) {
-        if (Constant.selectedMapType == 'osm') {
-          departureLatLongOsm.value = latlong.LatLng(
-            Constant.currentLocation!.latitude,
-            Constant.currentLocation!.longitude,
-          );
-        } else {
-          departureLatLong.value = LatLng(
-            Constant.currentLocation!.latitude,
-            Constant.currentLocation!.longitude,
-          );
+      // Location setup: xaritadan tanlangan lokatsiya bo'lsa uni ishlatamiz, aks holda GPS yoki default
+      final lat = _effectiveDepartureLat();
+      final lng = _effectiveDepartureLng();
+      if (lat != null && lng != null) {
+        departureLatLong.value = LatLng(lat, lng);
+        currentPosition.value = LatLng(lat, lng);
+        setDepartureMarker(lat, lng);
+        final fromSelected = _hasValidSelectedLocation();
+        if (fromSelected && Constant.selectedLocation.getFullAddress().trim().isNotEmpty) {
+          sourceTextEditController.value.text = Constant.selectedLocation.getFullAddress();
         }
-        setDepartureMarker(
-          Constant.currentLocation!.latitude,
-          Constant.currentLocation!.longitude,
-        );
         _updateCanProceedToVehicleSelection();
         log(
-          "CabHome [onInit] joriy lokatsiya o'rnatildi (departure): ${Constant.currentLocation!.latitude}, ${Constant.currentLocation!.longitude}",
+          "CabHome [onInit] joriy lokatsiya o'rnatildi (departure): $lat, $lng ${fromSelected ? "(xaritadan tanlangan)" : ""}",
         );
       }
 
@@ -224,8 +237,8 @@ class CabBookingController extends GetxController {
       // 3. Background'da qolgan operatsiyalarni bajarish
       _loadBackgroundData();
 
-      // 5. Reverse geocoding ni background'da bajarish (kutmaslik)
-      if (Constant.currentLocation != null) {
+      // 5. Reverse geocoding ni background'da bajarish (kutmaslik) – faqat manzil matni bo'sh bo'lsa
+      if (!_hasValidSelectedLocation() || Constant.selectedLocation.getFullAddress().trim().isEmpty) {
         _loadPlaceNameInBackground();
       }
 
@@ -233,16 +246,9 @@ class CabBookingController extends GetxController {
       _setupFirebaseListeners();
 
       // 6. Destination check
-      if (Constant.selectedMapType == 'osm') {
-        if (destinationLatLongOsm.value.latitude != 0.0 &&
-            destinationLatLongOsm.value.longitude != 0.0) {
-          bottomSheetType.value = 'vehicleSelection';
-        }
-      } else {
-        if (destinationLatLong.value.latitude != 0.0 &&
-            destinationLatLong.value.longitude != 0.0) {
-          bottomSheetType.value = 'vehicleSelection';
-        }
+      if (destinationLatLong.value.latitude != 0.0 &&
+          destinationLatLong.value.longitude != 0.0) {
+        bottomSheetType.value = 'vehicleSelection';
       }
     } catch (e) {
       log("Error in initData: $e");
@@ -283,11 +289,7 @@ class CabBookingController extends GetxController {
   // Place name ni background'da yuklash (kutmaslik)
   Future<void> _loadPlaceNameInBackground() async {
     try {
-      if (Constant.selectedMapType == 'osm') {
-        await searchPlaceNameOSM();
-      } else {
-        await searchPlaceNameGoogle();
-      }
+      await searchPlaceNameGoogle();
     } catch (e) {
       log("Error loading place name: $e");
     }
@@ -344,24 +346,17 @@ class CabBookingController extends GetxController {
             }
           } else {
             bottomSheetType.value = 'location';
-            if (Constant.currentLocation != null) {
-              if (Constant.selectedMapType == 'osm') {
-                departureLatLongOsm.value = latlong.LatLng(
-                  Constant.currentLocation!.latitude,
-                  Constant.currentLocation!.longitude,
-                );
-                _loadPlaceNameInBackground();
+            final lat = _effectiveDepartureLat();
+            final lng = _effectiveDepartureLng();
+            if (lat != null && lng != null) {
+              departureLatLong.value = LatLng(lat, lng);
+              currentPosition.value = LatLng(lat, lng);
+              setDepartureMarker(lat, lng);
+              if (_hasValidSelectedLocation() && Constant.selectedLocation.getFullAddress().trim().isNotEmpty) {
+                sourceTextEditController.value.text = Constant.selectedLocation.getFullAddress();
               } else {
-                departureLatLong.value = LatLng(
-                  Constant.currentLocation!.latitude,
-                  Constant.currentLocation!.longitude,
-                );
                 _loadPlaceNameInBackground();
               }
-              setDepartureMarker(
-                Constant.currentLocation!.latitude,
-                Constant.currentLocation!.longitude,
-              );
               _updateCanProceedToVehicleSelection();
               log(
                 "CabHome [userSnapshot] joriy lokatsiya o'rnatildi (departure)",
@@ -499,6 +494,14 @@ class CabBookingController extends GetxController {
       _stopLiveSourceLocationUpdates();
       return;
     }
+    // Zakaz berilgandan keyin nuqta va narx o'zgarmasligi kerak: order allaqachon
+    // joylashuv va narx bilan saqlangan. Firestore va local orderni bunday
+    // yangilashdan saqlaymiz (faqat driver listener orqali marshrut ko'rsatiladi).
+    if (status == Constant.driverPending ||
+        status == Constant.driverAccepted ||
+        status == Constant.orderInTransit) {
+      return;
+    }
     try {
       final position = await Utils.getCurrentLocation();
       if (position == null) return;
@@ -631,39 +634,18 @@ class CabBookingController extends GetxController {
       final destLat = order.destinationLocation?.latitude ?? 0.0;
       final destLng = order.destinationLocation?.longitude ?? 0.0;
 
-      if (Constant.selectedMapType == 'osm') {
-        /// For OpenStreetMap
-        routePoints.clear();
-
-        if (order.status == Constant.driverAccepted) {
-          // DRIVER → PICKUP
-          await fetchRouteWithWaypoints([
-            latlong.LatLng(driverLat, driverLng),
-            latlong.LatLng(pickupLat, pickupLng),
-          ]);
-        } else if (order.status == Constant.orderInTransit) {
-          // PICKUP → DESTINATION
-          await fetchRouteWithWaypoints([
-            latlong.LatLng(driverLat, driverLng),
-            latlong.LatLng(destLat, destLng),
-          ]);
-        }
-        updateRouteMarkers(driverModel);
-      } else {
-        /// For Google Maps
-        if (order.status == Constant.driverAccepted) {
-          await fetchGoogleRouteBetween(
-            LatLng(driverLat, driverLng),
-            LatLng(pickupLat, pickupLng),
-          );
-        } else if (order.status == Constant.orderInTransit) {
-          await fetchGoogleRouteBetween(
-            LatLng(driverLat, driverLng),
-            LatLng(destLat, destLng),
-          );
-        }
-        updateRouteMarkers(driverModel);
+      if (order.status == Constant.driverAccepted) {
+        await fetchGoogleRouteBetween(
+          LatLng(driverLat, driverLng),
+          LatLng(pickupLat, pickupLng),
+        );
+      } else if (order.status == Constant.orderInTransit) {
+        await fetchGoogleRouteBetween(
+          LatLng(driverLat, driverLng),
+          LatLng(destLat, destLng),
+        );
       }
+      updateRouteMarkers(driverModel);
     } catch (e) {
       print("Error in updateDriverRoute: $e");
     }
@@ -682,7 +664,6 @@ class CabBookingController extends GetxController {
       final destLng = order.destinationLocation?.longitude ?? 0.0;
 
       markers.clear();
-      osmMarker.clear();
 
       final departureBytes = await Constant().getBytesFromAsset(
         'assets/images/location_black3x.png',
@@ -707,70 +688,7 @@ class CabBookingController extends GetxController {
       destinationIcon = BitmapDescriptor.fromBytes(destinationBytes);
       taxiIcon = BitmapDescriptor.fromBytes(driverBytesRaw);
 
-      if (Constant.selectedMapType == 'osm') {
-        if (order.status == Constant.driverAccepted) {
-          osmMarker.addAll([
-            flutterMap.Marker(
-              point: latlong.LatLng(pickupLat, pickupLng),
-              width: 40,
-              height: 40,
-              child: Image.asset(
-                'assets/images/location_black3x.png',
-                width: 40,
-              ),
-            ),
-            flutterMap.Marker(
-              point: latlong.LatLng(driverLat, driverLng),
-              width: 45,
-              height: 45,
-              rotate: true,
-              child: CachedNetworkImage(
-                width: 50,
-                height: 50,
-                imageUrl: Constant.sectionConstantModel!.markerIcon.toString(),
-                placeholder: (context, url) => Constant.loader(),
-                errorWidget:
-                    (context, url, error) => SizedBox(
-                      width: 30,
-                      height: 30,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
-              ),
-            ),
-          ]);
-        } else if (order.status == Constant.orderInTransit) {
-          osmMarker.addAll([
-            flutterMap.Marker(
-              point: latlong.LatLng(destLat, destLng),
-              width: 40,
-              height: 40,
-              child: Image.asset(
-                'assets/images/location_orange3x.png',
-                width: 40,
-              ),
-            ),
-            flutterMap.Marker(
-              point: latlong.LatLng(driverLat, driverLng),
-              width: 45,
-              height: 45,
-              rotate: true,
-              child: CachedNetworkImage(
-                width: 50,
-                height: 50,
-                imageUrl: Constant.sectionConstantModel!.markerIcon.toString(),
-                placeholder: (context, url) => Constant.loader(),
-                errorWidget:
-                    (context, url, error) => SizedBox(
-                      width: 30,
-                      height: 30,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
-              ),
-            ),
-          ]);
-        }
-      } else {
-        if (order.status == Constant.driverAccepted) {
+      if (order.status == Constant.driverAccepted) {
           markers.addAll([
             Marker(
               markerId: const MarkerId("pickup"),
@@ -809,7 +727,6 @@ class CabBookingController extends GetxController {
             ),
           ]);
         }
-      }
 
       update();
     } catch (e) {
@@ -1032,22 +949,10 @@ class CabBookingController extends GetxController {
       }
     }
 
-    final srcLat =
-        Constant.selectedMapType == 'osm'
-            ? departureLatLongOsm.value.latitude
-            : departureLatLong.value.latitude;
-    final srcLng =
-        Constant.selectedMapType == 'osm'
-            ? departureLatLongOsm.value.longitude
-            : departureLatLong.value.longitude;
-    final destLat =
-        Constant.selectedMapType == 'osm'
-            ? destinationLatLongOsm.value.latitude
-            : destinationLatLong.value.latitude;
-    final destLng =
-        Constant.selectedMapType == 'osm'
-            ? destinationLatLongOsm.value.longitude
-            : destinationLatLong.value.longitude;
+    final srcLat = departureLatLong.value.latitude;
+    final srcLng = departureLatLong.value.longitude;
+    final destLat = destinationLatLong.value.latitude;
+    final destLng = destinationLatLong.value.longitude;
 
     DestinationLocation sourceLocation = DestinationLocation(
       latitude: srcLat,
@@ -1138,8 +1043,10 @@ class CabBookingController extends GetxController {
       final sectionId =
           orderModel.sectionId ?? Constant.sectionConstantModel?.id ?? '';
       if (sectionId.isEmpty) return;
+      final vehicleId = orderModel.vehicleId?.toString().trim();
       final drivers = await FireStoreUtils.getCabDriversForNotification(
         sectionId,
+        vehicleId: vehicleId?.isNotEmpty == true ? vehicleId : null,
       );
       final orderId = orderModel.id ?? '';
       if (orderId.isEmpty) return;
@@ -1205,18 +1112,13 @@ class CabBookingController extends GetxController {
     }
     // minimum_delivery_charges_within_km NaN bo'lsa (0 ga aylanadi) yoki masofa kichik bo'lsa ham kamida minimum_delivery_charges (2000) ko'rsatiladi
     final double minFare = minimum;
-    return fare < minFare ? minFare : fare;
+    final double raw = fare < minFare ? minFare : fare;
+    return Constant.roundUpToNearest500(raw);
   }
 
   void setDepartureMarker(double lat, double long) {
-    log(
-      "CabHome [setDepartureMarker] lat=$lat lng=$long mapType=${Constant.selectedMapType}",
-    );
-    if (Constant.selectedMapType == 'osm') {
-      _setOsmMarker(lat, long, isDeparture: true);
-    } else {
-      _setGoogleMarker(lat, long, isDeparture: true);
-    }
+    log("CabHome [setDepartureMarker] lat=$lat lng=$long");
+    _setGoogleMarker(lat, long, isDeparture: true);
   }
 
   /// Cab home ga qaytganda joriy joylashuvni yangilash (sayohat bekor qilinganda)
@@ -1227,26 +1129,15 @@ class CabBookingController extends GetxController {
       Constant.currentLocation = position;
       currentPosition.value = LatLng(position.latitude, position.longitude);
       departureLatLong.value = LatLng(position.latitude, position.longitude);
-      departureLatLongOsm.value = latlong.LatLng(
-        position.latitude,
-        position.longitude,
-      );
       setDepartureMarker(position.latitude, position.longitude);
-      if (Constant.selectedMapType == 'osm') {
-        mapOsmController.move(
-          latlong.LatLng(position.latitude, position.longitude),
-          14,
-        );
-      } else {
-        _safeAnimateCamera(
-          CameraUpdate.newCameraPosition(
-            CameraPosition(
-              target: LatLng(position.latitude, position.longitude),
-              zoom: 14,
-            ),
+      _safeAnimateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(
+            target: LatLng(position.latitude, position.longitude),
+            zoom: 14,
           ),
-        );
-      }
+        ),
+      );
     } catch (e) {
       log("refreshCurrentLocation error: $e");
     }
@@ -1254,105 +1145,37 @@ class CabBookingController extends GetxController {
 
   void setDestinationMarker(double lat, double lng) {
     log(
-      "CabHome [setDestinationMarker] lat=$lat lng=$lng mapType=${Constant.selectedMapType}",
+      "CabHome [setDestinationMarker] lat=$lat lng=$lng",
     );
-    if (Constant.selectedMapType == 'osm') {
-      _setOsmMarker(lat, lng, isDeparture: false);
-    } else {
-      _setGoogleMarker(lat, lng, isDeparture: false);
-    }
+    _setGoogleMarker(lat, lng, isDeparture: false);
   }
 
   void setStopMarker(double lat, double lng, int index) {
-    if (Constant.selectedMapType == 'osm') {
-      // Add new stop marker without clearing
-      osmMarker.add(
-        flutterMap.Marker(
-          point: latlong.LatLng(lat, lng),
-          width: 40,
-          height: 40,
-          child: stopIconOsm!,
+    final markerId = MarkerId('Stop $index');
+    markers.removeWhere((marker) => marker.markerId == markerId);
+    markers.add(
+      Marker(
+        markerId: markerId,
+        infoWindow: InfoWindow(
+          title: '${'Stop'.tr} ${String.fromCharCode(index + 65)}',
         ),
-      );
-
-      getDirections(isStopMarker: true);
-    } else {
-      final markerId = MarkerId('Stop $index');
-
-      markers.removeWhere((marker) => marker.markerId == markerId);
-      markers.add(
-        Marker(
-          markerId: markerId,
-          infoWindow: InfoWindow(
-            title: '${'Stop'.tr} ${String.fromCharCode(index + 65)}',
-          ),
-          position: LatLng(lat, lng),
-          icon: stopIcon!,
-        ),
-      );
-
-      getDirections();
-    }
-  }
-
-  void _setOsmMarker(double lat, double lng, {required bool isDeparture}) {
-    if (isDeparture) {
-      departureLatLongOsm.value = latlong.LatLng(lat, lng);
-    } else {
-      destinationLatLongOsm.value = latlong.LatLng(lat, lng);
-    }
-
-    // Ikkala lokatsiya ham bo'lsa, yo'l chizish
-    if (departureLatLongOsm.value.latitude != 0 &&
-        departureLatLongOsm.value.longitude != 0 &&
-        destinationLatLongOsm.value.latitude != 0 &&
-        destinationLatLongOsm.value.longitude != 0) {
-      getDirections();
-      animateToSource(lat, lng);
-    } else {
-      // Faqat bitta lokatsiya bo'lsa, marker qo'shish
-      final marker = flutterMap.Marker(
-        point: latlong.LatLng(lat, lng),
-        width: 40,
-        height: 40,
-        child: isDeparture ? departureIconOsm! : destinationIconOsm!,
-      );
-      // Eski marker'ni olib tashlash
-      if (isDeparture) {
-        osmMarker.removeWhere((m) => m.point == departureLatLongOsm.value);
-      } else {
-        osmMarker.removeWhere((m) => m.point == destinationLatLongOsm.value);
-      }
-      osmMarker.add(marker);
-    }
-    _updateCanProceedToVehicleSelection();
+        position: LatLng(lat, lng),
+        icon: stopIcon!,
+      ),
+    );
+    getDirections();
   }
 
   void _updateCanProceedToVehicleSelection() {
-    // Boshlang'ich joy (joriy lokatsiya yoki tanlangan) bo'lsa davom etish mumkin; manzil keyingi ekranda ham tanlanishi mumkin
-    bool hasDep;
-    bool hasDest;
-    if (Constant.selectedMapType == 'osm') {
-      hasDep =
-          departureLatLongOsm.value.latitude != 0.0 &&
-          departureLatLongOsm.value.longitude != 0.0;
-      hasDest =
-          destinationLatLongOsm.value.latitude != 0.0 &&
-          destinationLatLongOsm.value.longitude != 0.0;
-      log(
-        "CabHome [_updateCanProceed] OSM dep=(${departureLatLongOsm.value.latitude},${departureLatLongOsm.value.longitude}) dest=(${destinationLatLongOsm.value.latitude},${destinationLatLongOsm.value.longitude}) hasDep=$hasDep hasDest=$hasDest",
-      );
-    } else {
-      hasDep =
-          departureLatLong.value.latitude != 0.0 &&
-          departureLatLong.value.longitude != 0.0;
-      hasDest =
-          destinationLatLong.value.latitude != 0.0 &&
-          destinationLatLong.value.longitude != 0.0;
-      log(
-        "CabHome [_updateCanProceed] Google dep=(${departureLatLong.value.latitude},${departureLatLong.value.longitude}) dest=(${destinationLatLong.value.latitude},${destinationLatLong.value.longitude}) hasDep=$hasDep hasDest=$hasDest",
-      );
-    }
+    final hasDep =
+        departureLatLong.value.latitude != 0.0 &&
+        departureLatLong.value.longitude != 0.0;
+    final hasDest =
+        destinationLatLong.value.latitude != 0.0 &&
+        destinationLatLong.value.longitude != 0.0;
+    log(
+      "CabHome [_updateCanProceed] dep=(${departureLatLong.value.latitude},${departureLatLong.value.longitude}) dest=(${destinationLatLong.value.latitude},${destinationLatLong.value.longitude}) hasDep=$hasDep hasDest=$hasDest",
+    );
     // Faqat boshlang'ich joy bo'lsa ham "Davom etish" mumkin (manzil CabBookingScreen da tanlanadi)
     final value = hasDep;
     canProceedToVehicleSelection.value = value;
@@ -1450,56 +1273,7 @@ class CabBookingController extends GetxController {
   }
 
   Future<void> getDirections({bool isStopMarker = false}) async {
-    if (Constant.selectedMapType == 'osm') {
-      final wayPoints = <latlong.LatLng>[];
-
-      // Only add valid source
-      if (departureLatLongOsm.value.latitude != 0.0 &&
-          departureLatLongOsm.value.longitude != 0.0) {
-        wayPoints.add(departureLatLongOsm.value);
-      }
-
-      // Only add valid destination
-      if (destinationLatLongOsm.value.latitude != 0.0 &&
-          destinationLatLongOsm.value.longitude != 0.0) {
-        wayPoints.add(destinationLatLongOsm.value);
-      }
-
-      if (!isStopMarker) osmMarker.clear();
-
-      // Add source marker
-      if (departureLatLongOsm.value.latitude != 0.0 &&
-          departureLatLongOsm.value.longitude != 0.0) {
-        osmMarker.add(
-          flutterMap.Marker(
-            point: departureLatLongOsm.value,
-            width: 40,
-            height: 40,
-            child: departureIconOsm!,
-          ),
-        );
-      }
-
-      // Add destination marker
-      if (destinationLatLongOsm.value.latitude != 0.0 &&
-          destinationLatLongOsm.value.longitude != 0.0) {
-        osmMarker.add(
-          flutterMap.Marker(
-            point: destinationLatLongOsm.value,
-            width: 40,
-            height: 40,
-            child: destinationIconOsm!,
-          ),
-        );
-      }
-
-      if (wayPoints.length >= 2) {
-        await fetchRouteWithWaypoints(wayPoints);
-      }
-    } else {
-      // Google Maps path
-      fetchGoogleRouteWithWaypoints();
-    }
+    fetchGoogleRouteWithWaypoints();
   }
 
   Future<void> fetchGoogleRouteWithWaypoints() async {
@@ -1562,7 +1336,7 @@ class CabBookingController extends GetxController {
     }
   }
 
-  Future<void> fetchRouteWithWaypoints(List<latlong.LatLng> points) async {
+  Future<void> fetchRouteWithWaypoints(List<app_lat_lng.LatLng> points) async {
     final coordinates = points
         .map((p) => '${p.longitude},${p.latitude}')
         .join(';');
@@ -1581,7 +1355,7 @@ class CabBookingController extends GetxController {
 
         routePoints.clear();
         routePoints.addAll(
-          geometry.map((coord) => latlong.LatLng(coord[1], coord[0])),
+          geometry.map((coord) => app_lat_lng.LatLng(coord[1], coord[0])),
         );
 
         if (Constant.distanceType.toLowerCase() == "KM".toLowerCase()) {
@@ -1605,34 +1379,11 @@ class CabBookingController extends GetxController {
   }
 
   void zoomToPolylineOSM() {
-    if (routePoints.isEmpty) return;
-    // LatLngBounds requires at least two points
-    final bounds = flutterMap.LatLngBounds(
-      routePoints.first,
-      routePoints.first,
+    if (routePoints.isEmpty || yandexMapController == null) return;
+    final bounds = yandexBoundsFromLatLngs(routePoints);
+    yandexMapController!.moveCamera(
+      ym.CameraUpdate.newGeometry(ym.Geometry.fromBoundingBox(bounds)),
     );
-    for (final point in routePoints) {
-      bounds.extend(point);
-    }
-    final center = bounds.center;
-    // Calculate zoom level to fit all points
-    double zoom = getBoundsZoomLevel(bounds);
-    mapOsmController.move(center, zoom);
-  }
-
-  double getBoundsZoomLevel(flutterMap.LatLngBounds bounds) {
-    // Simple heuristic: zoom out for larger bounds
-    final latDiff =
-        (bounds.northEast.latitude - bounds.southWest.latitude).abs();
-    final lngDiff =
-        (bounds.northEast.longitude - bounds.southWest.longitude).abs();
-    double maxDiff = math.max(latDiff, lngDiff);
-    if (maxDiff < 0.005) return 18.0;
-    if (maxDiff < 0.01) return 16.0;
-    if (maxDiff < 0.05) return 14.0;
-    if (maxDiff < 0.1) return 12.0;
-    if (maxDiff < 0.5) return 10.0;
-    return 8.0;
   }
 
   void addPolyLine(List<LatLng> points) {
@@ -1660,7 +1411,8 @@ class CabBookingController extends GetxController {
     List<LatLng> points,
   ) async {
     if (yandexMapController == null || points.isEmpty) return;
-    final bounds = yandexBoundsFromLatLngs(points);
+    final appPoints = points.map((p) => app_lat_lng.LatLng(p.latitude, p.longitude)).toList();
+    final bounds = yandexBoundsFromLatLngs(appPoints);
     await yandexMapController!.moveCamera(
       ym.CameraUpdate.newGeometry(ym.Geometry.fromBoundingBox(bounds)),
     );
@@ -1689,71 +1441,40 @@ class CabBookingController extends GetxController {
 
   Future<void> animateToSource(double lat, double long) async {
     final hasBothCoords =
-        departureLatLongOsm.value.latitude != 0.0 &&
-        destinationLatLongOsm.value.latitude != 0.0;
+        departureLatLong.value.latitude != 0.0 &&
+        destinationLatLong.value.longitude != 0.0 &&
+        destinationLatLong.value.latitude != 0.0 &&
+        destinationLatLong.value.longitude != 0.0;
 
     if (hasBothCoords) {
       await calculateZoomLevel(
-        source: departureLatLongOsm.value,
-        destination: destinationLatLongOsm.value,
+        source: app_lat_lng.LatLng(departureLatLong.value.latitude, departureLatLong.value.longitude),
+        destination: app_lat_lng.LatLng(destinationLatLong.value.latitude, destinationLatLong.value.longitude),
       );
-    } else {
-      mapOsmController.move(latlong.LatLng(lat, long), 10);
+    } else if (yandexMapController != null) {
+      await yandexMapController!.moveCamera(
+        ym.CameraUpdate.newCameraPosition(
+          ym.CameraPosition(
+            target: ym.Point(latitude: lat, longitude: long),
+            zoom: 10,
+          ),
+        ),
+      );
     }
   }
 
   RxMap<PolylineId, Polyline> polyLines = <PolylineId, Polyline>{}.obs;
 
   Future<void> calculateZoomLevel({
-    required latlong.LatLng source,
-    required latlong.LatLng destination,
+    required app_lat_lng.LatLng source,
+    required app_lat_lng.LatLng destination,
     double paddingFraction = 0.001,
   }) async {
-    final bounds = flutterMap.LatLngBounds.fromPoints([source, destination]);
-    final screenSize = Size(Get.width, Get.height * 0.5);
-    const double worldDimension = 256.0;
-    const double maxZoom = 10.0;
-
-    double latToRad(double lat) =>
-        math.log(
-          (1 + math.sin(lat * math.pi / 180)) /
-              (1 - math.sin(lat * math.pi / 180)),
-        ) /
-        2;
-
-    double computeZoom(double screenPx, double worldPx, double fraction) =>
-        math.log(screenPx / worldPx / fraction) / math.ln2;
-
-    final north = bounds.northEast.latitude;
-    final south = bounds.southWest.latitude;
-    final east = bounds.northEast.longitude;
-    final west = bounds.southWest.longitude;
-
-    final latDelta = (north - south).abs();
-    final lngDelta = (east - west).abs();
-
-    final center = bounds.center;
-
-    if (latDelta < 1e-6 || lngDelta < 1e-6) {
-      mapOsmController.move(center, maxZoom);
-    } else {
-      final latFraction = (latToRad(north) - latToRad(south)) / math.pi;
-      final lngFraction = ((east - west + 360) % 360) / 360;
-
-      final latZoom = computeZoom(
-        screenSize.height,
-        worldDimension,
-        latFraction + paddingFraction,
-      );
-      final lngZoom = computeZoom(
-        screenSize.width,
-        worldDimension,
-        lngFraction + paddingFraction,
-      );
-
-      final zoomLevel = math.min(latZoom, lngZoom).clamp(0.0, maxZoom);
-      mapOsmController.move(center, zoomLevel);
-    }
+    if (yandexMapController == null) return;
+    final bounds = yandexBoundsFromLatLngs([source, destination]);
+    await yandexMapController!.moveCamera(
+      ym.CameraUpdate.newGeometry(ym.Geometry.fromBoundingBox(bounds)),
+    );
   }
 
   Future<void> updateCameraLocation(
@@ -1797,46 +1518,23 @@ class CabBookingController extends GetxController {
 
   Future<void> setIcons() async {
     try {
-      if (Constant.selectedMapType == 'osm') {
-        departureIconOsm = Image.asset(
-          "assets/icons/ic_cab_pickup.png",
-          width: 14,
-          height: 14,
-        );
-        destinationIconOsm = Image.asset(
-          "assets/icons/ic_cab_destination.png",
-          width: 14,
-          height: 14,
-        );
-        taxiIconOsm = Image.asset(
-          "assets/icons/ic_taxi.png",
-          width: 14,
-          height: 14,
-        );
-        stopIconOsm = Image.asset(
-          "assets/icons/ic_location.png",
-          width: 12,
-          height: 12,
-        );
-      } else {
-        const config = ImageConfiguration(size: Size(18, 18));
-        departureIcon = await BitmapDescriptor.fromAssetImage(
-          config,
-          "assets/icons/ic_cab_pickup.png",
-        );
-        destinationIcon = await BitmapDescriptor.fromAssetImage(
-          config,
-          "assets/icons/ic_cab_destination.png",
-        );
-        taxiIcon = await BitmapDescriptor.fromAssetImage(
-          config,
-          "assets/icons/ic_taxi.png",
-        );
-        stopIcon = await BitmapDescriptor.fromAssetImage(
-          config,
-          "assets/icons/ic_location.png",
-        );
-      }
+      const config = ImageConfiguration(size: Size(18, 18));
+      departureIcon = await BitmapDescriptor.fromAssetImage(
+        config,
+        "assets/icons/ic_cab_pickup.png",
+      );
+      destinationIcon = await BitmapDescriptor.fromAssetImage(
+        config,
+        "assets/icons/ic_cab_destination.png",
+      );
+      taxiIcon = await BitmapDescriptor.fromAssetImage(
+        config,
+        "assets/icons/ic_taxi.png",
+      );
+      stopIcon = await BitmapDescriptor.fromAssetImage(
+        config,
+        "assets/icons/ic_location.png",
+      );
     } catch (e) {
       print('Error loading icons: $e');
     }
@@ -1844,20 +1542,16 @@ class CabBookingController extends GetxController {
 
   void clearMapDataIfLocationsRemoved() {
     final isSourceEmpty =
-        departureLatLongOsm.value.latitude == 0.0 &&
-        departureLatLongOsm.value.longitude == 0.0;
+        departureLatLong.value.latitude == 0.0 &&
+        departureLatLong.value.longitude == 0.0;
     final isDestinationEmpty =
-        destinationLatLongOsm.value.latitude == 0.0 &&
-        destinationLatLongOsm.value.longitude == 0.0;
+        destinationLatLong.value.latitude == 0.0 &&
+        destinationLatLong.value.longitude == 0.0;
 
     if (isSourceEmpty || isDestinationEmpty) {
       // Clear polylines
       polyLines.clear();
 
-      // Clear OSM markers (if using OSM)
-      osmMarker.clear();
-
-      // Clear Google markers (if using Google Maps)
       markers.clear();
 
       // Clear route points (optional)
@@ -1870,19 +1564,9 @@ class CabBookingController extends GetxController {
   }
 
   void removeSource() {
-    // Clear departure location and related data
-    departureLatLongOsm.value = latlong.LatLng(0.0, 0.0);
     departureLatLong.value = const LatLng(0.0, 0.0);
     sourceTextEditController.value.clear();
-
-    // Remove marker
-    if (Constant.selectedMapType == 'osm') {
-      osmMarker.removeWhere(
-        (marker) => marker.point == departureLatLongOsm.value,
-      );
-    } else {
-      markers.removeWhere((marker) => marker.markerId.value == 'Departure');
-    }
+    markers.removeWhere((marker) => marker.markerId.value == 'Departure');
 
     // Clear polylines and route info if needed
     clearMapDataIfLocationsRemoved();
@@ -1891,123 +1575,50 @@ class CabBookingController extends GetxController {
   }
 
   void removeDestination() {
-    destinationLatLongOsm.value = latlong.LatLng(0.0, 0.0);
     destinationLatLong.value = const LatLng(0.0, 0.0);
     destinationTextEditController.value.clear();
     _updateCanProceedToVehicleSelection();
-
-    if (Constant.selectedMapType == 'osm') {
-      osmMarker.removeWhere(
-        (marker) => marker.point == destinationLatLongOsm.value,
-      );
-    } else {
-      markers.removeWhere((marker) => marker.markerId.value == 'Destination');
-    }
+    markers.removeWhere((marker) => marker.markerId.value == 'Destination');
 
     clearMapDataIfLocationsRemoved();
     update();
   }
 
   Future<void> searchPlaceNameOSM() async {
-    try {
-      final url = Uri.parse(
-        'https://nominatim.openstreetmap.org/reverse?lat=${departureLatLongOsm.value.latitude}&lon=${departureLatLongOsm.value.longitude}&format=json',
-      );
-
-      final response = await http
-          .get(
-            url,
-            headers: {
-              'User-Agent':
-                  'FlutterMapApp/1.0 (menil.siddhiinfosoft@gmail.com)',
-            },
-          )
-          .timeout(
-            const Duration(seconds: 10),
-            onTimeout: () {
-              throw Exception('Request timeout');
-            },
-          );
-
-      if (response.statusCode == 200) {
-        log("response.body :: ${response.body}");
-        Map<String, dynamic> data = json.decode(response.body);
-        sourceTextEditController.value.text = data['display_name'] ?? '';
-      }
-    } catch (e) {
-      log("OSM Reverse Geocode Error: $e");
-      // Error bo'lsa ham davom etadi
-    }
+    await _setAddressFromYandex(
+      departureLatLong.value.latitude,
+      departureLatLong.value.longitude,
+    );
   }
 
   Future<void> searchPlaceNameGoogle() async {
-    final lat = departureLatLong.value.latitude;
-    final lng = departureLatLong.value.longitude;
-
-    final url = Uri.parse(
-      'https://maps.googleapis.com/maps/api/geocode/json?latlng=$lat,$lng&key=${Constant.mapAPIKey}',
+    await _setAddressFromYandex(
+      departureLatLong.value.latitude,
+      departureLatLong.value.longitude,
     );
+  }
 
-    final response = await http.get(url);
-
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      if (data['status'] == 'OK') {
-        final results = data['results'] as List;
-        if (results.isNotEmpty) {
-          final formattedAddress = results[0]['formatted_address'];
-          sourceTextEditController.value.text = formattedAddress;
-        }
-      } else {
-        log("Google API Error: ${data['status']}");
+  Future<void> _setAddressFromYandex(double lat, double lng) async {
+    try {
+      final geocoding = YandexGeocodingService(apiKey: Constant.yandexGeocodeApiKey);
+      final place = await geocoding.reverseGeocode(lat, lng);
+      if (place != null) {
+        sourceTextEditController.value.text = place.formattedAddress;
       }
-    } else {
-      log("HTTP Error: ${response.statusCode}");
+    } catch (e) {
+      log("Yandex Reverse Geocode Error: $e");
     }
   }
 
-  // Xaritada tanlangan joydan manzil olish
+  // Xaritada tanlangan joydan manzil olish (Yandex Geocoding)
   Future<void> getAddressFromPickedLocation(double lat, double lng) async {
     isLoadingAddress.value = true;
-    tempPickedLocation.value = latlong.LatLng(lat, lng);
+    tempPickedLocation.value = app_lat_lng.LatLng(lat, lng);
 
     try {
-      if (Constant.selectedMapType == 'osm') {
-        final url = Uri.parse(
-          'https://nominatim.openstreetmap.org/reverse?lat=$lat&lon=$lng&format=json',
-        );
-
-        final response = await http
-            .get(
-              url,
-              headers: {
-                'User-Agent':
-                    'FlutterMapApp/1.0 (menil.siddhiinfosoft@gmail.com)',
-              },
-            )
-            .timeout(const Duration(seconds: 10));
-
-        if (response.statusCode == 200) {
-          Map<String, dynamic> data = json.decode(response.body);
-          tempPickedAddress.value = data['display_name'] ?? '';
-        }
-      } else {
-        final url = Uri.parse(
-          'https://maps.googleapis.com/maps/api/geocode/json?latlng=$lat,$lng&key=${Constant.mapAPIKey}',
-        );
-
-        final response = await http.get(url);
-
-        if (response.statusCode == 200) {
-          final data = json.decode(response.body);
-          if (data['status'] == 'OK') {
-            final results = data['results'] as List;
-            if (results.isNotEmpty) {
-              tempPickedAddress.value = results[0]['formatted_address'] ?? '';
-            }
-          }
-        }
-      }
+      final geocoding = YandexGeocodingService(apiKey: Constant.yandexGeocodeApiKey);
+      final place = await geocoding.reverseGeocode(lat, lng);
+      tempPickedAddress.value = place?.formattedAddress ?? 'Manzil topilmadi';
     } catch (e) {
       log("Get Address Error: $e");
       tempPickedAddress.value = 'Manzil topilmadi';
@@ -2041,15 +1652,50 @@ class CabBookingController extends GetxController {
 
     // Reset map picking mode
     isMapPickingMode.value = false;
-    tempPickedLocation.value = latlong.LatLng(0, 0);
+    tempPickedLocation.value = app_lat_lng.LatLng(0, 0);
     tempPickedAddress.value = '';
   }
 
   // Map picking rejimini bekor qilish
   void cancelMapPicking() {
     isMapPickingMode.value = false;
-    tempPickedLocation.value = latlong.LatLng(0, 0);
+    tempPickedLocation.value = app_lat_lng.LatLng(0, 0);
     tempPickedAddress.value = '';
+  }
+
+  /// Manzil qidiruv – faqat Yandex, faqat O'zbekiston, lotin o'zbekcha.
+  Future<void> searchDestinationYandex(String query) async {
+    final trimmedQuery = query.trim();
+    if (trimmedQuery.isEmpty || trimmedQuery.length < 2) {
+      destinationSearchResults.clear();
+      searchError.value = '';
+      return;
+    }
+    isSearchingDestination.value = true;
+    searchError.value = '';
+    try {
+      final geocoding = YandexGeocodingService(apiKey: Constant.yandexGeocodeApiKey);
+      final results = await geocoding.search(trimmedQuery, limit: 10);
+      if (results.isEmpty) {
+        destinationSearchResults.clear();
+      } else {
+        destinationSearchResults.value = results.map((r) {
+          return {
+            'name': r.displayName,
+            'address': r.placemark?.formattedAddress ?? r.displayName,
+            'lat': r.latLng.latitude,
+            'lon': r.latLng.longitude,
+          };
+        }).toList();
+      }
+      searchError.value = '';
+    } catch (e) {
+      log("Yandex destination search error: $e");
+      destinationSearchResults.clear();
+      searchError.value = '';
+    } finally {
+      isSearchingDestination.value = false;
+    }
   }
 
   // Search destination places for OSM
@@ -2238,6 +1884,41 @@ class CabBookingController extends GetxController {
       log("Get Place Details Error: $e");
     }
     return null;
+  }
+
+  /// Manba manzil qidiruv – faqat Yandex, faqat O'zbekiston, lotin o'zbekcha.
+  Future<void> searchSourceYandex(String query) async {
+    final trimmedQuery = query.trim();
+    if (trimmedQuery.isEmpty || trimmedQuery.length < 2) {
+      sourceSearchResults.clear();
+      sourceSearchError.value = '';
+      return;
+    }
+    isSearchingSource.value = true;
+    sourceSearchError.value = '';
+    try {
+      final geocoding = YandexGeocodingService(apiKey: Constant.yandexGeocodeApiKey);
+      final results = await geocoding.search(trimmedQuery, limit: 10);
+      if (results.isEmpty) {
+        sourceSearchResults.clear();
+      } else {
+        sourceSearchResults.value = results.map((r) {
+          return {
+            'name': r.displayName,
+            'address': r.placemark?.formattedAddress ?? r.displayName,
+            'lat': r.latLng.latitude,
+            'lon': r.latLng.longitude,
+          };
+        }).toList();
+      }
+      sourceSearchError.value = '';
+    } catch (e) {
+      log("Yandex source search error: $e");
+      sourceSearchResults.clear();
+      sourceSearchError.value = '';
+    } finally {
+      isSearchingSource.value = false;
+    }
   }
 
   // Search source places for OSM

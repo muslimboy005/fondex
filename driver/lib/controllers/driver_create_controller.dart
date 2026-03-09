@@ -35,7 +35,7 @@ class DriverCreateController extends GetxController {
 
   RxList<ZoneModel> zoneList = <ZoneModel>[].obs;
   Rx<ZoneModel> selectedZone = ZoneModel().obs;
-  RxList<String> service = ['Cab Service', 'Parcel Service', 'Rental Service'].obs; // Option 2
+  RxList<String> service = ['Delivery Service', 'Cab Service'].obs;
   RxString selectedService = 'Cab Service'.obs;
 
   RxString selectedValue = 'ride'.obs;

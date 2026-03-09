@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:ui';
 import 'package:country_code_picker/country_code_picker.dart';
 import 'package:driver/app/splash_screen.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:driver/controllers/global_setting_controller.dart';
 import 'package:driver/controllers/locale_controller.dart';
 import 'package:driver/firebase_options.dart';
@@ -66,6 +67,9 @@ void main() async {
       // Don't block app startup if App Check fails
     }
     await Preferences.initPref();
+
+    // Initialize intl date formatting (required before DateFormat with locale in wallet etc.)
+    await initializeDateFormatting();
 
     Get.put(ThemeController());
     Get.put(LocaleController());

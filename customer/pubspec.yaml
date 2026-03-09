@@ -1,7 +1,7 @@
 name: customer
 description: "A new Flutter project."
 
-version: 1.2.0+21
+version: 1.2.7+33
 
 environment:
   sdk: ^3.7.2
@@ -53,16 +53,12 @@ dependencies:
   google_sign_in: ^7.2.0
   sign_in_with_apple: ^7.0.1
 
-  # Maps & Location
+  # Maps & Location (Yandex + Google types for cab/live_tracking)
+  yandex_mapkit: ^4.2.1
   google_maps_flutter: ^2.14.0
-  flutter_osm_plugin: ^1.4.3
-  osm_nominatim: ^4.0.1
   geolocator: ^14.0.0
-  geocoding: ^4.0.0
   flutter_polyline_points: ^3.1.0
   map_launcher: ^4.4.2
-  flutter_map: ^8.2.2
-  latlong2: ^0.9.1
   location: ^8.0.1
 
   # Media
@@ -89,13 +85,10 @@ dependencies:
   sqflite: ^2.4.2
   intl: ^0.20.2
   uuid: ^4.5.2
-  flutter_google_places_hoc081098: ^2.0.0
-  yandex_mapkit: ^4.2.1
 
 dependency_overrides:
   webview_flutter: ^4.9.0
   http: ^1.6.0
-  google_api_headers: ^5.0.1
   package_info_plus: ^9.0.0
 
 dev_dependencies:

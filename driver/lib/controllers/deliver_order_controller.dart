@@ -39,10 +39,12 @@ class DeliverOrderController extends GetxController {
     await AudioPlayerService.playSound(false);
     orderModel.value.status = Constant.orderCompleted;
     await FireStoreUtils.updateWallateAmount(orderModel.value);
-    if (orderModel.value.cashback?.cashbackValue != null && orderModel.value.cashback?.id != null) {
+    if (orderModel.value.cashback?.cashbackValue != null &&
+        orderModel.value.cashback?.id != null) {
       WalletTransactionModel transactionModel = WalletTransactionModel(
           id: Constant.getUuid(),
-          amount: double.parse("${orderModel.value.cashback?.cashbackValue ?? 0.0}"),
+          amount: double.parse(
+              "${orderModel.value.cashback?.cashbackValue ?? 0.0}"),
           date: Timestamp.now(),
           paymentMethod: "Cashback Amount",
           transactionUser: "user",
@@ -51,10 +53,14 @@ class DeliverOrderController extends GetxController {
           orderId: orderModel.value.id,
           note: "Cashback Amount",
           paymentStatus: "success");
-      await FireStoreUtils.setWalletTransaction(transactionModel).then((value) async {
+      await FireStoreUtils.setWalletTransaction(transactionModel)
+          .then((value) async {
         if (value == true) {
           await FireStoreUtils.updateUserWallet(
-              amount: double.parse("${orderModel.value.cashback?.cashbackValue ?? 0.0}").toString(), userId: orderModel.value.author!.id.toString());
+              amount: double.parse(
+                      "${orderModel.value.cashback?.cashbackValue ?? 0.0}")
+                  .toString(),
+              userId: orderModel.value.author!.id.toString());
         }
       });
     }
@@ -64,13 +70,15 @@ class DeliverOrderController extends GetxController {
       Constant.userModel?.inProgressOrderID?.remove(orderModel.value.id);
       await FireStoreUtils.updateUser(Constant.userModel!);
     }
-    await FireStoreUtils.getFirestOrderOrNOt(orderModel.value).then((value) async {
+    await FireStoreUtils.getFirestOrderOrNOt(orderModel.value)
+        .then((value) async {
       if (value == true) {
         await FireStoreUtils.updateReferralAmount(orderModel.value);
       }
     });
 
-    await SendNotification.sendFcmMessage(Constant.driverCompleted, orderModel.value.author!.fcmToken.toString(), {});
+    await SendNotification.sendFcmMessage(Constant.driverCompleted,
+        orderModel.value.author!.fcmToken.toString(), {});
     ShowToastDialog.closeLoader();
     Get.back(result: true);
   }

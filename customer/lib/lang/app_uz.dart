@@ -105,6 +105,7 @@ const Map<String, String> uzUZ = {
   'Orders': 'Buyurtmalar',
   'Profile': 'Profil',
   'Wallet': 'Hamyon',
+  'Cart': 'Savatcha',
   'Service is unavailable at the selected address.':
       'Tanlangan manzilda xizmat mavjud emas.',
   'Pickup Location': 'Olish joyi',

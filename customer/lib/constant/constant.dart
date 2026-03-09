@@ -20,7 +20,7 @@ import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart' as geolocator;
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:customer/models/lat_lng.dart';
 import 'package:intl/intl.dart';
 import 'package:mailer/mailer.dart';
 import 'package:mailer/smtp_server.dart';
@@ -97,13 +97,16 @@ class Constant {
   static const globalUrl = "https://Replace_your_domain/";
 
   static String mapAPIKey = "";
+  /// Yandex Geocoder API key (geocode-maps.yandex.ru)
+  static const String yandexGeocodeApiKey =
+      'd40481eb-0884-40a5-bde1-9cfb8d7cfa89';
   static String placeHolderImage = "";
   static String defaultCountryCode = "";
   static String defaultCountry = "";
 
-  /// Buxoro (Bukhara) – default location when user lokatsiya tanlamasa (shofirkor uchun ham)
-  static const double defaultLocationLat = 39.7681;
-  static const double defaultLocationLng = 64.4556;
+  /// Toshkent – default location when user lokatsiyasi olinmasa
+  static const double defaultLocationLat = 41.3111;
+  static const double defaultLocationLng = 69.2797;
 
   static bool isCashbackActive = false;
   static bool isEnableOTPTripStart = false;
@@ -181,11 +184,9 @@ class Constant {
 
   static String normalizeSelectedMapType(String? value) {
     final raw = (value ?? '').toLowerCase().trim();
-    if (raw.isEmpty) return 'google';
-    if (raw.contains('osm') || raw.contains('openstreet')) return 'osm';
+    if (raw.isEmpty) return 'yandexMaps';
     if (raw.contains('yandex')) return 'yandexMaps';
-    if (raw.contains('google')) return 'google';
-    return value!;
+    return 'yandexMaps';
   }
 
   static String normalizeMapType(String? value) {
@@ -204,11 +205,9 @@ class Constant {
     return value!;
   }
 
-  static bool get isOsmMap =>
-      normalizeSelectedMapType(selectedMapType) == 'osm';
+  static bool get isOsmMap => false;
 
-  static bool get isYandexMap =>
-      normalizeSelectedMapType(selectedMapType) == 'yandexMaps';
+  static bool get isYandexMap => true;
 
   static bool isEnableAdsFeature = true;
   static bool isSelfDeliveryFeature = false;
@@ -330,11 +329,18 @@ class Constant {
     ShowToastDialog.closeLoader();
   }
 
+  /// Narxni 500 ga yuqoriga yaxlitlash: 1001→1500, 1501→2000
+  static double roundUpToNearest500(num? value) {
+    if (value == null || value <= 0) return 0.0;
+    return ((value / 500).ceil() * 500).toDouble();
+  }
+
   static String amountShow({required String? amount}) {
     final safeAmount =
         (amount == null || amount.isEmpty || amount == 'null') ? '0.0' : amount;
     final value = double.tryParse(safeAmount) ?? 0.0;
-    final formatted = value.toStringAsFixed(currencyModel?.decimal ?? 0);
+    final rounded = roundUpToNearest500(value);
+    final formatted = rounded.toStringAsFixed(currencyModel?.decimal ?? 0);
     if (currencyModel!.symbolatright == true) {
       return "$formatted ${currencyModel!.symbol.toString()}";
     } else {
@@ -368,20 +374,18 @@ class Constant {
 
   static String productCommissionPrice(VendorModel vendorModel, String price) {
     String commission = "0";
-    if (sectionConstantModel!.adminCommision!.isEnabled == true) {
+    final sectionCommission = sectionConstantModel?.adminCommision;
+    if (sectionCommission?.isEnabled == true) {
       if (vendorModel.adminCommission == null) {
-        if (sectionConstantModel!.adminCommision!.commissionType!
-                    .toLowerCase() ==
-                "Percent".toLowerCase() ||
-            sectionConstantModel!.adminCommision!.commissionType
-                    ?.toLowerCase() ==
-                "Percentage".toLowerCase()) {
+        final commissionType = sectionCommission?.commissionType?.toLowerCase();
+        final isPercent = commissionType == "percent" ||
+            commissionType == "percentage";
+        if (isPercent) {
           commission =
               (double.parse(price) +
                       (double.parse(price) *
                           double.parse(
-                            sectionConstantModel!.adminCommision!.amount
-                                .toString(),
+                            (sectionCommission?.amount ?? 0).toString(),
                           ) /
                           100))
                   .toString();
@@ -389,20 +393,21 @@ class Constant {
           commission =
               (double.parse(price) +
                       double.parse(
-                        sectionConstantModel!.adminCommision!.amount.toString(),
+                        (sectionCommission?.amount ?? 0).toString(),
                       ))
                   .toString();
         }
       } else {
-        if (vendorModel.adminCommission!.commissionType!.toLowerCase() ==
-                "Percent".toLowerCase() ||
-            vendorModel.adminCommission!.commissionType?.toLowerCase() ==
-                "Percentage".toLowerCase()) {
+        final vendorCommission = vendorModel.adminCommission!;
+        final commissionType = vendorCommission.commissionType?.toLowerCase();
+        final isPercent = commissionType == "percent" ||
+            commissionType == "percentage";
+        if (isPercent) {
           commission =
               (double.parse(price) +
                       (double.parse(price) *
                           double.parse(
-                            vendorModel.adminCommission!.amount.toString(),
+                            (vendorCommission.amount ?? 0).toString(),
                           ) /
                           100))
                   .toString();
@@ -410,7 +415,7 @@ class Constant {
           commission =
               (double.parse(price) +
                       double.parse(
-                        vendorModel.adminCommission!.amount.toString(),
+                        (vendorCommission.amount ?? 0).toString(),
                       ))
                   .toString();
         }

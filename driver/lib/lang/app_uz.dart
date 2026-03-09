@@ -136,6 +136,9 @@ const Map<String, String> uzUZ = {
   "Online": "Onlayn",
   "Collect Payment from customer": "Mijozdan to'lovni olish",
   "Customer payment is pending": "Mijoz to'lovi kutilmoqda",
+  "Yurgan yo'l to'lovi": "Yurgan yo'l to'lovi",
+  "Chaqiruv narxi": "Chaqiruv narxi",
+  "Mijoz to'lovi": "Mijoz to'lovi",
   "Pickup Customer": "Mijozni olish",
   "Complete Ride": "Sayohatni yakunlash",
   "Manzilga yetib kelingan": "Manzilga yetib kelingan",
@@ -387,6 +390,8 @@ const Map<String, String> uzUZ = {
   "Completed Delivery": "Yetkazib berish yakunlandi",
   "Parcel Amount credited": "Paket miqdori kiritildi",
   "Order details not available": "Buyurtma tafsilotlari mavjud emas",
+  "Order id not found. Please try again.":
+      "Buyurtma id topilmadi. Iltimos, qayta urinib ko‘ring.",
   "Bank Setup": "Bank sozlash",
   "Bank Name": "Bank nomi",
   "Enter Bank Name": "Bank nomini kiriting",
@@ -717,4 +722,11 @@ const Map<String, String> uzUZ = {
   "sent a message": "xabar yubordi",
   "something went wrong, please contact admin.":
       "Nimadir noto'g'ri ketdi, iltimos, administrator bilan bog'laning.",
+  "Delivery charge credited for order #%s":
+      "Buyurtma #%s uchun yetkazib berish to'lovi qo'shildi",
+  "Product amount debited from order #%s":
+      "Buyurtma #%s dan mahsulot summasi yechildi",
+  "You referral user has complete his this order #%s":
+      "Taklif qilgan foydalanuvchingiz buyurtmani bajardi #%s",
+  "Wallet Top-up": "Hamyon to'ldirish",
 };
