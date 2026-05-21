@@ -14,6 +14,7 @@ import 'package:vendor/models/brands_model.dart';
 import 'package:vendor/models/product_model.dart';
 import 'package:vendor/models/vendor_category_model.dart';
 import 'package:vendor/models/vendor_model.dart';
+import 'package:vendor/service/vendors_products_api_service.dart';
 import 'package:vendor/utils/fire_store_utils.dart';
 
 class AddProductController extends GetxController {
@@ -142,12 +143,20 @@ class AddProductController extends GetxController {
       ).then((value) {
         if (value != null) {
           vendorModel.value = value;
+          if ((Constant.userModel?.vendorApiId == null ||
+                  Constant.userModel!.vendorApiId == 0) &&
+              value.vendorApiId != null &&
+              value.vendorApiId != 0) {
+            Constant.userModel!.vendorApiId = value.vendorApiId;
+            FireStoreUtils.updateUser(Constant.userModel!);
+          }
         }
       });
     }
 
     // Kategoriyalar DOIM dokon (vendor) section bo'yicha olinadi — taom/apteka o'zgartirilganda to'g'ri tur ko'rinsin
-    final sectionId = (vendorModel.value.sectionId != null &&
+    final sectionId =
+        (vendorModel.value.sectionId != null &&
             vendorModel.value.sectionId!.isNotEmpty)
         ? vendorModel.value.sectionId.toString()
         : Constant.userModel!.sectionId.toString();
@@ -158,9 +167,7 @@ class AddProductController extends GetxController {
 
       if (hasVendorCategories) {
         vendorCategoryList.value = value
-            .where(
-              (category) => vendorCategoryIds.contains(category.id),
-            )
+            .where((category) => vendorCategoryIds.contains(category.id))
             .toList();
         // Vendor categoryID bu section kategoriyalariga mos kelmasa (boshqa section dan qolgan) — section bo'yicha barchasini ko'rsatamiz
         if (vendorCategoryList.isEmpty) {
@@ -299,6 +306,145 @@ class AddProductController extends GetxController {
         }
       }
 
+      final bool isNewProduct = Get.arguments == null;
+
+      if (isNewProduct) {
+        if (Constant.selectedSection!.serviceTypeFlag == "ecommerce-service" &&
+            selectedDigital.value == "Yes") {
+          ShowToastDialog.showToast(
+            "Raqamli mahsulotni hozircha API orqali qo'shib bo'lmaydi.".tr,
+          );
+          return;
+        }
+        if (images.isEmpty) {
+          ShowToastDialog.showToast("Iltimos, mahsulot rasmini qo'shing.".tr);
+          return;
+        }
+
+        // API uchun vendor field'iga vendor hujjat id'ini yuboramiz (sizdagi: bnhcDCua6ESX6N0WlvRR).
+        // userModel.vendorID ba'zan boshqa id bo'lib qolishi mumkin, shuning uchun fallback qilmaymiz.
+        final vendorId = (vendorModel.value.id ?? '').trim();
+        final categoryId = (selectedProductCategory.value.id ?? '').trim();
+        final sectionStr = vendorModel.value.sectionId ??
+            Constant.userModel!.sectionId ??
+            '';
+        final sectionId = sectionStr.trim();
+
+        if (vendorId.isEmpty) {
+          ShowToastDialog.showToast(
+            "Vendor (restoran) ID topilmadi. Avval vendor ma'lumotini yuklang.".tr,
+          );
+          return;
+        }
+        if (categoryId.isEmpty || sectionId.isEmpty) {
+          ShowToastDialog.showToast(
+            "Kategoriya yoki section ID topilmadi (API).".tr,
+          );
+          return;
+        }
+
+        final disc = discountedPriceController.value.text.trim().isEmpty
+            ? "0.00"
+            : discountedPriceController.value.text.trim();
+        final qty = int.tryParse(productQuantityController.value.text) ?? 0;
+        final hasAttributes =
+            itemAttributes.value?.attributes?.isNotEmpty == true ||
+            itemAttributes.value?.variants?.isNotEmpty == true;
+
+        ShowToastDialog.showLoader("Please wait...".tr);
+        final localImagePath = _findLocalImagePath();
+        if (localImagePath == null || localImagePath.isEmpty) {
+          ShowToastDialog.closeLoader();
+          ShowToastDialog.showToast("Iltimos, mahsulot rasmini qo'shing.".tr);
+          return;
+        }
+        final apiPhotos = await _collectApiPhotosFromImages();
+        final err = await VendorsProductsApiService.createProductMultipart(
+          vendor: vendorId,
+          category: categoryId,
+          section: sectionId,
+          name: productTitleController.value.text.trim(),
+          description: productDescriptionController.value.text.trim(),
+          price: regularPriceController.value.text.trim(),
+          discountPrice: disc,
+          quantity: qty,
+          isPublish: isPublish.value,
+          imagePath: localImagePath,
+          imageFilename: localImagePath.split('/').last,
+          itemAttribute: hasAttributes ? itemAttributes.value : null,
+          photosJson: apiPhotos,
+          productSpecification: specification.isEmpty ? null : specification,
+        );
+        ShowToastDialog.closeLoader();
+        if (err != null) {
+          ShowToastDialog.showToast(err);
+        } else {
+          ShowToastDialog.showToast("Mahsulot qo'shildi.".tr);
+          Get.back(result: true);
+        }
+        return;
+      }
+
+      final apiId = int.tryParse(productModel.value.id ?? '');
+
+      if (apiId != null) {
+        final vendorId =
+            (vendorModel.value.id ?? Constant.userModel?.vendorID ?? '').trim();
+        final categoryId = (selectedProductCategory.value.id ?? '').trim();
+        final sectionStr = vendorModel.value.sectionId ??
+            Constant.userModel!.sectionId ??
+            '';
+        final sectionId = sectionStr.trim();
+        if (vendorId.isEmpty) {
+          ShowToastDialog.showToast(
+            "Vendor (restoran) aniqlanmadi.".tr,
+          );
+          return;
+        }
+        if (categoryId.isEmpty || sectionId.isEmpty) {
+          ShowToastDialog.showToast(
+            "Kategoriya yoki section ID topilmadi (API).".tr,
+          );
+          return;
+        }
+        final disc = discountedPriceController.value.text.trim().isEmpty
+            ? "0.00"
+            : discountedPriceController.value.text.trim();
+        final qty = int.tryParse(productQuantityController.value.text) ?? 0;
+        final hasAttributes =
+            itemAttributes.value?.attributes?.isNotEmpty == true ||
+            itemAttributes.value?.variants?.isNotEmpty == true;
+
+        ShowToastDialog.showLoader("Please wait...".tr);
+        final localImagePath = _findLocalImagePath();
+        final apiPhotos = await _collectApiPhotosFromImages();
+        final err = await VendorsProductsApiService.updateProductMultipart(
+          id: apiId,
+          vendor: vendorId,
+          category: categoryId,
+          section: sectionId,
+          name: productTitleController.value.text.trim(),
+          description: productDescriptionController.value.text.trim(),
+          price: regularPriceController.value.text.trim(),
+          discountPrice: disc,
+          quantity: qty,
+          isPublish: isPublish.value,
+          imagePath: localImagePath,
+          imageFilename: localImagePath?.split('/').last,
+          itemAttribute: hasAttributes ? itemAttributes.value : null,
+          photosJson: apiPhotos,
+          productSpecification: specification.isEmpty ? null : specification,
+        );
+        ShowToastDialog.closeLoader();
+        if (err != null) {
+          ShowToastDialog.showToast(err);
+        } else {
+          ShowToastDialog.showToast("O'zgartirildi.".tr);
+          Get.back(result: true);
+        }
+        return;
+      }
+
       if (selectedDigital.value == "Yes" && digitalFile != null) {
         String fileName = digitalFile!.path.split('/').last;
         Reference upload = FirebaseStorage.instance.ref().child(
@@ -419,5 +565,25 @@ class AddProductController extends GetxController {
       }
       return result;
     }
+  }
+
+  String? _findLocalImagePath() {
+    for (final img in images) {
+      if (img is XFile && img.path.trim().isNotEmpty) {
+        return img.path.trim();
+      }
+    }
+    return null;
+  }
+
+  Future<List<String>> _collectApiPhotosFromImages() async {
+    final out = <String>[];
+    for (final img in images) {
+      if (img is String && img.trim().isNotEmpty) {
+        out.add(img.trim());
+        continue;
+      }
+    }
+    return out;
   }
 }

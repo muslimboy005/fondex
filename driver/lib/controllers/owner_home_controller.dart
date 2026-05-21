@@ -4,6 +4,7 @@ import 'package:driver/models/parcel_order_model.dart';
 import 'package:driver/models/rental_order_model.dart';
 import 'package:driver/models/user_model.dart';
 import 'package:driver/utils/fire_store_utils.dart';
+import 'package:driver/utils/force_update_helper.dart';
 import 'package:get/get.dart';
 
 import '../constant/constant.dart';
@@ -22,6 +23,12 @@ class OwnerHomeController extends GetxController {
   void onInit() {
     super.onInit();
     getDriverList();
+  }
+
+  @override
+  void onReady() {
+    super.onReady();
+    ForceUpdateHelper.checkAndShowIfNeeded();
   }
 
   Future<void> getDriverList() async {

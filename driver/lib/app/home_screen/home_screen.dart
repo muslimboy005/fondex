@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:driver/app/chat_screens/chat_screen.dart';
 import 'package:driver/app/home_screen/deliver_order_screen.dart';
 import 'package:driver/app/home_screen/pickup_order_screen.dart';
@@ -176,170 +178,280 @@ class HomeScreen extends StatelessWidget {
                           //       )
                           //     : const SizedBox(),
                           Expanded(
-                            child: Constant.mapType == "inappmap"
-                                ? Stack(
-                                    children: [
-                                      Obx(() {
-                                        final driverLat = controller.driverModel
-                                                .value.location?.latitude ??
-                                            0.0;
-                                        final driverLng = controller.driverModel
-                                                .value.location?.longitude ??
-                                            0.0;
-                                        final finalLat = Constant
-                                                .locationDataFinal?.latitude ??
-                                            driverLat;
-                                        final finalLng = Constant
-                                                .locationDataFinal?.longitude ??
-                                            driverLng;
+                            child: LayoutBuilder(
+                              builder: (context, constraints) {
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: [
+                                    Expanded(
+                                      child: Constant.mapType == "inappmap"
+                                          ? Stack(
+                                              children: [
+                                                Obx(() {
+                                                  final driverLat = controller
+                                                          .driverModel
+                                                          .value
+                                                          .location
+                                                          ?.latitude ??
+                                                      0.0;
+                                                  final driverLng = controller
+                                                          .driverModel
+                                                          .value
+                                                          .location
+                                                          ?.longitude ??
+                                                      0.0;
+                                                  final finalLat = Constant
+                                                          .locationDataFinal
+                                                          ?.latitude ??
+                                                      driverLat;
+                                                  final finalLng = Constant
+                                                          .locationDataFinal
+                                                          ?.longitude ??
+                                                      driverLng;
 
-                                        return ym.YandexMap(
-                                          onMapCreated: (ym.YandexMapController
-                                              mapController) async {
-                                            controller.yandexMapController =
-                                                mapController;
-                                            await mapController.toggleUserLayer(
-                                                visible: true);
-                                            await mapController.moveCamera(
-                                              ym.CameraUpdate.newCameraPosition(
-                                                ym.CameraPosition(
-                                                  target: ym.Point(
-                                                    latitude: finalLat != 0.0
-                                                        ? finalLat
-                                                        : 41.3111,
-                                                    longitude: finalLng != 0.0
-                                                        ? finalLng
-                                                        : 69.2797,
+                                                  return ym.YandexMap(
+                                                    onMapCreated:
+                                                        (ym.YandexMapController
+                                                            mapController) async {
+                                                      controller
+                                                              .yandexMapController =
+                                                          mapController;
+                                                      await mapController
+                                                          .toggleUserLayer(
+                                                              visible: true);
+                                                      await mapController
+                                                          .moveCamera(
+                                                        ym.CameraUpdate
+                                                            .newCameraPosition(
+                                                          ym.CameraPosition(
+                                                            target: ym.Point(
+                                                              latitude: finalLat !=
+                                                                      0.0
+                                                                  ? finalLat
+                                                                  : 41.3111,
+                                                              longitude:
+                                                                  finalLng !=
+                                                                          0.0
+                                                                      ? finalLng
+                                                                      : 69.2797,
+                                                            ),
+                                                            zoom: 15,
+                                                          ),
+                                                        ),
+                                                      );
+                                                    },
+                                                    mapObjects:
+                                                        yandexMapObjectsFromGoogle(
+                                                      markers: controller
+                                                          .markers.values,
+                                                      polylines: controller
+                                                          .polyLines.values,
+                                                    ),
+                                                  );
+                                                }),
+                                                if (Constant.mapType ==
+                                                    "inappmap")
+                                                  Positioned(
+                                                    top: 20,
+                                                    right: 20,
+                                                    child: FloatingActionButton(
+                                                      heroTag: 'center_yandex',
+                                                      onPressed: () {
+                                                        try {
+                                                          controller
+                                                              .animateToSource();
+                                                        } catch (e) {
+                                                          // ignore
+                                                        }
+                                                      },
+                                                      child: const Icon(
+                                                          Icons.my_location),
+                                                    ),
                                                   ),
-                                                  zoom: 15,
-                                                ),
+                                              ],
+                                            )
+                                          : Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 16),
+                                              child: Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.center,
+                                                children: [
+                                                  SvgPicture.asset(
+                                                      "assets/images/ic_location_map.svg"),
+                                                  const SizedBox(
+                                                    height: 10,
+                                                  ),
+                                                  Text(
+                                                    "${'Navigate with'.tr} Yandex Map",
+                                                    style: TextStyle(
+                                                        color: isDark
+                                                            ? AppThemeData
+                                                                .grey50
+                                                            : AppThemeData
+                                                                .grey900,
+                                                        fontSize: 22,
+                                                        fontFamily: AppThemeData
+                                                            .semiBold),
+                                                  ),
+                                                  Text(
+                                                    "${'Easily find your destination with a single tap redirect to'.tr} Yandex Map ${'for seamless navigation.'.tr}",
+                                                    textAlign: TextAlign.center,
+                                                    style: TextStyle(
+                                                        color: isDark
+                                                            ? AppThemeData
+                                                                .grey50
+                                                            : AppThemeData
+                                                                .grey900,
+                                                        fontSize: 16,
+                                                        fontFamily: AppThemeData
+                                                            .regular),
+                                                  ),
+                                                  const SizedBox(
+                                                    height: 30,
+                                                  ),
+                                                  RoundedButtonFill(
+                                                    title:
+                                                        "${'Redirect'.tr} Yandex Map",
+                                                    width: 55,
+                                                    height: 5.5,
+                                                    color:
+                                                        AppThemeData.primary300,
+                                                    textColor:
+                                                        AppThemeData.grey50,
+                                                    onPress: () async {
+                                                      if (controller
+                                                              .currentOrder
+                                                              .value
+                                                              .id !=
+                                                          null) {
+                                                        if (controller
+                                                                .currentOrder
+                                                                .value
+                                                                .status !=
+                                                            Constant
+                                                                .driverPending) {
+                                                          if (controller
+                                                                  .currentOrder
+                                                                  .value
+                                                                  .status ==
+                                                              Constant
+                                                                  .orderShipped) {
+                                                            final o = controller
+                                                                .currentOrder
+                                                                .value;
+                                                            Utils.redirectMap(
+                                                                name: o.vendor
+                                                                        ?.title
+                                                                        ?.toString() ??
+                                                                    '',
+                                                                latitude: o
+                                                                        .vendor
+                                                                        ?.latitude ??
+                                                                    0.0,
+                                                                longLatitude: o
+                                                                        .vendor
+                                                                        ?.longitude ??
+                                                                    0.0);
+                                                          } else if (controller
+                                                                  .currentOrder
+                                                                  .value
+                                                                  .status ==
+                                                              Constant
+                                                                  .orderInTransit) {
+                                                            final o = controller
+                                                                .currentOrder
+                                                                .value;
+                                                            Utils.redirectMap(
+                                                                name: o
+                                                                        .author
+                                                                        ?.firstName
+                                                                        ?.toString() ??
+                                                                    '',
+                                                                latitude: o
+                                                                        .address
+                                                                        ?.location
+                                                                        ?.latitude ??
+                                                                    0.0,
+                                                                longLatitude: o
+                                                                        .address
+                                                                        ?.location
+                                                                        ?.longitude ??
+                                                                    0.0);
+                                                          }
+                                                        } else {
+                                                          final o = controller
+                                                              .currentOrder
+                                                              .value;
+                                                          Utils.redirectMap(
+                                                              name: o
+                                                                      .author
+                                                                      ?.firstName
+                                                                      ?.toString() ??
+                                                                  '',
+                                                              latitude: o
+                                                                      .vendor
+                                                                      ?.latitude ??
+                                                                  0.0,
+                                                              longLatitude: o
+                                                                      .vendor
+                                                                      ?.longitude ??
+                                                                  0.0);
+                                                        }
+                                                      }
+                                                    },
+                                                  ),
+                                                ],
                                               ),
-                                            );
-                                          },
-                                          mapObjects:
-                                              yandexMapObjectsFromGoogle(
-                                            markers: controller.markers.values,
-                                            polylines:
-                                                controller.polyLines.values,
+                                            ),
+                                    ),
+                                    Obx(() {
+                                      final order =
+                                          controller.currentOrder.value;
+                                      final pending = order.id != null &&
+                                          order.status ==
+                                              Constant.driverPending;
+                                      final showActions = order.id != null &&
+                                          (order.status ==
+                                                  Constant.driverAccepted ||
+                                              order.status ==
+                                                  Constant.orderShipped ||
+                                              order.status ==
+                                                  Constant.orderInTransit);
+                                      if (!pending && !showActions) {
+                                        return const SizedBox.shrink();
+                                      }
+                                      // Butun ekran 58% emas — xarita+panel umumiy balandligi ichidan,
+                                      // aks holda Column overflow / panel 0px clip bo‘ladi.
+                                      final panelMax = math.min(
+                                        constraints.maxHeight * 0.55,
+                                        440.0,
+                                      ).clamp(160.0, constraints.maxHeight);
+                                      if (pending) {
+                                        return ConstrainedBox(
+                                          constraints: BoxConstraints(
+                                              maxHeight: panelMax),
+                                          child: SingleChildScrollView(
+                                            child: showDriverBottomSheet(
+                                                isDark, controller),
                                           ),
                                         );
-                                      }),
-                                      if (Constant.mapType == "inappmap")
-                                        Positioned(
-                                          top: 20,
-                                          right: 20,
-                                          child: FloatingActionButton(
-                                            heroTag: 'center_yandex',
-                                            onPressed: () {
-                                              try {
-                                                controller.animateToSource();
-                                              } catch (e) {
-                                                // ignore
-                                              }
-                                            },
-                                            child:
-                                                const Icon(Icons.my_location),
-                                          ),
-                                        ),
-                                    ],
-                                  )
-                                : Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 16),
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: [
-                                        SvgPicture.asset(
-                                            "assets/images/ic_location_map.svg"),
-                                        const SizedBox(
-                                          height: 10,
-                                        ),
-                                        Text(
-                                          "${'Navigate with'.tr} Yandex Map",
-                                          style: TextStyle(
-                                              color: isDark
-                                                  ? AppThemeData.grey50
-                                                  : AppThemeData.grey900,
-                                              fontSize: 22,
-                                              fontFamily:
-                                                  AppThemeData.semiBold),
-                                        ),
-                                        Text(
-                                          "${'Easily find your destination with a single tap redirect to'.tr} Yandex Map ${'for seamless navigation.'.tr}",
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                              color: isDark
-                                                  ? AppThemeData.grey50
-                                                  : AppThemeData.grey900,
-                                              fontSize: 16,
-                                              fontFamily: AppThemeData.regular),
-                                        ),
-                                        const SizedBox(
-                                          height: 30,
-                                        ),
-                                        RoundedButtonFill(
-                                          title: "${'Redirect'.tr} Yandex Map",
-                                          width: 55,
-                                          height: 5.5,
-                                          color: AppThemeData.primary300,
-                                          textColor: AppThemeData.grey50,
-                                          onPress: () async {
-                                            if (controller
-                                                    .currentOrder.value.id !=
-                                                null) {
-                                              if (controller.currentOrder.value
-                                                      .status !=
-                                                  Constant.driverPending) {
-                                                if (controller.currentOrder
-                                                        .value.status ==
-                                                    Constant.orderShipped) {
-                                                  final o = controller.currentOrder.value;
-                                                  Utils.redirectMap(
-                                                      name: o.vendor?.title?.toString() ?? '',
-                                                      latitude: o.vendor?.latitude ?? 0.0,
-                                                      longLatitude: o.vendor?.longitude ?? 0.0);
-                                                } else if (controller
-                                                        .currentOrder
-                                                        .value
-                                                        .status ==
-                                                    Constant.orderInTransit) {
-                                                  final o = controller.currentOrder.value;
-                                                  Utils.redirectMap(
-                                                      name: o.author?.firstName?.toString() ?? '',
-                                                      latitude: o.address?.location?.latitude ?? 0.0,
-                                                      longLatitude: o.address?.location?.longitude ?? 0.0);
-                                                }
-                                              } else {
-                                                final o = controller.currentOrder.value;
-                                                Utils.redirectMap(
-                                                    name: o.author?.firstName?.toString() ?? '',
-                                                    latitude: o.vendor?.latitude ?? 0.0,
-                                                    longLatitude: o.vendor?.longitude ?? 0.0);
-                                              }
-                                            }
-                                          },
-                                        ),
-                                      ],
-                                    ),
-                                  ),
+                                      }
+                                      return SizedBox(
+                                        height: panelMax,
+                                        width: double.infinity,
+                                        child: buildOrderActionsCard(
+                                            isDark, controller),
+                                      );
+                                    }),
+                                  ],
+                                );
+                              },
+                            ),
                           ),
-                          controller.currentOrder.value.id != null &&
-                                  controller.currentOrder.value.status ==
-                                      Constant.driverPending
-                              ? showDriverBottomSheet(isDark, controller)
-                              : Container(),
-                          controller.currentOrder.value.id != null &&
-                                  (controller.currentOrder.value.status ==
-                                          Constant.driverAccepted ||
-                                      controller.currentOrder.value.status ==
-                                          Constant.orderShipped ||
-                                      controller.currentOrder.value.status ==
-                                          Constant.orderInTransit)
-                              ? buildOrderActionsCard(isDark, controller)
-                              : Container(),
                         ],
                       ),
           );
@@ -700,12 +812,15 @@ class HomeScreen extends StatelessWidget {
     return Container(
       color: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
+          Expanded(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
                 controller.currentOrder.value.status == Constant.orderShipped ||
                         controller.currentOrder.value.status ==
                             Constant.driverAccepted
@@ -1191,7 +1306,9 @@ class HomeScreen extends StatelessWidget {
                 const SizedBox(
                   height: 10,
                 ),
-              ],
+                  ],
+                ),
+              ),
             ),
           ),
           // Ko'rish button - kattaroq va butun ekranni qoplaydigan

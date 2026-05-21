@@ -27,6 +27,8 @@ class UserModel {
   List<dynamic>? inProgressOrderID;
   List<dynamic>? orderRequestData;
   String? vendorID;
+  /// Numeric vendor id for storage API (e.g. 5).
+  int? vendorApiId;
   String? zoneId;
   num? rotation;
   String? appIdentifier;
@@ -66,6 +68,7 @@ class UserModel {
     this.inProgressOrderID,
     this.orderRequestData,
     this.vendorID,
+    this.vendorApiId,
     this.zoneId,
     this.rotation,
     this.appIdentifier,
@@ -122,6 +125,13 @@ class UserModel {
     inProgressOrderID = json['inProgressOrderID'] ?? [];
     orderRequestData = json['orderRequestData'] ?? [];
     vendorID = json['vendorID'] ?? '';
+    final dynamic apiIdRaw =
+        json['vendor_api_id'] ?? json['vendorApiId'] ?? json['vendorApiID'];
+    if (apiIdRaw is int) {
+      vendorApiId = apiIdRaw;
+    } else {
+      vendorApiId = int.tryParse(apiIdRaw?.toString() ?? '');
+    }
     zoneId = json['zoneId'] ?? '';
     rotation = json['rotation'];
     appIdentifier = json['appIdentifier'];
@@ -169,6 +179,7 @@ class UserModel {
 
     if (role == Constant.userRoleDriver) {
       data['vendorID'] = vendorID;
+      if (vendorApiId != null) data['vendor_api_id'] = vendorApiId;
       data['carName'] = carName;
       data['carNumber'] = carNumber;
       data['carPictureURL'] = carPictureURL;
@@ -182,6 +193,7 @@ class UserModel {
     }
     if (role == Constant.userRoleVendor) {
       data['vendorID'] = vendorID;
+      if (vendorApiId != null) data['vendor_api_id'] = vendorApiId;
       data['subscriptionPlanId'] = subscriptionPlanId;
       data['subscriptionExpiryDate'] = subscriptionExpiryDate;
       data['subscription_plan'] = subscriptionPlan?.toJson();

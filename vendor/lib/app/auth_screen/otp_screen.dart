@@ -98,7 +98,7 @@ class OtpScreen extends StatelessWidget {
                                 verificationId: controller.verificationId.value,
                                 smsCode: controller.otpController.value.text,
                               );
-                              String fcmToken = await NotificationService.getToken();
+                              String fcmToken = await NotificationService.getToken() ?? '';
                               await FirebaseAuth.instance
                                   .signInWithCredential(credential)
                                   .then((value) async {
@@ -119,7 +119,7 @@ class OtpScreen extends StatelessWidget {
                                           UserModel? userModel = await FireStoreUtils.getUserProfile(value.user!.uid);
                                           if (userModel!.role == Constant.userRoleVendor) {
                                             if (userModel.active == true) {
-                                              userModel.fcmToken = await NotificationService.getToken();
+                                              userModel.fcmToken = await NotificationService.getToken() ?? '';
                                               await FireStoreUtils.updateUser(userModel);
                                               bool isPlanExpire = false;
                                               if (userModel.subscriptionPlan?.id != null) {

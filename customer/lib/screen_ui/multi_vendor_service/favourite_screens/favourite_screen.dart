@@ -15,7 +15,7 @@ import 'package:get/get.dart';
 import '../../../service/fire_store_utils.dart';
 import '../../../themes/show_toast_dialog.dart';
 import '../../../widget/restaurant_image_view.dart';
-import '../../auth_screens/login_screen.dart';
+import '../../auth_screens/phone_registration_screen.dart';
 import '../product_detail_screen/product_detail_screen.dart';
 import '../restaurant_details_screen/restaurant_details_screen.dart';
 
@@ -82,7 +82,7 @@ class FavouriteScreen extends StatelessWidget {
                                           color: AppThemeData.primary300,
                                           textColor: AppThemeData.grey50,
                                           onPress: () async {
-                                            Get.offAll(const LoginScreen());
+                                            Get.offAll(const PhoneRegistrationScreen());
                                           },
                                         ),
                                       ],

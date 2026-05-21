@@ -1,11 +1,70 @@
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+@pragma('vm:entry-point')
 Future<void> firebaseMessageBackgroundHandle(RemoteMessage message) async {
   log("BackGround Message :: ${message.messageId}");
+  try {
+    if (Firebase.apps.isEmpty) {
+      // Firebase background isolate da initialize bo'lmagan bo'lishi mumkin.
+      // DefaultFirebaseOptions import qilish shart emas — apps bo'sh bo'lsa
+      // bildirishnomani ko'rsatib qo'yamiz xolos.
+      return;
+    }
+    final notification = message.notification;
+    if (notification == null) return;
+
+    // Deep link data ni SharedPreferences ga saqlash — app ochilganda ishlatiladi
+    if (message.data.isNotEmpty) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('pending_notification_data', jsonEncode(message.data));
+    }
+
+    // Local notification ko'rsatish
+    final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+    const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const iosInit = DarwinInitializationSettings();
+    await flutterLocalNotificationsPlugin.initialize(
+      const InitializationSettings(android: androidInit, iOS: iosInit),
+    );
+    const channel = AndroidNotificationChannel(
+      'order_channel',
+      'Order Notifications',
+      description: 'Order status updates',
+      importance: Importance.max,
+    );
+    await flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>()
+        ?.createNotificationChannel(channel);
+    await flutterLocalNotificationsPlugin.show(
+      message.hashCode,
+      notification.title,
+      notification.body,
+      NotificationDetails(
+        android: AndroidNotificationDetails(
+          channel.id,
+          channel.name,
+          channelDescription: channel.description,
+          importance: Importance.max,
+          priority: Priority.high,
+        ),
+        iOS: const DarwinNotificationDetails(
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
+        ),
+      ),
+      payload: jsonEncode(message.data),
+    );
+  } catch (e) {
+    log("BackGround Message handler error: $e");
+  }
 }
 
 class NotificationService {
@@ -45,11 +104,15 @@ class NotificationService {
   }
 
   Future<void> setupInteractedMessage() async {
-    RemoteMessage? initialMessage =
+    // onBackgroundMessage ni doim (conditionalsiz) ro'yxatdan o'tkazish.
+    // Avvalgi kod faqat initialMessage != null bo'lsagina chaqirardi — bu xato edi.
+    FirebaseMessaging.onBackgroundMessage(firebaseMessageBackgroundHandle);
+
+    // App terminated holatdan notification bosilganda ochilsa, shu xabar qaytadi.
+    final RemoteMessage? initialMessage =
         await FirebaseMessaging.instance.getInitialMessage();
     if (initialMessage != null) {
-      FirebaseMessaging.onBackgroundMessage(
-          (message) => firebaseMessageBackgroundHandle(message));
+      log("App opened from terminated via notification: ${initialMessage.messageId}");
     }
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {

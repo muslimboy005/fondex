@@ -45,13 +45,17 @@ class Constant {
   static ZoneModel? selectedZone;
 
   static String mapAPIKey = "";
+
   /// Yandex Geocoder API kaliti (geocode-maps.yandex.ru). Bo‘sh bo‘lsa mapAPIKey ishlatiladi.
-  static const String yandexGeocoderApiKey = 'd40481eb-0884-40a5-bde1-9cfb8d7cfa89';
+  static const String yandexGeocoderApiKey =
+      '7afdcd1c-a057-4e09-82c3-f36fb54ae616';
+
   /// O'zbekiston chegaralari – geocoding va xarita faqat shu hududda.
   static const double uzSouth = 37.0;
   static const double uzNorth = 45.6;
   static const double uzWest = 56.0;
   static const double uzEast = 73.5;
+
   /// Toshkent markazi (boshlang'ich kamera)
   static const double uzCenterLat = 41.31;
   static const double uzCenterLng = 69.24;
@@ -98,7 +102,8 @@ class Constant {
 
   static bool? autoApproveVendor = true;
   static bool? autoApproveStore = true;
-  static bool isSubscriptionModelApplied = false; //Check SubscriptionModel is Active or Not in the Admin Panel.
+  static bool isSubscriptionModelApplied =
+      false; //Check SubscriptionModel is Active or Not in the Admin Panel.
 
   static bool isStoreVerification = false;
   static bool specialDiscountOfferEnable = false;
@@ -133,6 +138,8 @@ class Constant {
   static String payoutRequestStatus = "payout_request_status";
   static String payoutRequest = "payout_request";
   static String newOrderPlaced = "new_order_placed";
+
+  static const String storageApiBaseUrl = 'https://storage.fondex.uz';
 
   static String adsPending = 'pending';
   static String adsUpdated = 'updated';
@@ -207,7 +214,10 @@ class Constant {
       if (taxModel.type == "fix") {
         taxAmount = double.parse(taxModel.tax.toString());
       } else {
-        taxAmount = (double.parse(amount.toString()) * double.parse(taxModel.tax!.toString())) / 100;
+        taxAmount =
+            (double.parse(amount.toString()) *
+                double.parse(taxModel.tax!.toString())) /
+            100;
       }
     }
     return taxAmount;
@@ -216,8 +226,12 @@ class Constant {
   static double calculateDiscount({String? amount, CouponModel? offerModel}) {
     double taxAmount = 0.0;
     if (offerModel != null) {
-      if (offerModel.discountType == "Percentage" || offerModel.discountType == "percentage") {
-        taxAmount = (double.parse(amount.toString()) * double.parse(offerModel.discount.toString())) / 100;
+      if (offerModel.discountType == "Percentage" ||
+          offerModel.discountType == "percentage") {
+        taxAmount =
+            (double.parse(amount.toString()) *
+                double.parse(offerModel.discount.toString())) /
+            100;
       } else {
         taxAmount = double.parse(offerModel.discount.toString());
       }
@@ -225,11 +239,17 @@ class Constant {
     return taxAmount;
   }
 
-  static String calculateReview({required String? reviewCount, required String? reviewSum}) {
-    if (0 == double.parse(reviewSum.toString()) && 0 == double.parse(reviewSum.toString())) {
+  static String calculateReview({
+    required String? reviewCount,
+    required String? reviewSum,
+  }) {
+    if (0 == double.parse(reviewSum.toString()) &&
+        0 == double.parse(reviewSum.toString())) {
       return "0";
     }
-    return (double.parse(reviewSum.toString()) / double.parse(reviewCount.toString())).toStringAsFixed(1);
+    return (double.parse(reviewSum.toString()) /
+            double.parse(reviewCount.toString()))
+        .toStringAsFixed(1);
   }
 
   static const userPlaceHolder = 'assets/images/user_placeholder.png';
@@ -239,14 +259,20 @@ class Constant {
   }
 
   static Widget loader() {
-    return Center(child: CircularProgressIndicator(color: AppThemeData.primary300));
+    return Center(
+      child: CircularProgressIndicator(color: AppThemeData.primary300),
+    );
   }
 
   static Widget showEmptyView({required String message, required bool isDark}) {
     return Center(
       child: Text(
         message,
-        style: TextStyle(fontFamily: AppThemeData.medium, fontSize: 18, color: isDark ? AppThemeData.greyDark900 : AppThemeData.grey900),
+        style: TextStyle(
+          fontFamily: AppThemeData.medium,
+          fontSize: 18,
+          color: isDark ? AppThemeData.greyDark900 : AppThemeData.grey900,
+        ),
       ),
     );
   }
@@ -272,7 +298,8 @@ class Constant {
   }
 
   String? validateEmail(String? value) {
-    String pattern = r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
+    String pattern =
+        r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
     RegExp regExp = RegExp(pattern);
     if (value == null || value.isEmpty) {
       return "Email is Required";
@@ -283,9 +310,19 @@ class Constant {
     }
   }
 
-  static String getDistance({required String lat1, required String lng1, required String lat2, required String lng2}) {
+  static String getDistance({
+    required String lat1,
+    required String lng1,
+    required String lat2,
+    required String lng2,
+  }) {
     double distance;
-    double distanceInMeters = Geolocator.distanceBetween(double.parse(lat1), double.parse(lng1), double.parse(lat2), double.parse(lng2));
+    double distanceInMeters = Geolocator.distanceBetween(
+      double.parse(lat1),
+      double.parse(lng1),
+      double.parse(lat2),
+      double.parse(lng2),
+    );
     if (distanceType == "miles") {
       distance = distanceInMeters / 1609;
     } else {
@@ -295,7 +332,8 @@ class Constant {
   }
 
   bool hasValidUrl(String value) {
-    String pattern = r'(http|https)://[\w-]+(\.[\w-]+)+([\w.,@?^=%&amp;:/~+#-]*[\w@?^=%&amp;/~+#-])?';
+    String pattern =
+        r'(http|https)://[\w-]+(\.[\w-]+)+([\w.,@?^=%&amp;:/~+#-]*[\w@?^=%&amp;/~+#-])?';
     RegExp regExp = RegExp(pattern);
     if (value.isEmpty) {
       return false;
@@ -305,10 +343,18 @@ class Constant {
     return true;
   }
 
-  static Future<String> uploadUserImageToFireStorage(File image, String filePath, String fileName) async {
-    Reference upload = FirebaseStorage.instance.ref().child('$filePath/$fileName');
+  static Future<String> uploadUserImageToFireStorage(
+    File image,
+    String filePath,
+    String fileName,
+  ) async {
+    Reference upload = FirebaseStorage.instance.ref().child(
+      '$filePath/$fileName',
+    );
     UploadTask uploadTask = upload.putFile(image);
-    var downloadUrl = await (await uploadTask.whenComplete(() {})).ref.getDownloadURL();
+    var downloadUrl = await (await uploadTask.whenComplete(
+      () {},
+    )).ref.getDownloadURL();
     return downloadUrl.toString();
   }
 
@@ -325,14 +371,22 @@ class Constant {
 
   Future<Uint8List> getBytesFromAsset(String path, int width) async {
     ByteData data = await rootBundle.load(path);
-    ui.Codec codec = await ui.instantiateImageCodec(data.buffer.asUint8List(), targetWidth: width);
+    ui.Codec codec = await ui.instantiateImageCodec(
+      data.buffer.asUint8List(),
+      targetWidth: width,
+    );
     ui.FrameInfo fi = await codec.getNextFrame();
-    return (await fi.image.toByteData(format: ui.ImageByteFormat.png))!.buffer.asUint8List();
+    return (await fi.image.toByteData(
+      format: ui.ImageByteFormat.png,
+    ))!.buffer.asUint8List();
   }
 
   static Future<TimeOfDay?> selectTime(context) async {
     FocusScope.of(context).requestFocus(FocusNode()); //remove focus
-    TimeOfDay? newTime = await showTimePicker(context: context, initialTime: TimeOfDay.now());
+    TimeOfDay? newTime = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
     if (newTime != null) {
       return newTime;
     }
@@ -394,13 +448,18 @@ class Constant {
     return LanguageModel.fromJson(userMap);
   }
 
-  static Future<void> checkPermission({required BuildContext context, required Function() onTap}) async {
+  static Future<void> checkPermission({
+    required BuildContext context,
+    required Function() onTap,
+  }) async {
     LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
     }
     if (permission == LocationPermission.denied) {
-      ShowToastDialog.showToast("You have to allow location permission to use your location".tr);
+      ShowToastDialog.showToast(
+        "You have to allow location permission to use your location".tr,
+      );
     } else if (permission == LocationPermission.deniedForever) {
       showDialog(
         context: context,
@@ -417,7 +476,10 @@ class Constant {
     int crossings = 0;
     for (int i = 0; i < polygon.length; i++) {
       int next = (i + 1) % polygon.length;
-      if (polygon[i].latitude <= point.latitude && polygon[next].latitude > point.latitude || polygon[i].latitude > point.latitude && polygon[next].latitude <= point.latitude) {
+      if (polygon[i].latitude <= point.latitude &&
+              polygon[next].latitude > point.latitude ||
+          polygon[i].latitude > point.latitude &&
+              polygon[next].latitude <= point.latitude) {
         double edgeLong = polygon[next].longitude - polygon[i].longitude;
         double edgeLat = polygon[next].latitude - polygon[i].latitude;
         double interpol = (point.latitude - polygon[i].latitude) / edgeLat;
@@ -441,13 +503,21 @@ class Constant {
     allowInsecure: true,
   );
 
-  static Future<void> sendMail({String? subject, String? body, bool? isAdmin = false, List<dynamic>? recipients}) async {
+  static Future<void> sendMail({
+    String? subject,
+    String? body,
+    bool? isAdmin = false,
+    List<dynamic>? recipients,
+  }) async {
     // Create our message.
     if (isAdmin == true) {
       recipients!.add(mailSettings!.userName.toString());
     }
     final message = Message()
-      ..from = Address(mailSettings!.userName.toString(), mailSettings!.fromName.toString())
+      ..from = Address(
+        mailSettings!.userName.toString(),
+        mailSettings!.fromName.toString(),
+      )
       ..recipients = recipients!
       ..subject = subject
       ..text = body
@@ -477,7 +547,10 @@ class Constant {
     }
   }
 
-  Timestamp? addDayInTimestamp({required String? days, required Timestamp date}) {
+  Timestamp? addDayInTimestamp({
+    required String? days,
+    required Timestamp date,
+  }) {
     if (days?.isNotEmpty == true && days != '0') {
       Timestamp now = date;
       DateTime dateTime = now.toDate();
@@ -489,7 +562,10 @@ class Constant {
     }
   }
 
-  Future<bool> isImageAspectRatioByType({required String imagePath, required AspectRatioType type}) async {
+  Future<bool> isImageAspectRatioByType({
+    required String imagePath,
+    required AspectRatioType type,
+  }) async {
     final file = File(imagePath);
     final bytes = await file.readAsBytes();
     final codec = await ui.instantiateImageCodec(bytes);
@@ -499,7 +575,9 @@ class Constant {
     final aspectRatio = image.width / image.height;
     print("aspectRatio - 2.0).abs() :: ${((aspectRatio - 2.0).abs())}");
     // Allow a small margin for rounding differences
-    return type == AspectRatioType.square ? (aspectRatio - 1.0).abs() < 0.01 : (aspectRatio - 2.0).abs() < 0.05;
+    return type == AspectRatioType.square
+        ? (aspectRatio - 1.0).abs() < 0.01
+        : (aspectRatio - 2.0).abs() < 0.05;
   }
 
   Future<bool> isVideoLandscape({required String videoPath}) async {
@@ -517,7 +595,10 @@ class Constant {
   }
 
   static String getAdsStatus(AdvertisementModel adsModel) {
-    if ((adsModel.status == Constant.adsPending || adsModel.status == Constant.adsUpdated) && adsModel.isPaused != true && adsModel.endDate!.toDate().isAfter(DateTime.now())) {
+    if ((adsModel.status == Constant.adsPending ||
+            adsModel.status == Constant.adsUpdated) &&
+        adsModel.isPaused != true &&
+        adsModel.endDate!.toDate().isAfter(DateTime.now())) {
       return Constant.adsPending;
     } else if ((adsModel.status == Constant.adsApproved) &&
         adsModel.isPaused != true &&
@@ -527,7 +608,9 @@ class Constant {
       return Constant.adsRunning;
     } else if ((adsModel.status == Constant.adsApproved) &&
         adsModel.isPaused != true &&
-        (adsModel.paymentStatus == false || (adsModel.paymentStatus == true && adsModel.startDate!.toDate().isAfter(DateTime.now()))) &&
+        (adsModel.paymentStatus == false ||
+            (adsModel.paymentStatus == true &&
+                adsModel.startDate!.toDate().isAfter(DateTime.now()))) &&
         !adsModel.endDate!.toDate().isBefore(DateTime.now())) {
       return Constant.adsApproved;
     } else if (adsModel.status == Constant.adsCancel) {

@@ -122,6 +122,9 @@ class OrderModel {
     data['authorID'] = authorID;
     data['estimatedTimeToPrepare'] = estimatedTimeToPrepare;
     data['createdAt'] = createdAt;
+    // fromJson typo'li 'triggerDelevery' kalitini o'qiydi — yozishda ikkala
+    // kalitni ham qoldiramiz (back/forward compat).
+    data['triggerDelevery'] = triggerDelivery;
     data['triggerDelivery'] = triggerDelivery;
     if (taxSetting != null) {
       data['taxSetting'] = taxSetting!.map((v) => v.toJson()).toList();

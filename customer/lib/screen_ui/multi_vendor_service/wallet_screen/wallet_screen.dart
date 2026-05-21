@@ -14,7 +14,7 @@ import '../../../models/rental_order_model.dart';
 import '../../../service/fire_store_utils.dart';
 import '../../../themes/show_toast_dialog.dart';
 import '../../../widget/my_separator.dart';
-import '../../auth_screens/login_screen.dart';
+import '../../auth_screens/phone_registration_screen.dart';
 import '../../cab_service_screens/cab_order_details.dart';
 import '../../on_demand_service/on_demand_order_details_screen.dart';
 import '../../parcel_service/parcel_order_details.dart';
@@ -102,7 +102,7 @@ class WalletScreen extends StatelessWidget {
                           color: AppThemeData.primary300,
                           textColor: AppThemeData.grey50,
                           onPress: () async {
-                            Get.offAll(const LoginScreen());
+                            Get.offAll(const PhoneRegistrationScreen());
                           },
                         ),
                       ],
@@ -191,7 +191,7 @@ class WalletScreen extends StatelessWidget {
                                       color: AppThemeData.warning300,
                                       textColor: AppThemeData.grey900,
                                       onPress: () {
-                                        Get.to(const PaymentListScreen());
+                                        Get.to(() => const PaymentListScreen());
                                       },
                                     ),
                                   ),
@@ -201,27 +201,37 @@ class WalletScreen extends StatelessWidget {
                           ),
                         ),
                         Expanded(
-                          child:
-                              controller.walletTransactionList.isEmpty
-                                  ? Constant.showEmptyView(
-                                    message: "Transaction not found".tr,
-                                  )
-                                  : Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 10,
-                                    ),
-                                    child: ListView.builder(
-                                      padding: EdgeInsets.zero,
+                          child: RefreshIndicator(
+                            onRefresh: controller.getWalletTransaction,
+                            child:
+                                controller.walletTransactionList.isEmpty
+                                    ? LayoutBuilder(
+                                      builder: (ctx, constraints) {
+                                        return SingleChildScrollView(
+                                          physics: const AlwaysScrollableScrollPhysics(),
+                                          child: ConstrainedBox(
+                                            constraints: BoxConstraints(
+                                              minHeight: constraints.maxHeight,
+                                            ),
+                                            child: Constant.showEmptyView(
+                                              message: "Transaction not found".tr,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    )
+                                    : ListView.builder(
+                                      physics: const AlwaysScrollableScrollPhysics(),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                        vertical: 10,
+                                      ),
                                       itemCount:
-                                          controller
-                                              .walletTransactionList
-                                              .length,
+                                          controller.walletTransactionList.length,
                                       itemBuilder: (context, index) {
-                                        WalletTransactionModel
+                                        final WalletTransactionModel
                                         walletTractionModel =
-                                            controller
-                                                .walletTransactionList[index];
+                                            controller.walletTransactionList[index];
                                         return transactionCard(
                                           controller,
                                           isDark,
@@ -229,7 +239,7 @@ class WalletScreen extends StatelessWidget {
                                         );
                                       },
                                     ),
-                                  ),
+                          ),
                         ),
                       ],
                     ),
@@ -409,11 +419,8 @@ class WalletScreen extends StatelessWidget {
 enum PaymentGateway {
   payFast,
   mercadoPago,
-  paypal,
-  stripe,
   flutterWave,
   payStack,
-  razorpay,
   cod,
   wallet,
   midTrans,

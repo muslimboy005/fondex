@@ -8,6 +8,7 @@ import 'package:driver/models/parcel_order_model.dart';
 import 'package:driver/models/user_model.dart';
 import 'package:driver/models/wallet_transaction_model.dart';
 import 'package:driver/utils/fire_store_utils.dart';
+import 'package:driver/utils/force_update_helper.dart';
 import 'package:get/get.dart';
 
 class ParcelHomeController extends GetxController {
@@ -19,6 +20,12 @@ class ParcelHomeController extends GetxController {
     // TODO: implement onInit
     getParcelList();
     super.onInit();
+  }
+
+  @override
+  void onReady() {
+    super.onReady();
+    ForceUpdateHelper.checkAndShowIfNeeded();
   }
 
   Rx<UserModel> userModel = UserModel().obs;

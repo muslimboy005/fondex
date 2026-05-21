@@ -11,13 +11,10 @@ class Preferences {
   static const foodDeliveryType = "foodDeliveryType";
   static const payFastSettings = "payFastSettings";
   static const mercadoPago = "MercadoPago";
-  static const paypalSettings = "paypalSettings";
-  static const stripeSettings = "stripeSettings";
   static const flutterWave = "flutterWave";
   static const payStack = "payStack";
   static const paytmSettings = "PaytmSettings";
   static const walletSettings = "walletSettings";
-  static const razorpaySettings = "razorpaySettings";
   static const codSettings = "CODSettings";
   static const midTransSettings = "midTransSettings";
   static const orangeMoneySettings = "orangeMoneySettings";

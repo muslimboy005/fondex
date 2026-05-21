@@ -10,7 +10,7 @@ import 'package:customer/models/product_model.dart';
 import 'package:customer/models/user_model.dart';
 import 'package:customer/models/vendor_category_model.dart';
 import 'package:customer/models/vendor_model.dart';
-import 'package:customer/screen_ui/auth_screens/login_screen.dart';
+import 'package:customer/screen_ui/auth_screens/phone_registration_screen.dart';
 import 'package:customer/screen_ui/ecommarce/all_brand_product_screen.dart';
 import 'package:customer/screen_ui/ecommarce/all_category_product_screen.dart';
 import 'package:customer/screen_ui/location_enable_screens/address_list_screen.dart';
@@ -71,7 +71,7 @@ class HomeECommerceScreen extends StatelessWidget {
                 Constant.userModel == null
                     ? InkWell(
                       onTap: () {
-                        Get.offAll(const LoginScreen());
+                        Get.offAll(const PhoneRegistrationScreen());
                       },
                       child: Text(
                         "Login".tr,

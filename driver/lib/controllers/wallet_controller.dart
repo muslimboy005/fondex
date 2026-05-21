@@ -28,24 +28,19 @@ import 'package:driver/models/withdraw_method_model.dart';
 import 'package:driver/models/withdrawal_model.dart';
 import 'package:driver/payment/MercadoPagoScreen.dart';
 import 'package:driver/payment/PayFastScreen.dart';
-import 'package:driver/payment/PaymeScreen.dart';
 import 'package:driver/payment/midtrans_screen.dart';
 import 'package:driver/payment/orangePayScreen.dart';
 import 'package:driver/payment/paystack/pay_stack_screen.dart';
 import 'package:driver/payment/paystack/pay_stack_url_model.dart';
 import 'package:driver/payment/paystack/paystack_url_genrater.dart';
-import 'package:driver/payment/stripe_failed_model.dart';
 import 'package:driver/payment/xenditModel.dart';
 import 'package:driver/payment/xenditScreen.dart';
-import 'package:driver/themes/app_them_data.dart';
 import 'package:driver/utils/fire_store_utils.dart';
 import 'package:driver/utils/preferences.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_paypal/flutter_paypal.dart';
-import 'package:flutter_stripe/flutter_stripe.dart' as flutterStipe;
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
-import 'package:razorpay_flutter/razorpay_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:uuid/uuid.dart';
 
 class WalletController extends GetxController {
@@ -149,15 +144,7 @@ class WalletController extends GetxController {
       if (payme != null) paymeModel.value = payme;
     }
 
-    flutterStipe.Stripe.publishableKey =
-        stripeModel.value.clientpublishableKey.toString();
-    flutterStipe.Stripe.merchantIdentifier = 'eMart Driver';
-    flutterStipe.Stripe.instance.applySettings();
     setRef();
-
-    razorPay.on(Razorpay.EVENT_PAYMENT_SUCCESS, handlePaymentSuccess);
-    razorPay.on(Razorpay.EVENT_EXTERNAL_WALLET, handleExternalWaller);
-    razorPay.on(Razorpay.EVENT_PAYMENT_ERROR, handlePaymentError);
   }
 
   Future<void> getPaymentSettings() async {
@@ -539,127 +526,6 @@ class WalletController extends GetxController {
   //   );
   // }
 
-//Paypal
-  void paypalPaymentSheet(String amount, context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (BuildContext context) => UsePaypal(
-            sandboxMode: payPalModel.value.isLive == true ? false : true,
-            clientId: payPalModel.value.paypalClient ?? '',
-            secretKey: payPalModel.value.paypalSecret ?? '',
-            returnURL: "com.parkme://paypalpay",
-            cancelURL: "com.parkme://paypalpay",
-            transactions: [
-              {
-                "amount": {
-                  "total": amount,
-                  "currency": "USD",
-                  "details": {"subtotal": amount}
-                },
-              }
-            ],
-            note: "Contact us for any questions on your order.",
-            onSuccess: (Map params) async {
-              log("onSuccess: $params");
-              getWalletTransaction();
-              ShowToastDialog.showToast("Payment Successful!!".tr);
-            },
-            onError: (error) {
-              log("onError: $error");
-              Get.back();
-              ShowToastDialog.showToast("Payment UnSuccessful!!".tr);
-            },
-            onCancel: (params) {
-              log("onError: $params");
-              Get.back();
-              ShowToastDialog.showToast("Payment UnSuccessful!!".tr);
-            }),
-      ),
-    );
-  }
-
-  // Strip
-  Future<void> stripeMakePayment({required String amount}) async {
-    log(double.parse(amount).toStringAsFixed(0));
-    try {
-      Map<String, dynamic>? paymentIntentData =
-          await createStripeIntent(amount: amount);
-      log("stripe Responce====>$paymentIntentData");
-      if (paymentIntentData!.containsKey("error")) {
-        Get.back();
-        ShowToastDialog.showToast(
-            "Something went wrong, please contact admin.".tr);
-      } else {
-        await flutterStipe.Stripe.instance.initPaymentSheet(
-            paymentSheetParameters: flutterStipe.SetupPaymentSheetParameters(
-                paymentIntentClientSecret: paymentIntentData['client_secret'],
-                allowsDelayedPaymentMethods: false,
-                googlePay: const flutterStipe.PaymentSheetGooglePay(
-                  merchantCountryCode: 'US',
-                  testEnv: true,
-                  currencyCode: "USD",
-                ),
-                customFlow: true,
-                style: ThemeMode.system,
-                appearance: flutterStipe.PaymentSheetAppearance(
-                  colors: flutterStipe.PaymentSheetAppearanceColors(
-                    primary: AppThemeData.primary300,
-                  ),
-                ),
-                merchantDisplayName: 'GoRide'));
-        displayStripePaymentSheet(amount: amount);
-      }
-    } catch (e, s) {
-      log("$e \n$s");
-      ShowToastDialog.showToast("${'Exception'.tr}: $e \n$s");
-    }
-  }
-
-  Future<void> displayStripePaymentSheet({required String amount}) async {
-    try {
-      await flutterStipe.Stripe.instance.presentPaymentSheet().then((value) {
-        ShowToastDialog.showToast("Payment successfully".tr);
-        walletTopUp();
-      });
-    } on flutterStipe.StripeException catch (e) {
-      var lo1 = jsonEncode(e);
-      var lo2 = jsonDecode(lo1);
-      StripePayFailedModel lom = StripePayFailedModel.fromJson(lo2);
-      ShowToastDialog.showToast(lom.error.message);
-    } catch (e) {
-      ShowToastDialog.showToast(e.toString());
-    }
-  }
-
-  Future createStripeIntent({required String amount}) async {
-    try {
-      Map<String, dynamic> body = {
-        'amount': ((double.parse(amount) * 100).round()).toString(),
-        'currency': "USD",
-        'payment_method_types[]': 'card',
-        "description": "Strip Payment",
-        "shipping[name]": userModel.value.fullName(),
-        "shipping[address][line1]": "510 Townsend St",
-        "shipping[address][postal_code]": "98140",
-        "shipping[address][city]": "San Francisco",
-        "shipping[address][state]": "CA",
-        "shipping[address][country]": "US",
-      };
-      var stripeSecret = stripeModel.value.stripeSecret;
-      var response = await http.post(
-          Uri.parse('https://api.stripe.com/v1/payment_intents'),
-          body: body,
-          headers: {
-            'Authorization': 'Bearer $stripeSecret',
-            'Content-Type': 'application/x-www-form-urlencoded'
-          });
-
-      return jsonDecode(response.body);
-    } catch (e) {
-      log(e.toString());
-    }
-  }
-
   //mercadoo
   Future<Null> mercadoPagoMakePayment(
       {required BuildContext context, required String amount}) async {
@@ -821,51 +687,6 @@ class WalletController extends GetxController {
         ShowToastDialog.showToast("Payment Failed".tr);
       }
     });
-  }
-
-  ///RazorPay payment function
-  final Razorpay razorPay = Razorpay();
-
-  void openCheckout({required amount, required orderId}) async {
-    var options = {
-      'key': razorPayModel.value.razorpayKey,
-      'amount': amount * 100,
-      'name': 'GoRide',
-      'order_id': orderId,
-      "currency": "INR",
-      'description': 'wallet Topup',
-      'retry': {'enabled': true, 'max_count': 1},
-      'send_sms_hash': true,
-      'prefill': {
-        'contact': userModel.value.phoneNumber,
-        'email': userModel.value.email,
-      },
-      'external': {
-        'wallets': ['paytm']
-      }
-    };
-
-    try {
-      razorPay.open(options);
-    } catch (e) {
-      debugPrint('Error: $e');
-    }
-  }
-
-  void handlePaymentSuccess(PaymentSuccessResponse response) {
-    Get.back();
-    ShowToastDialog.showToast("Payment Successful!!".tr);
-    walletTopUp();
-  }
-
-  void handleExternalWaller(ExternalWalletResponse response) {
-    Get.back();
-    ShowToastDialog.showToast("Payment Processing!! via".tr);
-  }
-
-  void handlePaymentError(PaymentFailureResponse response) {
-    Get.back();
-    ShowToastDialog.showToast("Payment Failed!!".tr);
   }
 
   //Midtrans payment
@@ -1130,7 +951,7 @@ class WalletController extends GetxController {
       log('🔵 [PaymePayment] Loader ko\'rsatildi');
 
       final url =
-          Uri.parse('https://emart-web.felix-its.uz/wallet-payme-link/');
+          Uri.parse('https://web.fondex.uz/wallet-payme-link/');
       final phoneNumber = '+998${userModel.value.phoneNumber}';
       final amountInt = double.parse(amount).ceil().toInt();
 
@@ -1140,10 +961,7 @@ class WalletController extends GetxController {
         'User-Agent':
             'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
       };
-      final body = jsonEncode({
-        'phone': phoneNumber,
-        'amount': amountInt,
-      });
+      final body = jsonEncode({'phone': phoneNumber, 'amount': amountInt});
 
       log('🔵 [PaymePayment] Request URL: $url');
       log('🔵 [PaymePayment] Request Headers: $headers');
@@ -1182,47 +1000,21 @@ class WalletController extends GetxController {
           log('🔵 [PaymePayment] data[status]: ${data['status']}, data[link]: ${data['link']}');
 
           if (data['status'] == true && data['link'] != null) {
-            final orderId = data['order_id'];
             final link = data['link'];
 
             log('✅ [PaymePayment] Payment link olingan: $link');
-            log('✅ [PaymePayment] order_id: $orderId');
-            log('🔵 [PaymePayment] PaymeScreen ochilmoqda...');
+            log('🔵 [PaymePayment] Tashqi brauzerda ochilmoqda...');
 
-            Get.to(() => PaymeScreen(initialURl: link, orderId: orderId))!
-                .then((result) async {
-              log('🔵 [PaymePayment] PaymeScreen yopildi, result: $result');
-
-              if (result != null && result is Map) {
-                final isPaid = result['is_paid'] ?? false;
-                final resultOrderId = result['order_id'];
-                final resultAmount = result['amount'];
-                final resultUserId = result['user_id'];
-
-                log('🔵 [PaymePayment] Payment result received');
-                log('🔵 [PaymePayment] is_paid: $isPaid');
-                log('🔵 [PaymePayment] order_id: $resultOrderId');
-                log('🔵 [PaymePayment] amount: $resultAmount');
-                log('🔵 [PaymePayment] user_id: $resultUserId');
-
-                if (isPaid == true) {
-                  log('✅ [PaymePayment] To\'lov tasdiqlandi, Firestore ga qo\'shilmoqda');
-                  // Push to Firestore wallet collection
-                  await _addPaymeWalletTransaction(
-                    orderId: resultOrderId?.toString() ?? '',
-                    amount: resultAmount?.toString() ?? amount,
-                  );
-                  log('✅ [PaymePayment] Wallet transaction muvaffaqiyatli qo\'shildi');
-                  ShowToastDialog.showToast("Payment Successful!!".tr);
-                } else {
-                  log('❌ [PaymePayment] To\'lov muvaffaqiyatsiz, is_paid: $isPaid');
-                  ShowToastDialog.showToast("Payment Unsuccessful!!".tr);
-                }
-              } else {
-                log('❌ [PaymePayment] Invalid result from PaymeScreen: $result');
-                ShowToastDialog.showToast("Payment Unsuccessful!!".tr);
-              }
-            });
+            final uri = Uri.parse(link.toString());
+            final launched = await launchUrl(
+              uri,
+              mode: LaunchMode.externalApplication,
+            );
+            if (launched) {
+              ShowToastDialog.showToast("Payme opens in your browser".tr);
+            } else {
+              ShowToastDialog.showToast("Could not open Payme link".tr);
+            }
           } else {
             log('❌ [PaymePayment] Invalid response data: status=${data['status']}, link=${data['link']}');
             ShowToastDialog.showToast("Failed to get payment link".tr);
@@ -1247,69 +1039,5 @@ class WalletController extends GetxController {
       ShowToastDialog.showToast("${'Payment error'.tr}: ${e.toString()}");
     }
     log('🔵 [PaymePayment] ========== paymeMakePayment tugadi ==========');
-  }
-
-  Future<void> _addPaymeWalletTransaction({
-    required String orderId,
-    required String amount,
-  }) async {
-    log('🔵 [PaymePayment] _addPaymeWalletTransaction - Boshlandi');
-    log('🔵 [PaymePayment] orderId: $orderId');
-    log('🔵 [PaymePayment] amount: $amount');
-
-    try {
-      final transactionId = Constant.getUuid();
-      final driverId = FireStoreUtils.getCurrentUid();
-      final transactionAmount = double.parse(amount);
-
-      log('🔵 [PaymePayment] WalletTransactionModel yaratilmoqda');
-      log('🔵 [PaymePayment] transactionId: $transactionId');
-      log('🔵 [PaymePayment] driverId: $driverId');
-      log('🔵 [PaymePayment] transactionAmount: $transactionAmount');
-
-      WalletTransactionModel transactionModel = WalletTransactionModel(
-        id: transactionId,
-        amount: transactionAmount,
-        date: Timestamp.now(),
-        paymentMethod: "Payme",
-        transactionUser: "driver",
-        userId: driverId,
-        isTopup: true,
-        note: "Wallet Top-up via Payme",
-        paymentStatus: "success",
-        orderId: orderId,
-      );
-
-      log('🔵 [PaymePayment] Transaction model yaratildi, Firestore ga qo\'shilmoqda...');
-
-      await FireStoreUtils.setWalletTransaction(transactionModel)
-          .then((value) async {
-        log('🔵 [PaymePayment] setWalletTransaction result: $value');
-
-        if (value == true) {
-          log('✅ [PaymePayment] Wallet transaction Firestore ga muvaffaqiyatli qo\'shildi');
-          log('🔵 [PaymePayment] Driver wallet balansini yangilash...');
-
-          await FireStoreUtils.updateUserWallet(
-            amount: amount,
-            userId: driverId,
-          ).then((value) {
-            log('✅ [PaymePayment] Driver wallet balansi yangilandi: $value');
-            log('🔵 [PaymePayment] Wallet transaction ro\'yxatini yangilash...');
-            getWalletTransaction();
-            log('✅ [PaymePayment] Wallet transaction ro\'yxati yangilandi');
-          }).catchError((error) {
-            log('❌ [PaymePayment] Driver wallet yangilash xatosi: $error');
-          });
-        } else {
-          log('❌ [PaymePayment] Wallet transaction Firestore ga qo\'shilmadi');
-        }
-      }).catchError((error) {
-        log('❌ [PaymePayment] setWalletTransaction xatosi: $error');
-      });
-    } catch (e, stackTrace) {
-      log('❌ [PaymePayment] _addPaymeWalletTransaction Exception: $e');
-      log('❌ [PaymePayment] Stack trace: $stackTrace');
-    }
   }
 }

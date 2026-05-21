@@ -54,6 +54,12 @@ class CabOrderModel {
   double? cabIncludedKm;
   double? cabExtraKmFare;
 
+  // Lifecycle / hardening fields
+  Timestamp? acceptedAt;
+  Timestamp? driverActiveAt;
+  Timestamp? customerArrivedAt;
+  bool? customerConfirmedArrival;
+
   CabOrderModel({
     this.status,
     this.rejectedByDrivers,
@@ -101,6 +107,10 @@ class CabOrderModel {
     this.extraCharge,
     this.cabIncludedKm,
     this.cabExtraKmFare,
+    this.acceptedAt,
+    this.driverActiveAt,
+    this.customerArrivedAt,
+    this.customerConfirmedArrival,
   });
 
   CabOrderModel.fromJson(Map<String, dynamic> json) {
@@ -155,6 +165,10 @@ class CabOrderModel {
     extraCharge = (json['extraCharge'] is num) ? (json['extraCharge'] as num).toDouble() : null;
     cabIncludedKm = _safeDouble(json['cabIncludedKm']);
     cabExtraKmFare = _safeDouble(json['cabExtraKmFare']);
+    acceptedAt = json['acceptedAt'] is Timestamp ? json['acceptedAt'] as Timestamp : null;
+    driverActiveAt = json['driverActiveAt'] is Timestamp ? json['driverActiveAt'] as Timestamp : null;
+    customerArrivedAt = json['customerArrivedAt'] is Timestamp ? json['customerArrivedAt'] as Timestamp : null;
+    customerConfirmedArrival = json['customerConfirmedArrival'] is bool ? json['customerConfirmedArrival'] as bool : null;
   }
 
   /// NaN yoki noto'g'ri qiymat bo'lsa null (keyin vehicleType dan olinadi)
@@ -233,6 +247,10 @@ class CabOrderModel {
     if (extraCharge != null) data['extraCharge'] = extraCharge;
     if (cabIncludedKm != null) data['cabIncludedKm'] = cabIncludedKm;
     if (cabExtraKmFare != null) data['cabExtraKmFare'] = cabExtraKmFare;
+    if (acceptedAt != null) data['acceptedAt'] = acceptedAt;
+    if (driverActiveAt != null) data['driverActiveAt'] = driverActiveAt;
+    if (customerArrivedAt != null) data['customerArrivedAt'] = customerArrivedAt;
+    if (customerConfirmedArrival != null) data['customerConfirmedArrival'] = customerConfirmedArrival;
     return data;
   }
 }

@@ -6,6 +6,7 @@ import 'package:driver/models/order_model.dart';
 import 'package:driver/models/user_model.dart';
 import 'package:driver/services/audio_player_service.dart';
 import 'package:driver/utils/fire_store_utils.dart';
+import 'package:driver/utils/force_update_helper.dart';
 import 'package:get/get.dart';
 
 class HomeScreenMultipleOrderController extends GetxController {
@@ -21,6 +22,12 @@ class HomeScreenMultipleOrderController extends GetxController {
     // TODO: implement onInt
     getDriver();
     super.onInit();
+  }
+
+  @override
+  void onReady() {
+    super.onReady();
+    ForceUpdateHelper.checkAndShowIfNeeded();
   }
 
   Future<void> getDriver() async {
@@ -52,8 +59,14 @@ class HomeScreenMultipleOrderController extends GetxController {
           }
 
           if (newOrder.isNotEmpty) {
-            if (driverModel.value.vendorID?.isEmpty == true) {
+            // Yangi orderlardan birortasi inProgress da bo'lmagan bo'lsa
+            // (ya'ni hali qabul qilinmagan) ovoz chaladi.
+            final hasPendingOnly = newOrder.any((id) =>
+                !(driverModel.value.inProgressOrderID?.contains(id) ?? false));
+            if (hasPendingOnly && driverModel.value.vendorID?.isEmpty == true) {
               await AudioPlayerService.playSound(true);
+            } else {
+              await AudioPlayerService.playSound(false);
             }
           }
         }
@@ -64,7 +77,7 @@ class HomeScreenMultipleOrderController extends GetxController {
   }
 
   Future<void> acceptOrder(OrderModel currentOrder) async {
-    await AudioPlayerService.playSound(false);
+    await AudioPlayerService.stopAll();
     ShowToastDialog.showLoader("Please wait".tr);
     driverModel.value.inProgressOrderID ?? [];
     driverModel.value.orderRequestData!.remove(currentOrder.id);
@@ -85,7 +98,7 @@ class HomeScreenMultipleOrderController extends GetxController {
   }
 
   Future<void> rejectOrder(OrderModel currentOrder) async {
-    await AudioPlayerService.playSound(false);
+    await AudioPlayerService.stopAll();
     currentOrder.rejectedByDrivers ??= [];
 
     currentOrder.rejectedByDrivers!.add(driverModel.value.id);

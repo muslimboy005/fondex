@@ -10,7 +10,7 @@ import '../../models/provider_serivce_model.dart';
 import '../../controllers/on_demand_details_controller.dart';
 import '../../themes/app_them_data.dart';
 import '../../themes/round_button_fill.dart';
-import '../auth_screens/login_screen.dart';
+import '../auth_screens/phone_registration_screen.dart';
 import 'on_demand_booking_screen.dart';
 
 class OnDemandDetailsScreen extends StatelessWidget {
@@ -40,7 +40,7 @@ class OnDemandDetailsScreen extends StatelessWidget {
                           textColor: AppThemeData.grey50,
                           onPress: () async {
                             if (Constant.userModel == null) {
-                              Get.offAll(const LoginScreen());
+                              Get.offAll(const PhoneRegistrationScreen());
                             } else {
                               print("providerModel ::::::::${controller.provider.title ?? 'No provider'}");
                               print("categoryTitle ::::::: ${controller.categoryTitle.value}");

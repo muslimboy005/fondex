@@ -50,7 +50,7 @@ class PhoneRegistrationController extends GetxController {
       };
 
       log("🌐 API Request:");
-      log("URL: https://emart-web.felix-its.uz/newRegister");
+      log("URL: https://web.fondex.uz/newRegister");
       log("Full Phone: $fullPhoneNumber");
       log("Request Body: ${jsonEncode(requestBody)}");
 
@@ -65,7 +65,7 @@ class PhoneRegistrationController extends GetxController {
       };
 
       final request = await httpClient.postUrl(
-        Uri.parse('https://emart-web.felix-its.uz/newRegister'),
+        Uri.parse('https://web.fondex.uz/newRegister'),
       );
       
       request.headers.set('Content-Type', 'application/json');

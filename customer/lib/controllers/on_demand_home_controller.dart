@@ -2,7 +2,7 @@ import 'package:customer/models/banner_model.dart';
 import 'package:customer/models/category_model.dart';
 import 'package:customer/models/favorite_ondemand_service_model.dart';
 import 'package:customer/models/provider_serivce_model.dart';
-import 'package:customer/screen_ui/auth_screens/login_screen.dart';
+import 'package:customer/screen_ui/auth_screens/phone_registration_screen.dart';
 import 'package:customer/service/fire_store_utils.dart';
 import 'package:get/get.dart';
 import 'package:customer/models/lat_lng.dart';
@@ -98,7 +98,7 @@ class OnDemandHomeController extends GetxController {
 
   void toggleFavourite(ProviderServiceModel provider) {
     if (Constant.userModel == null) {
-      Get.to(LoginScreen());
+      Get.to(() => const PhoneRegistrationScreen());
     } else {
       var contain = lstFav.where((element) => element.service_id == provider.id);
       if (contain.isNotEmpty) {

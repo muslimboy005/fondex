@@ -135,6 +135,9 @@ const Map<String, String> ruRU = {
   "Delete Story": "Удалить историю",
   "Deleting this ad will remove it permanently. Are you sure you want to proceed?":
       "Deleting this ad will remove it permanently. Are you sure you want to proceed?",
+  "Confirm product deletion": "Подтвердить удаление продукта",
+  "Deleting this product will remove it permanently. Are you sure you want to proceed?":
+      "Вы уверены, что хотите удалить этот продукт?",
   "Deliver to door": "Доставка до двери",
   "Delivered": "Доставлено",
   "Delivery Charge:": "Доставка:",
@@ -381,6 +384,7 @@ const Map<String, String> ruRU = {
       "No internet connection. Please check your network.",
   "No user found": "No user found",
   "No user found for that email.": "No user found for that email.",
+  "User not found in Firebase.": "Пользователь не найден в Firebase.",
   "No worries!! We'll send you reset instructions": "Мы отправим инструкции для сброса пароля",
   "No worries!! We’ll send you reset instructions":
       "No worries!! We’ll send you reset instructions",
@@ -915,4 +919,8 @@ const Map<String, String> ruRU = {
   "video": "видео",
   "with Apple": "через Apple",
   "with Google": "через Google",
+  "New version is available": "Доступна новая версия",
+  "Please update the app to continue":
+      "Пожалуйста, обновите приложение для продолжения",
+  "Update": "Обновить",
 };

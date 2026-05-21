@@ -25,25 +25,41 @@ import '../cart_screen/cart_screen.dart';
 import '../dine_in_screeen/dine_in_details_screen.dart';
 import '../product_detail_screen/product_detail_screen.dart';
 import '../review_list_screen/review_list_screen.dart';
+import 'category_product_list_screen.dart';
 
-class RestaurantDetailsScreen extends StatelessWidget {
+class RestaurantDetailsScreen extends StatefulWidget {
   const RestaurantDetailsScreen({super.key});
+
+  @override
+  State<RestaurantDetailsScreen> createState() =>
+      _RestaurantDetailsScreenState();
+}
+
+class _RestaurantDetailsScreenState extends State<RestaurantDetailsScreen> {
+  /// Unique per route instance so stacked same-vendor screens do not share one controller.
+  late final String _controllerTag;
+
+  @override
+  void initState() {
+    super.initState();
+    _controllerTag = 'rd_${identityHashCode(this)}';
+  }
 
   @override
   Widget build(BuildContext context) {
     final themeController = Get.find<ThemeController>();
     final isDark = themeController.isDark.value;
-    return GetX(
+    return GetX<RestaurantDetailsController>(
+      tag: _controllerTag,
       init: RestaurantDetailsController(),
-      autoRemove: false,
-      builder: (controller) {
+      builder: (RestaurantDetailsController controller) {
         return Scaffold(
           bottomNavigationBar:
               cartItem.isEmpty
                   ? null
                   : InkWell(
                     onTap: () {
-                      Get.to(const CartScreen());
+                      Get.to(() => const CartScreen());
                     },
                     child: Container(
                       height: 60,
@@ -264,13 +280,14 @@ class RestaurantDetailsScreen extends StatelessWidget {
                             controller: controller.pageController.value,
                             scrollDirection: Axis.horizontal,
                             itemCount:
-                                controller.vendorModel.value.photos!.length,
+                                controller.vendorModel.value.photos?.length ??
+                                0,
                             padEnds: false,
                             pageSnapping: true,
-                            allowImplicitScrolling: true,
                             itemBuilder: (BuildContext context, int index) {
                               String image =
-                                  controller.vendorModel.value.photos![index];
+                                  (controller.vendorModel.value.photos ??
+                                      const <dynamic>[])[index];
                               return Stack(
                                 children: [
                                   NetworkImageWidget(
@@ -303,7 +320,7 @@ class RestaurantDetailsScreen extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: List.generate(
-                            controller.vendorModel.value.photos!.length,
+                            controller.vendorModel.value.photos?.length ?? 0,
                             (index) {
                               return Obx(
                                 () => Container(
@@ -767,6 +784,10 @@ class RestaurantDetailsScreen extends StatelessWidget {
                                             controller
                                                 .selectedCategoryIndex
                                                 .value = index;
+                                            // Ensure this specific category is fully loaded
+                                            controller.fetchCategoryProducts(
+                                              category.id.toString(),
+                                            );
                                             controller.scrollToCategory(
                                               category.id.toString(),
                                             );
@@ -852,7 +873,7 @@ class RestaurantDetailsScreen extends StatelessWidget {
                 ),
               // Products Grid (lazy-loaded to avoid building 291+ items at once)
               if (!controller.isLoading.value)
-                ProductListView.buildLazySliver(controller),
+                ProductListView.buildLazySliver(controller, _controllerTag),
             ],
           ),
           // floatingActionButton: PopupMenuButton(
@@ -994,7 +1015,7 @@ class RestaurantDetailsScreen extends StatelessWidget {
                                   productModel
                                       .vendorModel
                                       .value
-                                    .workingHours![dayIndex];
+                                      .workingHours![dayIndex];
                               return Padding(
                                 padding: const EdgeInsets.symmetric(
                                   vertical: 10,
@@ -1292,22 +1313,34 @@ class CouponListView extends StatelessWidget {
 
 class ProductListView extends StatelessWidget {
   final RestaurantDetailsController controller;
+  /// Must match [RestaurantDetailsScreen] GetX tag when using product cards / bottom sheet.
+  final String controllerTag;
 
-  const ProductListView({super.key, required this.controller});
+  const ProductListView({
+    super.key,
+    required this.controller,
+    this.controllerTag = '',
+  });
 
   /// Lazy sliver: only visible category headers and product rows are built (fixes crash with 291+ products).
-  static Widget buildLazySliver(RestaurantDetailsController controller) {
+  static Widget buildLazySliver(
+    RestaurantDetailsController controller,
+    String controllerTag,
+  ) {
     return SliverPadding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       sliver: SliverList(
-        delegate: SliverChildBuilderDelegate(
-          (context, index) {
-            final themeController = Get.find<ThemeController>();
-            final isDark = themeController.isDark.value;
-            return _buildSliverItem(context, index, controller, isDark);
-          },
-          childCount: _computeTotalListItems(controller),
-        ),
+        delegate: SliverChildBuilderDelegate((context, index) {
+          final themeController = Get.find<ThemeController>();
+          final isDark = themeController.isDark.value;
+          return _buildSliverItem(
+            context,
+            index,
+            controller,
+            isDark,
+            controllerTag,
+          );
+        }, childCount: _computeTotalListItems(controller)),
       ),
     );
   }
@@ -1319,9 +1352,9 @@ class ProductListView extends StatelessWidget {
       final cat = categories[c];
       final products = _getProductsForCategory(controller, cat);
       if (products.isEmpty) continue;
-      total += 1; // header
-      total += (products.length + 1) ~/ 2; // rows of 2 products
+      total += 1; // Each category is now a single item in the SliverList
     }
+    if (controller.hasMoreProducts.value) total += 1; // bottom loader slot
     return total;
   }
 
@@ -1331,12 +1364,20 @@ class ProductListView extends StatelessWidget {
   ) {
     if (cat.id == RestaurantDetailsController.uncategorizedCategoryId) {
       return controller.productList
-          .where((p0) => !controller.vendorCategoryList.any((c) =>
-              c.id != RestaurantDetailsController.uncategorizedCategoryId &&
-              c.id == p0.categoryID))
+          .toList()
+          .where(
+            (p0) =>
+                !controller.vendorCategoryList.toList().any(
+                  (c) =>
+                      c.id !=
+                          RestaurantDetailsController.uncategorizedCategoryId &&
+                      c.id == p0.categoryID,
+                ),
+          )
           .toList();
     }
     return controller.productList
+        .toList()
         .where((p0) => p0.categoryID == cat.id)
         .toList();
   }
@@ -1346,78 +1387,122 @@ class ProductListView extends StatelessWidget {
     int index,
     RestaurantDetailsController controller,
     bool isDark,
+    String controllerTag,
   ) {
     final categories = controller.vendorCategoryList;
+    int contentCount = 0;
+    for (int c = 0; c < categories.length; c++) {
+      final cat = categories[c];
+      final products = _getProductsForCategory(controller, cat);
+      if (products.isEmpty) continue;
+      contentCount += 1;
+    }
+
+    if (index >= contentCount && controller.hasMoreProducts.value) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 24),
+        child: Center(
+          child:
+              controller.isLoadingMore.value
+                  ? const SizedBox(
+                    height: 32,
+                    width: 32,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                  : const SizedBox.shrink(),
+        ),
+      );
+    }
+
     int current = 0;
     for (int c = 0; c < categories.length; c++) {
       final cat = categories[c];
       final products = _getProductsForCategory(controller, cat);
       if (products.isEmpty) continue;
+
       if (index == current) {
         if (!controller.categoryKeys.containsKey(cat.id.toString())) {
           controller.categoryKeys[cat.id.toString()] = GlobalKey();
         }
         final key = controller.categoryKeys[cat.id.toString()]!;
-        return Padding(
+
+        return Column(
           key: key,
-          padding: const EdgeInsets.only(top: 24, bottom: 16),
-          child: Text(
-            "${cat.title} (${products.length})",
-            style: TextStyle(
-              fontSize: 20,
-              fontFamily: AppThemeData.semiBold,
-              fontWeight: FontWeight.w600,
-              color: isDark ? AppThemeData.grey50 : AppThemeData.grey900,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Header Row: Category Name + Barchasi button
+            Padding(
+              padding: const EdgeInsets.only(top: 24, bottom: 16),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      cat.title ?? '',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontFamily: AppThemeData.semiBold,
+                        fontWeight: FontWeight.w600,
+                        color:
+                            isDark ? AppThemeData.grey50 : AppThemeData.grey900,
+                      ),
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () {
+                      Get.to(
+                        () => const CategoryProductListScreen(),
+                        arguments: {
+                          'vendorId':
+                              controller.vendorModel.value.id?.toString() ?? '',
+                          'categoryId': cat.id.toString(),
+                          'categoryName': cat.title ?? '',
+                          'sectionId':
+                              controller.vendorModel.value.sectionId
+                                  ?.toString() ??
+                              '',
+                          'restaurantDetailsTag': controllerTag,
+                        },
+                      );
+                    },
+                    child: Text(
+                      "Barchasi".tr,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontFamily: AppThemeData.medium,
+                        color: AppThemeData.primary300,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
+            // Horizontal Product List
+            SizedBox(
+              height: 260, // Adjusted height for product card
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: products.length > 5 ? 5 : products.length,
+                padding: EdgeInsets.zero,
+                itemBuilder: (context, pIndex) {
+                  return Container(
+                    width: MediaQuery.of(context).size.width * 0.45,
+                    margin: const EdgeInsets.only(right: 12),
+                    child: buildProductCard(
+                      context: context,
+                      controller: controller,
+                      controllerTag: controllerTag,
+                      productModel: products[pIndex],
+                      isDark: isDark,
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
         );
       }
       current += 1;
-      final rowCount = (products.length + 1) ~/ 2;
-      for (int r = 0; r < rowCount; r++) {
-        if (index == current) {
-          final i1 = r * 2;
-          final i2 = r * 2 + 1;
-          final p1 = products[i1];
-          final p2 = i2 < products.length ? products[i2] : null;
-          // Fixed height so Column+Expanded inside card gets bounded constraints (SliverList gives unbounded height).
-          const double cardHeight = 280;
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: SizedBox(
-                    height: cardHeight,
-                    child: _buildProductGridCard(
-                      context,
-                      p1,
-                      controller,
-                      isDark,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: p2 != null
-                      ? SizedBox(
-                          height: cardHeight,
-                          child: _buildProductGridCard(
-                            context,
-                            p2,
-                            controller,
-                            isDark,
-                          ),
-                        )
-                      : const SizedBox.shrink(),
-                ),
-              ],
-            ),
-          );
-        }
-        current += 1;
-      }
     }
     return const SizedBox.shrink();
   }
@@ -1448,8 +1533,10 @@ class ProductListView extends StatelessWidget {
             VendorCategoryModel vendorCategoryModel =
                 controller.vendorCategoryList[categoryIndex];
 
-            final categoryProducts =
-                _getProductsForCategory(controller, vendorCategoryModel);
+            final categoryProducts = _getProductsForCategory(
+              controller,
+              vendorCategoryModel,
+            );
 
             if (categoryProducts.isEmpty) {
               return const SizedBox.shrink();
@@ -1490,16 +1577,17 @@ class ProductListView extends StatelessWidget {
                     crossAxisCount: 2,
                     crossAxisSpacing: 12,
                     mainAxisSpacing: 12,
-                    childAspectRatio: 0.62,
+                    childAspectRatio: 0.66,
                   ),
                   itemCount: categoryProducts.length,
                   itemBuilder: (context, index) {
                     ProductModel productModel = categoryProducts[index];
-                    return _buildProductGridCard(
-                      context,
-                      productModel,
-                      controller,
-                      isDark,
+                    return buildProductCard(
+                      context: context,
+                      controller: controller,
+                      controllerTag: controllerTag,
+                      productModel: productModel,
+                      isDark: isDark,
                     );
                   },
                 ),
@@ -1511,12 +1599,13 @@ class ProductListView extends StatelessWidget {
     );
   }
 
-  static Widget _buildProductGridCard(
-    BuildContext context,
-    ProductModel productModel,
-    RestaurantDetailsController controller,
-    bool isDark,
-  ) {
+  static Widget buildProductCard({
+    required BuildContext context,
+    required RestaurantDetailsController controller,
+    required String controllerTag,
+    required ProductModel productModel,
+    required bool isDark,
+  }) {
     // Calculate price
     String price = "0.0";
     String disPrice = "0.0";
@@ -1603,7 +1692,7 @@ class ProductListView extends StatelessWidget {
                   child: NetworkImageWidget(
                     imageUrl: productModel.photo.toString(),
                     fit: BoxFit.cover,
-                    height: 130,
+                    height: 128,
                     width: double.infinity,
                     memCacheWidth: 300,
                     memCacheHeight: 260,
@@ -1611,7 +1700,7 @@ class ProductListView extends StatelessWidget {
                 ),
                 // Gradient overlay
                 Container(
-                  height: 130,
+                  height: 128,
                   decoration: BoxDecoration(
                     borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(16),
@@ -1627,6 +1716,32 @@ class ProductListView extends StatelessWidget {
                     ),
                   ),
                 ),
+                // Discounted Original Price overlay (Bottom Left)
+                if (double.parse(disPrice) > 0)
+                  Positioned(
+                    left: 8,
+                    bottom: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        Constant.amountShow(amount: price),
+                        style: const TextStyle(
+                          fontSize: 11,
+                          decoration: TextDecoration.lineThrough,
+                          decorationColor: Colors.red,
+                          color: Colors.red,
+                          fontFamily: AppThemeData.regular,
+                        ),
+                      ),
+                    ),
+                  ),
                 // Like button
                 Positioned(
                   right: 8,
@@ -1696,136 +1811,105 @@ class ProductListView extends StatelessWidget {
               ],
             ),
             // Product Info
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(8),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Flexible(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+            Padding(
+              padding: const EdgeInsets.fromLTRB(8, 5, 8, 6),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Product Name & Rating Column
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Product Name
+                      SizedBox(
+                        height: 34,
+                        child: Text(
+                          productModel.name.toString(),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontFamily: AppThemeData.semiBold,
+                            fontWeight: FontWeight.w600,
+                            color:
+                                isDark
+                                    ? AppThemeData.grey50
+                                    : AppThemeData.grey900,
+                            height: 1.2,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      // Rating
+                      Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          // Product Name
-                          Text(
-                            productModel.name.toString(),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontFamily: AppThemeData.semiBold,
-                              fontWeight: FontWeight.w600,
-                              color:
-                                  isDark
-                                      ? AppThemeData.grey50
-                                      : AppThemeData.grey900,
-                              height: 1.3,
+                          SvgPicture.asset(
+                            "assets/icons/ic_star.svg",
+                            width: 10,
+                            height: 10,
+                            colorFilter: const ColorFilter.mode(
+                              AppThemeData.warning300,
+                              BlendMode.srcIn,
                             ),
                           ),
-                          const SizedBox(height: 3),
-                          // Rating
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              SvgPicture.asset(
-                                "assets/icons/ic_star.svg",
-                                width: 12,
-                                height: 12,
-                                colorFilter: const ColorFilter.mode(
-                                  AppThemeData.warning300,
-                                  BlendMode.srcIn,
-                                ),
-                              ),
-                              const SizedBox(width: 3),
-                              Flexible(
-                                child: Text(
-                                  "${Constant.calculateReview(reviewCount: productModel.reviewsCount!.toStringAsFixed(0), reviewSum: productModel.reviewsSum.toString())} (${productModel.reviewsCount!.toStringAsFixed(0)})",
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontFamily: AppThemeData.regular,
-                                    color:
-                                        isDark
-                                            ? AppThemeData.grey400
-                                            : AppThemeData.grey600,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    // Price and Add button
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // Price
-                        double.parse(disPrice) <= 0
-                            ? Text(
-                              Constant.amountShow(amount: price),
+                          const SizedBox(width: 3),
+                          Flexible(
+                            child: Text(
+                              "${Constant.calculateReview(reviewCount: productModel.reviewsCount!.toStringAsFixed(0), reviewSum: productModel.reviewsSum.toString())} (${productModel.reviewsCount!.toStringAsFixed(0)})",
                               style: TextStyle(
-                                fontSize: 15,
-                                fontFamily: AppThemeData.bold,
-                                fontWeight: FontWeight.w700,
-                                color: AppThemeData.primary300,
+                                fontSize: 10,
+                                fontFamily: AppThemeData.regular,
+                                color:
+                                    isDark
+                                        ? AppThemeData.grey400
+                                        : AppThemeData.grey600,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                            )
-                            : Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  Constant.amountShow(amount: disPrice),
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    fontFamily: AppThemeData.bold,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppThemeData.primary300,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                const SizedBox(height: 1),
-                                Text(
-                                  Constant.amountShow(amount: price),
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    decoration: TextDecoration.lineThrough,
-                                    decorationColor: AppThemeData.grey400,
-                                    color: AppThemeData.grey400,
-                                    fontFamily: AppThemeData.regular,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
                             ),
-                        const SizedBox(height: 6),
-                        // Add to cart button
-                        controller.isOpen.value == false ||
-                                Constant.userModel == null
-                            ? const SizedBox()
-                            : _buildAddToCartButton(
-                              context,
-                              productModel,
-                              controller,
-                              isDark,
-                              price,
-                              disPrice,
-                              selectedVariants,
-                            ),
-                      ],
-                    ),
-                  ],
-                ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  // Price and Add button
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Price
+                      Text(
+                        Constant.amountShow(
+                          amount:
+                              double.parse(disPrice) <= 0 ? price : disPrice,
+                        ),
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontFamily: AppThemeData.bold,
+                          fontWeight: FontWeight.w700,
+                          color: AppThemeData.primary300,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 3),
+                      _buildAddToCartButton(
+                        context,
+                        productModel,
+                        controller,
+                        isDark,
+                        price,
+                        disPrice,
+                        selectedVariants,
+                        controllerTag,
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ],
@@ -1842,6 +1926,7 @@ class ProductListView extends StatelessWidget {
     String price,
     String disPrice,
     List<String> selectedVariants,
+    String controllerTag,
   ) {
     bool hasVariants =
         selectedVariants.isNotEmpty ||
@@ -1863,11 +1948,19 @@ class ProductListView extends StatelessWidget {
         // If product is in cart, show counter
         if (isProductInCart) {
           // Find the cart product (could be with or without variant)
-          final cartProduct = cartItem.firstWhere(
-            (p0) =>
-                p0.id == productModel.id ||
-                (p0.id != null && p0.id!.startsWith("${productModel.id}~")),
-          );
+          final matchedCartItems =
+              cartItem
+                  .where(
+                    (p0) =>
+                        p0.id == productModel.id ||
+                        (p0.id != null &&
+                            p0.id!.startsWith("${productModel.id}~")),
+                  )
+                  .toList();
+          if (matchedCartItems.isEmpty) {
+            return const SizedBox.shrink();
+          }
+          final cartProduct = matchedCartItems.first;
           return Container(
             width: double.infinity,
             height: 36,
@@ -1959,7 +2052,7 @@ class ProductListView extends StatelessWidget {
         return SizedBox(
           width: double.infinity,
           child: RoundedButtonFill(
-            title: "Add".tr,
+            title: "Add to Cart".tr,
             width: 100,
             height: 4,
             color: AppThemeData.primary300,
@@ -2029,7 +2122,11 @@ class ProductListView extends StatelessWidget {
               }
               controller.update();
               controller.calculatePrice(productModel);
-              ProductListView.productDetailsBottomSheet(context, productModel);
+              ProductListView.productDetailsBottomSheet(
+                context,
+                productModel,
+                controllerTag,
+              );
             },
           ),
         );
@@ -2133,7 +2230,7 @@ class ProductListView extends StatelessWidget {
               : SizedBox(
                 width: double.infinity,
                 child: RoundedButtonFill(
-                  title: "Add".tr,
+                  title: "Add to Cart".tr,
                   width: 100,
                   height: 4,
                   color: AppThemeData.primary300,
@@ -2160,6 +2257,7 @@ class ProductListView extends StatelessWidget {
   static Future<void> productDetailsBottomSheet(
     BuildContext context,
     ProductModel productModel,
+    String controllerTag,
   ) {
     return showModalBottomSheet(
       context: context,
@@ -2174,7 +2272,10 @@ class ProductListView extends StatelessWidget {
             heightFactor: 0.85,
             child: StatefulBuilder(
               builder: (context1, setState) {
-                return ProductDetailsView(productModel: productModel);
+                return ProductDetailsView(
+                  productModel: productModel,
+                  controllerTag: controllerTag,
+                );
               },
             ),
           ),
@@ -2507,15 +2608,24 @@ class ProductListView extends StatelessWidget {
 
 class ProductDetailsView extends StatelessWidget {
   final ProductModel productModel;
+  final String controllerTag;
 
-  const ProductDetailsView({super.key, required this.productModel});
+  const ProductDetailsView({
+    super.key,
+    required this.productModel,
+    required this.controllerTag,
+  });
 
   @override
   Widget build(BuildContext context) {
     final themeController = Get.find<ThemeController>();
     final isDark = themeController.isDark.value;
-    final controller = Get.find<RestaurantDetailsController>();
+    final RestaurantDetailsController controller =
+        controllerTag.isEmpty
+            ? Get.find<RestaurantDetailsController>()
+            : Get.find<RestaurantDetailsController>(tag: controllerTag);
     return GetBuilder<RestaurantDetailsController>(
+      tag: controllerTag.isEmpty ? null : controllerTag,
       builder: (_) {
         return Scaffold(
           backgroundColor:
@@ -3109,9 +3219,9 @@ class ProductDetailsView extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: 20),
               child: Row(
                 children: [
-                  Expanded(
+                  SizedBox(
+                    width: Responsive.width(30, context),
                     child: Container(
-                      width: Responsive.width(100, context),
                       height: Responsive.height(5.5, context),
                       decoration: ShapeDecoration(
                         color:
@@ -3210,12 +3320,11 @@ class ProductDetailsView extends StatelessWidget {
                     flex: 2,
                     child: RoundedButtonFill(
                       title:
-                          "${'Add item'.tr} ${Constant.amountShow(amount: controller.calculatePrice(productModel))}"
-                              ,
+                          "${'Add item'.tr} • ${Constant.amountShow(amount: controller.calculatePrice(productModel))}",
                       height: 5.5,
                       color: AppThemeData.primary300,
                       textColor: AppThemeData.grey50,
-                      fontSizes: 16,
+                      fontSizes: 15,
                       onPress: () async {
                         if (productModel.itemAttribute == null) {
                           await controller.addToCart(

@@ -1,18 +1,17 @@
 import 'dart:convert';
 
 import 'package:driver/models/app_placemark.dart';
-import 'package:driver/utils/uzbek_transliteration.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 
 /// Yandex Geocoder REST API: https://geocode-maps.yandex.ru/1.x/
-/// Til: ru_RU (O'zbekistonda kirillcha/ruscha manzillar), qidiruv: faqat O'zbekiston.
+/// Til: uz_UZ, qidiruv: faqat O'zbekiston.
 class YandexGeocodingService {
   YandexGeocodingService({required this.apiKey});
 
   static const String _baseUrl = 'https://geocode-maps.yandex.ru/1.x/';
-  /// O'zbekiston uchun til (Yandex uz qo'llamaydi, ru_RU – kirillcha manzillar)
-  static const String _lang = 'ru_RU';
+  /// O'zbekiston uchun til: o'zbekcha natijalar.
+  static const String _lang = 'uz_UZ';
   /// O'zbekiston bbox: janubiy-g'arb ~ shimoliy-sharq (lon,lat~lon,lat)
   static const String _uzbekistanBbox = '56.0,37.0~73.2,45.6';
   final String apiKey;
@@ -158,12 +157,12 @@ class YandexGeocodingService {
 
       final meta = geo['metaDataProperty']?['GeocoderMetaData'] as Map<String, dynamic>?;
       final address = meta?['Address'] as Map<String, dynamic>?;
-      final formatted = address?['formatted'] as String? ?? geo['name'] as String? ?? '';
-      final displayLatin = cyrillicToLatinUzbek(formatted);
+      final formatted =
+          address?['formatted'] as String? ?? geo['name'] as String? ?? '';
 
       return GeocodeResult(
         latLng: LatLng(lat, lon),
-        displayName: displayLatin,
+        displayName: formatted,
         placemark: _placemarkFromGeoObject(geo),
       );
     } catch (_) {

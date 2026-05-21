@@ -11,6 +11,7 @@ import 'package:vendor/app/maintenance_mode_screen/maintenance_mode_screen.dart'
 import 'package:vendor/app/on_boarding_screen.dart';
 import 'package:vendor/app/subscription_plan_screen/subscription_plan_screen.dart';
 import 'package:vendor/constant/constant.dart';
+import 'package:vendor/models/vendor_model.dart';
 import 'package:vendor/utils/fire_store_utils.dart';
 import 'package:vendor/utils/notification_service.dart';
 import 'package:vendor/utils/preferences.dart';
@@ -39,9 +40,27 @@ class SplashController extends GetxController {
             Constant.userModel = value;
             if (Constant.userModel?.role == Constant.userRoleVendor) {
               if (Constant.userModel?.active == true) {
-                Constant.userModel?.fcmToken =
-                    await NotificationService.getToken();
-                await FireStoreUtils.updateUser(Constant.userModel!);
+                final fcm = await NotificationService.getToken();
+                if (fcm != null && fcm.isNotEmpty) {
+                  Constant.userModel?.fcmToken = fcm;
+                  await FireStoreUtils.updateUser(Constant.userModel!);
+                }
+
+                // Customer app’dagi kabi: vendor (restoran) ma’lumotini Firestore’dan olib,
+                // storage API uchun raqamli vendor id’ni (vendor_api_id) user profilga yozib qo‘yamiz.
+                if ((Constant.userModel?.vendorApiId == null ||
+                        Constant.userModel!.vendorApiId == 0) &&
+                    Constant.userModel?.vendorID != null &&
+                    Constant.userModel!.vendorID!.isNotEmpty) {
+                  final VendorModel? vendor = await FireStoreUtils.getVendorById(
+                    Constant.userModel!.vendorID!,
+                  );
+                  final apiId = vendor?.vendorApiId;
+                  if (apiId != null && apiId != 0) {
+                    Constant.userModel!.vendorApiId = apiId;
+                    await FireStoreUtils.updateUser(Constant.userModel!);
+                  }
+                }
                 bool isPlanExpire = false;
                 if (Constant.userModel?.subscriptionPlan?.id != null) {
                   if (Constant.userModel?.subscriptionExpiryDate == null) {

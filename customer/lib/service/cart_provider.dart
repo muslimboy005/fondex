@@ -24,26 +24,57 @@ class CartProvider with ChangeNotifier {
   }
 
   Future<void> addToCart(BuildContext context, CartProductModel product, int quantity) async {
+    log(
+      '[cart][CartProvider.add] start productId=${product.id} '
+      'vendorId=${product.vendorID} qty=$quantity',
+    );
     _cartItems = await DatabaseHelper.instance.fetchCartProducts();
+    log(
+      '[cart][CartProvider.add] db fetched count=${_cartItems.length}',
+    );
     if ((_cartItems.where((item) => item.id == product.id)).isNotEmpty) {
       var index = _cartItems.indexWhere((item) => item.id == product.id);
-      _cartItems[index].quantity = quantity;
-      if (product.extras != null || product.extras!.isNotEmpty) {
-        _cartItems[index].extras = product.extras;
-        _cartItems[index].extrasPrice = product.extrasPrice;
-      } else {
-        _cartItems[index].extras = [];
-        _cartItems[index].extrasPrice = "0";
+      log('[cart][CartProvider.add] update existing index=$index');
+      final existing = _cartItems[index];
+      existing.quantity = quantity;
+      existing.price = product.price ?? existing.price;
+      existing.discountPrice = product.discountPrice ?? existing.discountPrice;
+      if (product.name != null && product.name!.isNotEmpty) {
+        existing.name = product.name;
       }
-      await DatabaseHelper.instance.updateCartProduct(_cartItems[index]);
+      if (product.photo != null && product.photo!.isNotEmpty) {
+        existing.photo = product.photo;
+      }
+      if (product.categoryId != null && product.categoryId!.isNotEmpty) {
+        existing.categoryId = product.categoryId;
+      }
+      if (product.apiProductId != null) {
+        existing.apiProductId = product.apiProductId;
+      }
+      if (product.variantInfo != null) {
+        existing.variantInfo = product.variantInfo;
+      }
+      if (product.extras != null && product.extras!.isNotEmpty) {
+        existing.extras = product.extras;
+        existing.extrasPrice = product.extrasPrice;
+      } else {
+        existing.extras = [];
+        existing.extrasPrice = "0";
+      }
+      await DatabaseHelper.instance.updateCartProduct(existing);
     } else {
       if (_cartItems.isEmpty || _cartItems.where((item) => item.vendorID == product.vendorID).isNotEmpty) {
+        log('[cart][CartProvider.add] insert new item');
         product.quantity = quantity;
         _cartItems.add(product);
         cartItem.add(product);
         await DatabaseHelper.instance.insertCartProduct(product);
         log("===> insert");
       } else {
+        log(
+          '[cart][CartProvider.add] blocked by different vendor. '
+          'existingVendor=${_cartItems.first.vendorID} newVendor=${product.vendorID}',
+        );
         showDialog(
           context: context,
           builder: (BuildContext context) {
@@ -53,6 +84,7 @@ class CartProvider with ChangeNotifier {
               positiveString: "Add".tr,
               negativeString: "Cancel".tr,
               positiveClick: () async {
+                log('[cart][CartProvider.add] replace cart confirmed');
                 cartItem.clear();
                 _cartItems.clear();
                 DatabaseHelper.instance.deleteAllCartProducts();
@@ -60,6 +92,7 @@ class CartProvider with ChangeNotifier {
                 Get.back();
               },
               negativeClick: () {
+                log('[cart][CartProvider.add] replace cart cancelled');
                 Get.back();
               },
               img: null,
@@ -69,22 +102,30 @@ class CartProvider with ChangeNotifier {
       }
     }
     _initCart();
+    log('[cart][CartProvider.add] finish streamCount=${cartItem.length}');
   }
 
   Future<void> removeFromCart(CartProductModel product, int quantity) async {
+    log(
+      '[cart][CartProvider.remove] start productId=${product.id} qty=$quantity',
+    );
     _cartItems = await DatabaseHelper.instance.fetchCartProducts();
     var index = _cartItems.indexWhere((item) => item.id == product.id);
+    log('[cart][CartProvider.remove] foundIndex=$index');
     if (index >= 0) {
       _cartItems[index].quantity = quantity;
       if (_cartItems[index].quantity == 0) {
+        log('[cart][CartProvider.remove] delete productId=${product.id}');
         await DatabaseHelper.instance.deleteCartProduct(product.id!);
         _cartItems.removeAt(index);
-        cartItem.removeAt(index);
+        cartItem.removeWhere((item) => item.id == product.id);
       } else {
+        log('[cart][CartProvider.remove] update qty=${_cartItems[index].quantity}');
         await DatabaseHelper.instance.updateCartProduct(_cartItems[index]);
       }
     }
     _initCart();
+    log('[cart][CartProvider.remove] finish streamCount=${cartItem.length}');
   }
 
   Future<void> clearDatabase() async {

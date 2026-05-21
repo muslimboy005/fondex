@@ -11,12 +11,39 @@ import 'package:get/get.dart';
 import '../../../controllers/theme_controller.dart';
 import '../../../themes/show_toast_dialog.dart';
 import '../../../widget/my_separator.dart';
-import '../../auth_screens/login_screen.dart';
+import '../../auth_screens/phone_registration_screen.dart';
 import 'live_tracking_screen.dart';
 import 'order_details_screen.dart';
 
 class OrderScreen extends StatelessWidget {
   const OrderScreen({super.key});
+
+  double _toDouble(dynamic value) {
+    return double.tryParse(value?.toString() ?? '0') ?? 0.0;
+  }
+
+  double _lineUnitPrice(CartProductModel item) {
+    final variantPrice = _toDouble(item.variantInfo?.variantPrice);
+    if (variantPrice > 0) return variantPrice;
+    final discountPrice = _toDouble(item.discountPrice);
+    if (discountPrice > 0) return discountPrice;
+    return _toDouble(item.price);
+  }
+
+  double _lineDisplayUnitPrice(OrderModel orderModel, CartProductModel item) {
+    final products = orderModel.products ?? const <CartProductModel>[];
+    if (products.length == 1) {
+      final qty = _toDouble(products.first.quantity);
+      final total = _toDouble(orderModel.totalAmount);
+      if (qty > 0 && total > 0) {
+        final delivery = _toDouble(orderModel.deliveryCharge);
+        final tip = _toDouble(orderModel.tipAmount);
+        final inferredSubtotal = total - delivery - tip;
+        if (inferredSubtotal > 0) return inferredSubtotal / qty;
+      }
+    }
+    return _lineUnitPrice(item);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -66,7 +93,7 @@ class OrderScreen extends StatelessWidget {
                             color: AppThemeData.primary300,
                             textColor: AppThemeData.grey50,
                             onPress: () async {
-                              Get.offAll(const LoginScreen());
+                              Get.offAll(const PhoneRegistrationScreen());
                             },
                           ),
                         ],
@@ -144,76 +171,156 @@ class OrderScreen extends StatelessWidget {
                                   Expanded(
                                     child: TabBarView(
                                       children: [
-                                        controller.allList.isEmpty
-                                            ? Constant.showEmptyView(message: "Order Not Found".tr)
-                                            : RefreshIndicator(
-                                              onRefresh: () => controller.getOrder(),
-                                              child: ListView.builder(
-                                                itemCount: controller.allList.length,
-                                                shrinkWrap: true,
-                                                padding: EdgeInsets.zero,
-                                                itemBuilder: (context, index) {
-                                                  OrderModel orderModel = controller.allList[index];
-                                                  return itemView(isDark, context, orderModel, controller);
-                                                },
-                                              ),
-                                            ),
-                                        controller.inProgressList.isEmpty
-                                            ? Constant.showEmptyView(message: "Order Not Found".tr)
-                                            : RefreshIndicator(
-                                              onRefresh: () => controller.getOrder(),
-                                              child: ListView.builder(
-                                                itemCount: controller.inProgressList.length,
-                                                shrinkWrap: true,
-                                                padding: EdgeInsets.zero,
-                                                itemBuilder: (context, index) {
-                                                  OrderModel orderModel = controller.inProgressList[index];
-                                                  return itemView(isDark, context, orderModel, controller);
-                                                },
-                                              ),
-                                            ),
-                                        controller.deliveredList.isEmpty
-                                            ? Constant.showEmptyView(message: "Order Not Found".tr)
-                                            : RefreshIndicator(
-                                              onRefresh: () => controller.getOrder(),
-                                              child: ListView.builder(
-                                                itemCount: controller.deliveredList.length,
-                                                shrinkWrap: true,
-                                                padding: EdgeInsets.zero,
-                                                itemBuilder: (context, index) {
-                                                  OrderModel orderModel = controller.deliveredList[index];
-                                                  return itemView(isDark, context, orderModel, controller);
-                                                },
-                                              ),
-                                            ),
-                                        controller.cancelledList.isEmpty
-                                            ? Constant.showEmptyView(message: "Order Not Found".tr)
-                                            : RefreshIndicator(
-                                              onRefresh: () => controller.getOrder(),
-                                              child: ListView.builder(
-                                                itemCount: controller.cancelledList.length,
-                                                shrinkWrap: true,
-                                                padding: EdgeInsets.zero,
-                                                itemBuilder: (context, index) {
-                                                  OrderModel orderModel = controller.cancelledList[index];
-                                                  return itemView(isDark, context, orderModel, controller);
-                                                },
-                                              ),
-                                            ),
-                                        controller.rejectedList.isEmpty
-                                            ? Constant.showEmptyView(message: "Order Not Found".tr)
-                                            : RefreshIndicator(
-                                              onRefresh: () => controller.getOrder(),
-                                              child: ListView.builder(
-                                                itemCount: controller.rejectedList.length,
-                                                shrinkWrap: true,
-                                                padding: EdgeInsets.zero,
-                                                itemBuilder: (context, index) {
-                                                  OrderModel orderModel = controller.rejectedList[index];
-                                                  return itemView(isDark, context, orderModel, controller);
-                                                },
-                                              ),
-                                            ),
+                                        RefreshIndicator(
+                                          onRefresh: controller.getOrder,
+                                          child:
+                                              controller.allList.isEmpty
+                                                  ? LayoutBuilder(
+                                                    builder: (ctx, constraints) {
+                                                      return SingleChildScrollView(
+                                                        physics: const AlwaysScrollableScrollPhysics(),
+                                                        child: ConstrainedBox(
+                                                          constraints: BoxConstraints(
+                                                            minHeight: constraints.maxHeight,
+                                                          ),
+                                                          child: Constant.showEmptyView(
+                                                            message: "Order Not Found".tr,
+                                                          ),
+                                                        ),
+                                                      );
+                                                    },
+                                                  )
+                                                  : ListView.builder(
+                                                    physics: const AlwaysScrollableScrollPhysics(),
+                                                    itemCount: controller.allList.length,
+                                                    shrinkWrap: true,
+                                                    padding: EdgeInsets.zero,
+                                                    itemBuilder: (context, index) {
+                                                      final OrderModel orderModel = controller.allList[index];
+                                                      return itemView(isDark, context, orderModel, controller);
+                                                    },
+                                                  ),
+                                        ),
+                                        RefreshIndicator(
+                                          onRefresh: controller.getOrder,
+                                          child:
+                                              controller.inProgressList.isEmpty
+                                                  ? LayoutBuilder(
+                                                    builder: (ctx, constraints) {
+                                                      return SingleChildScrollView(
+                                                        physics: const AlwaysScrollableScrollPhysics(),
+                                                        child: ConstrainedBox(
+                                                          constraints: BoxConstraints(
+                                                            minHeight: constraints.maxHeight,
+                                                          ),
+                                                          child: Constant.showEmptyView(
+                                                            message: "Order Not Found".tr,
+                                                          ),
+                                                        ),
+                                                      );
+                                                    },
+                                                  )
+                                                  : ListView.builder(
+                                                    physics: const AlwaysScrollableScrollPhysics(),
+                                                    itemCount: controller.inProgressList.length,
+                                                    shrinkWrap: true,
+                                                    padding: EdgeInsets.zero,
+                                                    itemBuilder: (context, index) {
+                                                      final OrderModel orderModel = controller.inProgressList[index];
+                                                      return itemView(isDark, context, orderModel, controller);
+                                                    },
+                                                  ),
+                                        ),
+                                        RefreshIndicator(
+                                          onRefresh: controller.getOrder,
+                                          child:
+                                              controller.deliveredList.isEmpty
+                                                  ? LayoutBuilder(
+                                                    builder: (ctx, constraints) {
+                                                      return SingleChildScrollView(
+                                                        physics: const AlwaysScrollableScrollPhysics(),
+                                                        child: ConstrainedBox(
+                                                          constraints: BoxConstraints(
+                                                            minHeight: constraints.maxHeight,
+                                                          ),
+                                                          child: Constant.showEmptyView(
+                                                            message: "Order Not Found".tr,
+                                                          ),
+                                                        ),
+                                                      );
+                                                    },
+                                                  )
+                                                  : ListView.builder(
+                                                    physics: const AlwaysScrollableScrollPhysics(),
+                                                    itemCount: controller.deliveredList.length,
+                                                    shrinkWrap: true,
+                                                    padding: EdgeInsets.zero,
+                                                    itemBuilder: (context, index) {
+                                                      final OrderModel orderModel = controller.deliveredList[index];
+                                                      return itemView(isDark, context, orderModel, controller);
+                                                    },
+                                                  ),
+                                        ),
+                                        RefreshIndicator(
+                                          onRefresh: controller.getOrder,
+                                          child:
+                                              controller.cancelledList.isEmpty
+                                                  ? LayoutBuilder(
+                                                    builder: (ctx, constraints) {
+                                                      return SingleChildScrollView(
+                                                        physics: const AlwaysScrollableScrollPhysics(),
+                                                        child: ConstrainedBox(
+                                                          constraints: BoxConstraints(
+                                                            minHeight: constraints.maxHeight,
+                                                          ),
+                                                          child: Constant.showEmptyView(
+                                                            message: "Order Not Found".tr,
+                                                          ),
+                                                        ),
+                                                      );
+                                                    },
+                                                  )
+                                                  : ListView.builder(
+                                                    physics: const AlwaysScrollableScrollPhysics(),
+                                                    itemCount: controller.cancelledList.length,
+                                                    shrinkWrap: true,
+                                                    padding: EdgeInsets.zero,
+                                                    itemBuilder: (context, index) {
+                                                      final OrderModel orderModel = controller.cancelledList[index];
+                                                      return itemView(isDark, context, orderModel, controller);
+                                                    },
+                                                  ),
+                                        ),
+                                        RefreshIndicator(
+                                          onRefresh: controller.getOrder,
+                                          child:
+                                              controller.rejectedList.isEmpty
+                                                  ? LayoutBuilder(
+                                                    builder: (ctx, constraints) {
+                                                      return SingleChildScrollView(
+                                                        physics: const AlwaysScrollableScrollPhysics(),
+                                                        child: ConstrainedBox(
+                                                          constraints: BoxConstraints(
+                                                            minHeight: constraints.maxHeight,
+                                                          ),
+                                                          child: Constant.showEmptyView(
+                                                            message: "Order Not Found".tr,
+                                                          ),
+                                                        ),
+                                                      );
+                                                    },
+                                                  )
+                                                  : ListView.builder(
+                                                    physics: const AlwaysScrollableScrollPhysics(),
+                                                    itemCount: controller.rejectedList.length,
+                                                    shrinkWrap: true,
+                                                    padding: EdgeInsets.zero,
+                                                    itemBuilder: (context, index) {
+                                                      final OrderModel orderModel = controller.rejectedList[index];
+                                                      return itemView(isDark, context, orderModel, controller);
+                                                    },
+                                                  ),
+                                        ),
                                       ],
                                     ),
                                   ),
@@ -230,7 +337,12 @@ class OrderScreen extends StatelessWidget {
     );
   }
 
-  Padding itemView(isDark, BuildContext context, OrderModel orderModel, OrderController controller) {
+  Padding itemView(
+    bool isDark,
+    BuildContext context,
+    OrderModel orderModel,
+    OrderController controller,
+  ) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
       child: Container(
@@ -330,10 +442,9 @@ class OrderScreen extends StatelessWidget {
                       Text(
                         Constant.amountShow(
                           amount:
-                              double.parse(cartProduct.discountPrice.toString()) <= 0
-                                  ? (double.parse('${cartProduct.price ?? 0}') * double.parse('${cartProduct.quantity ?? 0}')).toString()
-                                  : (double.parse('${cartProduct.discountPrice ?? 0}') * double.parse('${cartProduct.quantity ?? 0}'))
-                                      .toString(),
+                              (_lineDisplayUnitPrice(orderModel, cartProduct) *
+                                      _toDouble(cartProduct.quantity))
+                                  .toString(),
                         ),
                         style: TextStyle(
                           color: isDark ? AppThemeData.grey50 : AppThemeData.grey900,

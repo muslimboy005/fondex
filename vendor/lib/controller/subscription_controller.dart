@@ -4,17 +4,13 @@ import 'dart:math' as maths;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_paypal/flutter_paypal.dart';
-import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
-import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:vendor/app/dash_board_screens/app_not_access_screen.dart';
 import 'package:vendor/app/dash_board_screens/dash_board_screen.dart';
 import 'package:vendor/constant/collection_name.dart';
 import 'package:vendor/constant/constant.dart';
 import 'package:vendor/constant/show_toast_dialog.dart';
-import 'package:vendor/controller/stripe_failed_model.dart';
 import 'package:vendor/models/SectionModel.dart';
 import 'package:vendor/models/payment_model/flutter_wave_model.dart';
 import 'package:vendor/models/payment_model/getPaytmTxtToken.dart';
@@ -23,10 +19,7 @@ import 'package:vendor/models/payment_model/mid_trans.dart';
 import 'package:vendor/models/payment_model/orange_money.dart';
 import 'package:vendor/models/payment_model/pay_fast_model.dart';
 import 'package:vendor/models/payment_model/pay_stack_model.dart';
-import 'package:vendor/models/payment_model/paypal_model.dart';
 import 'package:vendor/models/payment_model/paytm_model.dart';
-import 'package:vendor/models/payment_model/razorpay_model.dart';
-import 'package:vendor/models/payment_model/stripe_model.dart';
 import 'package:vendor/models/payment_model/wallet_setting_model.dart';
 import 'package:vendor/models/payment_model/xendit.dart';
 import 'package:vendor/models/subscription_history.dart';
@@ -43,7 +36,6 @@ import 'package:vendor/payment/paystack/pay_stack_url_model.dart';
 import 'package:vendor/payment/paystack/paystack_url_genrater.dart';
 import 'package:vendor/payment/xenditModel.dart';
 import 'package:vendor/payment/xenditScreen.dart';
-import 'package:vendor/themes/app_them_data.dart';
 import 'package:vendor/utils/fire_store_utils.dart';
 import 'package:vendor/utils/preferences.dart';
 
@@ -119,17 +111,12 @@ class SubscriptionController extends GetxController {
   Rx<WalletSettingModel> walletSettingModel = WalletSettingModel().obs;
   Rx<PayFastModel> payFastModel = PayFastModel().obs;
   Rx<MercadoPagoModel> mercadoPagoModel = MercadoPagoModel().obs;
-  Rx<PayPalModel> payPalModel = PayPalModel().obs;
-  Rx<StripeModel> stripeModel = StripeModel().obs;
   Rx<FlutterWaveModel> flutterWaveModel = FlutterWaveModel().obs;
   Rx<PayStackModel> payStackModel = PayStackModel().obs;
   Rx<PaytmModel> paytmModel = PaytmModel().obs;
-  Rx<RazorPayModel> razorPayModel = RazorPayModel().obs;
   Rx<MidTrans> midTransModel = MidTrans().obs;
   Rx<OrangeMoney> orangeMoneyModel = OrangeMoney().obs;
   Rx<Xendit> xenditModel = Xendit().obs;
-
-  final Razorpay razorPay = Razorpay();
 
   /// Bo'sh yoki noto'g'ri JSON da FormatException oldini oladi
   static Map<String, dynamic> _safePrefJson(String key) {
@@ -145,49 +132,21 @@ class SubscriptionController extends GetxController {
 
   Future<void> getPaymentSettings() async {
     await FireStoreUtils.getPaymentSettingsData().then((value) {
-      stripeModel.value = StripeModel.fromJson(_safePrefJson(Preferences.stripeSettings));
-      payPalModel.value = PayPalModel.fromJson(_safePrefJson(Preferences.paypalSettings));
       payStackModel.value = PayStackModel.fromJson(_safePrefJson(Preferences.payStack));
       mercadoPagoModel.value = MercadoPagoModel.fromJson(_safePrefJson(Preferences.mercadoPago));
       flutterWaveModel.value = FlutterWaveModel.fromJson(_safePrefJson(Preferences.flutterWave));
       paytmModel.value = PaytmModel.fromJson(_safePrefJson(Preferences.paytmSettings));
       payFastModel.value = PayFastModel.fromJson(_safePrefJson(Preferences.payFastSettings));
-      razorPayModel.value = RazorPayModel.fromJson(_safePrefJson(Preferences.razorpaySettings));
       midTransModel.value = MidTrans.fromJson(_safePrefJson(Preferences.midTransSettings));
       orangeMoneyModel.value = OrangeMoney.fromJson(_safePrefJson(Preferences.orangeMoneySettings));
       xenditModel.value = Xendit.fromJson(_safePrefJson(Preferences.xenditSettings));
       walletSettingModel.value = WalletSettingModel.fromJson(_safePrefJson(Preferences.walletSettings));
-      if (stripeModel.value.isEnabled == true) {
-        Stripe.publishableKey = stripeModel.value.clientpublishableKey.toString();
-        Stripe.merchantIdentifier = 'Fondex'.tr;
-        Stripe.instance.applySettings();
-      }
       setRef();
-
-      razorPay.on(Razorpay.EVENT_PAYMENT_SUCCESS, handlePaymentSuccess);
-      razorPay.on(Razorpay.EVENT_EXTERNAL_WALLET, handleExternalWaller);
-      razorPay.on(Razorpay.EVENT_PAYMENT_ERROR, handlePaymentError);
     });
     if (walletSettingModel.value.isEnabled == true) {
       selectedPaymentMethod.value = PaymentGateway.wallet.name;
     }
     isLoading.value = false;
-  }
-
-  void handlePaymentSuccess(PaymentSuccessResponse response) {
-    Get.back();
-    ShowToastDialog.showToast("Payment Successful!!".tr);
-    placeOrder();
-  }
-
-  void handleExternalWaller(ExternalWalletResponse response) {
-    Get.back();
-    ShowToastDialog.showToast("Payment Processing!! via");
-  }
-
-  void handlePaymentError(PaymentFailureResponse response) {
-    Get.back();
-    ShowToastDialog.showToast("Payment Failed!!".tr);
   }
 
   String? _ref;
@@ -200,77 +159,6 @@ class SubscriptionController extends GetxController {
       _ref = "AndroidRef$year$refNumber";
     } else if (Platform.isIOS) {
       _ref = "IOSRef$year$refNumber";
-    }
-  }
-
-  // Strip
-  Future<void> stripeMakePayment({required String amount}) async {
-    try {
-      Map<String, dynamic>? paymentIntentData = await createStripeIntent(amount: amount);
-
-      if (paymentIntentData!.containsKey("error")) {
-        Get.back();
-        ShowToastDialog.showToast("Something went wrong, please contact admin.".tr);
-      } else {
-        await Stripe.instance.initPaymentSheet(
-          paymentSheetParameters: SetupPaymentSheetParameters(
-            paymentIntentClientSecret: paymentIntentData['client_secret'],
-            allowsDelayedPaymentMethods: false,
-            googlePay: const PaymentSheetGooglePay(merchantCountryCode: 'US', testEnv: true, currencyCode: "USD"),
-            customFlow: true,
-            style: ThemeMode.system,
-            appearance: PaymentSheetAppearance(colors: PaymentSheetAppearanceColors(primary: AppThemeData.primary300)),
-            merchantDisplayName: 'GoRide',
-          ),
-        );
-        displayStripePaymentSheet(amount: amount);
-      }
-    } catch (e, s) {
-      ShowToastDialog.showToast("exception:$e \n$s");
-    }
-  }
-
-  Future<void> displayStripePaymentSheet({required String amount}) async {
-    try {
-      await Stripe.instance.presentPaymentSheet().then((value) {
-        ShowToastDialog.showToast("Payment successfully".tr);
-        Get.back(result: true);
-        placeOrder();
-      });
-    } on StripeException catch (e) {
-      var lo1 = jsonEncode(e);
-      var lo2 = jsonDecode(lo1);
-      StripePayFailedModel lom = StripePayFailedModel.fromJson(lo2);
-      ShowToastDialog.showToast(lom.error.message);
-    } catch (e) {
-      ShowToastDialog.showToast(e.toString());
-    }
-  }
-
-  Future createStripeIntent({required String amount}) async {
-    try {
-      Map<String, dynamic> body = {
-        'amount': ((double.parse(amount) * 100).round()).toString(),
-        'currency': "USD",
-        'payment_method_types[]': 'card',
-        "description": "Strip Payment",
-        "shipping[name]": userModel.value.fullName(),
-        "shipping[address][line1]": "510 Townsend St",
-        "shipping[address][postal_code]": "98140",
-        "shipping[address][city]": "San Francisco",
-        "shipping[address][state]": "CA",
-        "shipping[address][country]": "US",
-      };
-      var stripeSecret = stripeModel.value.stripeSecret;
-      var response = await http.post(
-        Uri.parse('https://api.stripe.com/v1/payment_intents'),
-        body: body,
-        headers: {'Authorization': 'Bearer $stripeSecret', 'Content-Type': 'application/x-www-form-urlencoded'},
-      );
-
-      return jsonDecode(response.body);
-    } catch (e) {
-      print(e.toString());
     }
   }
 
@@ -309,43 +197,6 @@ class SubscriptionController extends GetxController {
       print('Error creating preference: ${response.body}');
       return null;
     }
-  }
-
-  //Paypal
-  void paypalPaymentSheet(String amount, context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (BuildContext context) => UsePaypal(
-          sandboxMode: payPalModel.value.isLive == true ? false : true,
-          clientId: payPalModel.value.paypalClient ?? '',
-          secretKey: payPalModel.value.paypalSecret ?? '',
-          returnURL: "com.parkme://paypalpay",
-          cancelURL: "com.parkme://paypalpay",
-          transactions: [
-            {
-              "amount": {
-                "total": amount,
-                "currency": "USD",
-                "details": {"subtotal": amount},
-              },
-            },
-          ],
-          note: "Contact us for any questions on your order.",
-          onSuccess: (Map params) async {
-            placeOrder();
-            ShowToastDialog.showToast("Payment Successful!!".tr);
-          },
-          onError: (error) {
-            Get.back();
-            ShowToastDialog.showToast("Payment UnSuccessful!!".tr);
-          },
-          onCancel: (params) {
-            Get.back();
-            ShowToastDialog.showToast("Payment UnSuccessful!!".tr);
-          },
-        ),
-      ),
-    );
   }
 
   ///PayStack Payment Method
@@ -532,29 +383,6 @@ class SubscriptionController extends GetxController {
       ShowToastDialog.showToast("something went wrong, please contact admin.".tr);
     }
     return GetPaymentTxtTokenModel.fromJson(data);
-  }
-
-  void openCheckout({required amount, required orderId}) async {
-    var options = {
-      'key': razorPayModel.value.razorpayKey,
-      'amount': amount * 100,
-      'name': 'eMart',
-      'order_id': orderId,
-      "currency": "INR",
-      'description': 'wallet Topup',
-      'retry': {'enabled': true, 'max_count': 1},
-      'send_sms_hash': true,
-      'prefill': {'contact': userModel.value.phoneNumber, 'email': userModel.value.email},
-      'external': {
-        'wallets': ['paytm'],
-      },
-    };
-
-    try {
-      razorPay.open(options);
-    } catch (e) {
-      debugPrint('Error: $e');
-    }
   }
 
   RxDouble totalAmount = 0.0.obs;

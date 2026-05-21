@@ -16,6 +16,7 @@ import 'package:driver/models/section_model.dart';
 import 'package:driver/models/user_model.dart';
 import 'package:driver/models/vehicle_type.dart';
 import 'package:driver/models/zone_model.dart';
+import 'package:driver/utils/uzbek_car_plate_formatter.dart';
 import 'package:driver/utils/fire_store_utils.dart';
 import 'package:driver/utils/notification_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -234,7 +235,9 @@ class SignupController extends GetxController {
       userModel.value.zoneId = selectedZone.value.id;
       userModel.value.appIdentifier = Platform.isAndroid ? 'android' : 'ios';
       userModel.value.provider = type.value;
-      userModel.value.carNumber = carPlatNumberEditingController.value.text.toString();
+      userModel.value.carNumber = UzbekCarPlateFormatter.normalize(
+        carPlatNumberEditingController.value.text,
+      );
       userModel.value.isOwner = selectedValue.value == "Company" ? true : false;
       userModel.value.serviceType = selectedService.value == "Cab Service"
           ? "cab-service"
@@ -307,7 +310,9 @@ class SignupController extends GetxController {
           userModel.value.zoneId = selectedZone.value.id;
           userModel.value.appIdentifier = Platform.isAndroid ? 'android' : 'ios';
           userModel.value.provider = 'email';
-          userModel.value.carNumber = carPlatNumberEditingController.value.text.toString();
+          userModel.value.carNumber = UzbekCarPlateFormatter.normalize(
+            carPlatNumberEditingController.value.text,
+          );
           userModel.value.isOwner = selectedValue.value == "Company" ? true : false;
           userModel.value.serviceType = selectedService.value == "Cab Service"
               ? "cab-service"

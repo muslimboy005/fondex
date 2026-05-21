@@ -225,7 +225,7 @@ class PhoneNumberController extends GetxController {
       userModel.lastName = lastName;
       userModel.email = "${userModel.phoneNumber}@vendor.emart";
       userModel.role = Constant.userRoleVendor;
-      userModel.fcmToken = await NotificationService.getToken();
+      userModel.fcmToken = await NotificationService.getToken() ?? '';
       userModel.active = Constant.autoApproveVendor == true ? true : false;
       userModel.countryCode = countryCodeEditingController.value.text;
       userModel.isDocumentVerify = Constant.isStoreVerification == true ? false : true;

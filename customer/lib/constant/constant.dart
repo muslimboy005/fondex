@@ -14,7 +14,6 @@ import 'package:customer/models/zone_model.dart';
 import 'package:customer/themes/app_them_data.dart';
 import 'package:customer/utils/preferences.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart' as geolocator;
@@ -97,9 +96,10 @@ class Constant {
   static const globalUrl = "https://Replace_your_domain/";
 
   static String mapAPIKey = "";
+
   /// Yandex Geocoder API key (geocode-maps.yandex.ru)
   static const String yandexGeocodeApiKey =
-      'd40481eb-0884-40a5-bde1-9cfb8d7cfa89';
+      '42e579d5-d746-48c7-a9e6-2a300956813f';
   static String placeHolderImage = "";
   static String defaultCountryCode = "";
   static String defaultCountry = "";
@@ -119,6 +119,9 @@ class Constant {
   static String appStoreLink = "";
 
   /// Fondex (customer) ilova store linklari – ulashish va baholash uchun
+  /// Base URL for storage/vendors API (products, etc.)
+  static const String storageApiBaseUrl = 'https://storage.fondex.uz';
+
   static const String defaultCustomerGooglePlayUrl =
       'https://play.google.com/store/apps/details?id=felix.fondex.uz';
   static const String defaultCustomerAppStoreUrl =
@@ -177,10 +180,10 @@ class Constant {
   static String newParcelBook = "new_parcel_book";
   static String newOnDemandBook = "new_ondemand_book";
 
-  // static String selectedMapType = 'osm';
-  static String? mapType = "google";
+  // Loyiha bo'ylab faqat Yandex xarita ishlatiladi.
+  static String? mapType = "yandexMaps";
 
-  static String? we = "google";
+  static String? we = "yandexMaps";
 
   static String normalizeSelectedMapType(String? value) {
     final raw = (value ?? '').toLowerCase().trim();
@@ -191,18 +194,8 @@ class Constant {
 
   static String normalizeMapType(String? value) {
     final raw = (value ?? '').toLowerCase().trim();
-    if (raw.isEmpty) return 'google';
-    if (raw.contains('inapp')) return 'inappmap';
-    if (raw.contains('yandex')) {
-      return raw.contains('navi') ? 'yandexNavi' : 'yandexMaps';
-    }
-    if (raw.contains('google') && raw.contains('go')) return 'googleGo';
-    if (raw.contains('google')) return 'google';
-    if (raw.contains('waze')) return 'waze';
-    if (raw.contains('mapswithme') || raw.contains('maps_with_me')) {
-      return 'mapswithme';
-    }
-    return value!;
+    if (raw.contains('yandex') && raw.contains('navi')) return 'yandexNavi';
+    return 'yandexMaps';
   }
 
   static bool get isOsmMap => false;
@@ -331,8 +324,10 @@ class Constant {
 
   /// Narxni 500 ga yuqoriga yaxlitlash: 1001→1500, 1501→2000
   static double roundUpToNearest500(num? value) {
-    if (value == null || value <= 0) return 0.0;
-    return ((value / 500).ceil() * 500).toDouble();
+    if (value == null) return 0.0;
+    final d = value.toDouble();
+    if (d.isNaN || d.isInfinite || d <= 0) return 0.0;
+    return ((d / 500).ceil() * 500).toDouble();
   }
 
   static String amountShow({required String? amount}) {
@@ -372,59 +367,52 @@ class Constant {
     }
   }
 
+  static double _safeDouble(dynamic value) {
+    final parsed = double.tryParse((value ?? '').toString());
+    if (parsed == null || parsed.isNaN || !parsed.isFinite) return 0;
+    return parsed;
+  }
+
+  /// Firestore'ga yoziladigan raqamli string'lar uchun himoya: null, "NaN",
+  /// "Infinity" yoki noaniq qiymatlar `"0.0"`ga aylantiriladi. Order pul
+  /// maydonlari (deliveryCharge, tipAmount, totalAmount, adminCommission)
+  /// va mahsulot narxi (price, discountPrice, extras_price) yozish oldidan
+  /// shu yordamchi orqali tozalanadi — aks holda boshqa apps (vendor/driver)
+  /// `double.parse("NaN")` ustida o'zlarini buzadi.
+  static String safeNumString(dynamic value, {String fallback = '0.0'}) {
+    if (value == null) return fallback;
+    final raw = value.toString().trim();
+    if (raw.isEmpty) return fallback;
+    final parsed = double.tryParse(raw);
+    if (parsed == null || parsed.isNaN || !parsed.isFinite) return fallback;
+    return parsed.toString();
+  }
+
   static String productCommissionPrice(VendorModel vendorModel, String price) {
-    String commission = "0";
+    final double basePrice = _safeDouble(price);
     final sectionCommission = sectionConstantModel?.adminCommision;
-    if (sectionCommission?.isEnabled == true) {
-      if (vendorModel.adminCommission == null) {
-        final commissionType = sectionCommission?.commissionType?.toLowerCase();
-        final isPercent = commissionType == "percent" ||
-            commissionType == "percentage";
-        if (isPercent) {
-          commission =
-              (double.parse(price) +
-                      (double.parse(price) *
-                          double.parse(
-                            (sectionCommission?.amount ?? 0).toString(),
-                          ) /
-                          100))
-                  .toString();
-        } else {
-          commission =
-              (double.parse(price) +
-                      double.parse(
-                        (sectionCommission?.amount ?? 0).toString(),
-                      ))
-                  .toString();
-        }
-      } else {
-        final vendorCommission = vendorModel.adminCommission!;
-        final commissionType = vendorCommission.commissionType?.toLowerCase();
-        final isPercent = commissionType == "percent" ||
-            commissionType == "percentage";
-        if (isPercent) {
-          commission =
-              (double.parse(price) +
-                      (double.parse(price) *
-                          double.parse(
-                            (vendorCommission.amount ?? 0).toString(),
-                          ) /
-                          100))
-                  .toString();
-        } else {
-          commission =
-              (double.parse(price) +
-                      double.parse(
-                        (vendorCommission.amount ?? 0).toString(),
-                      ))
-                  .toString();
-        }
-      }
-    } else {
-      commission = price;
+    if (sectionCommission?.isEnabled != true) {
+      return basePrice.toString();
     }
 
-    return commission;
+    final useVendor = vendorModel.adminCommission != null;
+    final String? typeRaw = useVendor
+        ? vendorModel.adminCommission!.commissionType
+        : sectionCommission?.commissionType;
+    final dynamic amountRaw = useVendor
+        ? vendorModel.adminCommission!.amount
+        : sectionCommission?.amount;
+
+    final double commissionAmount = _safeDouble(amountRaw);
+    final commissionType = typeRaw?.toLowerCase();
+    final isPercent =
+        commissionType == "percent" || commissionType == "percentage";
+
+    final double withCommission = isPercent
+        ? basePrice + (basePrice * commissionAmount / 100)
+        : basePrice + commissionAmount;
+
+    return withCommission.toString();
   }
 
   static double calculateTax({String? amount, TaxModel? taxModel}) {
@@ -766,28 +754,9 @@ class Constant {
     double longitude, [
     String? label,
   ]) {
-    Uri uri;
-    if (kIsWeb) {
-      uri = Uri.https('www.google.com', '/maps/search/', {
-        'api': '1',
-        'query': '$latitude,$longitude',
-      });
-    } else if (Platform.isAndroid) {
-      var query = '$latitude,$longitude';
-      if (label != null) query += '($label)';
-      uri = Uri(scheme: 'geo', host: '0,0', queryParameters: {'q': query});
-    } else if (Platform.isIOS) {
-      var params = {'ll': '$latitude,$longitude'};
-      if (label != null) params['q'] = label;
-      uri = Uri.https('maps.apple.com', '/', params);
-    } else {
-      uri = Uri.https('www.google.com', '/maps/search/', {
-        'api': '1',
-        'query': '$latitude,$longitude',
-      });
-    }
-
-    return uri;
+    final point = '$latitude,$longitude';
+    // Universal Yandex Maps link (web + mobile deep link fallback).
+    return Uri.parse('https://yandex.com/maps/?ll=$longitude,$latitude&z=16&pt=$point');
   }
 
   static Future<void> sendOrderEmail({required OrderModel orderModel}) async {

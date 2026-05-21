@@ -25,6 +25,25 @@ class _CabHomeScreenState extends State<CabHomeScreen> {
   late CabHomeController homeController;
   late CabBookingController controller;
 
+  Future<void> _findMeAndMoveSourceMarker() async {
+    await controller.refreshCurrentLocation();
+    if (Constant.isYandexMap && controller.yandexMapController != null) {
+      await controller.yandexMapController!.moveCamera(
+        ym.CameraUpdate.newCameraPosition(
+          ym.CameraPosition(
+            target: ym.Point(
+              latitude: controller.currentPosition.value.latitude,
+              longitude: controller.currentPosition.value.longitude,
+            ),
+            zoom: 14,
+          ),
+        ),
+      );
+    }
+  }
+
+  ym.YandexMapController? _ownedMapController;
+
   @override
   void initState() {
     super.initState();
@@ -34,6 +53,16 @@ class _CabHomeScreenState extends State<CabHomeScreen> {
     controller = Get.isRegistered<CabBookingController>()
         ? Get.find<CabBookingController>()
         : Get.put(CabBookingController());
+  }
+
+  @override
+  void dispose() {
+    if (_ownedMapController != null &&
+        identical(controller.yandexMapController, _ownedMapController)) {
+      controller.yandexMapController = null;
+    }
+    _ownedMapController = null;
+    super.dispose();
   }
 
   @override
@@ -54,6 +83,7 @@ class _CabHomeScreenState extends State<CabHomeScreen> {
                                   ? ym.YandexMap(
                                     onMapCreated:
                                         (ym.YandexMapController mapController) async {
+                                      _ownedMapController = mapController;
                                       controller.yandexMapController =
                                           mapController;
                                       await mapController.toggleUserLayer(
@@ -226,6 +256,55 @@ class _CabHomeScreenState extends State<CabHomeScreen> {
                                         size: 20,
                                       ),
                                     ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            top: 50,
+                            right: Constant.isRtl ? null : 20,
+                            left: Constant.isRtl ? 20 : null,
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(24),
+                                onTap: _findMeAndMoveSourceMarker,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 10,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color:
+                                        isDark
+                                            ? AppThemeData.greyDark50
+                                            : AppThemeData.grey50,
+                                    borderRadius: BorderRadius.circular(24),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.my_location_rounded,
+                                        size: 18,
+                                        color:
+                                            isDark
+                                                ? AppThemeData.grey50
+                                                : AppThemeData.greyDark50,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        "Meni top".tr,
+                                        style: AppThemeData.mediumTextStyle(
+                                          fontSize: 13,
+                                          color:
+                                              isDark
+                                                  ? AppThemeData.grey50
+                                                  : AppThemeData.greyDark50,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
@@ -1013,15 +1092,6 @@ class _CabHomeScreenState extends State<CabHomeScreen> {
                                                   if (lat != null && lng != null) {
                                                     controller.sourceTextEditController.value.text = result['address'] ?? '';
                                                     controller.setDepartureMarker(lat, lng);
-                                                  } else {
-                                                    final placeId = result['place_id'] as String?;
-                                                    if (placeId != null) {
-                                                      final details = await controller.getPlaceDetailsGoogle(placeId);
-                                                      if (details != null) {
-                                                        controller.sourceTextEditController.value.text = details['address'] ?? '';
-                                                        controller.setDepartureMarker(details['lat'] as double, details['lng'] as double);
-                                                      }
-                                                    }
                                                   }
                                                   controller.sourceFocusNode.unfocus();
                                                   controller.isSourceFocused.value = false;
@@ -1192,15 +1262,6 @@ class _CabHomeScreenState extends State<CabHomeScreen> {
                                                   if (lat != null && lng != null) {
                                                     controller.destinationTextEditController.value.text = result['address'] ?? '';
                                                     controller.setDestinationMarker(lat, lng);
-                                                  } else {
-                                                    final placeId = result['place_id'] as String?;
-                                                    if (placeId != null) {
-                                                      final details = await controller.getPlaceDetailsGoogle(placeId);
-                                                      if (details != null) {
-                                                        controller.destinationTextEditController.value.text = details['address'] ?? '';
-                                                        controller.setDestinationMarker(details['lat'] as double, details['lng'] as double);
-                                                      }
-                                                    }
                                                   }
                                                   controller.destinationFocusNode.unfocus();
                                                   controller.isDestinationFocused.value = false;

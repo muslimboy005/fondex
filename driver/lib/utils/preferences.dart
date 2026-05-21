@@ -22,6 +22,16 @@ class Preferences {
   static const codSettings = "CODSettings";
   static const orderRingtone = "audioSound";
 
+  // CallKit / incoming order
+  static const pendingOrderId = "pendingOrderId";
+  static const pendingOrderType = "pendingOrderType";
+  static const pendingRideId = "pendingRideId";
+  static const voipToken = "voipToken";
+
+  // Cab ride resilience (survive app restart / Yandex Navigator round trip)
+  static const lastActiveRideId = "lastActiveRideId";
+  static const lastAccumulatedKm = "lastAccumulatedKm";
+
   static late SharedPreferences pref;
 
   static Future<void> initPref() async {
@@ -50,6 +60,14 @@ class Preferences {
 
   static Future<void> setInt(String key, int value) async {
     await pref.setInt(key, value);
+  }
+
+  static double getDouble(String key, {double defaultValue = 0.0}) {
+    return pref.getDouble(key) ?? defaultValue;
+  }
+
+  static Future<void> setDouble(String key, double value) async {
+    await pref.setDouble(key, value);
   }
 
   static Future<void> clearSharPreference() async {

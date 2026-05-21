@@ -33,7 +33,7 @@ import '../../../service/database_helper.dart';
 import '../../../service/fire_store_utils.dart';
 import '../../../themes/show_toast_dialog.dart';
 import '../../../widget/gradiant_text.dart';
-import '../../auth_screens/login_screen.dart';
+import '../../auth_screens/phone_registration_screen.dart';
 import '../advertisement_screens/all_advertisement_screen.dart';
 import '../cart_screen/cart_screen.dart';
 import '../wallet_screen/wallet_screen.dart';
@@ -118,7 +118,7 @@ class HomeScreenTwo extends StatelessWidget {
                                                 Constant.userModel == null
                                                     ? InkWell(
                                                       onTap: () {
-                                                        Get.offAll(const LoginScreen());
+                                                        Get.offAll(const PhoneRegistrationScreen());
                                                       },
                                                       child: Text(
                                                         "Login".tr,
@@ -407,13 +407,18 @@ class HomeScreenTwo extends StatelessWidget {
                   DropdownButton<String>(
                     isDense: false,
                     underline: const SizedBox(),
-                    value: controller.selectedOrderTypeValue.value.tr,
+                    value: controller.selectedOrderTypeValue.value,
                     icon: const Icon(Icons.keyboard_arrow_down),
                     items:
-                        <String>['Delivery'.tr, 'TakeAway'.tr].map((String value) {
+                        <String>['Delivery', 'TakeAway'].map((String key) {
                           return DropdownMenuItem<String>(
-                            value: value,
-                            child: Text(value.tr, style: TextStyle(fontFamily: AppThemeData.semiBold, fontSize: 16, color: isDark ? AppThemeData.grey50 : AppThemeData.grey900)),
+                            value: key,
+                            child: Text(
+                              key == 'Delivery'
+                                  ? 'Delivery'.tr
+                                  : 'TakeAway'.tr,
+                              style: TextStyle(fontFamily: AppThemeData.semiBold, fontSize: 16, color: isDark ? AppThemeData.grey50 : AppThemeData.grey900),
+                            ),
                           );
                         }).toList(),
                     onChanged: (value) async {

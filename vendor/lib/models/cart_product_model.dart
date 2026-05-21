@@ -1,5 +1,43 @@
 import 'dart:convert';
 
+Map<String, dynamic> _variantOptionsFromJson(dynamic value) {
+  if (value == null) return <String, dynamic>{};
+  if (value is Map<String, dynamic>) return value;
+  if (value is Map) {
+    return value.map((k, v) => MapEntry(k.toString(), v));
+  }
+  if (value is List) {
+    final out = <String, dynamic>{};
+    for (var i = 0; i < value.length; i++) {
+      final e = value[i];
+      if (e is Map) {
+        for (final entry in e.entries) {
+          out[entry.key.toString()] = entry.value;
+        }
+      } else {
+        out['$i'] = e;
+      }
+    }
+    return out;
+  }
+  return <String, dynamic>{};
+}
+
+VariantInfo? _variantInfoFromJson(dynamic raw) {
+  if (raw == null || raw == 'null') return null;
+  if (raw is String) {
+    final decoded = jsonDecode(raw);
+    if (decoded is Map) {
+      return VariantInfo.fromJson(Map<String, dynamic>.from(decoded));
+    }
+    return null;
+  }
+  if (raw is Map) {
+    return VariantInfo.fromJson(Map<String, dynamic>.from(raw));
+  }
+  return null;
+}
+
 class CartProductModel {
   String? id;
   String? categoryId;
@@ -38,11 +76,7 @@ class CartProductModel {
     quantity = json['quantity'];
     extrasPrice = json['extras_price'];
     extras = json['extras'];
-    variantInfo = json['variant_info'] != null
-        ? "_Map<String, dynamic>" == json['variant_info'].runtimeType.toString()
-              ? VariantInfo.fromJson(json['variant_info'])
-              : VariantInfo.fromJson(jsonDecode(json['variant_info']))
-        : null;
+    variantInfo = _variantInfoFromJson(json['variant_info']);
   }
 
   Map<String, dynamic> toJson() {
@@ -76,7 +110,7 @@ class VariantInfo {
     variantPrice = json['variant_price'] ?? '';
     variantSku = json['variant_sku'] ?? '';
     variantImage = json['variant_image'] ?? '';
-    variantOptions = json['variant_options'] ?? {};
+    variantOptions = _variantOptionsFromJson(json['variant_options']);
   }
 
   Map<String, dynamic> toJson() {

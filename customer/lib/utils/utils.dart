@@ -8,6 +8,16 @@ import 'package:customer/service/yandex_geocoding_service.dart';
 import 'package:location/location.dart' as loc;
 
 class Utils {
+  /// Home/Cart: [Preferences.foodDeliveryType] — kanonik `Delivery` / `TakeAway`.
+  /// Eski ilova tarjima qatorini saqlagan bo'lsa, tiklaydi.
+  static String canonicalFoodDeliveryType(String raw) {
+    final t = raw.trim();
+    if (t == 'Delivery' || t == 'TakeAway') return t;
+    if (t == 'Delivery'.tr) return 'Delivery';
+    if (t == 'TakeAway'.tr) return 'TakeAway';
+    return 'Delivery';
+  }
+
   static Future<Position?> getCurrentLocation() async {
     bool serviceEnabled;
     LocationPermission permission;
@@ -56,48 +66,18 @@ class Utils {
 
   static Future<void> redirectMap({required String name, required double latitude, required double longLatitude}) async {
     final mapType = Constant.normalizeMapType(Constant.mapType);
-    if (mapType == "google") {
-      bool? isAvailable = await MapLauncher.isMapAvailable(MapType.google);
-      if (isAvailable == true) {
-        await MapLauncher.showDirections(mapType: MapType.google, directionsMode: DirectionsMode.driving, destinationTitle: name, destination: Coords(latitude, longLatitude));
-      } else {
-        ShowToastDialog.showToast("Google map is not installed".tr);
-      }
-    } else if (mapType == "googleGo") {
-      bool? isAvailable = await MapLauncher.isMapAvailable(MapType.googleGo);
-      if (isAvailable == true) {
-        await MapLauncher.showDirections(mapType: MapType.googleGo, directionsMode: DirectionsMode.driving, destinationTitle: name, destination: Coords(latitude, longLatitude));
-      } else {
-        ShowToastDialog.showToast("Google Go map is not installed".tr);
-      }
-    } else if (mapType == "waze") {
-      bool? isAvailable = await MapLauncher.isMapAvailable(MapType.waze);
-      if (isAvailable == true) {
-        await MapLauncher.showDirections(mapType: MapType.waze, directionsMode: DirectionsMode.driving, destinationTitle: name, destination: Coords(latitude, longLatitude));
-      } else {
-        ShowToastDialog.showToast("Waze is not installed".tr);
-      }
-    } else if (mapType == "mapswithme") {
-      bool? isAvailable = await MapLauncher.isMapAvailable(MapType.mapswithme);
-      if (isAvailable == true) {
-        await MapLauncher.showDirections(mapType: MapType.mapswithme, directionsMode: DirectionsMode.driving, destinationTitle: name, destination: Coords(latitude, longLatitude));
-      } else {
-        ShowToastDialog.showToast("Mapswithme is not installed".tr);
-      }
-    } else if (mapType == "yandexNavi") {
-      bool? isAvailable = await MapLauncher.isMapAvailable(MapType.yandexNavi);
-      if (isAvailable == true) {
-        await MapLauncher.showDirections(mapType: MapType.yandexNavi, directionsMode: DirectionsMode.driving, destinationTitle: name, destination: Coords(latitude, longLatitude));
-      } else {
-        ShowToastDialog.showToast("YandexNavi is not installed".tr);
-      }
-    } else if (mapType == "yandexMaps") {
-      bool? isAvailable = await MapLauncher.isMapAvailable(MapType.yandexMaps);
-      if (isAvailable == true) {
-        await MapLauncher.showDirections(mapType: MapType.yandexMaps, directionsMode: DirectionsMode.driving, destinationTitle: name, destination: Coords(latitude, longLatitude));
-      } else {
-        ShowToastDialog.showToast("yandexMaps map is not installed".tr);
-      }
+    final selectedType =
+        mapType == "yandexNavi" ? MapType.yandexNavi : MapType.yandexMaps;
+    final isAvailable = await MapLauncher.isMapAvailable(selectedType);
+    if (isAvailable == true) {
+      await MapLauncher.showDirections(
+        mapType: selectedType,
+        directionsMode: DirectionsMode.driving,
+        destinationTitle: name,
+        destination: Coords(latitude, longLatitude),
+      );
+    } else {
+      ShowToastDialog.showToast("Yandex map is not installed".tr);
     }
   }
 

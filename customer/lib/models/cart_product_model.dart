@@ -1,7 +1,32 @@
 import 'dart:convert';
 
+Map<String, dynamic> _variantOptionsFromJson(dynamic value) {
+  if (value == null) return <String, dynamic>{};
+  if (value is Map<String, dynamic>) return value;
+  if (value is Map) {
+    return value.map((k, v) => MapEntry(k.toString(), v));
+  }
+  if (value is List) {
+    final out = <String, dynamic>{};
+    for (var i = 0; i < value.length; i++) {
+      final e = value[i];
+      if (e is Map) {
+        for (final entry in e.entries) {
+          out[entry.key.toString()] = entry.value;
+        }
+      } else {
+        out['$i'] = e;
+      }
+    }
+    return out;
+  }
+  return <String, dynamic>{};
+}
+
 class CartProductModel {
   String? id;
+  /// Storage API mahsulot raqami (Payme `product_id` uchun; Firestore UUID emas).
+  int? apiProductId;
   String? categoryId;
   String? name;
   String? photo;
@@ -15,6 +40,7 @@ class CartProductModel {
 
   CartProductModel({
     this.id,
+    this.apiProductId,
     this.categoryId,
     this.name,
     this.photo,
@@ -29,6 +55,9 @@ class CartProductModel {
 
   CartProductModel.fromJson(Map<String, dynamic> json) {
     id = json['id'];
+    final apiRaw = json['api_product_id'];
+    apiProductId =
+        apiRaw is int ? apiRaw : int.tryParse(apiRaw?.toString() ?? '');
     categoryId = json['category_id'];
     name = json['name'];
     photo = json['photo'];
@@ -54,6 +83,7 @@ class CartProductModel {
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['id'] = id;
+    data['api_product_id'] = apiProductId;
     data['category_id'] = categoryId;
     data['name'] = name;
     data['photo'] = photo;
@@ -80,11 +110,12 @@ class VariantInfo {
   VariantInfo({this.variantId, this.variantPrice, this.variantSku, this.variantImage, this.variantOptions});
 
   VariantInfo.fromJson(Map<String, dynamic> json) {
-    variantId = json['variantId'] ?? '';
-    variantPrice = json['variantPrice'] ?? '';
-    variantSku = json['variantSku'] ?? '';
+    variantId = (json['variantId'] ?? json['variant_id'] ?? '').toString();
+    variantPrice =
+        (json['variantPrice'] ?? json['variant_price'] ?? '').toString();
+    variantSku = (json['variantSku'] ?? json['variant_sku'] ?? '').toString();
     variantImage = json['variant_image'] ?? '';
-    variantOptions = json['variant_options'] ?? {};
+    variantOptions = _variantOptionsFromJson(json['variant_options']);
   }
 
   Map<String, dynamic> toJson() {

@@ -19,7 +19,7 @@ const String _uzBbox = '56.0,37.0~73.5,45.6';
 String _geocoderUrl(String query, {bool reverse = false, bool restrictToUz = false}) {
   final key = _getGeocoderApiKey();
   if (key.isEmpty) return '';
-  final geocode = reverse ? '$query' : Uri.encodeComponent(query);
+  final geocode = reverse ? query : Uri.encodeComponent(query);
   var url = 'https://geocode-maps.yandex.ru/1.x/?apikey=${Uri.encodeComponent(key)}'
       '&geocode=$geocode&format=json&lang=uz_UZ&results=5';
   if (!reverse && restrictToUz) {
@@ -42,7 +42,7 @@ Future<String> getAddressFromCoordinatesYandex(double lat, double lng) async {
     final r = await http.get(Uri.parse(url)).timeout(const Duration(seconds: 8));
     dev.log('$_logTag [REVERSE] Javob: statusCode=${r.statusCode} bodyLength=${r.body.length}');
     if (r.statusCode != 200) {
-      dev.log('$_logTag [REVERSE] Xato: statusCode != 200. body(200): ${r.body.length > 200 ? r.body.substring(0, 200) + "..." : r.body}');
+      dev.log('$_logTag [REVERSE] Xato: statusCode != 200. body(200): ${r.body.length > 200 ? "${r.body.substring(0, 200)}..." : r.body}');
       return _uzManzilTopilmadi;
     }
     final json = jsonDecode(r.body);
@@ -55,7 +55,7 @@ Future<String> getAddressFromCoordinatesYandex(double lat, double lng) async {
       dev.log('$_logTag [REVERSE] Manzil topildi: $address');
       return address;
     }
-    dev.log('$_logTag [REVERSE] Javobda manzil yo‘q yoki parse xato. body(300): ${r.body.length > 300 ? r.body.substring(0, 300) + "..." : r.body}');
+    dev.log('$_logTag [REVERSE] Javobda manzil yo‘q yoki parse xato. body(300): ${r.body.length > 300 ? "${r.body.substring(0, 300)}..." : r.body}');
     return _uzManzilTopilmadi;
   } catch (e, st) {
     dev.log('$_logTag [REVERSE] Exception: $e', stackTrace: st);
@@ -182,7 +182,7 @@ Future<({double lat, double lng})?> getLocationFromAddressYandex(String address)
     final r = await http.get(Uri.parse(url)).timeout(const Duration(seconds: 8));
     dev.log('$_logTag [FORWARD] Javob: statusCode=${r.statusCode} bodyLength=${r.body.length}');
     if (r.statusCode != 200) {
-      dev.log('$_logTag [FORWARD] Xato: statusCode != 200. body(200): ${r.body.length > 200 ? r.body.substring(0, 200) + "..." : r.body}');
+      dev.log('$_logTag [FORWARD] Xato: statusCode != 200. body(200): ${r.body.length > 200 ? "${r.body.substring(0, 200)}..." : r.body}');
       return null;
     }
     final json = jsonDecode(r.body);
@@ -194,7 +194,7 @@ Future<({double lat, double lng})?> getLocationFromAddressYandex(String address)
     if (result != null) {
       dev.log('$_logTag [FORWARD] Koordinata topildi: lat=${result.lat} lng=${result.lng}');
     } else {
-      dev.log('$_logTag [FORWARD] Javobda koordinata yo‘q yoki parse xato. body(300): ${r.body.length > 300 ? r.body.substring(0, 300) + "..." : r.body}');
+      dev.log('$_logTag [FORWARD] Javobda koordinata yo‘q yoki parse xato. body(300): ${r.body.length > 300 ? "${r.body.substring(0, 300)}..." : r.body}');
     }
     return result;
   } catch (e, st) {

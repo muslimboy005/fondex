@@ -201,9 +201,30 @@ class Variants {
   Variants.fromJson(Map<String, dynamic> json) {
     variantId = json['variant_id'];
     variantImage = json['variant_image'];
-    variantPrice = json['variant_price'] ?? '0';
-    variantQuantity = json['variant_quantity'] ?? '0';
-    variantSku = json['variant_sku'];
+    variantPrice = (json['variant_price'] ?? json['price'] ?? '0').toString();
+    variantQuantity =
+        (json['variant_quantity'] ?? json['quantity'] ?? '0').toString();
+    variantSku = (json['variant_sku'] ?? json['sku'])?.toString();
+
+    // Backend `attribute_data` formatidan eski `variant_sku` ko'rinishini
+    // tiklaymiz, shunda hozirgi UI kombinatsiya logikasi ishlaydi.
+    if ((variantSku == null || variantSku!.isEmpty) &&
+        json['attribute_data'] is List) {
+      final data = json['attribute_data'] as List;
+      final values = <String>[];
+      for (final raw in data) {
+        if (raw is Map<String, dynamic>) {
+          final value = raw['value']?.toString() ?? '';
+          if (value.isNotEmpty) values.add(value);
+        } else if (raw is Map) {
+          final value = raw['value']?.toString() ?? '';
+          if (value.isNotEmpty) values.add(value);
+        }
+      }
+      if (values.isNotEmpty) {
+        variantSku = values.join('-');
+      }
+    }
   }
 
   Map<String, dynamic> toJson() {

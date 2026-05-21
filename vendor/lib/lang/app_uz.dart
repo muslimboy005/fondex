@@ -735,10 +735,14 @@ const Map<String, String> uzUZ = {
   'Confirm ad deletion': 'Reklamani o\'chirishni tasdiqlash',
   'Deleting this ad will remove it permanently. Are you sure you want to proceed?':
       'Bu reklamani o\'chirish uni butunlay olib tashlaydi. Davom etishni xohlaysizmi?',
+  'Confirm product deletion': "Mahsulotni o'chirishni tasdiqlaysizmi?",
+  'Deleting this product will remove it permanently. Are you sure you want to proceed?':
+      "Bu mahsulotni aniq o'chirasizmi?",
   'Dine In Details save': 'Restoranda iste\'mol qilish tafsilotlari saqlandi',
   'Reset Password link sent your': 'Parolni qayta tiklash havolasi yuborildi',
   'No user found for that email.':
       'Bu elektron pochta uchun foydalanuvchi topilmadi.',
+  'User not found in Firebase.': 'Firebase\'da foydalanuvchi topilmadi.',
   'Wrong password provided for that user.':
       'Bu foydalanuvchi uchun noto\'g\'ri parol kiritildi.',
   'Invalid Email.': 'Noto\'g\'ri elektron pochta.',
@@ -967,4 +971,8 @@ const Map<String, String> uzUZ = {
   "please select": "iltimos tanlang",
   "something went wrong, please contact admin.":
       "Nimadir noto'g'ri ketdi, iltimos, administrator bilan bog'laning.",
+  "New version is available": "Yangi versiya chiqdi",
+  "Please update the app to continue":
+      "Davom etish uchun ilovani yangilang",
+  "Update": "Yangilash",
 };

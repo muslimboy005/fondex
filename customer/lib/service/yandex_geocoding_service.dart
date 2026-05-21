@@ -1,18 +1,18 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:customer/models/app_placemark.dart';
 import 'package:customer/models/lat_lng.dart';
-import 'package:customer/utils/uzbek_transliteration.dart';
 import 'package:http/http.dart' as http;
 
 /// Yandex Geocoder REST API: https://geocode-maps.yandex.ru/1.x/
-/// Til: ru_RU (O'zbekistonda kirillcha/ruscha manzillar), qidiruv: faqat O'zbekiston.
+/// Til: uz_UZ, qidiruv: faqat O'zbekiston.
 class YandexGeocodingService {
   YandexGeocodingService({required this.apiKey});
 
   static const String _baseUrl = 'https://geocode-maps.yandex.ru/1.x/';
-  /// O'zbekiston uchun til (Yandex uz qo'llamaydi, ru_RU – kirillcha manzillar)
-  static const String _lang = 'ru_RU';
+  /// O'zbekiston uchun til: o'zbekcha natijalar.
+  static const String _lang = 'uz_UZ';
   /// O'zbekiston bbox: janubiy-g'arb ~ shimoliy-sharq (lon,lat~lon,lat)
   static const String _uzbekistanBbox = '56.0,37.0~73.2,45.6';
   final String apiKey;
@@ -20,14 +20,60 @@ class YandexGeocodingService {
   /// Reverse geocoding: (latitude, longitude) -> address (o'zbekcha/kirillcha).
   Future<AppPlacemark?> reverseGeocode(double lat, double lon) async {
     final url = Uri.parse(
-      '$_baseUrl?apikey=$apiKey&geocode=$lon,$lat&format=json&lang=$_lang',
+      '$_baseUrl?apikey=$apiKey&geocode=$lon,$lat&format=json&lang=$_lang&results=1',
     );
     try {
-      final response = await http.get(url);
-      if (response.statusCode != 200) return null;
+      final response = await http.get(
+        url,
+        headers: const {
+          'Accept': 'application/json',
+          'User-Agent': 'eMart/1.0',
+        },
+      );
+      if (response.statusCode != 200) {
+        log(
+          '❌ [YandexGeocoder] reverseGeocode status=${response.statusCode} body=${response.body.substring(0, response.body.length > 300 ? 300 : response.body.length)}',
+        );
+        return null;
+      }
       final data = jsonDecode(response.body) as Map<String, dynamic>;
       return _parseFirstPlacemark(data);
-    } catch (_) {
+    } catch (e, st) {
+      log('❌ [YandexGeocoder] reverseGeocode error: $e\n$st');
+      return null;
+    }
+  }
+
+  /// Reverse geocoding text fallback. Returns GeocoderMetaData.text/formatted.
+  Future<String?> reverseGeocodeRawText(double lat, double lon) async {
+    final url = Uri.parse(
+      '$_baseUrl?apikey=$apiKey&geocode=$lon,$lat&format=json&lang=$_lang&results=1',
+    );
+    try {
+      final response = await http.get(
+        url,
+        headers: const {
+          'Accept': 'application/json',
+          'User-Agent': 'eMart/1.0',
+        },
+      );
+      if (response.statusCode != 200) return null;
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      final members = _getFeatureMembers(data);
+      if (members.isEmpty) return null;
+      final first = members.first;
+      final meta =
+          first['metaDataProperty']?['GeocoderMetaData'] as Map<String, dynamic>?;
+      final address = meta?['Address'] as Map<String, dynamic>?;
+      final formatted = address?['formatted']?.toString().trim();
+      if (formatted != null && formatted.isNotEmpty) return formatted;
+      final text = meta?['text']?.toString().trim();
+      if (text != null && text.isNotEmpty) return text;
+      final name = first['name']?.toString().trim();
+      if (name != null && name.isNotEmpty) return name;
+      return null;
+    } catch (e, st) {
+      log('❌ [YandexGeocoder] reverseGeocodeRawText error: $e\n$st');
       return null;
     }
   }
@@ -94,10 +140,25 @@ class YandexGeocodingService {
     try {
       final meta = geo['metaDataProperty']?['GeocoderMetaData'] as Map<String, dynamic>?;
       final address = meta?['Address'] as Map<String, dynamic>?;
-      if (address == null) return null;
+      final formattedFromText = (meta?['text'] as String?)?.trim();
+      final geoName = (geo['name'] as String?)?.trim();
+      final geoDescription = (geo['description'] as String?)?.trim();
+      final formattedFromAddress = (address?['formatted'] as String?)?.trim();
+      final formatted = [
+        formattedFromAddress,
+        formattedFromText,
+        if (geoName != null && geoDescription != null && geoName.isNotEmpty && geoDescription.isNotEmpty)
+          '$geoDescription, $geoName'
+        else
+          null,
+        geoName,
+      ].whereType<String>().firstWhere(
+            (e) => e.isNotEmpty,
+            orElse: () => '',
+          );
+      if (formatted.isEmpty) return null;
 
-      final formatted = address['formatted'] as String? ?? '';
-      final components = address['Components'] as List<dynamic>? ?? [];
+      final components = address?['Components'] as List<dynamic>? ?? [];
       String? street, locality, administrativeArea, country, postalCode, subLocality;
 
       for (final c in components) {
@@ -157,12 +218,16 @@ class YandexGeocodingService {
 
       final meta = geo['metaDataProperty']?['GeocoderMetaData'] as Map<String, dynamic>?;
       final address = meta?['Address'] as Map<String, dynamic>?;
-      final formatted = address?['formatted'] as String? ?? geo['name'] as String? ?? '';
-      final displayLatin = cyrillicToLatinUzbek(formatted);
+      final fromText = (meta?['text'] as String?)?.trim();
+      final formatted =
+          address?['formatted'] as String? ??
+          (fromText?.isNotEmpty == true ? fromText : null) ??
+          geo['name'] as String? ??
+          '';
 
       return GeocodeResult(
         latLng: LatLng(lat, lon),
-        displayName: displayLatin,
+        displayName: formatted,
         placemark: _placemarkFromGeoObject(geo),
       );
     } catch (_) {

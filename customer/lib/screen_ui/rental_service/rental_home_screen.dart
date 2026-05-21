@@ -11,7 +11,7 @@ import '../../themes/show_toast_dialog.dart';
 import '../../themes/text_field_widget.dart';
 import '../../utils/utils.dart';
 import '../../widget/place_picker/location_picker_screen.dart';
-import '../auth_screens/login_screen.dart';
+import '../auth_screens/phone_registration_screen.dart';
 import '../multi_vendor_service/wallet_screen/wallet_screen.dart';
 import 'package:customer/models/lat_lng.dart';
 
@@ -65,7 +65,7 @@ class RentalHomeScreen extends StatelessWidget {
                         Constant.userModel == null
                             ? InkWell(
                               onTap: () {
-                                Get.offAll(const LoginScreen());
+                                Get.offAll(const PhoneRegistrationScreen());
                               },
                               child: Text(
                                 "Login".tr,
@@ -755,28 +755,6 @@ class RentalHomeScreen extends StatelessWidget {
                           children: [
                             Visibility(
                               visible:
-                                  controller.stripeModel.value.isEnabled ==
-                                  true,
-                              child: cardDecoration(
-                                controller,
-                                PaymentGateway.stripe,
-                                isDark,
-                                "assets/images/stripe.png",
-                              ),
-                            ),
-                            Visibility(
-                              visible:
-                                  controller.payPalModel.value.isEnabled ==
-                                  true,
-                              child: cardDecoration(
-                                controller,
-                                PaymentGateway.paypal,
-                                isDark,
-                                "assets/images/paypal.png",
-                              ),
-                            ),
-                            Visibility(
-                              visible:
                                   controller.payStackModel.value.isEnable ==
                                   true,
                               child: cardDecoration(
@@ -817,17 +795,6 @@ class RentalHomeScreen extends StatelessWidget {
                                 PaymentGateway.payFast,
                                 isDark,
                                 "assets/images/payfast.png",
-                              ),
-                            ),
-                            Visibility(
-                              visible:
-                                  controller.razorPayModel.value.isEnabled ==
-                                  true,
-                              child: cardDecoration(
-                                controller,
-                                PaymentGateway.razorpay,
-                                isDark,
-                                "assets/images/razorpay.png",
                               ),
                             ),
                             Visibility(

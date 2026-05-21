@@ -140,6 +140,10 @@ const Map<String, String> uzUZ = {
   "Chaqiruv narxi": "Chaqiruv narxi",
   "Mijoz to'lovi": "Mijoz to'lovi",
   "Pickup Customer": "Mijozni olish",
+  "Yetib keldim": "Yetib keldim",
+  "Avval mijozni qabul qiling": "Avval mijozni qabul qiling",
+  "Holatni yangilashda xatolik. Qaytadan urinib ko'ring.":
+      "Holatni yangilashda xatolik. Qaytadan urinib ko'ring.",
   "Complete Ride": "Sayohatni yakunlash",
   "Manzilga yetib kelingan": "Manzilga yetib kelingan",
   "Hozir to'lov qilish": "Hozir to'lov qilish",
@@ -539,6 +543,7 @@ const Map<String, String> uzUZ = {
   "No rental requests available in your selected zone.":
       "Tanlangan zonada ijara so'rovlari mavjud emas.",
   "No user found for that email.": "Bu email uchun foydalanuvchi topilmadi.",
+  "User not found in Firebase.": "Firebase'da foydalanuvchi topilmadi.",
   "Note: Admin commission will be debited from your wallet balance.\n\nAdmin commission will apply on your booking amount minus discount (if applicable).":
       "Eslatma: Administrator komissiyasi hamyon balansingizdan yechib olinadi.\n\nAdministrator komissiyasi (agar mavjud bo'lsa) bron summasidan chegirma ayirilgandan keyin hisoblanadi.",
   "Nothing found here...": "Bu yerda hech narsa topilmadi",
@@ -551,6 +556,8 @@ const Map<String, String> uzUZ = {
   "Order Delivered": "Buyurtma yetkazildi",
   "Order ID": "Buyurtma ID",
   "Payme Payment": "Payme to'lovi",
+  "Payme opens in your browser": "Payme tashqi brauzerda ochildi",
+  "Could not open Payme link": "Payme havolasini ochib bo'lmadi",
   "Payment Failed": "To'lov muvaffaqiyatsiz",
   "Payment Failed!!": "To'lov muvaffaqiyatsiz!!",
   "Payment Processing!! via": "To'lov qayta ishlanmoqda!! orqali",
@@ -729,4 +736,8 @@ const Map<String, String> uzUZ = {
   "You referral user has complete his this order #%s":
       "Taklif qilgan foydalanuvchingiz buyurtmani bajardi #%s",
   "Wallet Top-up": "Hamyon to'ldirish",
+  "New version is available": "Yangi versiya chiqdi",
+  "Please update the app to continue":
+      "Davom etish uchun ilovani yangilang",
+  "Update": "Yangilash",
 };

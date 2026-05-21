@@ -14,6 +14,7 @@ import 'package:vendor/themes/app_them_data.dart';
 import 'package:vendor/themes/custom_dialog_box.dart';
 import 'package:vendor/themes/responsive.dart';
 import 'package:vendor/themes/round_button_fill.dart';
+import 'package:vendor/service/vendors_products_api_service.dart';
 import 'package:vendor/utils/fire_store_utils.dart';
 import 'package:vendor/utils/network_image_widget.dart';
 
@@ -43,8 +44,38 @@ void _showSubscriptionRequiredDialog(BuildContext context) {
   );
 }
 
-class ProductListScreen extends StatelessWidget {
+class ProductListScreen extends StatefulWidget {
   const ProductListScreen({super.key});
+
+  @override
+  State<ProductListScreen> createState() => _ProductListScreenState();
+}
+
+class _ProductListScreenState extends State<ProductListScreen> {
+  final ScrollController _scrollController = ScrollController();
+  ProductListController? _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    if (_controller == null) return;
+    if (!_scrollController.hasClients) return;
+    final position = _scrollController.position;
+    if (position.pixels >= position.maxScrollExtent - 200) {
+      _controller!.loadMoreProducts();
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,6 +84,7 @@ class ProductListScreen extends StatelessWidget {
     return GetX(
       init: ProductListController(),
       builder: (controller) {
+        _controller = controller;
         return Scaffold(
           appBar: AppBar(
             backgroundColor: AppThemeData.primary300,
@@ -364,9 +396,25 @@ class ProductListScreen extends StatelessWidget {
                     vertical: 10,
                   ),
                   child: ListView.builder(
-                    itemCount: controller.productList.length,
-                    shrinkWrap: true,
+                    controller: _scrollController,
+                    itemCount: controller.productList.length +
+                        (controller.hasMoreProducts.value ? 1 : 0),
                     itemBuilder: (context, index) {
+                      if (index >= controller.productList.length) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 20),
+                          child: Center(
+                            child: SizedBox(
+                              height: 28,
+                              width: 28,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.5,
+                                color: AppThemeData.primary300,
+                              ),
+                            ),
+                          ),
+                        );
+                      }
                       String price = "0.0";
                       String disPrice = "0.0";
                       List<String> selectedVariants = [];
@@ -726,15 +774,68 @@ class ProductListScreen extends StatelessWidget {
                                       Expanded(
                                         child: InkWell(
                                           onTap: () async {
-                                            ShowToastDialog.showLoader(
-                                              "Please wait..".tr,
+                                            showDialog(
+                                              context: context,
+                                              builder: (BuildContext context) {
+                                                return CustomDialogBox(
+                                                  title:
+                                                      "Confirm product deletion"
+                                                          .tr,
+                                                  descriptions:
+                                                      "Deleting this product will remove it permanently. Are you sure you want to proceed?"
+                                                          .tr,
+                                                  positiveString: "Yes".tr,
+                                                  negativeString: "Not Now".tr,
+                                                  positiveClick: () async {
+                                                    Get.back();
+                                                    ShowToastDialog.showLoader(
+                                                      "Please wait..".tr,
+                                                    );
+
+                                                    final product =
+                                                        controller
+                                                            .productList[
+                                                                index];
+                                                    final apiId = int.tryParse(
+                                                      product.id ?? '',
+                                                    );
+
+                                                    if (apiId != null) {
+                                                      final err = await VendorsProductsApiService
+                                                          .deleteProduct(
+                                                        apiId,
+                                                      );
+                                                      ShowToastDialog.closeLoader();
+                                                      if (err != null) {
+                                                        ShowToastDialog.showToast(
+                                                          err,
+                                                        );
+                                                      } else {
+                                                        await controller.getProduct();
+                                                      }
+                                                    } else {
+                                                      await FireStoreUtils
+                                                          .deleteProduct(
+                                                        product,
+                                                      ).then((value) async {
+                                                        await controller.getProduct();
+                                                        ShowToastDialog.closeLoader();
+                                                      });
+                                                    }
+                                                  },
+                                                  negativeClick: () {
+                                                    Get.back();
+                                                  },
+                                                  img: SvgPicture.asset(
+                                                    'assets/icons/ic_delete.svg',
+                                                    width: 40,
+                                                    color: isDark
+                                                        ? AppThemeData.grey100
+                                                        : AppThemeData.grey800,
+                                                  ),
+                                                );
+                                              },
                                             );
-                                            await FireStoreUtils.deleteProduct(
-                                              controller.productList[index],
-                                            ).then((value) {
-                                              controller.getProduct();
-                                              ShowToastDialog.closeLoader();
-                                            });
                                           },
                                           child: Row(
                                             mainAxisAlignment:

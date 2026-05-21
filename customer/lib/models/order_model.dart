@@ -38,6 +38,9 @@ class OrderModel {
   CashbackModel? cashback;
   String? courierCompanyName;
   String? courierTrackingId;
+  String? totalAmount;
+  double? latitude;
+  double? longitude;
 
   OrderModel({
     this.address,
@@ -71,6 +74,9 @@ class OrderModel {
     this.cashback,
     this.courierCompanyName,
     this.courierTrackingId,
+    this.totalAmount,
+    this.latitude,
+    this.longitude,
   });
 
   OrderModel.fromJson(Map<String, dynamic> json) {
@@ -88,6 +94,9 @@ class OrderModel {
     createdAt = json['createdAt'];
     courierCompanyName = json['courierCompanyName'];
     courierTrackingId = json['courierTrackingId'];
+    totalAmount = json['totalAmount']?.toString();
+    latitude = (json['latitude'] as num?)?.toDouble();
+    longitude = (json['longitude'] as num?)?.toDouble();
     triggerDelivery = json['triggerDelevery'] ?? Timestamp.now();
     if (json['taxSetting'] != null) {
       taxSetting = <TaxModel>[];
@@ -143,6 +152,11 @@ class OrderModel {
     data['authorID'] = authorID;
     data['estimatedTimeToPrepare'] = estimatedTimeToPrepare;
     data['createdAt'] = createdAt;
+    // Eski versiyalardagi typo-li kalit ("triggerDelevery") bilan to'g'ri
+    // yozilgan kalit har ikkalasi yoziladi: barcha apps fromJson'da typo'li
+    // kalitni o'qiydi (vendor/driver/customer order_model.dart), shu sababli
+    // jadval/jadval-ning rejalashtirilgan vaqti yo'qotilmasligi uchun.
+    data['triggerDelevery'] = triggerDelivery;
     data['triggerDelivery'] = triggerDelivery;
     if (taxSetting != null) {
       data['taxSetting'] = taxSetting!.map((v) => v.toJson()).toList();
@@ -165,6 +179,9 @@ class OrderModel {
     data['tip_amount'] = tipAmount;
     data['courierCompanyName'] = courierCompanyName;
     data['courierTrackingId'] = courierTrackingId;
+    data['totalAmount'] = totalAmount;
+    data['latitude'] = latitude;
+    data['longitude'] = longitude;
     data['notes'] = notes;
     if (author != null) {
       data['author'] = author!.toJson();

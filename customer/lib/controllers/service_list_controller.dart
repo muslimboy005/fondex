@@ -16,12 +16,15 @@ import 'package:customer/themes/show_toast_dialog.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../screen_ui/auth_screens/login_screen.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../screen_ui/auth_screens/phone_registration_screen.dart';
 import '../screen_ui/multi_vendor_service/dash_board_screens/dash_board_screen.dart';
 import '../screen_ui/on_demand_service/on_demand_dashboard_screen.dart';
 import '../service/notification_service.dart';
 
 class ServiceListController extends GetxController {
+  bool _forceUpdateSheetShown = false;
   var isLoading = false.obs;
   var serviceListBanner = <dynamic>[].obs;
   var advertisementList = <AdvertisementModel>[].obs;
@@ -32,6 +35,12 @@ class ServiceListController extends GetxController {
   void onInit() {
     super.onInit();
     loadData();
+  }
+
+  @override
+  void onReady() {
+    super.onReady();
+    _checkForceUpdateOnHome();
   }
 
   Future<void> loadData() async {
@@ -100,7 +109,7 @@ class ServiceListController extends GetxController {
           await _navigate(sectionModel);
         } else {
           ShowToastDialog.closeLoader();
-          Get.offAll(() => const LoginScreen());
+          Get.offAll(() => const PhoneRegistrationScreen());
         }
       } else {
         ShowToastDialog.closeLoader();
@@ -109,6 +118,111 @@ class ServiceListController extends GetxController {
     } catch (e) {
       print("Error during service tap: $e");
       ShowToastDialog.closeLoader();
+    }
+  }
+
+  Future<void> _checkForceUpdateOnHome() async {
+    if (_forceUpdateSheetShown) return;
+    try {
+      final minRequiredVersion =
+          await FireStoreUtils.getCustomerMinRequiredVersion();
+      if (minRequiredVersion.isEmpty) return;
+
+      final packageInfo = await PackageInfo.fromPlatform();
+      final currentVersion = packageInfo.version.trim();
+
+      if (_compareVersions(currentVersion, minRequiredVersion) >= 0) {
+        return;
+      }
+
+      _forceUpdateSheetShown = true;
+      _showForceUpdateBottomSheet(minRequiredVersion);
+    } catch (e) {
+      print('Force update check error: $e');
+    }
+  }
+
+  int _compareVersions(String current, String minimum) {
+    final currentParts =
+        RegExp(r'\d+')
+            .allMatches(current)
+            .map((match) => int.tryParse(match.group(0) ?? '0') ?? 0)
+            .toList();
+    final minimumParts =
+        RegExp(r'\d+')
+            .allMatches(minimum)
+            .map((match) => int.tryParse(match.group(0) ?? '0') ?? 0)
+            .toList();
+
+    final maxLength = currentParts.length > minimumParts.length
+        ? currentParts.length
+        : minimumParts.length;
+
+    for (int i = 0; i < maxLength; i++) {
+      final currentValue = i < currentParts.length ? currentParts[i] : 0;
+      final minimumValue = i < minimumParts.length ? minimumParts[i] : 0;
+      if (currentValue > minimumValue) return 1;
+      if (currentValue < minimumValue) return -1;
+    }
+    return 0;
+  }
+
+  void _showForceUpdateBottomSheet(String minRequiredVersion) {
+    if (Get.isBottomSheetOpen == true) return;
+
+    Get.bottomSheet(
+      PopScope(
+        canPop: false,
+        child: SafeArea(
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'New version is available'.tr,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  '${'Please update the app to continue'.tr} ($minRequiredVersion).',
+                  style: const TextStyle(fontSize: 15),
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _openStoreForUpdate,
+                    child: Text('Update'.tr),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+      isDismissible: false,
+      enableDrag: false,
+      barrierColor: Colors.black54,
+    );
+  }
+
+  Future<void> _openStoreForUpdate() async {
+    final String url = GetPlatform.isIOS
+        ? Constant.customerAppStoreUrl
+        : Constant.customerGooglePlayUrl;
+
+    final Uri uri = Uri.parse(url);
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      print('Unable to open store url: $url');
     }
   }
 

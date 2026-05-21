@@ -398,6 +398,24 @@ class FireStoreUtils {
     }
   }
 
+  static Future<String> getDriverMinRequiredVersion() async {
+    try {
+      final updateSnap =
+          await FirebaseFirestore.instance
+              .collection('update')
+              .doc('driver')
+              .get();
+      if (!updateSnap.exists || updateSnap.data() == null) {
+        return '';
+      }
+      final version = updateSnap.data()?['version']?.toString() ?? '';
+      return version.trim();
+    } catch (e) {
+      log("getDriverMinRequiredVersion() Error: $e");
+      return '';
+    }
+  }
+
   static Future<List<ZoneModel>?> getZone() async {
     List<ZoneModel> airPortList = [];
     await fireStore
@@ -965,6 +983,89 @@ class FireStoreUtils {
       isAdded = false;
     });
     return isAdded;
+  }
+
+  /// Tranzaksion buyurtma qabul qilish: ikki kuryer bir vaqtda Accept bossa,
+  /// faqat bittasi g'olib chiqadi. Tranzaksiya ichida:
+  ///   • Order doc o'qiladi.
+  ///   • Agar `driverID` allaqachon boshqa kuryer ID si bilan to'ldirilgan
+  ///     bo'lsa yoki status terminal (`orderCancelled`, `orderCompleted`,
+  ///     `driverAccepted` boshqa driverdan, `orderShipped`, `orderInTransit`)
+  ///     bo'lsa — `AlreadyClaimedException` tashlanadi.
+  ///   • Aks holda `driverID = me`, `status = driverAccepted` va `driver = me`
+  ///     yoziladi (merge).
+  /// Qaytadi: yangilangan [OrderModel].
+  static Future<OrderModel> claimOrderTransaction({
+    required String orderId,
+    required UserModel driver,
+  }) async {
+    final docRef =
+        fireStore.collection(CollectionName.vendorOrders).doc(orderId);
+    final myId = driver.id;
+    return await fireStore.runTransaction<OrderModel>((tx) async {
+      final snap = await tx.get(docRef);
+      if (!snap.exists || snap.data() == null) {
+        throw const AlreadyClaimedException('order_not_found');
+      }
+      final data = snap.data()!;
+      final existingDriverId = data['driverID']?.toString();
+      final status = data['status']?.toString();
+
+      const blockedStatuses = <String>{
+        'Order Cancelled',
+        'Order Completed',
+        'Order Rejected',
+      };
+      if (blockedStatuses.contains(status)) {
+        throw AlreadyClaimedException('status:$status');
+      }
+      if (existingDriverId != null &&
+          existingDriverId.isNotEmpty &&
+          existingDriverId != myId) {
+        throw AlreadyClaimedException('claimed_by:$existingDriverId');
+      }
+
+      tx.update(docRef, {
+        'driverID': myId,
+        'status': Constant.driverAccepted,
+        'driver': driver.toJson(),
+      });
+
+      final order = OrderModel.fromJson(data);
+      order.id = snap.id;
+      order.driverID = myId;
+      order.driver = driver;
+      order.status = Constant.driverAccepted;
+      return order;
+    });
+  }
+
+  /// Bitta driver buyurtmani qabul qilganda yoki vendor buyurtmani bekor qilganda
+  /// chaqiriladi: shu orderId'ni boshqa barcha kuryerlarning [orderRequestData]
+  /// massividan o'chiradi, shunda ularda "fantom" buyurtma ko'rinmaydi.
+  static Future<void> removeOrderFromOtherDriversQueue({
+    required String orderId,
+    String? exceptDriverId,
+  }) async {
+    if (orderId.isEmpty) return;
+    try {
+      final query = await fireStore
+          .collection(CollectionName.users)
+          .where('role', isEqualTo: Constant.userRoleDriver)
+          .where('orderRequestData', arrayContains: orderId)
+          .get();
+      if (query.docs.isEmpty) return;
+      final batch = fireStore.batch();
+      for (final doc in query.docs) {
+        if (exceptDriverId != null && doc.id == exceptDriverId) continue;
+        batch.update(doc.reference, {
+          'orderRequestData': FieldValue.arrayRemove([orderId]),
+        });
+      }
+      await batch.commit();
+    } catch (e) {
+      log("removeOrderFromOtherDriversQueue: $e");
+    }
   }
 
   static Future<bool?> setParcelOrder(ParcelOrderModel orderModel) async {
@@ -2153,13 +2254,18 @@ class FireStoreUtils {
     return fireStore
         .collection(CollectionName.cabBookingOrders)
         .where('driverId', isEqualTo: driverId)
-        .orderBy('createdAt', descending: true)
         .snapshots()
         .map((query) {
       List<CabOrderModel> ordersList = [];
       for (var element in query.docs) {
         ordersList.add(CabOrderModel.fromJson(element.data()));
       }
+      // Avoid composite index dependency by sorting in memory.
+      ordersList.sort((a, b) {
+        final aMs = a.createdAt?.millisecondsSinceEpoch ?? 0;
+        final bMs = b.createdAt?.millisecondsSinceEpoch ?? 0;
+        return bMs.compareTo(aMs);
+      });
       return ordersList;
     });
   }
@@ -2198,18 +2304,26 @@ class FireStoreUtils {
   static Future<List<CabOrderModel>> getCabDriverOrdersOnce(
     String driverId,
   ) async {
-    Query query = fireStore
-        .collection(CollectionName.cabBookingOrders)
-        .orderBy('createdAt', descending: true);
+    Query query = fireStore.collection(CollectionName.cabBookingOrders);
     if (driverId.isNotEmpty) {
       query = query.where('driverId', isEqualTo: driverId);
+    } else {
+      query = query.orderBy('createdAt', descending: true);
     }
     QuerySnapshot snapshot = await query.get();
-    return snapshot.docs
+    final orders = snapshot.docs
         .map(
           (doc) => CabOrderModel.fromJson(doc.data() as Map<String, dynamic>),
         )
         .toList();
+    if (driverId.isNotEmpty) {
+      orders.sort((a, b) {
+        final aMs = a.createdAt?.millisecondsSinceEpoch ?? 0;
+        final bMs = b.createdAt?.millisecondsSinceEpoch ?? 0;
+        return bMs.compareTo(aMs);
+      });
+    }
+    return orders;
   }
 
   static Future<List<ParcelOrderModel>> getParcelDriverOrdersOnce(
@@ -2288,4 +2402,16 @@ class FireStoreUtils {
       return false;
     }
   }
+}
+
+/// Tranzaksion `claimOrderTransaction` ichida buyurtma allaqachon boshqa
+/// kuryer tomonidan olingani yoki terminal statusda ekanini bildiradi.
+/// [reason] log/UI uchun ishlatiladi (masalan "claimed_by:UID", "status:Order
+/// Cancelled", "order_not_found").
+class AlreadyClaimedException implements Exception {
+  final String reason;
+  const AlreadyClaimedException(this.reason);
+
+  @override
+  String toString() => 'AlreadyClaimedException($reason)';
 }

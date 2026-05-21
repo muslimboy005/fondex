@@ -16,6 +16,7 @@ import 'package:get/get.dart';
 
 import '../../../controllers/theme_controller.dart';
 import '../../../service/fire_store_utils.dart';
+import '../../../service/vendors_products_repository.dart';
 import '../../../themes/show_toast_dialog.dart';
 import '../cart_screen/cart_screen.dart';
 
@@ -35,6 +36,86 @@ class ProductDetailScreen extends StatefulWidget {
 
 class _ProductDetailScreenState extends State<ProductDetailScreen> {
   bool _isDescriptionExpanded = false;
+  bool _didLogEntryIds = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _requestDetailApiLog();
+    _logProductDetailEntryIds();
+  }
+
+  Future<void> _requestDetailApiLog() async {
+    final numericId = widget.productModel.apiId ?? int.tryParse(widget.productModel.id ?? '');
+    if (numericId == null) {
+      _logRed(
+        '[ProductDetail][DETAIL_API] skipped: productId is not numeric '
+        '(productId=${widget.productModel.id}, apiId=${widget.productModel.apiId})',
+      );
+      return;
+    }
+    final repo = VendorsProductsRepository();
+    await repo.getProductDetailByApiId(numericId);
+  }
+
+  void _logProductDetailEntryIds() {
+    if (_didLogEntryIds) return;
+    _didLogEntryIds = true;
+
+    final attrs = widget.productModel.itemAttribute?.attributes ?? const [];
+    final variants = widget.productModel.itemAttribute?.variants ?? const [];
+
+    _logRed(
+      '[ProductDetail][ENTRY] '
+      'apiId=${widget.productModel.apiId} '
+      'productId=${widget.productModel.id} '
+      'vendorId=${widget.productModel.vendorID ?? widget.vendorModel.id} '
+      'categoryId=${widget.productModel.categoryID} '
+      'sectionId=${widget.productModel.sectionId ?? widget.vendorModel.sectionId} '
+      'attributeCount=${attrs.length} variantCount=${variants.length}',
+    );
+
+    for (final attr in attrs) {
+      _logRed(
+        '[ProductDetail][ATTRIBUTE] '
+        'attributeId=${attr.attributeId} '
+        'attributeName=${attr.attributeName} '
+        'options=${attr.attributeOptions?.join(",") ?? ""}',
+      );
+    }
+
+    for (final variant in variants) {
+      _logRed(
+        '[ProductDetail][VARIANT] '
+        'variantId=${variant.variantId} '
+        'variantSku=${variant.variantSku} '
+        'variantQty=${variant.variantQuantity}',
+      );
+    }
+  }
+
+  void _logRed(String message) {
+    const red = '\x1B[31m';
+    const reset = '\x1B[0m';
+    developer.log('$red$message$reset', name: 'ProductDetailScreen');
+  }
+
+  String _normalizeSkuValue(String value) {
+    return value.trim().replaceAll(RegExp(r'\s+'), ' ');
+  }
+
+  Variants? _findMatchingVariant(RestaurantDetailsController controller) {
+    final variants = widget.productModel.itemAttribute?.variants;
+    if (variants == null || variants.isEmpty) return null;
+    final selectedSku = _normalizeSkuValue(controller.selectedVariants.join('-'));
+    for (final variant in variants) {
+      final sku = _normalizeSkuValue(variant.variantSku ?? '');
+      if (sku == selectedSku) {
+        return variant;
+      }
+    }
+    return null;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,22 +133,39 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     if (widget.productModel.itemAttribute != null &&
         widget.productModel.itemAttribute!.attributes != null &&
         widget.productModel.itemAttribute!.attributes!.isNotEmpty) {
+      // If this product already exists in the cart, prefer the variant
+      // that's stored there so reopening product detail doesn't silently
+      // switch the user to the default first option (which would otherwise
+      // create a duplicate cart entry when they tap "Add to Cart").
+      final attrs = widget.productModel.itemAttribute!.attributes!;
+      final existingCartItem = cartItem.firstWhereOrNull(
+        (p) =>
+            p.id != null &&
+            (p.id == widget.productModel.id ||
+                p.id!.startsWith('${widget.productModel.id}~')),
+      );
+      final storedSkuParts =
+          existingCartItem?.variantInfo?.variantSku?.split('-') ?? const [];
+
       controller.selectedVariants.clear();
       controller.selectedIndexVariants.clear();
       controller.selectedIndexArray.clear();
-      for (
-        var i = 0;
-        i < widget.productModel.itemAttribute!.attributes!.length;
-        i++
-      ) {
-        var element = widget.productModel.itemAttribute!.attributes![i];
-        if (element.attributeOptions != null &&
-            element.attributeOptions!.isNotEmpty) {
-          controller.selectedVariants.add(element.attributeOptions![0]);
-          controller.selectedIndexVariants.add(
-            '$i _${element.attributeOptions![0]}',
-          );
-          controller.selectedIndexArray.add('${i}_0');
+      for (var i = 0; i < attrs.length; i++) {
+        final element = attrs[i];
+        final options = element.attributeOptions;
+        if (options != null && options.isNotEmpty) {
+          int chosenIndex = 0;
+          if (i < storedSkuParts.length) {
+            final stored = storedSkuParts[i].trim();
+            final matchIndex = options.indexWhere(
+              (o) => o.toString().trim() == stored,
+            );
+            if (matchIndex >= 0) chosenIndex = matchIndex;
+          }
+          final chosen = options[chosenIndex];
+          controller.selectedVariants.add(chosen);
+          controller.selectedIndexVariants.add('$i _$chosen');
+          controller.selectedIndexArray.add('${i}_$chosenIndex');
         }
       }
     }
@@ -81,14 +179,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     if (widget.productModel.itemAttribute != null &&
         widget.productModel.itemAttribute!.variants != null &&
         widget.productModel.itemAttribute!.variants!.isNotEmpty) {
-      var matchingVariant = widget.productModel.itemAttribute!.variants!.where(
-        (element) =>
-            element.variantSku == controller.selectedVariants.join('-'),
-      );
-      if (matchingVariant.isNotEmpty) {
+      final matchingVariant = _findMatchingVariant(controller);
+      if (matchingVariant != null) {
         price = Constant.productCommissionPrice(
           widget.vendorModel,
-          matchingVariant.first.variantPrice ?? '0',
+          matchingVariant.variantPrice ?? '0',
         );
         disPrice = "0";
       }
@@ -378,15 +473,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         if (widget.productModel.itemAttribute != null &&
             widget.productModel.itemAttribute!.variants != null &&
             widget.productModel.itemAttribute!.variants!.isNotEmpty) {
-          var matchingVariant = widget.productModel.itemAttribute!.variants!
-              .where(
-                (element) =>
-                    element.variantSku == controller.selectedVariants.join('-'),
-              );
-          if (matchingVariant.isNotEmpty) {
+          final matchingVariant = _findMatchingVariant(controller);
+          if (matchingVariant != null) {
             currentPrice = Constant.productCommissionPrice(
               widget.vendorModel,
-              matchingVariant.first.variantPrice ?? '0',
+              matchingVariant.variantPrice ?? '0',
             );
             currentDisPrice = "0";
           }
@@ -496,6 +587,16 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       decoration: BoxDecoration(
         color: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark ? AppThemeData.grey800 : AppThemeData.grey100,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(isDark ? 0.12 : 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -644,6 +745,15 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               title = element.title.toString();
             }
           }
+          if (title.isEmpty) {
+            title =
+                widget
+                    .productModel
+                    .itemAttribute!
+                    .attributes![index]
+                    .attributeName ??
+                "";
+          }
           return Container(
             margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             padding: const EdgeInsets.all(16),
@@ -689,6 +799,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               .itemAttribute!
                               .attributes![index]
                               .attributeOptions![i];
+                      final optionPrice = _getVariantOptionPrice(
+                        controller: controller,
+                        attributeIndex: index,
+                        optionValue: option,
+                      );
                       bool isSelected = controller.selectedVariants.contains(
                         option,
                       );
@@ -709,9 +824,19 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                         ? AppThemeData.grey800
                                         : AppThemeData.grey100),
                             borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color:
+                                  isSelected
+                                      ? AppThemeData.primary300
+                                      : (isDark
+                                          ? AppThemeData.grey700
+                                          : AppThemeData.grey200),
+                            ),
                           ),
                           child: Text(
-                            option,
+                            optionPrice == null
+                                ? option
+                                : '$option • ${Constant.amountShow(amount: optionPrice)}',
                             style: TextStyle(
                               color:
                                   isSelected
@@ -733,6 +858,51 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         },
       ),
     );
+  }
+
+  String? _getVariantOptionPrice({
+    required RestaurantDetailsController controller,
+    required int attributeIndex,
+    required String optionValue,
+  }) {
+    final itemAttribute = widget.productModel.itemAttribute;
+    if (itemAttribute == null ||
+        itemAttribute.variants == null ||
+        itemAttribute.variants!.isEmpty) {
+      return null;
+    }
+
+    final selected = List<String>.from(
+      controller.selectedVariants.map((e) => e.toString()),
+    );
+
+    while (selected.length <= attributeIndex) {
+      selected.add('');
+    }
+    final normalizedOptionValue = _normalizeSkuValue(optionValue);
+    selected[attributeIndex] = normalizedOptionValue;
+    final candidateSku = _normalizeSkuValue(selected.join('-'));
+
+    Variants? matched;
+    for (final variant in itemAttribute.variants!) {
+      if (_normalizeSkuValue(variant.variantSku ?? '') == candidateSku) {
+        matched = variant;
+        break;
+      }
+    }
+
+    matched ??= itemAttribute.variants!.firstWhere(
+      (variant) {
+        final sku = _normalizeSkuValue(variant.variantSku ?? '').split('-');
+        return attributeIndex < sku.length &&
+            _normalizeSkuValue(sku[attributeIndex]) == normalizedOptionValue;
+      },
+      orElse: () => Variants(),
+    );
+
+    final rawPrice = matched.variantPrice;
+    if (rawPrice == null || rawPrice.isEmpty) return null;
+    return Constant.productCommissionPrice(widget.vendorModel, rawPrice);
   }
 
   void _onVariantSelected(
@@ -859,34 +1029,20 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   }
 
   Widget _buildSimilarProductsSection(bool isDark, BuildContext context) {
+    final repo = VendorsProductsRepository();
     return FutureBuilder<List<ProductModel>>(
-      future: FireStoreUtils.getProductByVendorId(
-        widget.vendorModel.id.toString(),
+      future: repo.getSimilarProducts(
+        vendorId: widget.vendorModel.id.toString(),
+        sectionId: widget.vendorModel.sectionId ?? Constant.sectionConstantModel?.id,
+        categoryId: widget.productModel.categoryID,
+        excludeProductId: widget.productModel.id,
       ),
       builder: (context, snapshot) {
         if (!snapshot.hasData || snapshot.data!.isEmpty) {
           return const SizedBox();
         }
 
-        List<ProductModel> similarProducts =
-            snapshot.data!
-                .where(
-                  (p) =>
-                      p.id != widget.productModel.id &&
-                      p.categoryID == widget.productModel.categoryID,
-                )
-                .take(10)
-                .toList();
-
-        if (similarProducts.isEmpty) {
-          // If no same category products, show other products
-          similarProducts =
-              snapshot.data!
-                  .where((p) => p.id != widget.productModel.id)
-                  .take(10)
-                  .toList();
-        }
-
+        final similarProducts = snapshot.data!;
         if (similarProducts.isEmpty) return const SizedBox();
 
         debugPrint(
@@ -1110,10 +1266,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
         decoration: BoxDecoration(
           color: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 10,
+              color: Colors.black.withOpacity(0.12),
+              blurRadius: 14,
               offset: const Offset(0, -2),
             ),
           ],
@@ -1215,13 +1372,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         ShowToastDialog.showToast("Out of stock".tr);
       }
     } else {
-      var matchingVariant = widget.productModel.itemAttribute!.variants!.where(
-        (element) =>
-            element.variantSku == controller.selectedVariants.join('-'),
-      );
-      if (matchingVariant.isNotEmpty) {
+      final matchingVariant = _findMatchingVariant(controller);
+      if (matchingVariant != null) {
         int totalQuantity = int.parse(
-          matchingVariant.first.variantQuantity.toString(),
+          matchingVariant.variantQuantity.toString(),
         );
         if (controller.quantity.value < totalQuantity || totalQuantity == -1) {
           controller.quantity.value += 1;
@@ -1249,23 +1403,54 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     }
   }
 
+  VariantInfo? _buildVariantInfoForSelection(
+    RestaurantDetailsController controller,
+  ) {
+    final itemAttribute = widget.productModel.itemAttribute;
+    if (itemAttribute == null ||
+        itemAttribute.variants == null ||
+        itemAttribute.variants!.isEmpty) {
+      return null;
+    }
+    final matchingVariant = _findMatchingVariant(controller);
+    if (matchingVariant == null) return null;
+
+    final attrs = itemAttribute.attributes ?? const [];
+    final Map<String, String> mapData = {};
+    for (var i = 0; i < attrs.length; i++) {
+      if (i >= controller.selectedVariants.length) break;
+      final element = attrs[i];
+      final matchedAttr = controller.attributesList
+          .firstWhereOrNull((e) => e.id == element.attributeId);
+      final attrTitle = matchedAttr?.title?.toString() ?? 'attr_$i';
+      mapData[attrTitle] = controller.selectedVariants[i].toString();
+    }
+
+    return VariantInfo(
+      variantPrice: matchingVariant.variantPrice ?? '0',
+      variantSku: controller.selectedVariants.join('-'),
+      variantOptions: mapData,
+      variantImage: matchingVariant.variantImage ?? '',
+      variantId: matchingVariant.variantId ?? '0',
+    );
+  }
+
   void _updateCartQuantity(RestaurantDetailsController controller) {
     String finalPrice = "0";
     String finalDisPrice = "0";
+    VariantInfo? variantInfo;
 
     if (widget.productModel.itemAttribute != null &&
         widget.productModel.itemAttribute!.variants != null &&
         widget.productModel.itemAttribute!.variants!.isNotEmpty) {
-      var matchingVariant = widget.productModel.itemAttribute!.variants!.where(
-        (element) =>
-            element.variantSku == controller.selectedVariants.join('-'),
-      );
-      if (matchingVariant.isNotEmpty) {
+      final matchingVariant = _findMatchingVariant(controller);
+      if (matchingVariant != null) {
         finalPrice = Constant.productCommissionPrice(
           widget.vendorModel,
-          matchingVariant.first.variantPrice ?? '0',
+          matchingVariant.variantPrice ?? '0',
         );
         finalDisPrice = "0";
+        variantInfo = _buildVariantInfoForSelection(controller);
       }
     } else {
       finalPrice = Constant.productCommissionPrice(
@@ -1287,6 +1472,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       discountPrice: finalDisPrice,
       isIncrement: true,
       quantity: controller.quantity.value,
+      variantInfo: variantInfo,
     );
   }
 
@@ -1300,6 +1486,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         discountPrice: cartProduct.first.discountPrice ?? "0",
         isIncrement: false,
         quantity: 0,
+        variantInfo: _buildVariantInfoForSelection(controller),
       );
       controller.quantity.value = 1;
     }
@@ -1312,6 +1499,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     String disPrice,
   ) async {
     try {
+      developer.log(
+        '[cart][ProductDetail] add pressed productId=${widget.productModel.id} '
+        'name=${widget.productModel.name} qty=${controller.quantity.value} '
+        'hasVariant=${widget.productModel.itemAttribute != null} '
+        'selectedVariants=${controller.selectedVariants.join("-")} '
+        'selectedAddOns=${controller.selectedAddOns.join(",")}',
+      );
       if (widget.productModel.itemAttribute == null) {
         await controller.addToCart(
           productModel: widget.productModel,
@@ -1322,14 +1516,18 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         );
       } else {
         String variantPrice = "0";
-        var matchingVariant = widget.productModel.itemAttribute!.variants!
-            .where(
-              (e) => e.variantSku == controller.selectedVariants.join('-'),
-            );
-        if (matchingVariant.isNotEmpty) {
+        final matchingVariant = _findMatchingVariant(controller);
+        if (matchingVariant != null) {
           variantPrice = Constant.productCommissionPrice(
             widget.vendorModel,
-            matchingVariant.first.variantPrice ?? '0',
+            matchingVariant.variantPrice ?? '0',
+          );
+          developer.log(
+            '[cart][ProductDetail] matched variant '
+            'variantId=${matchingVariant.variantId} '
+            'variantSku=${matchingVariant.variantSku} '
+            'variantQty=${matchingVariant.variantQuantity} '
+            'variantPrice=$variantPrice',
           );
 
           Map<String, String> mapData = {};
@@ -1350,11 +1548,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           }
 
           VariantInfo variantInfo = VariantInfo(
-            variantPrice: matchingVariant.first.variantPrice ?? '0',
+            variantPrice: matchingVariant.variantPrice ?? '0',
             variantSku: controller.selectedVariants.join('-'),
             variantOptions: mapData,
-            variantImage: matchingVariant.first.variantImage ?? '',
-            variantId: matchingVariant.first.variantId ?? '0',
+            variantImage: matchingVariant.variantImage ?? '',
+            variantId: matchingVariant.variantId ?? '0',
           );
 
           await controller.addToCart(
@@ -1366,12 +1564,25 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             quantity: controller.quantity.value,
           );
         } else {
+          developer.log(
+            '[cart][ProductDetail] no matching variant '
+            'for sku=${controller.selectedVariants.join("-")}',
+          );
           ShowToastDialog.showToast("Please select variant".tr);
           return;
         }
       }
+      developer.log(
+        '[cart][ProductDetail] add success productId=${widget.productModel.id} '
+        'qty=${controller.quantity.value}',
+      );
       ShowToastDialog.showToast("Added to cart".tr);
-    } catch (e) {
+    } catch (e, st) {
+      developer.log(
+        '[cart][ProductDetail] add failed: $e',
+        error: e,
+        stackTrace: st,
+      );
       ShowToastDialog.showToast(
         "${'Error adding to cart'.tr}: ${e.toString()}",
       );

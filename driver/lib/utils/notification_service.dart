@@ -1,17 +1,55 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:driver/app/chat_screens/chat_screen.dart';
 import 'package:driver/constant/show_toast_dialog.dart';
 import 'package:driver/controllers/cab_home_controller.dart';
 import 'package:driver/controllers/home_controller.dart';
 import 'package:driver/models/user_model.dart';
+import 'package:driver/services/call_kit_service.dart';
 import 'package:driver/utils/fire_store_utils.dart';
+import 'package:driver/utils/preferences.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 
+bool _isIncomingOrderPayload(Map<String, dynamic> data) {
+  if (data.isEmpty) return false;
+  if (data['callkit'] == '1') return true;
+  final t = (data['type']?.toString() ?? '').toLowerCase();
+  return t == 'new_ride' ||
+      t == 'ride_booking' ||
+      t == 'cab_new_order' ||
+      t == 'new_delivery_order' ||
+      t.contains('order') ||
+      t.contains('ride') ||
+      t.contains('cab_order');
+}
+
+String _resolveOrderType(Map<String, dynamic> data) {
+  final t = (data['type']?.toString() ?? '').toLowerCase();
+  if (t.contains('cab') || t.contains('ride') || data['rideId']?.toString().isNotEmpty == true) return 'cab';
+  if (t.contains('parcel')) return 'parcel';
+  if (t.contains('rental')) return 'rental';
+  if (t.contains('intercity')) return 'intercity';
+  return 'food';
+}
+
+@pragma('vm:entry-point')
 Future<void> firebaseMessageBackgroundHandle(RemoteMessage message) async {
-  log("BackGround Message :: ${message.messageId}");
+  log("BackGround Message :: ${message.messageId} data=${message.data}");
+  final data = message.data;
+  if (!_isIncomingOrderPayload(data)) return;
+  final orderId = (data['orderId'] ?? data['order_id'] ?? data['id'] ?? data['rideId'] ?? '').toString();
+  final title = (data['title'] ?? message.notification?.title ?? 'Yangi zakaz').toString();
+  final body = (data['body'] ?? message.notification?.body ?? '').toString();
+  await CallKitService.showIncomingOrder(
+    orderId: orderId,
+    orderType: _resolveOrderType(data),
+    title: title,
+    body: body,
+  );
 }
 
 class NotificationService {
@@ -122,7 +160,7 @@ class NotificationService {
       print("🔔 [SETUP] onMessageOpenedApp listener o'rnatildi");
 
       // App in foreground
-      FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
         print("🔔 [NOTIFICATION] ========================================");
         print("🔔 [NOTIFICATION] Bildirishnoma keldi - onMessage");
         print("🔔 [NOTIFICATION] message.messageId: ${message.messageId}");
@@ -135,7 +173,19 @@ class NotificationService {
         print("🔔 [NOTIFICATION] ========================================");
 
         try {
-          if (message.notification != null) {
+          // CallKit-style incoming order UI for new orders/rides.
+          if (_isIncomingOrderPayload(message.data)) {
+            final data = message.data;
+            final orderId = (data['orderId'] ?? data['order_id'] ?? data['id'] ?? data['rideId'] ?? '').toString();
+            final title = (data['title'] ?? message.notification?.title ?? 'Yangi zakaz').toString();
+            final body = (data['body'] ?? message.notification?.body ?? '').toString();
+            await CallKitService.showIncomingOrder(
+              orderId: orderId,
+              orderType: _resolveOrderType(data),
+              title: title,
+              body: body,
+            );
+          } else if (message.notification != null) {
             print("🔔 [NOTIFICATION] Notification display qilinmoqda");
             display(message);
           } else {
@@ -150,13 +200,16 @@ class NotificationService {
           // Check if this is a cab order notification or any order-related notification
           if (data.isNotEmpty) {
             final notificationType = data["type"]?.toString() ?? "";
+            final notificationTypeLower = notificationType.toLowerCase();
             print("🔔 [NOTIFICATION] notificationType: $notificationType");
 
-            final isOrderNotification = notificationType == "NEW_RIDE" ||
-                notificationType == "ride_booking" ||
-                notificationType.contains("order") ||
-                notificationType.contains("ride") ||
-                notificationType.contains("cab_order");
+            final isOrderNotification = notificationTypeLower == "new_ride" ||
+                notificationTypeLower == "ride_booking" ||
+                notificationTypeLower == "cab_new_order" ||
+                notificationTypeLower == "new_delivery_order" ||
+                notificationTypeLower.contains("order") ||
+                notificationTypeLower.contains("ride") ||
+                notificationTypeLower.contains("cab_order");
 
             print(
                 "🔔 [NOTIFICATION] isOrderNotification: $isOrderNotification");
@@ -193,27 +246,20 @@ class NotificationService {
                     print("🔔 [NOTIFICATION] Driver document yangilandi, orderCabRequestData: ${driverModel.orderCabRequestData?.id}");
                     log("Notification: Driver document refreshed, orderCabRequestData: ${driverModel.orderCabRequestData?.id}");
 
+                    // The controller's Firestore listeners (`_subscribeDriver`
+                    // → user-doc snapshot → `getCurrentOrder` → `_orderDocSub`
+                    // on the order doc) already keep state fresh in real time;
+                    // the FCM push is only a wake-up signal, not a polling
+                    // driver. Fire a single resolution by ride id and let the
+                    // existing listener chain do the rest. Previously this
+                    // block fired 6 sequential calls which amplified one push
+                    // into many sheet rebuilds + alert tones.
                     if (rideId.isNotEmpty) {
                       print("🔔 [NOTIFICATION] rideId dan order o'qilmoqda: $rideId");
                       cabController.getOrderByRideId(rideId);
+                    } else {
+                      cabController.getCurrentOrder();
                     }
-                    if (driverModel.orderCabRequestData == null && rideId.isNotEmpty) {
-                      Future.delayed(const Duration(milliseconds: 500), () {
-                        cabController.getOrderByRideId(rideId);
-                      });
-                    }
-                    Future.delayed(const Duration(milliseconds: 300), () {
-                      cabController.getCurrentOrder();
-                    });
-                    Future.delayed(const Duration(milliseconds: 500), () {
-                      cabController.getCurrentOrder();
-                    });
-                    Future.delayed(const Duration(milliseconds: 1000), () {
-                      cabController.getCurrentOrder();
-                    });
-                    Future.delayed(const Duration(milliseconds: 2000), () {
-                      cabController.getCurrentOrder();
-                    });
                   });
                 } catch (e) {
                   print("🔔 [NOTIFICATION] Xatolik: $e");
@@ -228,8 +274,8 @@ class NotificationService {
               // Handle HomeController (for food delivery orders and barber courier)
               // Check if this is a cab order notification first
               final isCabOrder =
-                  data["type"]?.toString().contains("ride") == true ||
-                      data["type"]?.toString().contains("cab") == true ||
+                  notificationTypeLower.contains("ride") ||
+                      notificationTypeLower.contains("cab") ||
                       data["rideId"]?.toString().isNotEmpty == true;
 
               // If it's a cab order, handle it with CabHomeController (already handled above)
@@ -321,6 +367,10 @@ class NotificationService {
         log("Topic subscribe error: $e");
       }
 
+      // Register background handler + sync iOS VoIP push token to Firestore.
+      FirebaseMessaging.onBackgroundMessage(firebaseMessageBackgroundHandle);
+      await _syncVoipTokenIfAvailable();
+
       print("🔔 [SETUP] setupInteractedMessage muvaffaqiyatli yakunlandi");
     } catch (e, stackTrace) {
       print("🔔 [SETUP] ❌ setupInteractedMessage xatolik: $e");
@@ -329,9 +379,34 @@ class NotificationService {
     }
   }
 
+  /// iOS only — fetches the VoIP push token from PushKit and stores it on the
+  /// current driver's Firestore doc so the customer app can target it.
+  Future<void> _syncVoipTokenIfAvailable() async {
+    try {
+      final token = await CallKitService.getIosVoipToken();
+      if (token == null || token.isEmpty) return;
+      await Preferences.setString(Preferences.voipToken, token);
+      final uid = FirebaseAuth.instance.currentUser?.uid ?? FireStoreUtils.getCurrentUid();
+      if (uid.isEmpty) return;
+      await FirebaseFirestore.instance.collection('users').doc(uid).set(
+        {'voipToken': token},
+        SetOptions(merge: true),
+      );
+    } catch (e) {
+      log('VoIP token sync failed: $e');
+    }
+  }
+
   static Future<String> getToken() async {
-    String? token = await FirebaseMessaging.instance.getToken();
-    return token ?? "";
+    try {
+      final String? token = await FirebaseMessaging.instance.getToken();
+      return token ?? "";
+    } catch (e) {
+      // iOS'da APNS token hali tayyor bo'lmaganda getToken exception tashlaydi.
+      // Bu holat login/otp flow'ni to'xtatmasligi kerak.
+      log("FCM getToken error (non-blocking): $e");
+      return "";
+    }
   }
 
   void display(RemoteMessage message) async {

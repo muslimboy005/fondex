@@ -7,8 +7,6 @@ import 'package:get/get.dart';
 import '../../constant/constant.dart';
 import '../../controllers/parcel_order_confirmation_controller.dart';
 import '../../controllers/theme_controller.dart';
-import '../../payment/createRazorPayOrderModel.dart';
-import '../../payment/rozorpayConroller.dart';
 import '../../themes/app_them_data.dart';
 import '../../themes/round_button_fill.dart';
 import '../../screen_ui/auth_screens/auth_screen.dart';
@@ -453,8 +451,6 @@ class ParcelOrderConfirmationScreen extends StatelessWidget {
                         padding: const EdgeInsets.all(8.0),
                         child: Column(
                           children: [
-                            Visibility(visible: controller.stripeModel.value.isEnabled == true, child: cardDecoration(controller, PaymentGateway.stripe, isDark, "assets/images/stripe.png")),
-                            Visibility(visible: controller.payPalModel.value.isEnabled == true, child: cardDecoration(controller, PaymentGateway.paypal, isDark, "assets/images/paypal.png")),
                             Visibility(visible: controller.payStackModel.value.isEnable == true, child: cardDecoration(controller, PaymentGateway.payStack, isDark, "assets/images/paystack.png")),
                             Visibility(
                               visible: controller.mercadoPagoModel.value.isEnabled == true,
@@ -465,7 +461,6 @@ class ParcelOrderConfirmationScreen extends StatelessWidget {
                               child: cardDecoration(controller, PaymentGateway.flutterWave, isDark, "assets/images/flutterwave_logo.png"),
                             ),
                             Visibility(visible: controller.payFastModel.value.isEnable == true, child: cardDecoration(controller, PaymentGateway.payFast, isDark, "assets/images/payfast.png")),
-                            Visibility(visible: controller.razorPayModel.value.isEnabled == true, child: cardDecoration(controller, PaymentGateway.razorpay, isDark, "assets/images/razorpay.png")),
                             Visibility(visible: controller.midTransModel.value.enable == true, child: cardDecoration(controller, PaymentGateway.midTrans, isDark, "assets/images/midtrans.png")),
                             Visibility(
                               visible: controller.orangeMoneyModel.value.enable == true,
@@ -490,11 +485,7 @@ class ParcelOrderConfirmationScreen extends StatelessWidget {
                     Get.to(() => const AuthScreen());
                     return;
                   }
-                  if (controller.selectedPaymentMethod.value == PaymentGateway.stripe.name) {
-                    controller.stripeMakePayment(amount: controller.totalAmount.value.toString());
-                  } else if (controller.selectedPaymentMethod.value == PaymentGateway.paypal.name) {
-                    controller.paypalPaymentSheet(controller.totalAmount.value.toString(), context);
-                  } else if (controller.selectedPaymentMethod.value == PaymentGateway.payStack.name) {
+                  if (controller.selectedPaymentMethod.value == PaymentGateway.payStack.name) {
                     controller.payStackPayment(controller.totalAmount.value.toString());
                   } else if (controller.selectedPaymentMethod.value == PaymentGateway.mercadoPago.name) {
                     controller.mercadoPagoMakePayment(context: context, amount: controller.totalAmount.value.toString());
@@ -522,16 +513,6 @@ class ParcelOrderConfirmationScreen extends StatelessWidget {
                     controller.orangeMakePayment(context: context, amount: controller.totalAmount.value.toString());
                   } else if (controller.selectedPaymentMethod.value == PaymentGateway.xendit.name) {
                     controller.xenditPayment(context, controller.totalAmount.value.toString());
-                  } else if (controller.selectedPaymentMethod.value == PaymentGateway.razorpay.name) {
-                    RazorPayController().createOrderRazorPay(amount: double.parse(controller.totalAmount.value.toString()), razorpayModel: controller.razorPayModel.value).then((value) {
-                      if (value == null) {
-                        Get.back();
-                        ShowToastDialog.showToast("Something went wrong, please contact admin.".tr);
-                      } else {
-                        CreateRazorPayOrderModel result = value;
-                        controller.openCheckout(amount: controller.totalAmount.value.toString(), orderId: result.id);
-                      }
-                    });
                   } else {
                     ShowToastDialog.showToast("Please select payment method".tr);
                   }

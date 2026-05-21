@@ -96,7 +96,7 @@ class SignupController extends GetxController {
       userModel.value.phoneNumber = phoneNUmberEditingController.value.text
           .toString();
       userModel.value.role = Constant.userRoleVendor;
-      userModel.value.fcmToken = await NotificationService.getToken();
+      userModel.value.fcmToken = await NotificationService.getToken() ?? '';
       userModel.value.active = Constant.autoApproveVendor == true
           ? true
           : false;
@@ -214,7 +214,7 @@ class SignupController extends GetxController {
           userModel.value.phoneNumber = phoneNUmberEditingController.value.text
               .toString();
           userModel.value.role = Constant.userRoleVendor;
-          userModel.value.fcmToken = await NotificationService.getToken();
+          userModel.value.fcmToken = await NotificationService.getToken() ?? '';
           userModel.value.active = Constant.autoApproveVendor == true
               ? true
               : false;

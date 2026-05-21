@@ -1,6 +1,41 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+Timestamp? _timestampFromDynamic(dynamic value) {
+  if (value == null) return null;
+  if (value is Timestamp) return value;
+  if (value is DateTime) return Timestamp.fromDate(value);
+  if (value is int) {
+    if (value.abs() > 10000000000) {
+      return Timestamp.fromMillisecondsSinceEpoch(value);
+    }
+    return Timestamp.fromMillisecondsSinceEpoch(value * 1000);
+  }
+  if (value is double) {
+    return _timestampFromDynamic(value.round());
+  }
+  if (value is String) {
+    final s = value.trim();
+    if (s.isEmpty) return null;
+    final asInt = int.tryParse(s);
+    if (asInt != null) return _timestampFromDynamic(asInt);
+    final dt = DateTime.tryParse(s);
+    if (dt != null) return Timestamp.fromDate(dt.toUtc());
+    return null;
+  }
+  if (value is Map) {
+    final m = Map<String, dynamic>.from(value);
+    final secRaw = m['_seconds'] ?? m['seconds'] ?? m['sec'];
+    final nanoRaw = m['_nanoseconds'] ?? m['nanoseconds'] ?? m['nanos'] ?? 0;
+    if (secRaw != null) {
+      final sec = int.tryParse(secRaw.toString()) ?? 0;
+      final nanos = int.tryParse(nanoRaw.toString()) ?? 0;
+      return Timestamp(sec, nanos);
+    }
+  }
+  return null;
+}
+
 class SubscriptionPlanModel {
   Timestamp? createdAt;
   String? description;
@@ -39,7 +74,7 @@ class SubscriptionPlanModel {
 
   factory SubscriptionPlanModel.fromJson(Map<String, dynamic> json) {
     return SubscriptionPlanModel(
-      createdAt: json['createdAt'],
+      createdAt: _timestampFromDynamic(json['createdAt']),
       description: json['description'],
       expiryDay: json['expiryDay'],
       features: json['features'] == null ? null : Features.fromJson(json['features']),

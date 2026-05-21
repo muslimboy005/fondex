@@ -195,7 +195,7 @@ class WalletScreen extends StatelessWidget {
                         ),
                         Expanded(
                           child: DefaultTabController(
-                            length: 3,
+                            length: 2,
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [

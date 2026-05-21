@@ -6,7 +6,7 @@ import '../../controllers/theme_controller.dart';
 import '../../themes/app_them_data.dart';
 import '../../themes/round_button_fill.dart';
 import '../../themes/text_field_widget.dart';
-import 'login_screen.dart';
+import 'phone_registration_screen.dart';
 
 class ForgotPasswordScreen extends StatelessWidget {
   const ForgotPasswordScreen({super.key});
@@ -79,7 +79,7 @@ class ForgotPasswordScreen extends StatelessWidget {
                               recognizer:
                                   TapGestureRecognizer()
                                     ..onTap = () {
-                                      Get.offAll(() => const LoginScreen());
+                                      Get.offAll(() => const PhoneRegistrationScreen());
                                     },
                             ),
                           ],

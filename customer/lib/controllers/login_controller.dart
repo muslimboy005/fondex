@@ -12,6 +12,7 @@ import '../screen_ui/auth_screens/sign_up_screen.dart';
 import '../screen_ui/service_home_screen/service_list_screen.dart';
 import '../service/fire_store_utils.dart';
 import '../themes/show_toast_dialog.dart';
+import '../utils/firebase_phone_login_emails.dart';
 import '../utils/notification_service.dart';
 import 'package:crypto/crypto.dart';
 
@@ -31,7 +32,9 @@ class LoginController extends GetxController {
   Future<void> loginWithEmail() async {
     final email = emailController.value.text.trim();
     final password = passwordController.value.text.trim();
-    if (email.isEmpty || !email.contains('@')) {
+
+    final attempts = firebasePhoneLoginEmailAttempts(email);
+    if (attempts.isEmpty) {
       ShowToastDialog.showToast("Please enter a valid email address".tr);
       return;
     }
@@ -45,10 +48,22 @@ class LoginController extends GetxController {
       isLoading.value = true;
       ShowToastDialog.showLoader("Logging in...".tr);
 
-      final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
+      late UserCredential credential;
+      for (var i = 0; i < attempts.length; i++) {
+        try {
+          credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+            email: attempts[i],
+            password: password,
+          );
+          break;
+        } on FirebaseAuthException catch (e) {
+          if (firebasePhoneLoginShouldTryNextEmail(e) &&
+              i < attempts.length - 1) {
+            continue;
+          }
+          rethrow;
+        }
+      }
 
       final userModel = await FireStoreUtils.getUserProfile(
         credential.user!.uid,
@@ -87,8 +102,8 @@ class LoginController extends GetxController {
         Get.offAll(() => const AuthScreen());
       }
     } on FirebaseAuthException catch (e) {
-      if (e.code == 'user-not-found') {
-        ShowToastDialog.showToast("No user found for that email.".tr);
+      if (e.code == 'user-not-found' || e.code == 'invalid-credential') {
+        ShowToastDialog.showToast("User not found in Firebase.".tr);
       } else if (e.code == 'wrong-password') {
         ShowToastDialog.showToast("Wrong password provided.".tr);
       } else if (e.code == 'invalid-email') {

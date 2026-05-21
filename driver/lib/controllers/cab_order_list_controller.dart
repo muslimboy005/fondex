@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:async';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import '../models/cab_order_model.dart';
@@ -12,6 +13,7 @@ class CabOrderListController extends GetxController {
   RxList<String> tabTitles = ["on_going", "completed", "cancelled"].obs;
 
   RxString driverId = ''.obs;
+  StreamSubscription<List<CabOrderModel>>? _cabOrdersSubscription;
 
   @override
   void onInit() {
@@ -21,6 +23,12 @@ class CabOrderListController extends GetxController {
     fetchCabOrders();
   }
 
+  @override
+  void onClose() {
+    _cabOrdersSubscription?.cancel();
+    super.onClose();
+  }
+
   void selectTab(String tab) {
     selectedTab.value = tab;
     fetchCabOrders();
@@ -28,10 +36,15 @@ class CabOrderListController extends GetxController {
 
   void fetchCabOrders() {
     isLoading.value = true;
-
-    FireStoreUtils.getCabDriverOrders(driverId.value).listen((orders) {
+    _cabOrdersSubscription?.cancel();
+    _cabOrdersSubscription =
+        FireStoreUtils.getCabDriverOrders(driverId.value).listen((orders) {
       print("cabOrder length ::::::${cabOrder.length}");
       cabOrder.value = orders;
+      isLoading.value = false;
+    }, onError: (error) {
+      print("getCabDriverOrders() stream error: $error");
+      cabOrder.clear();
       isLoading.value = false;
     });
   }

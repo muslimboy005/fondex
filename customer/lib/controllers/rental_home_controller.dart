@@ -19,10 +19,7 @@ import '../models/payment_model/mid_trans.dart';
 import '../models/payment_model/orange_money.dart';
 import '../models/payment_model/pay_fast_model.dart';
 import '../models/payment_model/pay_stack_model.dart';
-import '../models/payment_model/paypal_model.dart';
 import '../models/payment_model/paytm_model.dart';
-import '../models/payment_model/razorpay_model.dart';
-import '../models/payment_model/stripe_model.dart';
 import '../models/payment_model/wallet_setting_model.dart';
 import '../models/payment_model/xendit.dart';
 import '../models/rental_vehicle_type.dart';
@@ -210,25 +207,15 @@ class RentalHomeController extends GetxController {
   Rx<CodSettingModel> cashOnDeliverySettingModel = CodSettingModel().obs;
   Rx<PayFastModel> payFastModel = PayFastModel().obs;
   Rx<MercadoPagoModel> mercadoPagoModel = MercadoPagoModel().obs;
-  Rx<PayPalModel> payPalModel = PayPalModel().obs;
-  Rx<StripeModel> stripeModel = StripeModel().obs;
   Rx<FlutterWaveModel> flutterWaveModel = FlutterWaveModel().obs;
   Rx<PayStackModel> payStackModel = PayStackModel().obs;
   Rx<PaytmModel> paytmModel = PaytmModel().obs;
-  Rx<RazorPayModel> razorPayModel = RazorPayModel().obs;
-
   Rx<MidTrans> midTransModel = MidTrans().obs;
   Rx<OrangeMoney> orangeMoneyModel = OrangeMoney().obs;
   Rx<Xendit> xenditModel = Xendit().obs;
 
   Future<void> getPaymentSettings() async {
     await FireStoreUtils.getPaymentSettingsData().then((value) {
-      stripeModel.value = StripeModel.fromJson(
-        jsonDecode(Preferences.getString(Preferences.stripeSettings)),
-      );
-      payPalModel.value = PayPalModel.fromJson(
-        jsonDecode(Preferences.getString(Preferences.paypalSettings)),
-      );
       payStackModel.value = PayStackModel.fromJson(
         jsonDecode(Preferences.getString(Preferences.payStack)),
       );
@@ -243,9 +230,6 @@ class RentalHomeController extends GetxController {
       );
       payFastModel.value = PayFastModel.fromJson(
         jsonDecode(Preferences.getString(Preferences.payFastSettings)),
-      );
-      razorPayModel.value = RazorPayModel.fromJson(
-        jsonDecode(Preferences.getString(Preferences.razorpaySettings)),
       );
       midTransModel.value = MidTrans.fromJson(
         jsonDecode(Preferences.getString(Preferences.midTransSettings)),
@@ -267,10 +251,6 @@ class RentalHomeController extends GetxController {
         selectedPaymentMethod.value = PaymentGateway.cod.name;
       } else if (walletSettingModel.value.isEnabled == true) {
         selectedPaymentMethod.value = PaymentGateway.wallet.name;
-      } else if (stripeModel.value.isEnabled == true) {
-        selectedPaymentMethod.value = PaymentGateway.stripe.name;
-      } else if (payPalModel.value.isEnabled == true) {
-        selectedPaymentMethod.value = PaymentGateway.paypal.name;
       } else if (payStackModel.value.isEnable == true) {
         selectedPaymentMethod.value = PaymentGateway.payStack.name;
       } else if (mercadoPagoModel.value.isEnabled == true) {
@@ -279,8 +259,6 @@ class RentalHomeController extends GetxController {
         selectedPaymentMethod.value = PaymentGateway.flutterWave.name;
       } else if (payFastModel.value.isEnable == true) {
         selectedPaymentMethod.value = PaymentGateway.payFast.name;
-      } else if (razorPayModel.value.isEnabled == true) {
-        selectedPaymentMethod.value = PaymentGateway.razorpay.name;
       } else if (midTransModel.value.enable == true) {
         selectedPaymentMethod.value = PaymentGateway.midTrans.name;
       } else if (orangeMoneyModel.value.enable == true) {

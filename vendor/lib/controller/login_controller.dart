@@ -13,6 +13,7 @@ import 'package:vendor/constant/constant.dart';
 import 'package:vendor/constant/show_toast_dialog.dart';
 import 'package:vendor/models/user_model.dart';
 import 'package:vendor/utils/fire_store_utils.dart';
+import 'package:vendor/utils/firebase_phone_login_emails.dart';
 import 'package:vendor/utils/notification_service.dart';
 import 'package:flutter/material.dart';
 
@@ -29,14 +30,44 @@ class LoginController extends GetxController {
   }
 
   Future<void> loginWithEmailAndPassword() async {
+    final rawInput = emailEditingController.value.text.trim();
+    final password = passwordEditingController.value.text.trim();
+
+    final attempts = firebasePhoneLoginEmailAttempts(rawInput);
+    if (attempts.isEmpty) {
+      ShowToastDialog.showToast("Please enter your email address.".tr);
+      return;
+    }
+
+    if (password.isEmpty) {
+      ShowToastDialog.showToast("Please enter your password.".tr);
+      return;
+    }
+
     ShowToastDialog.showLoader("Please wait.".tr);
     try {
-      final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(email: emailEditingController.value.text.toLowerCase().trim(), password: passwordEditingController.value.text.trim());
-      UserModel? userModel = await FireStoreUtils.getUserProfile(credential.user!.uid);
+      late UserCredential credential;
+      for (var i = 0; i < attempts.length; i++) {
+        try {
+          credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+            email: attempts[i],
+            password: password,
+          );
+          break;
+        } on FirebaseAuthException catch (e) {
+          if (firebasePhoneLoginShouldTryNextEmail(e) &&
+              i < attempts.length - 1) {
+            continue;
+          }
+          rethrow;
+        }
+      }
+      UserModel? userModel =
+          await FireStoreUtils.getUserProfile(credential.user!.uid);
       if (userModel != null) {
         if (userModel.role == Constant.userRoleVendor) {
           if (userModel.active == true) {
-            userModel.fcmToken = await NotificationService.getToken();
+            userModel.fcmToken = await NotificationService.getToken() ?? '';
             await FireStoreUtils.updateUser(userModel);
             bool isPlanExpire = false;
             if (userModel.subscriptionPlan?.id != null) {
@@ -84,8 +115,8 @@ class LoginController extends GetxController {
       }
     } on FirebaseAuthException catch (e) {
       print(e.code);
-      if (e.code == 'user-not-found') {
-        ShowToastDialog.showToast("No user found for that email.".tr);
+      if (e.code == 'user-not-found' || e.code == 'invalid-credential') {
+        ShowToastDialog.showToast("User not found in Firebase.".tr);
       } else if (e.code == 'wrong-password') {
         ShowToastDialog.showToast("Wrong password provided for that user.".tr);
       } else if (e.code == 'invalid-email') {
@@ -117,7 +148,7 @@ class LoginController extends GetxController {
               UserModel? userModel = await FireStoreUtils.getUserProfile(value.user!.uid);
               if (userModel!.role == Constant.userRoleVendor) {
                 if (userModel.active == true) {
-                  userModel.fcmToken = await NotificationService.getToken();
+                  userModel.fcmToken = await NotificationService.getToken() ?? '';
                   await FireStoreUtils.updateUser(userModel);
                   bool isPlanExpire = false;
                   if (userModel.subscriptionPlan?.id != null) {
@@ -202,7 +233,7 @@ class LoginController extends GetxController {
               UserModel? userModel = await FireStoreUtils.getUserProfile(userCredential.user!.uid);
               if (userModel!.role == Constant.userRoleVendor) {
                 if (userModel.active == true) {
-                  userModel.fcmToken = await NotificationService.getToken();
+                  userModel.fcmToken = await NotificationService.getToken() ?? '';
                   await FireStoreUtils.updateUser(userModel);
                   bool isPlanExpire = false;
                   if (userModel.subscriptionPlan?.id != null) {

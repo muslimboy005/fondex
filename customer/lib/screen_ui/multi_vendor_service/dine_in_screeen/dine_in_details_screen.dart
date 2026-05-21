@@ -90,14 +90,14 @@ class DineInDetailsScreen extends StatelessWidget {
                               physics: const BouncingScrollPhysics(),
                               controller: controller.pageController.value,
                               scrollDirection: Axis.horizontal,
-                              itemCount: controller.vendorModel.value.photos!.length,
+                              itemCount: controller.vendorModel.value.photos?.length ?? 0,
                               padEnds: false,
                               pageSnapping: true,
                               onPageChanged: (value) {
                                 controller.currentPage.value = value;
                               },
                               itemBuilder: (BuildContext context, int index) {
-                                String image = controller.vendorModel.value.photos![index];
+                                String image = (controller.vendorModel.value.photos ?? const <dynamic>[])[index];
                                 return Stack(
                                   children: [
                                     NetworkImageWidget(imageUrl: image.toString(), fit: BoxFit.cover, width: Responsive.width(100, context), height: Responsive.height(40, context)),
@@ -117,7 +117,7 @@ class DineInDetailsScreen extends StatelessWidget {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.center,
-                            children: List.generate(controller.vendorModel.value.photos!.length, (index) {
+                          children: List.generate(controller.vendorModel.value.photos?.length ?? 0, (index) {
                               return Obx(
                                 () => Container(
                                   margin: const EdgeInsets.only(right: 5),

@@ -32,8 +32,6 @@ class SendNotification {
     print(type);
     try {
       final String accessToken = await getAccessToken();
-      debugPrint("accessToken=======>");
-      debugPrint(accessToken);
       NotificationModel? notificationModel = await FireStoreUtils.getNotificationContent(type);
 
       final response = await http.post(
@@ -53,10 +51,8 @@ class SendNotification {
         ),
       );
 
-      debugPrint("Notification=======>");
-      debugPrint(response.statusCode.toString());
-      debugPrint(response.body);
-      return true;
+      debugPrint("Notification status: ${response.statusCode}");
+      return response.statusCode == 200;
     } catch (e) {
       debugPrint("Notification error :::::::::: ${e.toString()}");
       return false;
@@ -66,8 +62,6 @@ class SendNotification {
   static Future<bool> sendOneNotification({required String token, required String title, required String body, required Map<String, dynamic> payload}) async {
     try {
       final String accessToken = await getAccessToken();
-      debugPrint("accessToken=======>");
-      debugPrint(accessToken);
 
       final response = await http.post(
         Uri.parse('https://fcm.googleapis.com/v1/projects/${Constant.senderId}/messages:send'),
@@ -86,10 +80,8 @@ class SendNotification {
         ),
       );
 
-      debugPrint("Notification=======>");
-      debugPrint(response.statusCode.toString());
-      debugPrint(response.body);
-      return true;
+      debugPrint("Notification status: ${response.statusCode}");
+      return response.statusCode == 200;
     } catch (e) {
       debugPrint(e.toString());
       return false;
@@ -115,10 +107,8 @@ class SendNotification {
           },
         ),
       );
-      debugPrint("Notification=======>");
-      debugPrint(response.statusCode.toString());
-      debugPrint(response.body);
-      return true;
+      debugPrint("Notification status: ${response.statusCode}");
+      return response.statusCode == 200;
     } catch (e) {
       print(e);
       return false;

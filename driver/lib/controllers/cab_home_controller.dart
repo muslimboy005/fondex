@@ -12,8 +12,11 @@ import 'package:driver/models/cab_order_model.dart';
 import 'package:driver/models/user_model.dart';
 import 'package:driver/models/wallet_transaction_model.dart';
 import 'package:driver/services/audio_player_service.dart';
+import 'package:driver/services/call_kit_service.dart';
 import 'package:driver/themes/app_them_data.dart';
 import 'package:driver/utils/fire_store_utils.dart';
+import 'package:driver/utils/force_update_helper.dart';
+import 'package:driver/utils/preferences.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
@@ -27,6 +30,7 @@ import 'package:location/location.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class CabHomeController extends GetxController {
+  static const Duration _driverAcceptTimeout = Duration(minutes: 5);
   RxBool isLoading = true.obs;
   google_maps.GoogleMapController? mapController;
   ym.YandexMapController? yandexMapController;
@@ -38,6 +42,26 @@ class CabHomeController extends GetxController {
   StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _driverSub;
   StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _orderDocSub;
   StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _orderQuerySub;
+
+  /// Order id we currently have `_orderDocSub` subscribed to. Used to make
+  /// `getCurrentOrder()` / `getOrderByRideId()` idempotent — repeated calls
+  /// for the same order id (e.g. from rapid FCM wake-ups) no longer cancel
+  /// + re-create the subscription and replay the initial snapshot.
+  String? _subscribedOrderId;
+
+  /// Last `(orderId, status)` pair we played the new-order alert tone for.
+  /// Prevents `changeData()` from replaying `playSound(true)` on every
+  /// driver-doc snapshot / listener re-subscribe for the same pending order.
+  String? _lastAlertedOrderId;
+  String? _lastAlertedStatus;
+
+  /// Signature of the order-routing fields from the previous driver-doc
+  /// snapshot. The driver document churns on every location ping — without
+  /// this, every ping replays `getCurrentOrder()` + `changeData()` and (with
+  /// the alert memo cleared by an unrelated path) can replay the new-order
+  /// tone. We only re-run the chain when one of these fields actually
+  /// changes.
+  String? _lastDriverRoutingSignature;
 
   /// Safar davomida har 15–20 sekundda GPS va masofa yangilanishi
   Timer? _trackingTimer;
@@ -54,6 +78,26 @@ class CabHomeController extends GetxController {
   }
 
   @override
+  void onReady() {
+    super.onReady();
+    ForceUpdateHelper.checkAndShowIfNeeded();
+    _consumePendingCallkitRide();
+  }
+
+  /// On cold start: if the driver tapped Accept on a CallKit prompt for a cab
+  /// ride while the app was terminated, [Preferences.pendingRideId] holds the
+  /// ride id. Pull the order so the acceptance bottom sheet renders.
+  Future<void> _consumePendingCallkitRide() async {
+    final pendingType = Preferences.getString(Preferences.pendingOrderType);
+    if (pendingType.isNotEmpty && pendingType != 'cab') return;
+    final rideId = Preferences.getString(Preferences.pendingRideId);
+    if (rideId.isEmpty) return;
+    await Preferences.clearKeyData(Preferences.pendingRideId);
+    await Preferences.clearKeyData(Preferences.pendingOrderType);
+    await getOrderByRideId(rideId);
+  }
+
+  @override
   void onClose() {
     _stopTrackingTimer();
     _pendingOrderPollTimer?.cancel();
@@ -61,6 +105,10 @@ class CabHomeController extends GetxController {
     _driverSub?.cancel();
     _orderDocSub?.cancel();
     _orderQuerySub?.cancel();
+    _subscribedOrderId = null;
+    _lastAlertedOrderId = null;
+    _lastAlertedStatus = null;
+    _lastDriverRoutingSignature = null;
     super.onClose();
   }
 
@@ -100,15 +148,143 @@ class CabHomeController extends GetxController {
   Future<void> getData() async {
     _subscribeDriver();
     isLoading.value = false;
+    // Recover a ride that was in progress when the app was killed
+    // (e.g. by the OS while the driver was navigating in Yandex).
+    unawaited(_restoreInFlightRideIfAny());
   }
 
   Rx<CabOrderModel> currentOrder = CabOrderModel().obs;
   Rx<UserModel> driverModel = UserModel().obs;
   Rx<UserModel> ownerModel = UserModel().obs;
 
+  bool _isFinalStatus(String? status) {
+    return status == Constant.orderCompleted ||
+        status == Constant.orderCancelled ||
+        status == Constant.orderRejected;
+  }
+
+  bool _isPendingAcceptanceStatus(String? status) {
+    return status == Constant.orderPlaced ||
+        status == Constant.driverPending ||
+        status == Constant.driverRejected ||
+        status == Constant.orderAccepted;
+  }
+
+  bool _canAcceptCurrentOrder() {
+    final order = currentOrder.value;
+    final status = order.status;
+    if (!_isPendingAcceptanceStatus(status)) return false;
+    if (_isFinalStatus(status)) return false;
+    final assignedDriver = order.driverId?.trim() ?? '';
+    final myDriverId = driverModel.value.id?.trim() ?? '';
+    if (assignedDriver.isNotEmpty && myDriverId.isNotEmpty && assignedDriver != myDriverId) {
+      return false;
+    }
+    return order.id != null && order.id!.isNotEmpty;
+  }
+
+  bool _canRejectCurrentOrder() {
+    final order = currentOrder.value;
+    final status = order.status;
+    if (!_isPendingAcceptanceStatus(status)) return false;
+    if (_isFinalStatus(status)) return false;
+    return order.id != null && order.id!.isNotEmpty;
+  }
+
+  bool _canStartTrip() {
+    final status = currentOrder.value.status;
+    return status == Constant.driverAccepted || status == Constant.orderShipped;
+  }
+
+  bool _canReachDestination() {
+    return currentOrder.value.status == Constant.orderInTransit;
+  }
+
+  bool _canCompleteRide() {
+    return currentOrder.value.status == Constant.orderInTransit;
+  }
+
+  /// Server-only read of the cab order's current status. Returns null on any
+  /// failure or when the order doesn't exist. Used to avoid races where the
+  /// driver acts on a stale local cache (e.g. customer cancelled while the
+  /// driver was about to accept).
+  Future<String?> _fetchOrderStatusFromServer(String? orderId) async {
+    if (orderId == null || orderId.isEmpty) return null;
+    try {
+      final snap = await FirebaseFirestore.instance
+          .collection('cab_booking_orders')
+          .doc(orderId)
+          .get(const GetOptions(source: Source.server));
+      if (!snap.exists) return null;
+      return (snap.data()?['status'] ?? '').toString();
+    } catch (e) {
+      log('[Cab] _fetchOrderStatusFromServer failed: $e');
+      return null;
+    }
+  }
+
+  bool _isAllowedTransition(String? from, String? to) {
+    if (to == null || to.isEmpty) return true;
+    if (from == null || from.isEmpty) return true;
+    if (from == to) return true;
+    if (_isFinalStatus(from)) return false;
+
+    switch (from) {
+      case Constant.orderPlaced:
+      case Constant.driverPending:
+      case Constant.driverRejected:
+      case Constant.orderAccepted:
+        return to == Constant.orderPlaced ||
+            to == Constant.driverPending ||
+            to == Constant.driverRejected ||
+            to == Constant.driverAccepted ||
+            to == Constant.orderShipped ||
+            to == Constant.orderInTransit ||
+            to == Constant.orderCancelled ||
+            to == Constant.orderRejected;
+      case Constant.driverAccepted:
+        return to == Constant.orderShipped ||
+            to == Constant.orderInTransit ||
+            to == Constant.orderCancelled ||
+            to == Constant.orderRejected ||
+            to == Constant.orderCompleted;
+      case Constant.orderShipped:
+        return to == Constant.orderInTransit ||
+            to == Constant.orderCancelled ||
+            to == Constant.orderRejected ||
+            to == Constant.orderCompleted;
+      case Constant.orderInTransit:
+        return to == Constant.orderCompleted ||
+            to == Constant.orderCancelled;
+      default:
+        return true;
+    }
+  }
+
   Future<void> acceptOrder() async {
     try {
-      await AudioPlayerService.playSound(false);
+      if (!_canAcceptCurrentOrder()) {
+        ShowToastDialog.showToast("Zakaz holati qabul qilish uchun yaroqsiz".tr);
+        return;
+      }
+
+      // Race-condition guard: refetch the order from the server before
+      // accepting. If the customer cancelled or another driver claimed it
+      // in the meantime, bail out cleanly.
+      final freshStatus = await _fetchOrderStatusFromServer(currentOrder.value.id);
+      if (freshStatus != null &&
+          freshStatus != Constant.orderPlaced &&
+          freshStatus != Constant.driverPending &&
+          freshStatus != Constant.driverRejected) {
+        ShowToastDialog.showToast(
+          "Buyurtma allaqachon $freshStatus holatida. Yangilash...".tr,
+        );
+        return;
+      }
+
+      await AudioPlayerService.stopAll();
+      unawaited(CallKitService.endCall(currentOrder.value.id ?? ''));
+      unawaited(CallKitService.endAll());
       ShowToastDialog.showLoader("Please wait".tr);
 
       driverModel.value.inProgressOrderID ??= [];
@@ -119,7 +295,16 @@ class CabHomeController extends GetxController {
       currentOrder.value.status = Constant.driverAccepted;
       currentOrder.value.driverId = driverModel.value.id;
       currentOrder.value.driver = driverModel.value;
+      currentOrder.value.acceptedAt = Timestamp.now();
       await FireStoreUtils.setCabOrder(currentOrder.value);
+
+      // Persist active ride id so a crash/Yandex round-trip can resume.
+      if (currentOrder.value.id != null) {
+        await Preferences.setString(
+          Preferences.lastActiveRideId,
+          currentOrder.value.id!,
+        );
+      }
 
       ShowToastDialog.closeLoader();
 
@@ -141,15 +326,63 @@ class CabHomeController extends GetxController {
 
   Future<void> rejectOrder() async {
     try {
-      await AudioPlayerService.playSound(false);
+      if (!_canRejectCurrentOrder()) {
+        ShowToastDialog.showToast("Zakaz holati rad etish uchun yaroqsiz".tr);
+        return;
+      }
+      await AudioPlayerService.stopAll();
+      unawaited(CallKitService.endCall(currentOrder.value.id ?? ''));
+      unawaited(CallKitService.endAll());
 
-      // 1️⃣ Immediately update local state (UI)
-      currentOrder.value.status = Constant.driverRejected;
+      final orderId = currentOrder.value.id;
+      final myDriverId = driverModel.value.id;
+
+      // Server-side check: if another driver has already moved the order past
+      // acceptance (e.g. accepted it), do NOT downgrade `status` globally —
+      // that would clobber the accepted ride and kick the customer back to
+      // the "searching for driver" screen. Only record this driver in
+      // `rejectedByDrivers` in that case. Mirror of the delivery flow guard
+      // in home_controller.dart rejectOrder.
+      bool safeToDowngradeStatus = true;
+      if (orderId != null && orderId.isNotEmpty) {
+        try {
+          final serverSnap = await FirebaseFirestore.instance
+              .collection(CollectionName.cabBookingOrders)
+              .doc(orderId)
+              .get(const GetOptions(source: Source.server));
+          if (serverSnap.exists) {
+            final data = serverSnap.data() ?? const <String, dynamic>{};
+            final serverStatus = (data['status'] ?? '').toString();
+            final serverDriverId = (data['driverId'] ?? '').toString().trim();
+            final stillPending = serverStatus == Constant.orderPlaced ||
+                serverStatus == Constant.driverPending ||
+                serverStatus == Constant.driverRejected;
+            final myId = myDriverId?.trim() ?? '';
+            final assignedToOther = serverDriverId.isNotEmpty &&
+                myId.isNotEmpty &&
+                serverDriverId != myId;
+            safeToDowngradeStatus = stillPending && !assignedToOther;
+          }
+        } catch (e) {
+          // Network failure: be conservative and do NOT downgrade global
+          // status — preserve any acceptance that may already exist on the
+          // server.
+          safeToDowngradeStatus = false;
+          log('rejectOrder: server status fetch failed, preserving global status: $e');
+        }
+      }
+
+      // 1️⃣ Immediately update local state (UI) — only flip local status if
+      // it's safe to downgrade the global one; otherwise the order is already
+      // accepted and we just leave it.
+      if (safeToDowngradeStatus) {
+        currentOrder.value.status = Constant.driverRejected;
+      }
 
       currentOrder.value.rejectedByDrivers ??= [];
-      if (!currentOrder.value.rejectedByDrivers!
-          .contains(driverModel.value.id)) {
-        currentOrder.value.rejectedByDrivers!.add(driverModel.value.id);
+      if (myDriverId != null &&
+          !currentOrder.value.rejectedByDrivers!.contains(myDriverId)) {
+        currentOrder.value.rejectedByDrivers!.add(myDriverId);
       }
 
       // Immediately update UI so bottom sheet hides right away
@@ -170,13 +403,30 @@ class CabHomeController extends GetxController {
       // 4️⃣ Clear map immediately
       await clearMap();
 
-      // 5️⃣ Update Firestore in background (no UI wait)
-      unawaited(FireStoreUtils.setCabOrder(currentOrder.value));
+      // 5️⃣ Granular Firestore write so we don't accidentally overwrite
+      // `driverId`/`driver`/`acceptedAt` set by the accepting driver via a
+      // stale full-document merge.
+      if (orderId != null && orderId.isNotEmpty && myDriverId != null) {
+        final Map<String, dynamic> rejectPayload = {
+          'rejectedByDrivers': FieldValue.arrayUnion([myDriverId]),
+        };
+        if (safeToDowngradeStatus) {
+          rejectPayload['status'] = Constant.driverRejected;
+        }
+        unawaited(FirebaseFirestore.instance
+            .collection(CollectionName.cabBookingOrders)
+            .doc(orderId)
+            .set(rejectPayload, SetOptions(merge: true)));
+      }
 
       // 6️⃣ Reset local current order after short delay
       Future.delayed(const Duration(milliseconds: 300), () {
         currentOrder.value = CabOrderModel();
       });
+
+      // The driver rejected this ride — clear any persisted resume pointer.
+      await Preferences.clearKeyData(Preferences.lastActiveRideId);
+      await Preferences.clearKeyData(Preferences.lastAccumulatedKm);
     } catch (e, s) {
       print("rejectOrder() error: $e\n$s");
     }
@@ -235,7 +485,42 @@ class CabHomeController extends GetxController {
     update();
   }
 
+  /// Driver pickup nuqtasiga yetib kelganini bildiradi. Customer tomonida
+  /// "Haydovchi yetib keldi" state'ini ko'rsatish uchun shu order doc'ga
+  /// `status = Constant.orderShipped` yoziladi.
+  Future<void> markArrivedAtPickup() async {
+    if (currentOrder.value.status != Constant.driverAccepted) {
+      ShowToastDialog.showToast(
+        "Avval mijozni qabul qiling".tr,
+      );
+      return;
+    }
+    final orderId = currentOrder.value.id;
+    if (orderId == null || orderId.isEmpty) return;
+
+    ShowToastDialog.showLoader("Please wait".tr);
+    try {
+      currentOrder.value.status = Constant.orderShipped;
+      await FireStoreUtils.setCabOrder(currentOrder.value);
+      log("📍 [markArrivedAtPickup] orderShipped yozildi: $orderId");
+      update();
+      await changeData();
+    } catch (e, s) {
+      debugPrint("markArrivedAtPickup error: $e");
+      debugPrintStack(stackTrace: s);
+      ShowToastDialog.showToast(
+        "Holatni yangilashda xatolik. Qaytadan urinib ko'ring.".tr,
+      );
+    } finally {
+      ShowToastDialog.closeLoader();
+    }
+  }
+
   Future<void> onRideStatus() async {
+    if (!_canStartTrip()) {
+      ShowToastDialog.showToast("Safarni boshlash uchun noto'g'ri holat".tr);
+      return;
+    }
     await AudioPlayerService.playSound(false);
     ShowToastDialog.showLoader("Please wait".tr);
 
@@ -343,33 +628,35 @@ class CabHomeController extends GetxController {
     _lastTrackedLatLng = current;
 
     final order = currentOrder.value;
-    final includedKm = _safeKmOrFare(
-      order.cabIncludedKm,
-      order.vehicleType?.minimum_delivery_charges_within_km,
-      0.0,
-    );
-    final extraKmFare = _safeKmOrFare(
-      order.cabExtraKmFare,
-      order.vehicleType?.delivery_charges_per_km,
-      0.0,
-    );
-    final extraKm =
-        _accumulatedKm > includedKm ? _accumulatedKm - includedKm : 0.0;
-    final extraCharge = extraKm * extraKmFare;
-    final minFare =
-        _safeKmOrFare(null, order.vehicleType?.minimum_delivery_charges, 0.0);
-    // Bitta nuqtada: narx = chaqiruv narxi + yurgan yo'l to'lovi (yaxlitlangan), booking base ishlatilmaydi
-    double currentFare;
+    double? currentFare;
+    double? extraKm;
+    double? extraCharge;
     if (isSinglePointOrder) {
+      final includedKm = _safeKmOrFare(
+        order.cabIncludedKm,
+        order.vehicleType?.minimum_delivery_charges_within_km,
+        0.0,
+      );
+      final extraKmFare = _safeKmOrFare(
+        order.cabExtraKmFare,
+        order.vehicleType?.delivery_charges_per_km,
+        0.0,
+      );
+      extraKm = _accumulatedKm > includedKm ? _accumulatedKm - includedKm : 0.0;
+      extraCharge = extraKm * extraKmFare;
+      final minFare =
+          _safeKmOrFare(null, order.vehicleType?.minimum_delivery_charges, 0.0);
+      // Bitta nuqtada: narx = chaqiruv narxi + yurgan yo'l to'lovi (yaxlitlangan)
       currentFare = minFare + Constant.roundUpToNearest500(extraCharge);
+      log(
+        "📍 [Cab] Tick metered orderId=$orderId km=${_accumulatedKm.toStringAsFixed(3)} fare=$currentFare extraKm=$extraKm",
+      );
     } else {
-      final baseSubTotal = double.tryParse(order.subTotal ?? '0') ?? 0.0;
-      currentFare = baseSubTotal + extraCharge;
-      if (currentFare < minFare) currentFare = minFare;
-      currentFare = Constant.roundUpToNearest500(currentFare);
+      // Ikki nuqtali safarda narx fixed: faqat masofa/lokatsiya track qilinadi.
+      log(
+        "📍 [Cab] Tick fixed orderId=$orderId km=${_accumulatedKm.toStringAsFixed(3)}",
+      );
     }
-
-    log("📍 [Cab] Tick orderId=$orderId km=${_accumulatedKm.toStringAsFixed(3)} fare=$currentFare extraKm=$extraKm");
 
     Map<String, dynamic>? driverMap;
     if (order.driver != null) {
@@ -387,8 +674,26 @@ class CabHomeController extends GetxController {
       extraKm: extraKm,
       extraCharge: extraCharge,
     );
+    // Driver heartbeat — lets the customer app render a "driver online"
+    // indicator and is useful for stuck-ride detection on the server.
+    unawaited(
+      FirebaseFirestore.instance
+          .collection('cab_booking_orders')
+          .doc(orderId)
+          .set({'driverActiveAt': FieldValue.serverTimestamp()},
+              SetOptions(merge: true))
+          .catchError((e) {
+        log('[Cab] heartbeat failed: $e');
+      }),
+    );
+    // Persist accumulated km in case the driver app is killed mid-ride.
+    unawaited(
+      Preferences.setDouble(Preferences.lastAccumulatedKm, _accumulatedKm),
+    );
     currentOrder.value.accumulatedDistance = _accumulatedKm;
-    currentOrder.value.subTotal = currentFare.toString();
+    if (currentFare != null) {
+      currentOrder.value.subTotal = currentFare.toString();
+    }
     currentOrder.value.lastLocation =
         DestinationLocation(latitude: lat, longitude: lng);
     update();
@@ -453,6 +758,10 @@ class CabHomeController extends GetxController {
   /// Bir nuqtali zakazda: "Manzilga yetib keldik" – faqat summa yangilanadi, mijoz to‘lovi ko‘rinadi
   Future<bool> markReachedDestination() async {
     try {
+      if (!_canReachDestination()) {
+        ShowToastDialog.showToast("Manzilga yetish holati noto'g'ri".tr);
+        return false;
+      }
       final order = currentOrder.value;
       if (order.id == null || order.id!.isEmpty) {
         log("⚠️ [Cab] markReachedDestination: orderId empty");
@@ -461,30 +770,31 @@ class CabHomeController extends GetxController {
 
       final totalDistance = order.accumulatedDistance ?? _accumulatedKm;
       final baseSubTotal = double.tryParse(order.subTotal ?? '0') ?? 0.0;
-      final includedKm = _safeKmOrFare(
-        order.cabIncludedKm,
-        order.vehicleType?.minimum_delivery_charges_within_km,
-        0.0,
-      );
-      final extraKmFare = _safeKmOrFare(
-        order.cabExtraKmFare,
-        order.vehicleType?.delivery_charges_per_km,
-        0.0,
-      );
-
-      final extraKm =
-          totalDistance > includedKm ? totalDistance - includedKm : 0.0;
-      final extraCharge = extraKm * extraKmFare;
       final minFare =
           _safeKmOrFare(null, order.vehicleType?.minimum_delivery_charges, 0.0);
-      // Bitta nuqtada: finalFare = chaqiruv narxi + yurgan yo'l to'lovi (yaxlitlangan), baseSubTotal ishlatilmaydi
+      double extraKm;
+      double extraCharge;
+      // Bitta nuqtada: finalFare = chaqiruv narxi + yurgan yo'l to'lovi (yaxlitlangan), ikki nuqtada fixed fare.
       double finalFare;
       if (isSinglePointOrder) {
+        final includedKm = _safeKmOrFare(
+          order.cabIncludedKm,
+          order.vehicleType?.minimum_delivery_charges_within_km,
+          0.0,
+        );
+        final extraKmFare = _safeKmOrFare(
+          order.cabExtraKmFare,
+          order.vehicleType?.delivery_charges_per_km,
+          0.0,
+        );
+        extraKm =
+            totalDistance > includedKm ? totalDistance - includedKm : 0.0;
+        extraCharge = extraKm * extraKmFare;
         finalFare = minFare + Constant.roundUpToNearest500(extraCharge);
       } else {
-        finalFare = baseSubTotal + extraCharge;
-        if (finalFare < minFare) finalFare = minFare;
-        finalFare = Constant.roundUpToNearest500(finalFare);
+        finalFare = baseSubTotal < minFare ? minFare : baseSubTotal;
+        extraKm = 0.0;
+        extraCharge = 0.0;
       }
 
       log("📍 [Cab] markReachedDestination orderId=${order.id} totalKm=$totalDistance finalFare=$finalFare extraKm=$extraKm");
@@ -531,22 +841,16 @@ class CabHomeController extends GetxController {
 
   Future<void> completeRide() async {
     try {
+      if (!_canCompleteRide()) {
+        ShowToastDialog.showToast("Safarni yakunlash uchun noto'g'ri holat".tr);
+        return;
+      }
       _stopTrackingTimer();
 
       ShowToastDialog.showLoader("Please wait".tr);
 
       final order = currentOrder.value;
       final totalDistance = order.accumulatedDistance ?? _accumulatedKm;
-      final includedKm = _safeKmOrFare(
-        order.cabIncludedKm,
-        order.vehicleType?.minimum_delivery_charges_within_km,
-        0.0,
-      );
-      final extraKmFare = _safeKmOrFare(
-        order.cabExtraKmFare,
-        order.vehicleType?.delivery_charges_per_km,
-        0.0,
-      );
 
       double finalFare;
       double extraKm;
@@ -559,15 +863,25 @@ class CabHomeController extends GetxController {
         extraKm = order.extraKm ?? 0.0;
         extraCharge = order.extraCharge ?? 0.0;
       } else {
-        extraKm = totalDistance > includedKm ? totalDistance - includedKm : 0.0;
-        extraCharge = extraKm * extraKmFare;
         if (isSinglePointOrder) {
+          final includedKm = _safeKmOrFare(
+            order.cabIncludedKm,
+            order.vehicleType?.minimum_delivery_charges_within_km,
+            0.0,
+          );
+          final extraKmFare = _safeKmOrFare(
+            order.cabExtraKmFare,
+            order.vehicleType?.delivery_charges_per_km,
+            0.0,
+          );
+          extraKm = totalDistance > includedKm ? totalDistance - includedKm : 0.0;
+          extraCharge = extraKm * extraKmFare;
           finalFare = minFare + Constant.roundUpToNearest500(extraCharge);
         } else {
           final subTotal = double.tryParse(order.subTotal ?? '0') ?? 0.0;
-          finalFare = subTotal + extraCharge;
-          if (finalFare < minFare) finalFare = minFare;
-          finalFare = Constant.roundUpToNearest500(finalFare);
+          finalFare = subTotal < minFare ? minFare : subTotal;
+          extraKm = 0.0;
+          extraCharge = 0.0;
         }
       }
 
@@ -608,6 +922,9 @@ class CabHomeController extends GetxController {
       destination.value = location.LatLng(0.0, 0.0);
       await updateGoogleMarkers();
       _startPendingOrderPoll();
+      // Ride is finished — drop the persisted resume pointer.
+      await Preferences.clearKeyData(Preferences.lastActiveRideId);
+      await Preferences.clearKeyData(Preferences.lastAccumulatedKm);
       update();
 
       ShowToastDialog.closeLoader();
@@ -694,8 +1011,6 @@ class CabHomeController extends GetxController {
   Future<void> getCurrentOrder() async {
     try {
       print("📦 [getCurrentOrder] getCurrentOrder chaqirildi");
-      await _orderDocSub?.cancel();
-      await _orderQuerySub?.cancel();
 
       final inProgress = driverModel.value.inProgressOrderID;
       print("📦 [getCurrentOrder] inProgressOrderID: $inProgress");
@@ -703,7 +1018,18 @@ class CabHomeController extends GetxController {
       if (inProgress != null && inProgress.isNotEmpty) {
         _stopPendingOrderPoll();
         final String id = inProgress.first.toString();
+        // Idempotency: if we're already subscribed to this order doc, do not
+        // cancel + re-create the subscription. Re-subscribing replays the
+        // initial snapshot which retriggers `_handleOrderDoc` →
+        // `changeData()` → alert tone for the same order.
+        if (_subscribedOrderId == id && _orderDocSub != null) {
+          print("📦 [getCurrentOrder] already subscribed to $id, skip");
+          return;
+        }
+        await _orderDocSub?.cancel();
+        await _orderQuerySub?.cancel();
         print("📦 [getCurrentOrder] inProgress order topildi, ID: $id");
+        _subscribedOrderId = id;
         _orderDocSub = FireStoreUtils.fireStore
             .collection(CollectionName.cabBookingOrders)
             .doc(id)
@@ -721,8 +1047,16 @@ class CabHomeController extends GetxController {
         final id = pendingRequest.id?.toString();
         if (id != null && id.isNotEmpty) {
           _stopPendingOrderPoll();
+          if (_subscribedOrderId == id && _orderDocSub != null) {
+            print(
+                "📦 [getCurrentOrder] already subscribed to pending $id, skip");
+            return;
+          }
+          await _orderDocSub?.cancel();
+          await _orderQuerySub?.cancel();
           print(
               "📦 [getCurrentOrder] orderCabRequestData dan order topildi, ID: $id");
+          _subscribedOrderId = id;
           _orderDocSub = FireStoreUtils.fireStore
               .collection(CollectionName.cabBookingOrders)
               .doc(id)
@@ -736,6 +1070,15 @@ class CabHomeController extends GetxController {
         print("📦 [getCurrentOrder] orderCabRequestData null");
       }
 
+      // Fallback 1: Haydovchiga biriktirilgan aktiv orderlarni tekshirish
+      await _queryActiveAssignedOrderForDriver();
+      if (currentOrder.value.id != null && currentOrder.value.id!.isNotEmpty) {
+        _stopPendingOrderPoll();
+        print(
+            "📦 [getCurrentOrder] Assigned active order topildi: ${currentOrder.value.id}, status: ${currentOrder.value.status}");
+        return;
+      }
+
       // Fallback: Query for pending orders that might be assigned to this driver
       // This helps when notification arrives before driver document is updated
       print("📦 [getCurrentOrder] Fallback query chaqirilmoqda...");
@@ -747,6 +1090,13 @@ class CabHomeController extends GetxController {
       if (currentOrder.value.id == null || currentOrder.value.id!.isEmpty) {
         print(
             "📦 [getCurrentOrder] Order topilmadi, clearMap va pending poll boshlandi");
+        _subscribedOrderId = null;
+        await _orderDocSub?.cancel();
+        await _orderQuerySub?.cancel();
+        _orderDocSub = null;
+        _orderQuerySub = null;
+        _lastAlertedOrderId = null;
+        _lastAlertedStatus = null;
         currentOrder.value = CabOrderModel();
         await clearMap();
         await AudioPlayerService.playSound(false);
@@ -763,6 +1113,48 @@ class CabHomeController extends GetxController {
     }
   }
 
+  Future<void> _queryActiveAssignedOrderForDriver() async {
+    try {
+      final driverId = driverModel.value.id?.toString().trim() ?? '';
+      if (driverId.isEmpty) return;
+
+      final querySnapshot = await FireStoreUtils.fireStore
+          .collection(CollectionName.cabBookingOrders)
+          .where('driverId', isEqualTo: driverId)
+          .where('status', whereIn: [
+        Constant.driverAccepted,
+        Constant.orderShipped,
+        Constant.orderInTransit,
+      ]).limit(10).get();
+
+      if (querySnapshot.docs.isEmpty) return;
+
+      final sortedDocs = [...querySnapshot.docs]..sort((a, b) {
+          final aCreated = (a.data()['createdAt'] as Timestamp?);
+          final bCreated = (b.data()['createdAt'] as Timestamp?);
+          final aMs = aCreated?.millisecondsSinceEpoch ?? 0;
+          final bMs = bCreated?.millisecondsSinceEpoch ?? 0;
+          return bMs.compareTo(aMs);
+        });
+      final doc = sortedDocs.first;
+      final order = CabOrderModel.fromJson(doc.data());
+      final id = order.id?.toString().trim() ?? doc.id;
+      if (id.isEmpty) return;
+
+      if (_subscribedOrderId == id && _orderDocSub != null) return;
+      await _orderDocSub?.cancel();
+      _subscribedOrderId = id;
+      _orderDocSub = FireStoreUtils.fireStore
+          .collection(CollectionName.cabBookingOrders)
+          .doc(doc.id)
+          .snapshots()
+          .listen((docSnap) => _handleOrderDoc(docSnap, id));
+    } catch (e) {
+      print("🔍 [_queryActiveAssignedOrderForDriver] Xatolik: $e");
+      log("_queryActiveAssignedOrderForDriver() error: $e");
+    }
+  }
+
   Future<void> _queryPendingOrdersForDriver() async {
     try {
       print("🔍 [_queryPendingOrdersForDriver] Fallback query boshlandi");
@@ -775,9 +1167,9 @@ class CabHomeController extends GetxController {
         return;
       }
 
-      // Yangi zakazlar (oxirgi 10 daqiqa) – "yana zakaz" ham topilsin, FCM kelmasa ham
+      // Faqat 5 daqiqa ichidagi pending zakazlar ko'rsatiladi.
       final recentOrdersSince = Timestamp.fromDate(
-          DateTime.now().subtract(const Duration(minutes: 10)));
+          DateTime.now().subtract(_driverAcceptTimeout));
       print(
           "🔍 [_queryPendingOrdersForDriver] recentOrdersSince: $recentOrdersSince");
 
@@ -805,6 +1197,12 @@ class CabHomeController extends GetxController {
           final order = CabOrderModel.fromJson(orderData);
           print(
               "🔍 [_queryPendingOrdersForDriver] Order topildi: ${order.id}, status: ${order.status}, sectionId: ${order.sectionId}");
+
+          if (_isPendingDriverAcceptance(order) && _isOrderExpired(order)) {
+            print(
+                "🔍 [_queryPendingOrdersForDriver] Order eskirgan (>5 min), o'tkazib yuborilmoqda");
+            continue;
+          }
 
           // Check if driver hasn't rejected this order
           final rejectedBy = order.rejectedByDrivers ?? [];
@@ -839,9 +1237,11 @@ class CabHomeController extends GetxController {
           // Listen to this order document
           final id = order.id;
           if (id != null && id.isNotEmpty) {
+            if (_subscribedOrderId == id && _orderDocSub != null) return;
             print(
                 "🔍 [_queryPendingOrdersForDriver] Order document listener o'rnatilmoqda: $id");
             await _orderDocSub?.cancel();
+            _subscribedOrderId = id;
             _orderDocSub = FireStoreUtils.fireStore
                 .collection(CollectionName.cabBookingOrders)
                 .doc(id)
@@ -897,7 +1297,12 @@ class CabHomeController extends GetxController {
               "🚀 [getOrderByRideId] Order ID: ${order.id}, status: ${order.status}");
 
           // Agar order topilsa, listener o'rnatamiz
+          if (_subscribedOrderId == rideId && _orderDocSub != null) {
+            print("🚀 [getOrderByRideId] already subscribed to $rideId, skip");
+            return;
+          }
           await _orderDocSub?.cancel();
+          _subscribedOrderId = rideId;
           _orderDocSub = docRef
               .snapshots()
               .listen((snap) => _handleOrderDoc(snap, rideId));
@@ -928,7 +1333,9 @@ class CabHomeController extends GetxController {
 
           // Listener o'rnatamiz
           final docId = doc.id;
+          if (_subscribedOrderId == docId && _orderDocSub != null) return;
           await _orderDocSub?.cancel();
+          _subscribedOrderId = docId;
           _orderDocSub = FireStoreUtils.fireStore
               .collection(CollectionName.cabBookingOrders)
               .doc(docId)
@@ -967,6 +1374,40 @@ class CabHomeController extends GetxController {
     }
   }
 
+  bool _isOrderAssignedToAnotherDriver(CabOrderModel order) {
+    final assignedDriverId = order.driverId?.toString().trim() ?? '';
+    if (assignedDriverId.isEmpty) return false;
+    final currentDriverId =
+        (driverModel.value.id?.toString().trim().isNotEmpty == true)
+            ? driverModel.value.id!.toString().trim()
+            : FireStoreUtils.getCurrentUid();
+    return currentDriverId.isNotEmpty && assignedDriverId != currentDriverId;
+  }
+
+  Future<void> _releaseStaleOrderIfAssignedToAnotherDriver(
+    CabOrderModel order,
+  ) async {
+    if (!_isOrderAssignedToAnotherDriver(order)) return;
+
+    final orderId = order.id?.toString() ?? '';
+    print(
+      "📄 [staleOrder] Order boshqa haydovchiga biriktirilgan. orderId=$orderId, driverId=${order.driverId}",
+    );
+
+    driverModel.value.orderCabRequestData = null;
+    driverModel.value.inProgressOrderID ??= [];
+    if (orderId.isNotEmpty) {
+      driverModel.value.inProgressOrderID!
+          .removeWhere((e) => e.toString() == orderId);
+    }
+    await FireStoreUtils.updateUser(driverModel.value);
+
+    currentOrder.value = CabOrderModel();
+    await clearMap();
+    _startPendingOrderPoll();
+    update();
+  }
+
   Future<void> _handleOrderDoc(
       DocumentSnapshot<Map<String, dynamic>> docSnap, String id) async {
     try {
@@ -976,7 +1417,31 @@ class CabHomeController extends GetxController {
       if (docSnap.exists) {
         final data = docSnap.data();
         if (data != null) {
+          final previousStatus = currentOrder.value.status;
+          final nextStatus = data['status']?.toString();
+          if (!_isAllowedTransition(previousStatus, nextStatus)) {
+            print(
+                "📄 [_handleOrderDoc] Noto'g'ri transition e'tiborsiz qoldirildi: $previousStatus -> $nextStatus");
+            return;
+          }
           currentOrder.value = CabOrderModel.fromJson(data);
+          await _releaseStaleOrderIfAssignedToAnotherDriver(currentOrder.value);
+          if (currentOrder.value.id == null || currentOrder.value.id!.isEmpty) {
+            return;
+          }
+          if (_isPendingDriverAcceptance(currentOrder.value) &&
+              _isOrderExpired(currentOrder.value)) {
+            print(
+                "📄 [_handleOrderDoc] Pending order eskirgan (>5 min), ko'rsatilmaydi");
+            currentOrder.value = CabOrderModel();
+            await clearMap();
+            source.value = location.LatLng(0.0, 0.0);
+            destination.value = location.LatLng(0.0, 0.0);
+            await updateGoogleMarkers();
+            _startPendingOrderPoll();
+            update();
+            return;
+          }
           // Zakaz faqat haydovchi mashina turiga (vehicleId) mos bo'lsa ko'rsatiladi (masalan Comfort)
           final orderVid = currentOrder.value.vehicleId?.toString().trim() ?? '';
           final driverVid = driverModel.value.vehicleId?.toString().trim() ?? '';
@@ -1001,6 +1466,9 @@ class CabHomeController extends GetxController {
             _stopTrackingTimer();
             driverModel.value.inProgressOrderID = [];
             await FireStoreUtils.updateUser(driverModel.value);
+            _subscribedOrderId = null;
+            _lastAlertedOrderId = null;
+            _lastAlertedStatus = null;
             currentOrder.value = CabOrderModel();
             await clearMap();
             source.value = location.LatLng(0.0, 0.0);
@@ -1013,9 +1481,17 @@ class CabHomeController extends GetxController {
           } else if (currentOrder.value.status == Constant.orderRejected ||
               currentOrder.value.status == Constant.orderCancelled) {
             print("📄 [_handleOrderDoc] Order rejected/cancelled, tozalash");
+            // Customer atkaz qilganda va driver allaqachon qabul qilgan bo'lsa
+            // qisqa ogohlantirish ovozi chalar
+            final wasCancelledByCustomer =
+                currentOrder.value.status == Constant.orderCancelled &&
+                currentOrder.value.driverId == driverModel.value.id;
             driverModel.value.inProgressOrderID = [];
             driverModel.value.orderCabRequestData = null;
             await FireStoreUtils.updateUser(driverModel.value);
+            _subscribedOrderId = null;
+            _lastAlertedOrderId = null;
+            _lastAlertedStatus = null;
             currentOrder.value = CabOrderModel();
             await clearMap();
             source.value = location.LatLng(0.0, 0.0);
@@ -1023,6 +1499,9 @@ class CabHomeController extends GetxController {
             await updateGoogleMarkers();
             _startPendingOrderPoll();
             await AudioPlayerService.playSound(false);
+            if (wasCancelledByCustomer) {
+              unawaited(AudioPlayerService.playCancellationSound());
+            }
             update();
             return;
           }
@@ -1054,7 +1533,29 @@ class CabHomeController extends GetxController {
       if (qSnap.docs.isNotEmpty) {
         final doc = qSnap.docs.first;
         final data = doc.data();
+        final previousStatus = currentOrder.value.status;
+        final nextStatus = data['status']?.toString();
+        if (!_isAllowedTransition(previousStatus, nextStatus)) {
+          print(
+              "📄 [_handleOrderQuery] Noto'g'ri transition e'tiborsiz qoldirildi: $previousStatus -> $nextStatus");
+          return;
+        }
         currentOrder.value = CabOrderModel.fromJson(data);
+        await _releaseStaleOrderIfAssignedToAnotherDriver(currentOrder.value);
+        if (currentOrder.value.id == null || currentOrder.value.id!.isEmpty) {
+          return;
+        }
+        if (_isPendingDriverAcceptance(currentOrder.value) &&
+            _isOrderExpired(currentOrder.value)) {
+          currentOrder.value = CabOrderModel();
+          await clearMap();
+          source.value = location.LatLng(0.0, 0.0);
+          destination.value = location.LatLng(0.0, 0.0);
+          await updateGoogleMarkers();
+          _startPendingOrderPoll();
+          update();
+          return;
+        }
         final orderVid = currentOrder.value.vehicleId?.toString().trim() ?? '';
         final driverVid = driverModel.value.vehicleId?.toString().trim() ?? '';
         if (orderVid.isNotEmpty && driverVid.isNotEmpty && orderVid != driverVid) {
@@ -1091,37 +1592,65 @@ class CabHomeController extends GetxController {
 
   RxBool isChange = false.obs;
 
+  bool _isPendingDriverAcceptance(CabOrderModel order) {
+    final status = order.status;
+    return status == Constant.orderPlaced ||
+        status == Constant.driverPending ||
+        status == Constant.driverRejected ||
+        (status == Constant.orderAccepted &&
+            (order.driverId == null || order.driverId!.isEmpty));
+  }
+
+  bool _isOrderExpired(CabOrderModel order) {
+    final createdAt = order.createdAt;
+    if (createdAt == null) return false;
+    final elapsed = DateTime.now().difference(createdAt.toDate());
+    return elapsed >= _driverAcceptTimeout;
+  }
+
   Future<void> changeData() async {
     print("🔄 [changeData] changeData chaqirildi");
     print("🔄 [changeData] currentOrder.id: ${currentOrder.value.id}");
     print("🔄 [changeData] currentOrder.status: ${currentOrder.value.status}");
-    print("🔄 [changeData] selectedMapType: ${Constant.selectedMapType}");
-
-    // Order status bo'yicha yo'l chizish
-    if (Constant.mapType == "inappmap") {
-      if (Constant.selectedMapType == "osm") {
-        print("🔄 [changeData] OSM polyline chizilmoqda");
-        await getOSMPolyline();
-      } else {
-        // Google Maps uchun
-        print("🔄 [changeData] Google Maps polyline chizilmoqda");
-        await getGooglePolyline();
-      }
-    } else {
-      // Google Maps uchun ham
-      print("🔄 [changeData] Google Maps polyline chizilmoqda");
-      await getGooglePolyline();
-    }
+    print("🔄 [changeData] yandex/osrm polyline chizilmoqda");
+    await getOSMPolyline();
 
     // pending_driver_acceptance yoki driverPending statuslarida sound play
+    final orderId = currentOrder.value.id;
     final status = currentOrder.value.status;
-    final isPendingStatus = status == Constant.driverPending ||
-        status == "pending_driver_acceptance";
+    // Agar haydovchi orderni qabul qilgan bo'lsa (inProgressOrderID da bor),
+    // status hali driverPending ko'rinib qolgan bo'lsa ham ovoz ochilmasin.
+    final alreadyAccepted = orderId != null &&
+        orderId.isNotEmpty &&
+        (driverModel.value.inProgressOrderID?.contains(orderId) ?? false);
+    final isPendingStatus = !alreadyAccepted &&
+        (status == Constant.driverPending ||
+            status == "pending_driver_acceptance");
 
     if (isPendingStatus) {
-      print("🔄 [changeData] pending status ($status), sound play");
-      await AudioPlayerService.playSound(true);
+      // Idempotency: only play the new-order alert once per (orderId, status)
+      // pair. Repeated `changeData()` invocations triggered by driver-doc
+      // location pings, listener re-subscribes, or FCM wake-ups must NOT
+      // replay the tone for an order the driver has already been alerted
+      // about.
+      final alreadyAlerted = _lastAlertedOrderId == orderId &&
+          _lastAlertedStatus == status &&
+          orderId != null &&
+          orderId.isNotEmpty;
+      if (!alreadyAlerted) {
+        print("🔄 [changeData] pending status ($status), sound play");
+        _lastAlertedOrderId = orderId;
+        _lastAlertedStatus = status;
+        await AudioPlayerService.playSound(true);
+      } else {
+        print(
+            "🔄 [changeData] pending status ($status) — already alerted for $orderId, skipping sound");
+      }
     } else {
+      // Order moved out of the pending window — clear the alert memo so the
+      // next pending order is allowed to play its tone.
+      _lastAlertedOrderId = null;
+      _lastAlertedStatus = null;
       await AudioPlayerService.playSound(false);
     }
 
@@ -1160,6 +1689,23 @@ class CabHomeController extends GetxController {
     }
   }
 
+  /// String fingerprint of the driver-doc fields that actually drive order
+  /// routing. Used by `_onDriverSnapshot` to skip the `getCurrentOrder()` +
+  /// `changeData()` chain when only irrelevant fields (e.g. live `location`)
+  /// changed.
+  String _computeDriverRoutingSignature() {
+    final m = driverModel.value;
+    final pending = m.orderCabRequestData?.id?.toString() ?? '';
+    final inProgress = (m.inProgressOrderID ?? const [])
+        .map((e) => e.toString())
+        .toList()
+      ..sort();
+    final active = (m.isActive == true).toString();
+    final section = m.sectionId?.toString() ?? '';
+    final vehicle = m.vehicleId?.toString() ?? '';
+    return '$pending|${inProgress.join(",")}|$active|$section|$vehicle';
+  }
+
   Future<void> _onDriverSnapshot(
       DocumentSnapshot<Map<String, dynamic>> event) async {
     try {
@@ -1181,10 +1727,28 @@ class CabHomeController extends GetxController {
           // Oflayn bo'lsa yangi zakaz ko'rsatilmaydi (orderCabRequestData va poll natijalari e'tiborsiz)
           if (driverModel.value.isActive != true &&
               (currentOrder.value.id == null || currentOrder.value.id!.isEmpty)) {
+            _lastDriverRoutingSignature = _computeDriverRoutingSignature();
             currentOrder.value = CabOrderModel();
             update();
             return;
           }
+
+          // Driver document churns on every location ping (and on every
+          // `ordercabRequestAt: Timestamp.now()` dispatch write). Compute a
+          // signature of the fields that actually matter for order routing
+          // — only re-run the heavy chain when one of them changes.
+          // Location-only updates still flow through `_updateCurrentLocationMarkers()`
+          // above so the marker keeps moving.
+          final newSignature = _computeDriverRoutingSignature();
+          if (_lastDriverRoutingSignature != null &&
+              _lastDriverRoutingSignature == newSignature) {
+            print(
+                "👤 [_onDriverSnapshot] routing signature unchanged, skip chain");
+            update();
+            return;
+          }
+          _lastDriverRoutingSignature = newSignature;
+
           print("👤 [_onDriverSnapshot] getCurrentOrder chaqirilmoqda");
           await getCurrentOrder();
           await changeData();
@@ -1886,28 +2450,17 @@ class CabHomeController extends GetxController {
     _openYandexMaps(originLat, originLng, destLat, destLng);
   }
 
-  /// Open Google Maps with directions
-  Future<void> _openGoogleMaps(double originLat, double originLng,
-      double destLat, double destLng) async {
-    final url = Uri.parse(
-      'https://www.google.com/maps/dir/?api=1&origin=$originLat,$originLng&destination=$destLat,$destLng&travelmode=driving',
-    );
-
-    try {
-      if (await canLaunchUrl(url)) {
-        await launchUrl(url, mode: LaunchMode.externalApplication);
-      } else {
-        ShowToastDialog.showToast("Could not open Google Maps".tr);
-      }
-    } catch (e) {
-      log("Error opening Google Maps: $e");
-      ShowToastDialog.showToast("Error opening Google Maps".tr);
-    }
-  }
-
   /// Open Yandex Maps with directions
   Future<void> _openYandexMaps(double originLat, double originLng,
       double destLat, double destLng) async {
+    // Persist the active ride so the controller can rehydrate if the OS
+    // kills the driver app while the user is in Yandex Navigator.
+    final orderId = currentOrder.value.id;
+    if (orderId != null && orderId.isNotEmpty) {
+      await Preferences.setString(Preferences.lastActiveRideId, orderId);
+      await Preferences.setDouble(Preferences.lastAccumulatedKm, _accumulatedKm);
+    }
+
     final url = Uri.parse(
       'https://yandex.com/maps/?rtext=$originLat,$originLng~$destLat,$destLng&rtt=auto',
     );
@@ -1921,6 +2474,41 @@ class CabHomeController extends GetxController {
     } catch (e) {
       log("Error opening Yandex Maps: $e");
       ShowToastDialog.showToast("Error opening Yandex Maps".tr);
+    }
+  }
+
+  /// Called on cold start to recover an in-progress ride that was active
+  /// when the app was killed (e.g. by the OS while the driver was using
+  /// Yandex Navigator). Repopulates `currentOrder` from Firestore and
+  /// resumes the tracking loop if the ride is still active.
+  Future<void> _restoreInFlightRideIfAny() async {
+    final rideId = Preferences.getString(Preferences.lastActiveRideId);
+    if (rideId.isEmpty) return;
+    try {
+      final snap = await FirebaseFirestore.instance
+          .collection('cab_booking_orders')
+          .doc(rideId)
+          .get(const GetOptions(source: Source.server));
+      if (!snap.exists) {
+        await Preferences.clearKeyData(Preferences.lastActiveRideId);
+        await Preferences.clearKeyData(Preferences.lastAccumulatedKm);
+        return;
+      }
+      final order = CabOrderModel.fromJson(snap.data()!);
+      if (_isFinalStatus(order.status)) {
+        await Preferences.clearKeyData(Preferences.lastActiveRideId);
+        await Preferences.clearKeyData(Preferences.lastAccumulatedKm);
+        return;
+      }
+      currentOrder.value = order;
+      _accumulatedKm =
+          Preferences.getDouble(Preferences.lastAccumulatedKm, defaultValue: 0);
+      if (order.status == Constant.orderInTransit && order.isTracking == true) {
+        _startTrackingTimer();
+      }
+      log('[Cab] Restored in-flight ride $rideId status=${order.status} km=$_accumulatedKm');
+    } catch (e) {
+      log('[Cab] _restoreInFlightRideIfAny failed: $e');
     }
   }
 }

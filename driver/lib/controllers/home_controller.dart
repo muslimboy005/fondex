@@ -7,8 +7,12 @@ import 'package:driver/constant/send_notification.dart';
 import 'package:driver/constant/show_toast_dialog.dart';
 import 'package:driver/models/user_model.dart';
 import 'package:driver/services/audio_player_service.dart';
+import 'package:driver/services/call_kit_service.dart';
+import 'package:driver/services/order_background_service.dart';
 import 'package:driver/themes/app_them_data.dart';
 import 'package:driver/utils/fire_store_utils.dart';
+import 'package:driver/utils/force_update_helper.dart';
+import 'package:driver/utils/preferences.dart';
 import 'package:driver/utils/utils.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -40,6 +44,29 @@ class HomeController extends GetxController {
     listenToDriverAndOrders();
     requestLocationPermission();
     super.onInit();
+  }
+
+  @override
+  void onReady() {
+    super.onReady();
+    ForceUpdateHelper.checkAndShowIfNeeded();
+    _consumePendingCallkitOrder();
+  }
+
+  /// Called on every cold start. If the driver accepted an order from the
+  /// CallKit prompt while the app was terminated, [Preferences.pendingOrderId]
+  /// will hold the order id — we wire it into the existing live stream.
+  Future<void> _consumePendingCallkitOrder() async {
+    final pendingType = Preferences.getString(Preferences.pendingOrderType);
+    if (pendingType == 'cab') {
+      // Cab orders are handled by CabHomeController._consumePendingCallkitOrder.
+      return;
+    }
+    final orderId = Preferences.getString(Preferences.pendingOrderId);
+    if (orderId.isEmpty) return;
+    await Preferences.clearKeyData(Preferences.pendingOrderId);
+    await Preferences.clearKeyData(Preferences.pendingOrderType);
+    listenToOrderById(orderId);
   }
 
   @override
@@ -166,25 +193,63 @@ class HomeController extends GetxController {
       ShowToastDialog.showToast("Order id not found. Please try again.".tr);
       return;
     }
-    await AudioPlayerService.playSound(false);
+    // stopAll() ishonchli to'xtatadi (race-condition guard va cancelPlayer ham).
+    unawaited(AudioPlayerService.stopAll());
+    unawaited(CallKitService.endCall(orderId));
+    unawaited(CallKitService.endAll());
     ShowToastDialog.showLoader("Please wait".tr);
+
+    // RACE-SAFE CLAIM: ikki kuryer bir vaqtda Accept bossa, tranzaksiya orqali
+    // faqat bittasi g'olib chiqadi. Boshqasi `AlreadyClaimedException` oladi va
+    // panel/dialog avtomatik tozalanadi. Bu setOrder bilan ishlashdagi
+    // last-write-wins muammosini hal qiladi.
+    OrderModel claimedOrder;
+    try {
+      claimedOrder = await FireStoreUtils.claimOrderTransaction(
+        orderId: orderId,
+        driver: driverModel.value,
+      );
+    } on AlreadyClaimedException catch (e) {
+      ShowToastDialog.closeLoader();
+      ShowToastDialog.showToast(
+        "This order has already been taken by another courier.".tr,
+      );
+      log("❌ [acceptOrder] Allaqachon olingan: $e");
+      // O'zimizdagi mahalliy holatni ham tozalaymiz, panel ko'rinmasin.
+      driverModel.value.orderRequestData?.remove(orderId);
+      driverModel.value.inProgressOrderID?.remove(orderId);
+      await FireStoreUtils.updateUser(driverModel.value);
+      currentOrder.value = OrderModel();
+      await clearMap();
+      update();
+      return;
+    } catch (e) {
+      ShowToastDialog.closeLoader();
+      ShowToastDialog.showToast("Failed to accept order. Try again.".tr);
+      log("❌ [acceptOrder] Tranzaksiya xatosi: $e");
+      return;
+    }
+
     driverModel.value.inProgressOrderID ??= [];
     driverModel.value.orderRequestData ??= [];
     driverModel.value.orderRequestData!.remove(orderId);
     if (!driverModel.value.inProgressOrderID!.contains(orderId)) {
       driverModel.value.inProgressOrderID!.add(orderId);
     }
-
     await FireStoreUtils.updateUser(driverModel.value);
 
-    currentOrder.value.status = Constant.driverAccepted;
-    currentOrder.value.driverID = driverModel.value.id;
-    currentOrder.value.driver = driverModel.value;
+    currentOrder.value = claimedOrder;
     currentOrder.value.id = orderId;
-
-    await FireStoreUtils.setOrder(currentOrder.value);
+    currentOrder.refresh();
     log("🟢 [acceptOrder] Firestore yangilandi, status=${currentOrder.value.status}");
-    print("SendNotification ===========>");
+
+    // Buyurtma allaqachon qabul qilingani uchun boshqa kuryerlarning navbatidan
+    // tezda olib tashlaymiz — aks holda ularda eski "yangi buyurtma" paneli
+    // ko'rinishi mumkin (user doc stream ham yangilanadi, lekin tezroq).
+    unawaited(FireStoreUtils.removeOrderFromOtherDriversQueue(
+      orderId: orderId,
+      exceptDriverId: driverModel.value.id,
+    ));
     SendNotification.sendFcmMessage(Constant.driverAcceptedNotification,
         currentOrder.value.author?.fcmToken ?? '', {});
     SendNotification.sendFcmMessage(Constant.driverAcceptedNotification,
@@ -197,46 +262,48 @@ class HomeController extends GetxController {
 
   Future<void> rejectOrder() async {
     ShowToastDialog.showLoader("Please wait".tr);
-    // 🔊 Stop any ongoing alert sound (if playing)
-    await AudioPlayerService.playSound(false);
+    unawaited(AudioPlayerService.stopAll());
+    unawaited(CallKitService.endCall(currentOrder.value.id ?? ''));
+    unawaited(CallKitService.endAll());
 
     final driver = driverModel.value;
     final order = currentOrder.value;
 
-    // 1️⃣ Validate order and driver
     if (order.id == null || driver.id == null) {
       debugPrint("⚠️ No valid order or driver found for rejection.");
+      ShowToastDialog.closeLoader();
       return;
     }
 
-    // 2️⃣ Add driver to rejected list safely
+    // Driverni rejectedByDrivers ro'yxatiga qo'shamiz. MUHIM: order.status'ni
+    // global ravishda driverRejected'ga o'tkazmaymiz — aks holda boshqa
+    // kuryerlar buyurtmani yo'qotadi (_listenToOrder driverRejected'da
+    // _handleOrderNotFound chaqiradi). Order driverPending holatida qoladi,
+    // boshqa kuryerlar uchun mavjud bo'lib turadi.
     order.rejectedByDrivers ??= [];
     if (!order.rejectedByDrivers!.contains(driver.id)) {
       order.rejectedByDrivers!.add(driver.id);
     }
+    if (order.status != Constant.driverAccepted &&
+        order.status != Constant.orderShipped &&
+        order.status != Constant.orderInTransit &&
+        order.status != Constant.orderCompleted &&
+        order.status != Constant.orderCancelled) {
+      order.status = Constant.driverPending;
+    }
 
-    // 3️⃣ Update order status
-    order.status = Constant.driverRejected;
-
-    // 4️⃣ Push order update to Firestore
     await FireStoreUtils.setOrder(order);
 
-    // 5️⃣ Clean up driver's order tracking data safely
     driver.orderRequestData?.remove(order.id);
     driver.inProgressOrderID?.remove(order.id);
-
-    // 6️⃣ Update driver info in Firestore
     await FireStoreUtils.updateUser(driver);
 
-    // 7️⃣ Reset order states
     currentOrder.value = OrderModel();
     orderModel.value = OrderModel();
 
-    // 8️⃣ Clear map visuals and UI
     await clearMap();
     update();
 
-    // 9️⃣ If multiple orders allowed, close dialog/screen
     if (Constant.singleOrderReceive == false && Get.isOverlaysOpen) {
       Get.back();
     }
@@ -245,7 +312,7 @@ class HomeController extends GetxController {
   }
 
   Future<void> clearMap() async {
-    await AudioPlayerService.playSound(false);
+    unawaited(AudioPlayerService.playSound(false));
     markers.clear();
     polyLines.clear();
     update();
@@ -261,6 +328,14 @@ class HomeController extends GetxController {
     if (currentId != null &&
         !(requests?.contains(currentId) ?? false) &&
         !(inProgress?.contains(currentId) ?? false)) {
+      // Qabul qilgandan keyin users/ snapshot ba'zan inProgress yangilanishidan OLDIN keladi —
+      // id ikkala ro'yxatda ham "yo'q" ko'rinadi va panel noto'g'ri tozalanadi (hot restart keyin tiklanadi).
+      final st = currentOrder.value.status;
+      if (st == Constant.driverAccepted ||
+          st == Constant.orderShipped ||
+          st == Constant.orderInTransit) {
+        return;
+      }
       await _resetCurrentOrder();
       return;
     }
@@ -296,7 +371,7 @@ class HomeController extends GetxController {
   Future<void> _resetCurrentOrder() async {
     currentOrder.value = OrderModel();
     await clearMap();
-    await AudioPlayerService.playSound(false);
+    unawaited(AudioPlayerService.playSound(false));
     update();
   }
 
@@ -337,14 +412,40 @@ class HomeController extends GetxController {
       // aks holda .doc(null) yangi "nusxa" yaratib, asl buyurtma yangilanmaydi
       newOrder.id = docSnapshot.id;
 
-      // Check status in code instead of query filter
-      if (newOrder.status == Constant.orderCancelled ||
-          newOrder.status == Constant.driverRejected) {
+      // Check status in code instead of query filter.
+      // driverRejected — eski mantiq qoldig'i. Endi reject bittagina driverga
+      // tegishli (rejectedByDrivers orqali) va global status driverPending'da
+      // qoladi, shuning uchun bu shart ishlamasa ham order yaroqsiz.
+      if (newOrder.status == Constant.orderCancelled) {
+        final wasAccepted =
+            driverModel.value.inProgressOrderID?.contains(newOrder.id) == true;
+        await _handleOrderNotFound(wasCancelled: wasAccepted);
+        return;
+      }
+      // Boshqa driver allaqachon qabul qilgan bo'lsa, biz uchun kerakmas.
+      if ((newOrder.status == Constant.driverAccepted ||
+              newOrder.status == Constant.orderShipped ||
+              newOrder.status == Constant.orderInTransit) &&
+          newOrder.driverID != null &&
+          newOrder.driverID != driverModel.value.id) {
         await _handleOrderNotFound();
         return;
       }
 
+      if (newOrder.status == Constant.orderCompleted) {
+        final driver = driverModel.value;
+        driver.inProgressOrderID?.remove(newOrder.id);
+        driver.orderRequestData?.remove(newOrder.id);
+        if (driver.id != null) {
+          await FireStoreUtils.updateUser(driver);
+        }
+        await _resetCurrentOrder();
+        _orderSubscription?.cancel();
+        return;
+      }
+
       if (checkInRequestData &&
+          newOrder.status == Constant.driverPending &&
           !(driverModel.value.orderRequestData?.contains(newOrder.id) ??
               false)) {
         await _handleOrderNotFound();
@@ -369,9 +470,16 @@ class HomeController extends GetxController {
     });
   }
 
-  Future<void> _handleOrderNotFound() async {
+  Future<void> _handleOrderNotFound({bool wasCancelled = false}) async {
+    final lostId = currentOrder.value.id ?? '';
     currentOrder.value = OrderModel();
-    await AudioPlayerService.playSound(false);
+    unawaited(AudioPlayerService.playSound(false));
+    if (wasCancelled) {
+      unawaited(AudioPlayerService.playCancellationSound());
+    }
+    if (lostId.isNotEmpty) {
+      unawaited(CallKitService.endCall(lostId));
+    }
     update();
   }
 
@@ -394,10 +502,20 @@ class HomeController extends GetxController {
     update();
     log("🟡 [changeData] update() chaqirildi");
 
-    if (currentOrder.value.status == Constant.driverPending) {
-      await AudioPlayerService.playSound(true);
+    // Audio platform kanali ba'zan 30s+ bloklaydi — marshrut va bottom panel update() dan keyin darhol chizilsin.
+    // MUHIM: agar driver buyurtmani allaqachon qabul qilgan bo'lsa (inProgressOrderID da bor),
+    // ovoz hech qachon yangidan boshlanmasligi kerak. Driver hujjati stream tez-tez fire qiladi
+    // va `currentOrder.value.status` yangilanishidan oldin chaqirilishi mumkin — bu paytda
+    // status hali `driverPending` ko'rinib qolib, ovoz qaytadan ochilib ketardi.
+    final orderId = currentOrder.value.id;
+    final alreadyAccepted = orderId != null &&
+        orderId.isNotEmpty &&
+        (driverModel.value.inProgressOrderID?.contains(orderId) ?? false);
+    if (!alreadyAccepted &&
+        currentOrder.value.status == Constant.driverPending) {
+      unawaited(AudioPlayerService.playSound(true));
     } else {
-      await AudioPlayerService.playSound(false);
+      unawaited(AudioPlayerService.playSound(false));
     }
     log("🟡 [changeData] Tugadi");
   }
@@ -407,9 +525,11 @@ class HomeController extends GetxController {
   /// Bildirishnoma kelmasa ham yangi zakaz shu orqali chiqadi.
   void listenToDriverAndOrders() {
     _driverSubscription?.cancel();
+    final driverId = FireStoreUtils.getCurrentUid();
+    unawaited(setBackgroundDriverId(driverId));
     _driverSubscription = FireStoreUtils.fireStore
         .collection(CollectionName.users)
-        .doc(FireStoreUtils.getCurrentUid())
+        .doc(driverId)
         .snapshots()
         .listen(
       (event) async {
@@ -479,6 +599,13 @@ class HomeController extends GetxController {
       return;
     }
     log("🔵 [getDirections] orderId=${order.id} status=${order.status} vendorLat=${order.vendor?.latitude} vendorLng=${order.vendor?.longitude}");
+
+    if (order.status == Constant.orderCompleted) {
+      markers.clear();
+      polyLines.clear();
+      log("🔵 [getDirections] Order completed — marshrut tozalandi");
+      return;
+    }
 
     // ✅ Mavjud lokatsiyadan darhol foydalanish (getLocation() bloklamaslik uchun)
     // Yangi GPS keyinroq backgroundda yangilanishi mumkin

@@ -1,7 +1,5 @@
 import 'package:customer/constant/constant.dart';
 import 'package:customer/controllers/wallet_controller.dart';
-import 'package:customer/payment/createRazorPayOrderModel.dart';
-import 'package:customer/payment/rozorpayConroller.dart';
 import 'package:customer/screen_ui/multi_vendor_service/wallet_screen/wallet_screen.dart';
 import 'package:customer/themes/app_them_data.dart';
 import 'package:customer/themes/round_button_fill.dart';
@@ -18,11 +16,14 @@ class PaymentListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final themeController = Get.find<ThemeController>();
-    final isDark = themeController.isDark.value;
-    return GetX(
-      init: WalletController(),
-      builder: (controller) {
-        return Scaffold(
+    final WalletController controller =
+        Get.isRegistered<WalletController>()
+            ? Get.find<WalletController>()
+            : Get.put(WalletController());
+
+    return Obx(() {
+      final isDark = themeController.isDark.value;
+      return Scaffold(
           appBar: AppBar(
             backgroundColor:
                 isDark ? AppThemeData.surfaceDark : AppThemeData.surface,
@@ -38,10 +39,22 @@ class PaymentListScreen extends StatelessWidget {
               ),
             ),
           ),
-          body: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+          body: RefreshIndicator(
+            onRefresh: () async {
+              await controller.getPaymentSettings();
+              await controller.getWalletTransaction();
+            },
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: TextFieldWidget(
@@ -95,26 +108,6 @@ class PaymentListScreen extends StatelessWidget {
                       children: [
                         Visibility(
                           visible:
-                              controller.stripeModel.value.isEnabled == true,
-                          child: cardDecoration(
-                            controller,
-                            PaymentGateway.stripe,
-                            isDark,
-                            "assets/images/stripe.png",
-                          ),
-                        ),
-                        Visibility(
-                          visible:
-                              controller.payPalModel.value.isEnabled == true,
-                          child: cardDecoration(
-                            controller,
-                            PaymentGateway.paypal,
-                            isDark,
-                            "assets/images/paypal.png",
-                          ),
-                        ),
-                        Visibility(
-                          visible:
                               controller.payStackModel.value.isEnable == true,
                           child: cardDecoration(
                             controller,
@@ -153,16 +146,6 @@ class PaymentListScreen extends StatelessWidget {
                             PaymentGateway.payFast,
                             isDark,
                             "assets/images/payfast.png",
-                          ),
-                        ),
-                        Visibility(
-                          visible:
-                              controller.razorPayModel.value.isEnabled == true,
-                          child: cardDecoration(
-                            controller,
-                            PaymentGateway.razorpay,
-                            isDark,
-                            "assets/images/razorpay.png",
                           ),
                         ),
                         Visibility(
@@ -210,6 +193,10 @@ class PaymentListScreen extends StatelessWidget {
                   ),
                 ),
               ],
+                    ),
+                  ),
+                );
+              },
             ),
           ),
           bottomNavigationBar: Container(
@@ -234,17 +221,6 @@ class PaymentListScreen extends StatelessWidget {
                           Constant.minimumAmountToDeposit.toString(),
                         )) {
                       if (controller.selectedPaymentMethod.value ==
-                          PaymentGateway.stripe.name) {
-                        controller.stripeMakePayment(
-                          amount: controller.topUpAmountController.value.text,
-                        );
-                      } else if (controller.selectedPaymentMethod.value ==
-                          PaymentGateway.paypal.name) {
-                        controller.paypalPaymentSheet(
-                          controller.topUpAmountController.value.text,
-                          context,
-                        );
-                      } else if (controller.selectedPaymentMethod.value ==
                           PaymentGateway.payStack.name) {
                         controller.payStackPayment(
                           controller.topUpAmountController.value.text,
@@ -286,34 +262,6 @@ class PaymentListScreen extends StatelessWidget {
                           controller.topUpAmountController.value.text,
                         );
                       } else if (controller.selectedPaymentMethod.value ==
-                          PaymentGateway.razorpay.name) {
-                        RazorPayController()
-                            .createOrderRazorPay(
-                              amount: double.parse(
-                                controller.topUpAmountController.value.text,
-                              ),
-                              razorpayModel: controller.razorPayModel.value,
-                            )
-                            .then((value) {
-                              if (value == null) {
-                                Get.back();
-                                ShowToastDialog.showToast(
-                                  "Something went wrong, please contact admin."
-                                      .tr,
-                                );
-                              } else {
-                                CreateRazorPayOrderModel result = value;
-                                controller.openCheckout(
-                                  amount:
-                                      controller
-                                          .topUpAmountController
-                                          .value
-                                          .text,
-                                  orderId: result.id,
-                                );
-                              }
-                            });
-                      } else if (controller.selectedPaymentMethod.value ==
                           PaymentGateway.payme.name) {
                         controller.paymeMakePayment(
                           context: context,
@@ -335,8 +283,7 @@ class PaymentListScreen extends StatelessWidget {
             ),
           ),
         );
-      },
-    );
+    });
   }
 
   Obx cardDecoration(

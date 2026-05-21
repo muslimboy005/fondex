@@ -11,8 +11,15 @@ import 'package:get/get.dart';
 import 'controllers/global_setting_controller.dart';
 import 'controllers/theme_controller.dart';
 import 'firebase_options.dart';
-
 void main() async {
+  // Set up error handling to prevent app crashes
+  FlutterError.onError = (FlutterErrorDetails details) {
+    FlutterError.presentError(details);
+    // Log error but don't crash the app
+    debugPrint('Flutter Error: ${details.exception}');
+  };
+
+  // Handle async errors
   WidgetsFlutterBinding.ensureInitialized();
 
   // Initialize Firebase - handle case where it's already initialized

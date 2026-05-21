@@ -1,7 +1,5 @@
 import 'package:customer/models/cab_order_model.dart';
-import 'package:customer/payment/createRazorPayOrderModel.dart';
-import 'package:customer/payment/rozorpayConroller.dart';
-import 'package:customer/screen_ui/auth_screens/login_screen.dart';
+import 'package:customer/screen_ui/auth_screens/phone_registration_screen.dart';
 import 'package:customer/screen_ui/multi_vendor_service/wallet_screen/wallet_screen.dart';
 import 'package:customer/themes/round_button_fill.dart';
 import 'package:customer/themes/show_toast_dialog.dart';
@@ -135,7 +133,7 @@ class MyCabBookingScreen extends StatelessWidget {
                             color: AppThemeData.primary300,
                             textColor: AppThemeData.grey50,
                             onPress: () async {
-                              Get.offAll(const LoginScreen());
+                              Get.offAll(const PhoneRegistrationScreen());
                             },
                           ),
                         ],
@@ -648,28 +646,6 @@ class MyCabBookingScreen extends StatelessWidget {
                           children: [
                             Visibility(
                               visible:
-                                  controller.stripeModel.value.isEnabled ==
-                                  true,
-                              child: cardDecoration(
-                                controller,
-                                PaymentGateway.stripe,
-                                isDark,
-                                "assets/images/stripe.png",
-                              ),
-                            ),
-                            Visibility(
-                              visible:
-                                  controller.payPalModel.value.isEnabled ==
-                                  true,
-                              child: cardDecoration(
-                                controller,
-                                PaymentGateway.paypal,
-                                isDark,
-                                "assets/images/paypal.png",
-                              ),
-                            ),
-                            Visibility(
-                              visible:
                                   controller.payStackModel.value.isEnable ==
                                   true,
                               child: cardDecoration(
@@ -710,17 +686,6 @@ class MyCabBookingScreen extends StatelessWidget {
                                 PaymentGateway.payFast,
                                 isDark,
                                 "assets/images/payfast.png",
-                              ),
-                            ),
-                            Visibility(
-                              visible:
-                                  controller.razorPayModel.value.isEnabled ==
-                                  true,
-                              child: cardDecoration(
-                                controller,
-                                PaymentGateway.razorpay,
-                                isDark,
-                                "assets/images/razorpay.png",
                               ),
                             ),
                             Visibility(
@@ -785,17 +750,6 @@ class MyCabBookingScreen extends StatelessWidget {
                     );
                   } else {
                     if (controller.selectedPaymentMethod.value ==
-                        PaymentGateway.stripe.name) {
-                      controller.stripeMakePayment(
-                        amount: controller.totalAmount.value.toString(),
-                      );
-                    } else if (controller.selectedPaymentMethod.value ==
-                        PaymentGateway.paypal.name) {
-                      controller.paypalPaymentSheet(
-                        controller.totalAmount.value.toString(),
-                        context,
-                      );
-                    } else if (controller.selectedPaymentMethod.value ==
                         PaymentGateway.payStack.name) {
                       controller.payStackPayment(
                         controller.totalAmount.value.toString(),
@@ -851,34 +805,18 @@ class MyCabBookingScreen extends StatelessWidget {
                         controller.totalAmount.value.toString(),
                       );
                     } else if (controller.selectedPaymentMethod.value ==
-                        PaymentGateway.razorpay.name) {
-                      RazorPayController()
-                          .createOrderRazorPay(
-                            amount: double.parse(
-                              controller.totalAmount.value.toString(),
-                            ),
-                            razorpayModel: controller.razorPayModel.value,
-                          )
-                          .then((value) {
-                            if (value == null) {
-                              Get.back();
-                              ShowToastDialog.showToast(
-                                "Something went wrong, please contact admin."
-                                    .tr,
-                              );
-                            } else {
-                              CreateRazorPayOrderModel result = value;
-                              controller.openCheckout(
-                                amount: controller.totalAmount.value.toString(),
-                                orderId: result.id,
-                              );
-                            }
-                          });
-                    } else if (controller.selectedPaymentMethod.value ==
                         PaymentGateway.payme.name) {
+                      final oid = controller.selectedOrder.value.id;
+                      if (oid == null || oid.isEmpty) {
+                        ShowToastDialog.showToast(
+                          "Order not found. Please try again.".tr,
+                        );
+                        return;
+                      }
                       controller.paymeMakePayment(
                         context: context,
                         amount: controller.totalAmount.value.toString(),
+                        firebaseOrderId: oid,
                       );
                     } else {
                       ShowToastDialog.showToast(

@@ -25,6 +25,7 @@ const Map<String, String> uzUZ = {
   'This user does not exist in the customer app.':
       'Bu foydalanuvchi mijoz ilovasida mavjud emas.',
   'No user found for that email.': 'Bu email uchun foydalanuvchi topilmadi.',
+  'User not found in Firebase.': 'Firebase\'da foydalanuvchi topilmadi.',
   'Wrong password provided.': 'Noto\'g\'ri parol kiritildi.',
   'Invalid email.': 'Noto\'g\'ri email.',
   'Login failed. Please try again.':
@@ -145,6 +146,29 @@ const Map<String, String> uzUZ = {
   'Cancel Ride': 'Sayohatni bekor qilish',
   'Ride cancelled successfully': 'Sayohat muvaffaqiyatli bekor qilindi',
   'Failed to cancel ride': 'Sayohatni bekor qilish muvaffaqiyatsiz',
+  'Boshqa haydovchi qidirilmoqda...': 'Boshqa haydovchi qidirilmoqda...',
+  'Yangi haydovchi qidirilmoqda': 'Yangi haydovchi qidirilmoqda',
+  'Haydovchi yetib keldi': 'Haydovchi yetib keldi',
+  "Iltimos, haydovchi mashinasiga o'tiring":
+      "Iltimos, haydovchi mashinasiga o'tiring",
+  'Haydovchi sizni kutmoqda': 'Haydovchi sizni kutmoqda',
+  'Haydovchi': 'Haydovchi',
+  'Buyurtmani bekor qilasizmi?': 'Buyurtmani bekor qilasizmi?',
+  "Bekor qilsangiz haydovchi sizga yo'naltirilmaydi.":
+      "Bekor qilsangiz haydovchi sizga yo'naltirilmaydi.",
+  'Ha, bekor qilish': 'Ha, bekor qilish',
+  'Sayohat tugadi': 'Sayohat tugadi',
+  'Masofa': 'Masofa',
+  'Davomiyligi': 'Davomiyligi',
+  "To'lov turi": "To'lov turi",
+  "To'lash": "To'lash",
+  'Naqd': 'Naqd',
+  'Hamyon': 'Hamyon',
+  "To'lov muvaffaqiyatli amalga oshirildi":
+      "To'lov muvaffaqiyatli amalga oshirildi",
+  'Rahmat! Sayohat yakunlandi.': 'Rahmat! Sayohat yakunlandi.',
+  "To'lovda xatolik. Qaytadan urinib ko'ring.":
+      "To'lovda xatolik. Qaytadan urinib ko'ring.",
   'Otp :': 'Otp :',
   'SOS': 'SOS',
   'Please wait...': 'Iltimos, kuting...',
@@ -519,7 +543,7 @@ const Map<String, String> uzUZ = {
       'Buyurtmangiz tayyorlanmoqda va haydovchiga tayinlandi',
   'Preparation Time': 'Tayyorlash vaqti',
   'Your Order': 'Sizning buyurtmangiz',
-  'Rate us': 'Bizni baholang',
+  'Rate us': 'Baholash',
   'Schedule': 'Jadval bo\'yicha',
   'Payment Method': 'To\'lov usuli',
   'Reorder': 'Qayta buyurtma berish',
@@ -999,6 +1023,8 @@ const Map<String, String> uzUZ = {
   'Password and Confirm password doesn\'t match':
       'Parol va tasdiqlash paroli mos kelmaydi',
   'Payme Payment': 'Payme to\'lovi',
+  'Payme opens in your browser': 'Payme tashqi brauzerda ochildi',
+  'Could not open Payme link': 'Payme havolasini ochib bo\'lmadi',
   'Payment error': 'To\'lov xatosi',
   'Please Enter Amount': 'Iltimos, summani kiriting',
   'Please enter Confirm password': 'Iltimos, parolni tasdiqlashni kiriting',
@@ -1058,4 +1084,8 @@ const Map<String, String> uzUZ = {
   'something went wrong, please contact admin.':
       'Nimadir noto\'g\'ri ketdi, iltimos, administrator bilan bog\'laning.',
   '→ Qayerga boramiz?': '→ Qayerga boramiz?',
+  'New version is available': 'Yangi versiya chiqdi',
+  'Please update the app to continue':
+      'Davom etish uchun ilovani yangilang',
+  'Update': 'Yangilash',
 };

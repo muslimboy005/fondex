@@ -1,4 +1,4 @@
-import 'package:customer/screen_ui/auth_screens/login_screen.dart';
+import 'package:customer/screen_ui/auth_screens/phone_registration_screen.dart';
 import 'package:customer/screen_ui/parcel_service/parcel_order_details.dart';
 import 'package:customer/themes/round_button_fill.dart';
 import 'package:flutter/material.dart';
@@ -70,7 +70,7 @@ class MyBookingScreen extends StatelessWidget {
                             color: AppThemeData.primary300,
                             textColor: AppThemeData.grey50,
                             onPress: () async {
-                              Get.offAll(const LoginScreen());
+                              Get.offAll(const PhoneRegistrationScreen());
                             },
                           ),
                         ],

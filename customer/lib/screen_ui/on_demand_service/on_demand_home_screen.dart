@@ -3,7 +3,7 @@ import 'package:customer/constant/constant.dart';
 import 'package:customer/controllers/theme_controller.dart';
 import 'package:customer/models/banner_model.dart';
 import 'package:customer/models/user_model.dart';
-import 'package:customer/screen_ui/auth_screens/login_screen.dart';
+import 'package:customer/screen_ui/auth_screens/phone_registration_screen.dart';
 import 'package:customer/screen_ui/location_enable_screens/address_list_screen.dart';
 import 'package:customer/screen_ui/location_enable_screens/location_permission_screen.dart';
 import 'package:customer/screen_ui/on_demand_service/view_all_popular_service_screen.dart';
@@ -58,7 +58,7 @@ class OnDemandHomeScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Constant.userModel == null
-                            ? InkWell(onTap: () => Get.offAll(const LoginScreen()), child: Text("Login".tr, style: AppThemeData.boldTextStyle(color: AppThemeData.grey900, fontSize: 12)))
+                            ? InkWell(onTap: () => Get.offAll(const PhoneRegistrationScreen()), child: Text("Login".tr, style: AppThemeData.boldTextStyle(color: AppThemeData.grey900, fontSize: 12)))
                             : Text(Constant.userModel!.fullName(), style: AppThemeData.boldTextStyle(color: AppThemeData.grey900, fontSize: 12)),
                         InkWell(
                           onTap: () async {

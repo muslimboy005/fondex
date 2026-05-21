@@ -3,7 +3,6 @@ import 'package:customer/constant/constant.dart';
 import 'package:customer/models/lat_lng.dart';
 import 'package:customer/models/rating_model.dart';
 import 'package:customer/utils/yandex_map_utils.dart';
-import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import '../models/cab_order_model.dart';
@@ -19,8 +18,6 @@ class CabOrderDetailsController extends GetxController {
 
   RxList<YandexMarkerInput> yandexMarkers = <YandexMarkerInput>[].obs;
   RxList<LatLng> polylinePoints = <LatLng>[].obs;
-
-  final String googleApiKey = Constant.mapAPIKey;
 
   final Rx<UserModel> driverUser = UserModel().obs;
   Rx<RatingModel> ratingModel = RatingModel().obs;
@@ -93,16 +90,21 @@ class CabOrderDetailsController extends GetxController {
     final dest = cabOrder.value.destinationLocation;
     if (src == null || dest == null) return;
 
-    final url =
-        "https://maps.googleapis.com/maps/api/directions/json?origin=${src.latitude},${src.longitude}&destination=${dest.latitude},${dest.longitude}&key=$googleApiKey";
+    final url = Uri.parse(
+      'https://router.project-osrm.org/route/v1/driving/${src.longitude},${src.latitude};${dest.longitude},${dest.latitude}?overview=full&geometries=geojson',
+    );
 
     try {
-      final response = await http.get(Uri.parse(url));
+      final response = await http.get(url);
       final data = jsonDecode(response.body);
       if (data["routes"] != null && (data["routes"] as List).isNotEmpty) {
-        final points = data["routes"][0]["overview_polyline"]["points"];
-        final decoded = PolylinePoints.decodePolyline(points);
-        polylinePoints.value = decoded.map((p) => LatLng(p.latitude, p.longitude)).toList();
+        final geometry = data["routes"][0]["geometry"]["coordinates"] as List;
+        polylinePoints.value = geometry
+            .map((coord) => LatLng(
+                  (coord[1] as num).toDouble(),
+                  (coord[0] as num).toDouble(),
+                ))
+            .toList();
       }
     } catch (_) {}
   }

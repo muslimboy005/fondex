@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:google_maps_flutter/google_maps_flutter.dart' as gmap;
@@ -19,8 +18,6 @@ class CabOrderDetailsController extends GetxController {
   RxSet<gmap.Marker> googleMarkers = <gmap.Marker>{}.obs;
   RxSet<gmap.Polyline> googlePolylines = <gmap.Polyline>{}.obs;
 
-  final String googleApiKey = Constant.mapAPIKey;
-
   final Rx<UserModel?> driverUser = Rx<UserModel?>(null);
 
   @override
@@ -31,7 +28,7 @@ class CabOrderDetailsController extends GetxController {
       cabOrder.value = args['cabOrderModel'] as CabOrderModel;
       calculateTotalAmount();
       _setMarkers();
-      _getGoogleRoute();
+      _getRoute();
     }
   }
 
@@ -91,7 +88,9 @@ class CabOrderDetailsController extends GetxController {
     final destLat = cabOrder.value.destinationLocation!.latitude;
     final destLng = cabOrder.value.destinationLocation!.longitude;
 
-    googleMarkers.value = {
+    googleMarkers
+      ..clear()
+      ..addAll({
       gmap.Marker(
         markerId: const gmap.MarkerId('source'),
         position: gmap.LatLng(sourceLat!, sourceLng!),
@@ -102,26 +101,38 @@ class CabOrderDetailsController extends GetxController {
         position: gmap.LatLng(destLat!, destLng!),
         icon: gmap.BitmapDescriptor.defaultMarkerWithHue(gmap.BitmapDescriptor.hueRed),
       ),
-    };
+    });
   }
 
-  ///Google Directions API
-  Future<void> _getGoogleRoute() async {
+  /// Route polyline (OSRM) - Yandex only flow.
+  Future<void> _getRoute() async {
     final src = cabOrder.value.sourceLocation;
     final dest = cabOrder.value.destinationLocation;
-
-    final url = "https://maps.googleapis.com/maps/api/directions/json?origin=${src!.latitude},${src.longitude}&destination=${dest!.latitude},${dest.longitude}&key=$googleApiKey";
-
-    final response = await http.get(Uri.parse(url));
+    if (src == null || dest == null) return;
+    final url = Uri.parse(
+      'https://router.project-osrm.org/route/v1/driving/${src.longitude},${src.latitude};${dest.longitude},${dest.latitude}?overview=full&geometries=geojson',
+    );
+    final response = await http.get(url);
     final data = jsonDecode(response.body);
 
-    if (data["routes"].isNotEmpty) {
-      final points = data["routes"][0]["overview_polyline"]["points"];
-      final polylinePoints = PolylinePoints.decodePolyline(points);
-
-      final polylineCoords = polylinePoints.map((p) => gmap.LatLng(p.latitude, p.longitude)).toList();
-
-      googlePolylines.value = {gmap.Polyline(polylineId: const gmap.PolylineId("google_route"), color: AppThemeData.onDemandDark100, width: 5, points: polylineCoords)};
+    if (data["routes"] is List && (data["routes"] as List).isNotEmpty) {
+      final geometry = data["routes"][0]["geometry"]["coordinates"] as List;
+      final polylineCoords = geometry
+          .map((coord) => gmap.LatLng(
+                (coord[1] as num).toDouble(),
+                (coord[0] as num).toDouble(),
+              ))
+          .toList();
+      googlePolylines
+        ..clear()
+        ..addAll({
+        gmap.Polyline(
+          polylineId: const gmap.PolylineId("route"),
+          color: AppThemeData.onDemandDark100,
+          width: 5,
+          points: polylineCoords,
+        )
+      });
     }
   }
 

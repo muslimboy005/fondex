@@ -1,5 +1,28 @@
 import 'dart:convert';
 
+Map<String, dynamic> _variantOptionsFromJson(dynamic value) {
+  if (value == null) return <String, dynamic>{};
+  if (value is Map<String, dynamic>) return value;
+  if (value is Map) {
+    return value.map((k, v) => MapEntry(k.toString(), v));
+  }
+  if (value is List) {
+    final out = <String, dynamic>{};
+    for (var i = 0; i < value.length; i++) {
+      final e = value[i];
+      if (e is Map) {
+        for (final entry in e.entries) {
+          out[entry.key.toString()] = entry.value;
+        }
+      } else {
+        out['$i'] = e;
+      }
+    }
+    return out;
+  }
+  return <String, dynamic>{};
+}
+
 class CartProductModel {
   String? id;
   String? categoryId;
@@ -84,7 +107,7 @@ class VariantInfo {
     variantPrice = json['variant_price'] ?? '';
     variantSku = json['variant_sku'] ?? '';
     variantImage = json['variant_image'] ?? '';
-    variantOptions = json['variant_options'] ?? {};
+    variantOptions = _variantOptionsFromJson(json['variant_options']);
   }
 
   Map<String, dynamic> toJson() {

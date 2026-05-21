@@ -4,8 +4,6 @@ import 'package:vendor/themes/theme_controller.dart';
 import 'package:vendor/constant/constant.dart';
 import 'package:vendor/constant/show_toast_dialog.dart';
 import 'package:vendor/controller/subscription_controller.dart';
-import 'package:vendor/payment/createRazorPayOrderModel.dart';
-import 'package:vendor/payment/rozorpayConroller.dart';
 import 'package:vendor/themes/app_them_data.dart';
 import 'package:vendor/themes/round_button_fill.dart';
 
@@ -87,14 +85,6 @@ class SelectPaymentScreen extends StatelessWidget {
                             child: Column(
                               children: [
                                 Visibility(
-                                  visible: controller.stripeModel.value.isEnabled == true,
-                                  child: cardDecoration(controller, PaymentGateway.stripe, isDark, "assets/images/stripe.png"),
-                                ),
-                                Visibility(
-                                  visible: controller.payPalModel.value.isEnabled == true,
-                                  child: cardDecoration(controller, PaymentGateway.paypal, isDark, "assets/images/paypal.png"),
-                                ),
-                                Visibility(
                                   visible: controller.payStackModel.value.isEnable == true,
                                   child: cardDecoration(controller, PaymentGateway.payStack, isDark, "assets/images/paystack.png"),
                                 ),
@@ -114,10 +104,6 @@ class SelectPaymentScreen extends StatelessWidget {
                                 //   visible: controller.paytmModel.value.isEnabled == true,
                                 //   child: cardDecoration(controller, PaymentGateway.paytm, isDark, "assets/images/paytm.png"),
                                 // ),
-                                Visibility(
-                                  visible: controller.razorPayModel.value.isEnabled == true,
-                                  child: cardDecoration(controller, PaymentGateway.razorpay, isDark, "assets/images/razorpay.png"),
-                                ),
                                 Visibility(
                                   visible: controller.midTransModel.value.enable == true,
                                   child: cardDecoration(controller, PaymentGateway.midTrans, isDark, "assets/images/midtrans.png"),
@@ -156,11 +142,7 @@ class SelectPaymentScreen extends StatelessWidget {
                   if (controller.selectedPaymentMethod.value == '') {
                     ShowToastDialog.showToast("Please Select Payment Method.".tr);
                   } else {
-                    if (controller.selectedPaymentMethod.value == PaymentGateway.stripe.name) {
-                      controller.stripeMakePayment(amount: controller.totalAmount.value.toString());
-                    } else if (controller.selectedPaymentMethod.value == PaymentGateway.paypal.name) {
-                      controller.paypalPaymentSheet(controller.totalAmount.value.toString(), context);
-                    } else if (controller.selectedPaymentMethod.value == PaymentGateway.payStack.name) {
+                    if (controller.selectedPaymentMethod.value == PaymentGateway.payStack.name) {
                       controller.payStackPayment(controller.totalAmount.value.toString());
                     } else if (controller.selectedPaymentMethod.value == PaymentGateway.mercadoPago.name) {
                       controller.mercadoPagoMakePayment(context: context, amount: controller.totalAmount.value.toString());
@@ -183,18 +165,6 @@ class SelectPaymentScreen extends StatelessWidget {
                       controller.orangeMakePayment(context: context, amount: controller.totalAmount.value.toString());
                     } else if (controller.selectedPaymentMethod.value == PaymentGateway.xendit.name) {
                       controller.xenditPayment(context, controller.totalAmount.value.toString());
-                    } else if (controller.selectedPaymentMethod.value == PaymentGateway.razorpay.name) {
-                      RazorPayController().createOrderRazorPay(amount: (double.parse(controller.totalAmount.value.toString()) * 100).round()  , razorpayModel: controller.razorPayModel.value).then((
-                        value,
-                      ) {
-                        if (value == null) {
-                          Get.back();
-                          ShowToastDialog.showToast("Something went wrong, please contact admin.".tr);
-                        } else {
-                          CreateRazorPayOrderModel result = value;
-                          controller.openCheckout(amount: controller.totalAmount.value.toString(), orderId: result.id);
-                        }
-                      });
                     } else {
                       ShowToastDialog.showToast("Please select payment method".tr);
                     }

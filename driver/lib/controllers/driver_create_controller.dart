@@ -11,6 +11,7 @@ import 'package:driver/models/vehicle_type.dart';
 import 'package:driver/models/zone_model.dart';
 import 'package:driver/utils/fire_store_utils.dart';
 import 'package:driver/utils/notification_service.dart';
+import 'package:driver/utils/uzbek_car_plate_formatter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -107,7 +108,9 @@ class DriverCreateController extends GetxController {
           driverModel.value.zoneId = selectedZone.value.id;
           driverModel.value.appIdentifier = Platform.isAndroid ? 'android' : 'ios';
           driverModel.value.provider = 'email';
-          driverModel.value.carNumber = carPlatNumberEditingController.value.text.toString();
+          driverModel.value.carNumber = UzbekCarPlateFormatter.normalize(
+            carPlatNumberEditingController.value.text,
+          );
           driverModel.value.isOwner = false;
           driverModel.value.ownerId = FireStoreUtils.getCurrentUid();
           driverModel.value.serviceType = selectedService.value == "Cab Service"
@@ -172,7 +175,9 @@ class DriverCreateController extends GetxController {
     driverModel.value.zoneId = selectedZone.value.id;
     driverModel.value.appIdentifier = Platform.isAndroid ? 'android' : 'ios';
     driverModel.value.provider = 'email';
-    driverModel.value.carNumber = carPlatNumberEditingController.value.text.toString();
+    driverModel.value.carNumber = UzbekCarPlateFormatter.normalize(
+      carPlatNumberEditingController.value.text,
+    );
     driverModel.value.isOwner = false;
     driverModel.value.ownerId = FireStoreUtils.getCurrentUid();
     driverModel.value.serviceType = selectedService.value == "Cab Service"
@@ -228,7 +233,8 @@ class DriverCreateController extends GetxController {
       emailEditingController.value.text = driverModel.value.email ?? "";
       phoneNUmberEditingController.value.text = driverModel.value.phoneNumber ?? "";
       countryCodeEditingController.value.text = driverModel.value.countryCode ?? "+91";
-      carPlatNumberEditingController.value.text = driverModel.value.carNumber ?? "";
+      carPlatNumberEditingController.value.text =
+          UzbekCarPlateFormatter.normalize(driverModel.value.carNumber ?? "");
 
       selectedValue.value = driverModel.value.rideType ?? '';
       selectedService.value = driverModel.value.serviceType == "cab-service"

@@ -24,6 +24,7 @@ const Map<String, String> enUS = {
   'This user does not exist in the customer app.':
       'This user does not exist in the customer app.',
   'No user found for that email.': 'No user found for that email.',
+  'User not found in Firebase.': 'User not found in Firebase.',
   'Wrong password provided.': 'Wrong password provided.',
   'Invalid email.': 'Invalid email.',
   'Login failed. Please try again.': 'Login failed. Please try again.',
@@ -144,6 +145,28 @@ const Map<String, String> enUS = {
   'Cancel Ride': 'Cancel Ride',
   'Ride cancelled successfully': 'Ride cancelled successfully',
   'Failed to cancel ride': 'Failed to cancel ride',
+  'Boshqa haydovchi qidirilmoqda...': 'Searching for another driver...',
+  'Yangi haydovchi qidirilmoqda': 'Looking for a new driver',
+  'Haydovchi yetib keldi': 'Driver has arrived',
+  "Iltimos, haydovchi mashinasiga o'tiring":
+      "Please get in the driver's car",
+  'Haydovchi sizni kutmoqda': 'The driver is waiting for you',
+  'Haydovchi': 'Driver',
+  'Buyurtmani bekor qilasizmi?': 'Cancel the ride?',
+  "Bekor qilsangiz haydovchi sizga yo'naltirilmaydi.":
+      "If you cancel, no driver will be assigned to you.",
+  'Ha, bekor qilish': 'Yes, cancel',
+  'Sayohat tugadi': 'Trip completed',
+  'Masofa': 'Distance',
+  'Davomiyligi': 'Duration',
+  "To'lov turi": 'Payment method',
+  "To'lash": 'Pay',
+  'Naqd': 'Cash',
+  'Hamyon': 'Wallet',
+  "To'lov muvaffaqiyatli amalga oshirildi": 'Payment successful',
+  'Rahmat! Sayohat yakunlandi.': 'Thank you! Trip completed.',
+  "To'lovda xatolik. Qaytadan urinib ko'ring.":
+      'Payment failed. Please try again.',
   'Otp :': 'Otp :',
   'SOS': 'SOS',
   'Please wait...': 'Please wait...',
@@ -845,6 +868,8 @@ const Map<String, String> enUS = {
   'No': 'No',
   'Yes': 'Yes',
   'Continue Payment': 'Continue Payment',
+  'Payme opens in your browser': 'Payme opens in your browser',
+  'Could not open Payme link': 'Could not open Payme link',
   'Exit': 'Exit',
   'Your cart already contains items from another restaurant. Would you like to replace them with items from this restaurant instead?':
       'Your cart already contains items from another restaurant. Would you like to replace them with items from this restaurant instead?',
@@ -888,4 +913,7 @@ const Map<String, String> enUS = {
   'Add to Cart': 'Add to Cart',
   'Ko\'proq o\'qish': 'Read more',
   'Qisqartirish': 'Show less',
+  'New version is available': 'New version is available',
+  'Please update the app to continue': 'Please update the app to continue',
+  'Update': 'Update',
 };

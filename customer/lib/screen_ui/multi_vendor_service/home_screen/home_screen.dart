@@ -40,7 +40,7 @@ import '../../../themes/show_toast_dialog.dart';
 import '../../../themes/text_field_widget.dart';
 import '../../../widget/restaurant_image_view.dart';
 import '../../../widget/video_widget.dart';
-import '../../auth_screens/login_screen.dart';
+import '../../auth_screens/phone_registration_screen.dart';
 import '../advertisement_screens/all_advertisement_screen.dart';
 import '../cart_screen/cart_screen.dart';
 import '../wallet_screen/wallet_screen.dart';
@@ -174,7 +174,7 @@ class HomeScreen extends StatelessWidget {
                                                       ? InkWell(
                                                         onTap: () {
                                                           Get.offAll(
-                                                            const LoginScreen(),
+                                                            const PhoneRegistrationScreen(),
                                                           );
                                                         },
                                                         child: Text(
@@ -1090,16 +1090,16 @@ class HomeScreen extends StatelessWidget {
                           isDark
                               ? AppThemeData.greyDark100
                               : AppThemeData.grey100,
-                      value: controller.selectedOrderTypeValue.value.tr,
+                      value: controller.selectedOrderTypeValue.value,
                       icon: const Icon(Icons.keyboard_arrow_down),
                       items:
-                          <String>['Delivery'.tr, 'TakeAway'.tr].map((
-                            String value,
-                          ) {
+                          <String>['Delivery', 'TakeAway'].map((String key) {
                             return DropdownMenuItem<String>(
-                              value: value,
+                              value: key,
                               child: Text(
-                                value.tr,
+                                key == 'Delivery'
+                                    ? 'Delivery'.tr
+                                    : 'TakeAway'.tr,
                                 style: TextStyle(
                                   fontFamily: AppThemeData.semiBold,
                                   fontSize: 16,

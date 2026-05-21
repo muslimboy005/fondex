@@ -4,7 +4,7 @@ import 'package:customer/controllers/favourite_ondemmand_controller.dart';
 import 'package:customer/controllers/theme_controller.dart';
 import 'package:customer/models/category_model.dart';
 import 'package:customer/models/provider_serivce_model.dart';
-import 'package:customer/screen_ui/auth_screens/login_screen.dart';
+import 'package:customer/screen_ui/auth_screens/phone_registration_screen.dart';
 import 'package:customer/screen_ui/on_demand_service/on_demand_details_screen.dart';
 import 'package:customer/service/fire_store_utils.dart';
 import 'package:customer/themes/app_them_data.dart';
@@ -64,7 +64,7 @@ class FavouriteOndemandScreen extends StatelessWidget {
                           color: AppThemeData.primary300,
                           textColor: AppThemeData.grey50,
                           onPress: () async {
-                            Get.offAll(const LoginScreen());
+                            Get.offAll(const PhoneRegistrationScreen());
                           },
                         ),
                       ],

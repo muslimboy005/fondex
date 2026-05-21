@@ -1,5 +1,3 @@
-import 'package:vendor/app/auth_screen/signup_screen.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';

@@ -76,6 +76,9 @@ class FireStoreUtils {
     return auth.FirebaseAuth.instance.currentUser!.uid;
   }
 
+  static String? getCurrentUidOrNull() =>
+      auth.FirebaseAuth.instance.currentUser?.uid;
+
   static Future<bool> isLogin() async {
     bool isLogin = false;
     if (auth.FirebaseAuth.instance.currentUser != null) {
@@ -128,20 +131,15 @@ class FireStoreUtils {
   }
 
   static Future<bool> updateUser(UserModel userModel) async {
-    bool isUpdate = false;
-    await fireStore
-        .collection(CollectionName.users)
-        .doc(userModel.id)
-        .set(userModel.toJson())
-        .whenComplete(() {
-          Constant.userModel = userModel;
-          isUpdate = true;
-        })
-        .catchError((error) {
-          log("Failed to update user: $error");
-          isUpdate = false;
-        });
-    return isUpdate;
+    try {
+      final docRef = fireStore.collection(CollectionName.users).doc(userModel.id);
+      await docRef.set(userModel.toJson(), SetOptions(merge: true));
+      Constant.userModel = userModel;
+      return true;
+    } catch (error) {
+      log("Failed to update user: $error");
+      return false;
+    }
   }
 
   static Future<List<OnBoardingModel>> getOnBoardingList() async {
@@ -948,6 +946,26 @@ class FireStoreUtils {
       }
     } catch (e) {
       log("getSettings() Error: $e");
+    }
+  }
+
+  static Future<String> getCustomerMinRequiredVersion() async {
+    try {
+      final updateSnap =
+          await FirebaseFirestore.instance
+              .collection('update')
+              .doc('customer')
+              .get();
+
+      if (!updateSnap.exists || updateSnap.data() == null) {
+        return '';
+      }
+
+      final version = updateSnap.data()?['version']?.toString() ?? '';
+      return version.trim();
+    } catch (e) {
+      log("getCustomerMinRequiredVersion() Error: $e");
+      return '';
     }
   }
 
@@ -2526,10 +2544,16 @@ class FireStoreUtils {
   }
 
   static Future cabOrderPlace(CabOrderModel orderModel) async {
+    // `merge: true` is critical here. Without it, this write was wiping
+    // driver-side fields (driverId, driver, acceptedAt, status="Driver
+    // Accepted") whenever it ran on an existing doc (e.g. via
+    // `completeOrder()` payment flows that re-serialize the local
+    // `currentOrder.value`). For brand-new orders the merge behavior is
+    // equivalent to a plain set since there are no pre-existing fields.
     await fireStore
         .collection(CollectionName.cabBookingOrders)
         .doc(orderModel.id)
-        .set(orderModel.toJson());
+        .set(orderModel.toJson(), SetOptions(merge: true));
   }
 
   static Future parcelOrderPlace(ParcelOrderModel orderModel) async {
@@ -2622,6 +2646,8 @@ class FireStoreUtils {
           .where('role', isEqualTo: Constant.userRoleDriver);
       final snapshot = await query.get();
       final orderVehicleIdStr = vehicleId?.toString().trim() ?? '';
+      final List<UserModel> sectionOnlineDrivers = [];
+      final List<UserModel> matchedVehicleDrivers = [];
       for (var doc in snapshot.docs) {
         final data = doc.data();
         final docSectionId = data['sectionId']?.toString() ?? '';
@@ -2634,18 +2660,97 @@ class FireStoreUtils {
         if (!isOnline) continue;
         // Hisob faol (active) bo'lishi kerak
         if (data['active'] == false || data['active'] == 'false') continue;
+        final driver = UserModel.fromJson(data);
+        sectionOnlineDrivers.add(driver);
         if (orderVehicleIdStr.isNotEmpty) {
           final driverVehicleId = data['vehicleId']?.toString().trim() ?? '';
-          if (driverVehicleId.isEmpty || driverVehicleId != orderVehicleIdStr) {
-            continue; // Faqat zakazdagi mashina turiga mos haydovchilar
+          if (driverVehicleId.isNotEmpty && driverVehicleId == orderVehicleIdStr) {
+            matchedVehicleDrivers.add(driver);
           }
         }
-        list.add(UserModel.fromJson(data));
+      }
+      // Avval mos vehicleId dagi haydovchilar, agar topilmasa sectiondagi barcha onlayn haydovchilar
+      if (orderVehicleIdStr.isNotEmpty && matchedVehicleDrivers.isNotEmpty) {
+        list = matchedVehicleDrivers;
+      } else {
+        list = sectionOnlineDrivers;
       }
     } catch (e) {
       log("getCabDriversForNotification error: $e");
     }
     return list;
+  }
+
+  /// Cab orderni haydovchilarning user documentiga realtime request sifatida yozadi.
+  /// Driver app `ordercabRequestData` listener orqali zakazni tezda ko'radi.
+  static Future<void> dispatchCabOrderRequestToDrivers(
+    CabOrderModel orderModel,
+    List<UserModel> drivers,
+  ) async {
+    try {
+      if (drivers.isEmpty) return;
+      final Map<String, dynamic> orderMap = orderModel.toJson();
+      final WriteBatch batch = fireStore.batch();
+      for (final driver in drivers) {
+        final driverId = driver.id?.trim() ?? '';
+        if (driverId.isEmpty) continue;
+        final docRef = fireStore.collection(CollectionName.users).doc(driverId);
+        batch.set(
+          docRef,
+          {
+            'ordercabRequestData': orderMap,
+            'ordercabRequestAt': Timestamp.now(),
+          },
+          SetOptions(merge: true),
+        );
+      }
+      await batch.commit();
+    } catch (e) {
+      log("dispatchCabOrderRequestToDrivers error: $e");
+    }
+  }
+
+  /// 5 daqiqada topilmagan cab order bekor bo'lganda driver requestlarini tozalash.
+  static Future<void> clearCabOrderRequestFromDrivers(
+    CabOrderModel orderModel,
+  ) async {
+    try {
+      final orderId = orderModel.id?.trim() ?? '';
+      if (orderId.isEmpty) return;
+
+      final snapshot = await fireStore
+          .collection(CollectionName.users)
+          .where('role', isEqualTo: Constant.userRoleDriver)
+          .get();
+
+      final batch = fireStore.batch();
+      var touched = 0;
+      for (final doc in snapshot.docs) {
+        final data = doc.data();
+        final requestData = data['ordercabRequestData'];
+        if (requestData is! Map<String, dynamic>) continue;
+        final requestOrderId = requestData['id']?.toString().trim() ?? '';
+        if (requestOrderId != orderId) continue;
+
+        final ref = fireStore.collection(CollectionName.users).doc(doc.id);
+        final updatePayload = <String, dynamic>{
+          'ordercabRequestData': FieldValue.delete(),
+          'ordercabRequestAt': FieldValue.delete(),
+        };
+        final inProgress = (data['inProgressOrderID'] as List<dynamic>? ?? [])
+            .where((e) => e.toString() != orderId)
+            .toList();
+        updatePayload['inProgressOrderID'] = inProgress;
+        batch.update(ref, updatePayload);
+        touched++;
+      }
+
+      if (touched > 0) {
+        await batch.commit();
+      }
+    } catch (e) {
+      log("clearCabOrderRequestFromDrivers error: $e");
+    }
   }
 
   // static Future<List<CabOrderModel>> getCabDriverOrders() async {

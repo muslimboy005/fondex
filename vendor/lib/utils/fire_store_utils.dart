@@ -453,6 +453,24 @@ class FireStoreUtils {
     }
   }
 
+  static Future<String> getVendorMinRequiredVersion() async {
+    try {
+      final updateSnap =
+          await FirebaseFirestore.instance
+              .collection('update')
+              .doc('vendor')
+              .get();
+      if (!updateSnap.exists || updateSnap.data() == null) {
+        return '';
+      }
+      final version = updateSnap.data()?['version']?.toString() ?? '';
+      return version.trim();
+    } catch (e) {
+      log("getVendorMinRequiredVersion() Error: $e");
+      return '';
+    }
+  }
+
   static Future<bool?> checkReferralCodeValidOrNot(String referralCode) async {
     bool? isExit;
     try {
@@ -597,10 +615,18 @@ class FireStoreUtils {
   static Future<bool> updateOrder(OrderModel orderModel) async {
     bool isUpdate = false;
 
+    final vid = orderModel.vendorID?.toString().trim();
+    if (vid == null || vid.isEmpty) {
+      final fallback = Constant.userModel?.vendorID?.toString().trim();
+      if (fallback != null && fallback.isNotEmpty) {
+        orderModel.vendorID = fallback;
+      }
+    }
+
     await fireStore
         .collection(CollectionName.vendorOrders)
         .doc(orderModel.id)
-        .set(orderModel.toJson())
+        .set(orderModel.toJson(), SetOptions(merge: true))
         .whenComplete(() {
           isUpdate = true;
         })
@@ -2362,6 +2388,37 @@ class FireStoreUtils {
         "📦 [sendOrderToAllCouriers] ${courierList.length} ta courier topildi",
       );
 
+      // takeAway=true bo'lsa, kuryer kerakmas — buyurtmani mijoz o'zi olib ketadi.
+      if (orderModel.takeAway == true) {
+        log(
+          "ℹ️ [sendOrderToAllCouriers] Order takeAway=true — kuryerga yuborilmaydi",
+        );
+        return;
+      }
+
+      // Avval rad etgan kuryerlarni filtrlab tashlaymiz, aks holda ularga
+      // qayta dialog/notification yuboriladi.
+      final rejected = (orderModel.rejectedByDrivers ?? const [])
+          .map((e) => e?.toString())
+          .where((e) => e != null && e.isNotEmpty)
+          .cast<String>()
+          .toSet();
+      if (rejected.isNotEmpty) {
+        final before = courierList.length;
+        courierList = courierList
+            .where((c) => c.id == null || !rejected.contains(c.id))
+            .toList();
+        log(
+          "📦 [sendOrderToAllCouriers] rejectedByDrivers (${rejected.length}) hisobga olindi: $before → ${courierList.length}",
+        );
+      }
+      if (courierList.isEmpty) {
+        log(
+          "⚠️ [sendOrderToAllCouriers] Filtrlardan keyin yuboriladigan kuryer qolmadi (barcha mavjudlari rad etgan).",
+        );
+        return;
+      }
+
       // Update order status to driverPending
       log(
         "📦 [sendOrderToAllCouriers] Order status driverPending ga o'zgartirilmoqda: ${orderModel.id}",
@@ -2373,17 +2430,47 @@ class FireStoreUtils {
       );
 
       // Send order to each courier
+      int sentCount = 0;
+      int skippedOffline = 0;
       for (UserModel courier in courierList) {
         try {
           log(
             "📦 [sendOrderToAllCouriers] Processing courier ${courier.id}...",
           );
 
-          // Refetch courier data from Firestore to get latest FCM token
+          // Refetch courier data from Firestore to get latest FCM token.
           UserModel? freshCourierData = await getUserById(courier.id ?? '');
           if (freshCourierData == null) {
             log(
               "⚠️ [sendOrderToAllCouriers] Courier ${courier.id} ma'lumotlari topilmadi, o'tkazib yuborilmoqda",
+            );
+            continue;
+          }
+
+          // ONLINE GATE — boshlang'ich so'rovdan keyin driver offline bo'lib
+          // qolishi mumkin (active/isActive flag flip). Yangi nusxa bo'yicha
+          // qayta tekshiramiz; aks holda offline driver navbati to'lib ketadi
+          // va notification ham yetib bormaydi (FCM token bekor qilinishi
+          // mumkin).
+          final bool isApproved = freshCourierData.active == true;
+          final bool isOnline = freshCourierData.isActive == true;
+          if (!isApproved || !isOnline) {
+            skippedOffline++;
+            log(
+              "⏭️ [sendOrderToAllCouriers] Courier ${courier.id} offline yoki nofaol (active=${freshCourierData.active}, isActive=${freshCourierData.isActive}) — o'tkazib yuborildi",
+            );
+            continue;
+          }
+
+          // Allaqachon shu buyurtmadan rad etgan bo'lsa (race holatda
+          // rejectedByDrivers yangilangan bo'lishi mumkin).
+          final rejectedFresh =
+              (orderModel.rejectedByDrivers ?? const [])
+                  .map((e) => e?.toString())
+                  .toSet();
+          if (rejectedFresh.contains(courier.id)) {
+            log(
+              "⏭️ [sendOrderToAllCouriers] Courier ${courier.id} allaqachon rad etgan — o'tkazib yuborildi",
             );
             continue;
           }
@@ -2404,10 +2491,12 @@ class FireStoreUtils {
           if (!freshCourierData.orderRequestData!.contains(orderModel.id)) {
             freshCourierData.orderRequestData!.add(orderModel.id);
             await updateDriverUser(freshCourierData);
+            sentCount++;
             log(
               "✅ [sendOrderToAllCouriers] Order ${orderModel.id} courier ${courier.id} ga qo'shildi",
             );
           } else {
+            sentCount++;
             log(
               "ℹ️ [sendOrderToAllCouriers] Order ${orderModel.id} allaqachon courier ${courier.id} da mavjud",
             );
@@ -2419,6 +2508,23 @@ class FireStoreUtils {
               "📨 [sendOrderToAllCouriers] Sending notification to courier ${courier.id}...",
             );
             try {
+              // CallKit-style data-only push — driver background handler ushlaydi
+              // va CallKit incoming call ekranini ko'rsatadi.
+              // iOS VoIP token Firestore da alohida saqlanadi (UserModel da yo'q),
+              // shu sababli faqat Android FCM push yuboriladi. iOS uchun
+              // driverning background service Firestore listeneri ham
+              // CallKit ni ko'taradi.
+              await SendNotification.sendCallKitNotification(
+                type: Constant.newDeliveryOrder,
+                token: fcmToken,
+                iosBundleId: 'felix.fondex.driver',
+                data: {
+                  'type': 'new_delivery_order',
+                  'orderId': orderModel.id ?? '',
+                },
+              );
+              // Fallback: oddiy notification ham yuboramiz — agar CallKit
+              // ko'rsatilmasa, hech bo'lmaganda traydan ko'rinadi.
               await SendNotification.sendFcmMessage(
                 Constant.newDeliveryOrder,
                 fcmToken,
@@ -2451,7 +2557,14 @@ class FireStoreUtils {
         }
       }
 
-      log("✅ [sendOrderToAllCouriers] Barcha courier larga order yuborildi");
+      log(
+        "✅ [sendOrderToAllCouriers] Tugadi: yuborildi=$sentCount, online emas=$skippedOffline / jami=${courierList.length}",
+      );
+      if (sentCount == 0) {
+        log(
+          "⚠️ [sendOrderToAllCouriers] Hech bir online kuryer topilmadi. Buyurtma driverPending'da qoladi; vendor qayta tarqatishi mumkin.",
+        );
+      }
     } catch (e) {
       log("❌ [sendOrderToAllCouriers] Xatolik: $e");
     }

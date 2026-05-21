@@ -21,6 +21,11 @@ class Preferences {
   static const codSettings = "CODSettings";
   static const orderRingtone = "audioSound";
 
+  // CallKit / incoming order
+  static const pendingOrderId = "pendingOrderId";
+  static const pendingOrderType = "pendingOrderType";
+  static const voipToken = "voipToken";
+
   static late SharedPreferences pref;
 
   static Future<void> initPref() async {

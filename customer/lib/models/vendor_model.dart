@@ -3,6 +3,56 @@ import 'package:customer/models/subscription_plan_model.dart';
 
 import 'admin_commission_model.dart';
 
+Timestamp? _timestampFromDynamic(dynamic value) {
+  if (value == null) return null;
+  if (value is Timestamp) return value;
+  if (value is DateTime) return Timestamp.fromDate(value);
+  if (value is int) {
+    if (value.abs() > 10000000000) {
+      return Timestamp.fromMillisecondsSinceEpoch(value);
+    }
+    return Timestamp.fromMillisecondsSinceEpoch(value * 1000);
+  }
+  if (value is double) {
+    return _timestampFromDynamic(value.round());
+  }
+  if (value is String) {
+    final s = value.trim();
+    if (s.isEmpty) return null;
+    final asInt = int.tryParse(s);
+    if (asInt != null) return _timestampFromDynamic(asInt);
+    final dt = DateTime.tryParse(s);
+    if (dt != null) return Timestamp.fromDate(dt.toUtc());
+    return null;
+  }
+  if (value is Map) {
+    final m = Map<String, dynamic>.from(value);
+    final secRaw = m['_seconds'] ?? m['seconds'] ?? m['sec'];
+    final nanoRaw = m['_nanoseconds'] ?? m['nanoseconds'] ?? m['nanos'] ?? 0;
+    if (secRaw != null) {
+      final sec = int.tryParse(secRaw.toString()) ?? 0;
+      final nanos = int.tryParse(nanoRaw.toString()) ?? 0;
+      return Timestamp(sec, nanos);
+    }
+  }
+  return null;
+}
+
+num? _numFromDynamic(dynamic value) {
+  if (value == null) return null;
+  if (value is num) return value;
+  return num.tryParse(value.toString());
+}
+
+bool? _boolFromDynamic(dynamic value) {
+  if (value == null) return null;
+  if (value is bool) return value;
+  final s = value.toString().trim().toLowerCase();
+  if (s == 'true' || s == '1') return true;
+  if (s == 'false' || s == '0') return false;
+  return null;
+}
+
 class VendorModel {
   String? author;
   bool? dineInActive;
@@ -120,7 +170,7 @@ class VendorModel {
     walletAmount = json['walletAmount'];
     closeDineTime = json['closeDineTime'];
     zoneId = json['zoneId'];
-    // createdAt = json['createdAt'];
+    createdAt = _timestampFromDynamic(json['createdAt']);
     longitude = double.parse(json['longitude'].toString());
     enabledDiveInFuture = json['enabledDiveInFuture'];
     restaurantCost = json['restaurantCost']?.toString();
@@ -143,23 +193,12 @@ class VendorModel {
     categoryTitle = json['categoryTitle'] is String ? [] : json['categoryTitle'] ?? [];
     latitude = double.parse(json['latitude'].toString());
     subscriptionPlanId = json['subscriptionPlanId'];
-    // subscriptionExpiryDate = json['subscriptionExpiryDate'];
+    subscriptionExpiryDate =
+        _timestampFromDynamic(json['subscriptionExpiryDate']);
     subscriptionPlan = json['subscription_plan'] != null ? SubscriptionPlanModel.fromJson(json['subscription_plan']) : null;
     subscriptionTotalOrders = json['subscriptionTotalOrders'];
     sectionId = json['section_id'];
     isSelfDelivery = json['isSelfDelivery'] ?? false;
-    createdAt =
-        json['createdAt'] is Timestamp
-            ? json['createdAt']
-            : json['createdAt'] != null
-            ? Timestamp.fromMillisecondsSinceEpoch((json['createdAt']['_seconds'] ?? 0) * 1000)
-            : null;
-    subscriptionExpiryDate =
-        json['subscriptionExpiryDate'] is Timestamp
-            ? json['subscriptionExpiryDate']
-            : json['subscriptionExpiryDate'] != null
-            ? Timestamp.fromMillisecondsSinceEpoch((json['subscriptionExpiryDate']['_seconds'] ?? 0) * 1000)
-            : null;
   }
 
   Map<String, dynamic> toJson() {
@@ -268,6 +307,34 @@ class Timeslot {
   }
 }
 
+GeoPoint? _geoPointFromDynamic(dynamic value) {
+  if (value == null) return null;
+  if (value is GeoPoint) return value;
+  if (value is Map) {
+    final m = Map<String, dynamic>.from(value);
+    final lat = _readCoord(m, const ['latitude', '_latitude', 'lat']);
+    final lng = _readCoord(m, const ['longitude', '_longitude', 'lng', 'lon']);
+    if (lat != null && lng != null) return GeoPoint(lat, lng);
+  }
+  if (value is List && value.length >= 2) {
+    final lat = double.tryParse(value[0].toString());
+    final lng = double.tryParse(value[1].toString());
+    if (lat != null && lng != null) return GeoPoint(lat, lng);
+  }
+  return null;
+}
+
+double? _readCoord(Map<String, dynamic> m, List<String> keys) {
+  for (final k in keys) {
+    final raw = m[k];
+    if (raw != null) {
+      final d = double.tryParse(raw.toString());
+      if (d != null) return d;
+    }
+  }
+  return null;
+}
+
 class G {
   String? geohash;
   GeoPoint? geopoint;
@@ -275,8 +342,8 @@ class G {
   G({this.geohash, this.geopoint});
 
   G.fromJson(Map<String, dynamic> json) {
-    geohash = json['geohash'];
-    geopoint = json['geopoint'];
+    geohash = json['geohash']?.toString();
+    geopoint = _geoPointFromDynamic(json['geopoint']);
   }
 
   Map<String, dynamic> toJson() {
@@ -333,10 +400,13 @@ class DeliveryCharge {
   DeliveryCharge({this.minimumDeliveryChargesWithinKm, this.minimumDeliveryCharges, this.deliveryChargesPerKm, this.vendorCanModify});
 
   DeliveryCharge.fromJson(Map<String, dynamic> json) {
-    minimumDeliveryChargesWithinKm = json['minimum_delivery_charges_within_km'];
-    minimumDeliveryCharges = json['minimum_delivery_charges'];
-    deliveryChargesPerKm = json['delivery_charges_per_km'];
-    vendorCanModify = json['vendor_can_modify'];
+    minimumDeliveryChargesWithinKm =
+        _numFromDynamic(json['minimum_delivery_charges_within_km']);
+    minimumDeliveryCharges =
+        _numFromDynamic(json['minimum_delivery_charges']);
+    deliveryChargesPerKm =
+        _numFromDynamic(json['delivery_charges_per_km']);
+    vendorCanModify = _boolFromDynamic(json['vendor_can_modify']);
   }
 
   Map<String, dynamic> toJson() {

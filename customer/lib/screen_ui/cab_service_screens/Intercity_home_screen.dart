@@ -3,8 +3,6 @@ import 'package:customer/controllers/Intercity_home_controller.dart';
 import 'package:customer/models/coupon_model.dart';
 import 'package:customer/models/tax_model.dart';
 import 'package:customer/models/vehicle_type.dart';
-import 'package:customer/payment/createRazorPayOrderModel.dart';
-import 'package:customer/payment/rozorpayConroller.dart';
 import 'package:customer/screen_ui/cab_service_screens/cab_coupon_code_screen.dart';
 import 'package:customer/screen_ui/multi_vendor_service/wallet_screen/wallet_screen.dart';
 import 'package:customer/themes/responsive.dart';
@@ -903,28 +901,6 @@ class IntercityHomeScreen extends StatelessWidget {
                             children: [
                               Visibility(
                                 visible:
-                                    controller.stripeModel.value.isEnabled ==
-                                    true,
-                                child: cardDecoration(
-                                  controller,
-                                  PaymentGateway.stripe,
-                                  isDark,
-                                  "assets/images/stripe.png",
-                                ),
-                              ),
-                              Visibility(
-                                visible:
-                                    controller.payPalModel.value.isEnabled ==
-                                    true,
-                                child: cardDecoration(
-                                  controller,
-                                  PaymentGateway.paypal,
-                                  isDark,
-                                  "assets/images/paypal.png",
-                                ),
-                              ),
-                              Visibility(
-                                visible:
                                     controller.payStackModel.value.isEnable ==
                                     true,
                                 child: cardDecoration(
@@ -971,17 +947,6 @@ class IntercityHomeScreen extends StatelessWidget {
                                   PaymentGateway.payFast,
                                   isDark,
                                   "assets/images/payfast.png",
-                                ),
-                              ),
-                              Visibility(
-                                visible:
-                                    controller.razorPayModel.value.isEnabled ==
-                                    true,
-                                child: cardDecoration(
-                                  controller,
-                                  PaymentGateway.razorpay,
-                                  isDark,
-                                  "assets/images/razorpay.png",
                                 ),
                               ),
                               Visibility(
@@ -1707,26 +1672,6 @@ class IntercityHomeScreen extends StatelessWidget {
                                       : controller
                                               .selectedPaymentMethod
                                               .value ==
-                                          PaymentGateway.stripe.name
-                                      ? cardDecorationScreen(
-                                        controller,
-                                        PaymentGateway.stripe,
-                                        isDark,
-                                        "assets/images/stripe.png",
-                                      )
-                                      : controller
-                                              .selectedPaymentMethod
-                                              .value ==
-                                          PaymentGateway.paypal.name
-                                      ? cardDecorationScreen(
-                                        controller,
-                                        PaymentGateway.paypal,
-                                        isDark,
-                                        "assets/images/paypal.png",
-                                      )
-                                      : controller
-                                              .selectedPaymentMethod
-                                              .value ==
                                           PaymentGateway.payStack.name
                                       ? cardDecorationScreen(
                                         controller,
@@ -1796,9 +1741,9 @@ class IntercityHomeScreen extends StatelessWidget {
                                       )
                                       : cardDecorationScreen(
                                         controller,
-                                        PaymentGateway.razorpay,
+                                        PaymentGateway.wallet,
                                         isDark,
-                                        "assets/images/razorpay.png",
+                                        "",
                                       ),
                                   SizedBox(width: 22),
                                   Text(
@@ -2442,22 +2387,6 @@ class IntercityHomeScreen extends StatelessWidget {
                                       "assets/images/ic_cash.png",
                                     )
                                     : controller.selectedPaymentMethod.value ==
-                                        PaymentGateway.stripe.name
-                                    ? cardDecorationScreen(
-                                      controller,
-                                      PaymentGateway.stripe,
-                                      isDark,
-                                      "assets/images/stripe.png",
-                                    )
-                                    : controller.selectedPaymentMethod.value ==
-                                        PaymentGateway.paypal.name
-                                    ? cardDecorationScreen(
-                                      controller,
-                                      PaymentGateway.paypal,
-                                      isDark,
-                                      "assets/images/paypal.png",
-                                    )
-                                    : controller.selectedPaymentMethod.value ==
                                         PaymentGateway.payStack.name
                                     ? cardDecorationScreen(
                                       controller,
@@ -2515,9 +2444,9 @@ class IntercityHomeScreen extends StatelessWidget {
                                     )
                                     : cardDecorationScreen(
                                       controller,
-                                      PaymentGateway.razorpay,
+                                      PaymentGateway.wallet,
                                       isDark,
-                                      "assets/images/razorpay.png",
+                                      "",
                                     ),
                                 SizedBox(width: 22),
                                 Text(
@@ -2549,17 +2478,6 @@ class IntercityHomeScreen extends StatelessWidget {
                         title: "Pay Now".tr,
                         onPress: () async {
                           if (controller.selectedPaymentMethod.value ==
-                              PaymentGateway.stripe.name) {
-                            controller.stripeMakePayment(
-                              amount: controller.totalAmount.value.toString(),
-                            );
-                          } else if (controller.selectedPaymentMethod.value ==
-                              PaymentGateway.paypal.name) {
-                            controller.paypalPaymentSheet(
-                              controller.totalAmount.value.toString(),
-                              context,
-                            );
-                          } else if (controller.selectedPaymentMethod.value ==
                               PaymentGateway.payStack.name) {
                             controller.payStackPayment(
                               controller.totalAmount.value.toString(),
@@ -2606,32 +2524,6 @@ class IntercityHomeScreen extends StatelessWidget {
                               context,
                               controller.totalAmount.value.toString(),
                             );
-                          } else if (controller.selectedPaymentMethod.value ==
-                              PaymentGateway.razorpay.name) {
-                            RazorPayController()
-                                .createOrderRazorPay(
-                                  amount: double.parse(
-                                    controller.totalAmount.value.toString(),
-                                  ),
-                                  razorpayModel: controller.razorPayModel.value,
-                                )
-                                .then((value) {
-                                  if (value == null) {
-                                    Get.back();
-                                    ShowToastDialog.showToast(
-                                      "Something went wrong, please contact admin."
-                                          .tr,
-                                    );
-                                  } else {
-                                    CreateRazorPayOrderModel result = value;
-                                    controller.openCheckout(
-                                      amount:
-                                          controller.totalAmount.value
-                                              .toString(),
-                                      orderId: result.id,
-                                    );
-                                  }
-                                });
                           } else {
                             ShowToastDialog.showToast(
                               "Please select payment method".tr,

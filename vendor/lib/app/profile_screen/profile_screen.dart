@@ -25,9 +25,11 @@ import 'package:vendor/app/working_hours_screen/working_hours_screen.dart';
 import 'package:vendor/constant/constant.dart';
 import 'package:vendor/constant/show_toast_dialog.dart';
 import 'package:vendor/controller/dash_board_controller.dart';
+import 'package:vendor/controller/home_controller.dart';
 import 'package:vendor/controller/profile_controller.dart';
 import 'package:vendor/models/user_model.dart';
 import 'package:vendor/service/audio_player_service.dart';
+import 'package:vendor/service/order_background_service.dart';
 import 'package:vendor/themes/app_them_data.dart';
 import 'package:vendor/themes/custom_dialog_box.dart';
 import 'package:vendor/themes/responsive.dart';
@@ -1282,6 +1284,7 @@ class ProfileScreen extends StatelessWidget {
                                               await AudioPlayerService.playSound(
                                                 false,
                                               );
+                                              await setBackgroundVendorId('');
                                               Constant.userModel!.fcmToken = "";
                                               await FireStoreUtils.updateUser(
                                                 Constant.userModel!,
@@ -1289,6 +1292,13 @@ class ProfileScreen extends StatelessWidget {
                                               Constant.userModel = null;
                                               await FirebaseAuth.instance
                                                   .signOut();
+                                              // Vendor order listener (Firestore + audio)
+                                              // permanent qilib ro'yxatdan o'tgan,
+                                              // logoutda uni tozalab yuboramiz, aks holda
+                                              // oldingi vendor zakazlariga listen qilib turaveradi.
+                                              if (Get.isRegistered<HomeController>()) {
+                                                Get.delete<HomeController>(force: true);
+                                              }
                                               ShowToastDialog.closeLoader();
                                               // Navigate to email login screen for Android/iOS
                                               Get.offAll(const AuthScreen());
@@ -1338,6 +1348,9 @@ class ProfileScreen extends StatelessWidget {
                                             ShowToastDialog.showToast(
                                               "Account deleted successfully".tr,
                                             );
+                                            if (Get.isRegistered<HomeController>()) {
+                                              Get.delete<HomeController>(force: true);
+                                            }
                                             Get.offAll(const AuthScreen());
                                           } else {
                                             ShowToastDialog.showToast(

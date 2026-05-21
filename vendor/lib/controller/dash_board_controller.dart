@@ -5,6 +5,7 @@ import 'package:vendor/app/product_screens/product_list_screen.dart';
 import 'package:vendor/app/profile_screen/profile_screen.dart';
 import 'package:vendor/app/wallet_screen/wallet_screen.dart';
 import 'package:vendor/constant/constant.dart';
+import 'package:vendor/controller/home_controller.dart';
 import 'package:vendor/models/SectionModel.dart';
 import 'package:vendor/models/vendor_model.dart';
 import 'package:vendor/utils/fire_store_utils.dart';
@@ -18,7 +19,14 @@ class DashBoardController extends GetxController {
 
   @override
   void onInit() {
-    // TODO: implement onInit
+    // Vendor orderlari uchun listener (Firestore + audio) HomeScreen ga
+    // bog'liq bo'lmasin — istalgan tabda ham yangi zakaz tushganda
+    // ovoz chiqsin va ro'yxat yangilansin.
+    if (Get.isRegistered<HomeController>()) {
+      Get.delete<HomeController>(force: true);
+    }
+    Get.put(HomeController(), permanent: true);
+
     getVendor();
 
     super.onInit();

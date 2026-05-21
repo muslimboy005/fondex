@@ -29,6 +29,7 @@ import 'package:vendor/models/user_model.dart';
 import 'package:vendor/models/vendor_model.dart';
 import 'package:vendor/models/wallet_transaction_model.dart';
 import 'package:vendor/service/audio_player_service.dart';
+import 'package:vendor/service/call_kit_service.dart';
 import 'package:vendor/themes/app_them_data.dart';
 import 'package:vendor/themes/text_field_widget.dart';
 import 'package:vendor/utils/fire_store_utils.dart';
@@ -490,15 +491,15 @@ class HomeScreen extends StatelessWidget {
         specialDiscount +
         taxAmount;
 
-    if (orderModel.adminCommissionType!.toLowerCase() ==
-            'Percent'.toLowerCase() ||
-        orderModel.adminCommissionType!.toLowerCase() ==
-            'percentage'.toLowerCase()) {
-      double basePrice =
-          subTotal / (1 + (double.parse(orderModel.adminCommission!) / 100));
+    final String adminCommissionType =
+        (orderModel.adminCommissionType ?? '').toLowerCase();
+    final double adminCommissionValue =
+        double.tryParse(orderModel.adminCommission?.toString() ?? '0') ?? 0.0;
+    if (adminCommissionType == 'percent' || adminCommissionType == 'percentage') {
+      double basePrice = subTotal / (1 + (adminCommissionValue / 100));
       adminCommission = subTotal - basePrice;
     } else {
-      adminCommission = double.parse(orderModel.adminCommission!);
+      adminCommission = adminCommissionValue;
     }
 
     return InkWell(
@@ -1005,6 +1006,7 @@ class HomeScreen extends StatelessWidget {
                           onPress: () async {
                             ShowToastDialog.showLoader('Please wait...'.tr);
                             await AudioPlayerService.playSound(false);
+                            unawaited(CallKitService.endCall(orderModel.id ?? ''));
                             orderModel.status = Constant.orderRejected;
                             if (orderModel.cashback?.id != null &&
                                 orderModel.cashback?.cashbackValue != null) {
@@ -1059,8 +1061,7 @@ class HomeScreen extends StatelessWidget {
                             }
 
                             ShowToastDialog.closeLoader();
-                            controller.getOrder();
-                            Get.back();
+                            await controller.getOrder();
                           },
                         ),
                       ),
@@ -1185,6 +1186,7 @@ class HomeScreen extends StatelessWidget {
                                           .serviceTypeFlag ==
                                       'ecommerce-service') {
                                     await AudioPlayerService.playSound(false);
+                                    unawaited(CallKitService.endCall(orderModel.id ?? ''));
                                     showDialog(
                                       context: context,
                                       builder: (BuildContext context) {
@@ -1337,15 +1339,15 @@ class HomeScreen extends StatelessWidget {
         specialDiscount +
         taxAmount;
 
-    if (orderModel.adminCommissionType!.toLowerCase() ==
-            'Percent'.toLowerCase() ||
-        orderModel.adminCommissionType!.toLowerCase() ==
-            'percentage'.toLowerCase()) {
-      double basePrice =
-          subTotal / (1 + (double.parse(orderModel.adminCommission!) / 100));
+    final String adminCommissionType =
+        (orderModel.adminCommissionType ?? '').toLowerCase();
+    final double adminCommissionValue =
+        double.tryParse(orderModel.adminCommission?.toString() ?? '0') ?? 0.0;
+    if (adminCommissionType == 'percent' || adminCommissionType == 'percentage') {
+      double basePrice = subTotal / (1 + (adminCommissionValue / 100));
       adminCommission = subTotal - basePrice;
     } else {
-      adminCommission = double.parse(orderModel.adminCommission!);
+      adminCommission = adminCommissionValue;
     }
 
     return InkWell(
@@ -1944,7 +1946,6 @@ class HomeScreen extends StatelessWidget {
                               userId: FireStoreUtils.getCurrentUid().toString(),
                             );
                             await controller.getOrder();
-                            Get.back();
                             ShowToastDialog.closeLoader();
                           },
                         ),
@@ -2026,6 +2027,7 @@ class HomeScreen extends StatelessWidget {
                                     );
                                     orderModel.status = Constant.orderCompleted;
                                     await AudioPlayerService.playSound(false);
+                                    unawaited(CallKitService.endCall(orderModel.id ?? ''));
                                     await FireStoreUtils.updateOrder(
                                       orderModel,
                                     );
@@ -2176,15 +2178,16 @@ class HomeScreen extends StatelessWidget {
         specialDiscount +
         taxAmount;
 
-    if (orderModel.adminCommissionType!.toLowerCase() ==
-            'Percent'.toLowerCase() ||
-        orderModel.adminCommissionType!.toLowerCase() ==
-            'percentage'.toLowerCase()) {
-      double basePrice =
-          subTotal / (1 + (double.parse(orderModel.adminCommission!) / 100));
+    final String adminCommissionType =
+        (orderModel.adminCommissionType ?? '').toLowerCase();
+    final double adminCommissionValue =
+        double.tryParse(orderModel.adminCommission?.toString() ?? '0') ?? 0.0;
+    if (adminCommissionType == 'percent' ||
+        adminCommissionType == 'percentage') {
+      double basePrice = subTotal / (1 + (adminCommissionValue / 100));
       adminCommission = subTotal - basePrice;
     } else {
-      adminCommission = double.parse(orderModel.adminCommission!);
+      adminCommission = adminCommissionValue;
     }
 
     return InkWell(
@@ -2870,6 +2873,7 @@ class HomeScreen extends StatelessWidget {
                               Get.back();
                               ShowToastDialog.showLoader('Please wait...'.tr);
                               await AudioPlayerService.playSound(false);
+                              unawaited(CallKitService.endCall(orderModel.id ?? ''));
 
                               orderModel.notes = "";
                               orderModel.driverID =
@@ -2977,7 +2981,7 @@ class HomeScreen extends StatelessWidget {
                       Expanded(
                         child: Obx(() {
                           return DropdownButtonFormField<int>(
-                            value: controller.prepareMinutes.value.clamp(0, 120),
+                            initialValue: controller.prepareMinutes.value.clamp(0, 120),
                             decoration: InputDecoration(
                               labelText: 'Minut'.tr,
                               prefixIcon: const Icon(Icons.timer_outlined),
@@ -3004,7 +3008,7 @@ class HomeScreen extends StatelessWidget {
                       Expanded(
                         child: Obx(() {
                           return DropdownButtonFormField<int>(
-                            value: controller.prepareSeconds.value.clamp(0, 59),
+                            initialValue: controller.prepareSeconds.value.clamp(0, 59),
                             decoration: InputDecoration(
                               labelText: 'Sekund'.tr,
                               prefixIcon: const Icon(Icons.schedule),
@@ -3132,6 +3136,7 @@ class HomeScreen extends StatelessWidget {
                                     Constant.orderAccepted;
                                 await FireStoreUtils.updateOrder(orderModel);
                                 unawaited(AudioPlayerService.playSound(false));
+                                unawaited(CallKitService.endCall(orderModel.id ?? ''));
                                 Get.back();
                                 final orderCopy = orderModel;
                                 unawaited(Future<void>(() async {
@@ -3252,6 +3257,7 @@ class HomeScreen extends StatelessWidget {
                                   .text;
                               orderModel.status = Constant.orderShipped;
                               await AudioPlayerService.playSound(false);
+                              unawaited(CallKitService.endCall(orderModel.id ?? ''));
                               await FireStoreUtils.updateOrder(orderModel);
                               await FireStoreUtils.restaurantVendorWalletSet(
                                 orderModel,

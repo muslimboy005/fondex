@@ -1,0 +1,15 @@
+// Workaround: Android Lint 8.x + Kotlin 2.x can crash in :stripe_android:lintVitalAnalyzeRelease
+// (NonNullableMutableLiveDataDetector / KaCallableMemberCall IncompatibleClassChangeError).
+// Do not use afterEvaluate here — some Flutter plugin projects are already evaluated when this runs.
+subprojects { sub ->
+    sub.plugins.withId("com.android.library") {
+        sub.extensions.getByName("android").lint {
+            disable += "NullSafeMutableLiveData"
+        }
+    }
+    sub.plugins.withId("com.android.application") {
+        sub.extensions.getByName("android").lint {
+            disable += "NullSafeMutableLiveData"
+        }
+    }
+}

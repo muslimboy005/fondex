@@ -1,6 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:customer/models/rental_order_model.dart';
-import 'package:customer/screen_ui/auth_screens/login_screen.dart';
+import 'package:customer/screen_ui/auth_screens/phone_registration_screen.dart';
 import 'package:customer/screen_ui/multi_vendor_service/wallet_screen/wallet_screen.dart';
 import 'package:customer/screen_ui/rental_service/rental_order_details_screen.dart';
 import 'package:customer/themes/round_button_fill.dart';
@@ -70,7 +70,7 @@ class MyRentalBookingScreen extends StatelessWidget {
                             color: AppThemeData.primary300,
                             textColor: AppThemeData.grey50,
                             onPress: () async {
-                              Get.offAll(const LoginScreen());
+                              Get.offAll(const PhoneRegistrationScreen());
                             },
                           ),
                         ],

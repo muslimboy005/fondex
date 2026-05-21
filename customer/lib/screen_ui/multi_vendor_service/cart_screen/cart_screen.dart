@@ -3,8 +3,6 @@ import 'package:customer/controllers/cart_controller.dart';
 import 'package:customer/models/cart_product_model.dart';
 import 'package:customer/models/product_model.dart';
 import 'package:customer/models/tax_model.dart';
-import 'package:customer/payment/createRazorPayOrderModel.dart';
-import 'package:customer/payment/rozorpayConroller.dart';
 import 'package:customer/screen_ui/auth_screens/auth_screen.dart';
 import 'package:customer/screen_ui/location_enable_screens/address_list_screen.dart';
 import 'package:customer/screen_ui/multi_vendor_service/cart_screen/select_payment_screen.dart';
@@ -199,29 +197,78 @@ class CartScreen extends StatelessWidget {
                                 itemCount: cartItem.length,
                                 physics: const NeverScrollableScrollPhysics(),
                                 itemBuilder: (context, index) {
-                                  CartProductModel cartProductModel =
+                                  final CartProductModel cartProductModel =
                                       cartItem[index];
-                                  ProductModel? productModel;
-                                  FireStoreUtils.getProductById(
-                                    cartProductModel.id!.split('~').first,
-                                  ).then((value) {
-                                    productModel = value;
-                                  });
-                                  print(
-                                    "cartItem[index] :: ${cartItem[index].extras} ::${cartItem[index].extrasPrice}",
-                                  );
-                                  return InkWell(
+                                  final firestoreProductId =
+                                      cartProductModel.id!.split('~').first;
+                                  return FutureBuilder<ProductModel?>(
+                                    future: FireStoreUtils.getProductById(
+                                      firestoreProductId,
+                                    ),
+                                    builder: (context, snapshot) {
+                                      final productModel = snapshot.data;
+                                      if (snapshot.connectionState ==
+                                              ConnectionState.waiting &&
+                                          productModel == null) {
+                                        return Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                            vertical: 20,
+                                            horizontal: 10,
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              const SizedBox(
+                                                width: 28,
+                                                height: 28,
+                                                child:
+                                                    CircularProgressIndicator(
+                                                  strokeWidth: 2,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 12),
+                                              Expanded(
+                                                child: Text(
+                                                  cartProductModel.name ?? '',
+                                                  maxLines: 2,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: TextStyle(
+                                                    fontFamily:
+                                                        AppThemeData.medium,
+                                                    color: isDark
+                                                        ? AppThemeData.grey50
+                                                        : AppThemeData.grey900,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      }
+
+                                      print(
+                                        "cartItem[index] :: ${cartItem[index].extras} ::${cartItem[index].extrasPrice}",
+                                      );
+                                      return InkWell(
                                     onTap: () async {
-                                      await FireStoreUtils.getVendorById(
-                                        productModel!.vendorID.toString(),
-                                      ).then((value) {
-                                        if (value != null) {
-                                          Get.to(
-                                            const RestaurantDetailsScreen(),
-                                            arguments: {"vendorModel": value},
+                                      final product = productModel ??
+                                          await FireStoreUtils.getProductById(
+                                            firestoreProductId,
                                           );
-                                        }
-                                      });
+                                      if (product?.vendorID == null) return;
+                                      final vendor =
+                                          await FireStoreUtils.getVendorById(
+                                        product!.vendorID.toString(),
+                                      );
+                                      if (vendor != null) {
+                                        Get.to(
+                                          () =>
+                                              const RestaurantDetailsScreen(),
+                                          arguments: {
+                                            "vendorModel": vendor,
+                                          },
+                                        );
+                                      }
                                     },
                                     child: Padding(
                                       padding: const EdgeInsets.symmetric(
@@ -457,10 +504,33 @@ class CartScreen extends StatelessWidget {
                                                       ),
                                                       InkWell(
                                                         onTap: () {
-                                                          if (productModel!
-                                                                  .itemAttribute !=
+                                                          final pm =
+                                                              productModel;
+                                                          // Firestore lookup may
+                                                          // return null for items
+                                                          // sourced from the API
+                                                          // (no Firestore doc).
+                                                          // In that case skip the
+                                                          // stock guard rather than
+                                                          // blocking the +
+                                                          // button forever with a
+                                                          // "Please wait" toast.
+                                                          if (pm == null) {
+                                                            controller.addToCart(
+                                                              cartProductModel:
+                                                                  cartProductModel,
+                                                              isIncrement: true,
+                                                              quantity:
+                                                                  (cartProductModel
+                                                                              .quantity ??
+                                                                          0) +
+                                                                      1,
+                                                            );
+                                                            return;
+                                                          }
+                                                          if (pm.itemAttribute !=
                                                               null) {
-                                                            if (productModel!
+                                                            if (pm
                                                                 .itemAttribute!
                                                                 .variants!
                                                                 .where(
@@ -473,7 +543,7 @@ class CartScreen extends StatelessWidget {
                                                                 )
                                                                 .isNotEmpty) {
                                                               if (int.parse(
-                                                                        productModel!
+                                                                        pm
                                                                             .itemAttribute!
                                                                             .variants!
                                                                             .where(
@@ -491,7 +561,7 @@ class CartScreen extends StatelessWidget {
                                                                               .quantity ??
                                                                           0) ||
                                                                   int.parse(
-                                                                        productModel!
+                                                                        pm
                                                                             .itemAttribute!
                                                                             .variants!
                                                                             .where(
@@ -523,14 +593,12 @@ class CartScreen extends StatelessWidget {
                                                                 );
                                                               }
                                                             } else {
-                                                              if ((productModel!
-                                                                              .quantity ??
+                                                              if ((pm.quantity ??
                                                                           0) >
                                                                       (cartProductModel
                                                                               .quantity ??
                                                                           0) ||
-                                                                  productModel!
-                                                                          .quantity ==
+                                                                  pm.quantity ==
                                                                       -1) {
                                                                 controller.addToCart(
                                                                   cartProductModel:
@@ -550,14 +618,12 @@ class CartScreen extends StatelessWidget {
                                                               }
                                                             }
                                                           } else {
-                                                            if ((productModel!
-                                                                            .quantity ??
+                                                            if ((pm.quantity ??
                                                                         0) >
                                                                     (cartProductModel
                                                                             .quantity ??
                                                                         0) ||
-                                                                productModel!
-                                                                        .quantity ==
+                                                                pm.quantity ==
                                                                     -1) {
                                                               controller.addToCart(
                                                                 cartProductModel:
@@ -814,6 +880,8 @@ class CartScreen extends StatelessWidget {
                                         ],
                                       ),
                                     ),
+                                  );
+                                    },
                                   );
                                 },
                                 separatorBuilder: (context, index) {
@@ -1565,11 +1633,13 @@ class CartScreen extends StatelessWidget {
                                   flex: 2,
                                   child: InkWell(
                                     onTap: () {
-                                      Get.to(const SelectPaymentScreen())?.then(
-                                        (v) {
-                                          controller.getCashback();
-                                        },
-                                      );
+                                      Get.to(
+                                        () => SelectPaymentScreen(
+                                          controller: controller,
+                                        ),
+                                      )?.then((v) {
+                                        controller.getCashback();
+                                      });
                                     },
                                     child: Row(
                                       mainAxisAlignment:
@@ -1607,26 +1677,6 @@ class CartScreen extends StatelessWidget {
                                               PaymentGateway.cod,
                                               isDark,
                                               "assets/images/ic_cash.png",
-                                            )
-                                            : controller
-                                                    .selectedPaymentMethod
-                                                    .value ==
-                                                PaymentGateway.stripe.name
-                                            ? cardDecoration(
-                                              controller,
-                                              PaymentGateway.stripe,
-                                              isDark,
-                                              "assets/images/stripe.png",
-                                            )
-                                            : controller
-                                                    .selectedPaymentMethod
-                                                    .value ==
-                                                PaymentGateway.paypal.name
-                                            ? cardDecoration(
-                                              controller,
-                                              PaymentGateway.paypal,
-                                              isDark,
-                                              "assets/images/paypal.png",
                                             )
                                             : controller
                                                     .selectedPaymentMethod
@@ -1707,16 +1757,6 @@ class CartScreen extends StatelessWidget {
                                               PaymentGateway.payme,
                                               isDark,
                                               "assets/images/payme.png",
-                                            )
-                                            : controller
-                                                    .selectedPaymentMethod
-                                                    .value ==
-                                                PaymentGateway.razorpay.name
-                                            ? cardDecoration(
-                                              controller,
-                                              PaymentGateway.razorpay,
-                                              isDark,
-                                              "assets/images/razorpay.png",
                                             )
                                             : cardDecoration(
                                               controller,
@@ -1799,7 +1839,7 @@ class CartScreen extends StatelessWidget {
                                             : isDark
                                             ? AppThemeData.grey800
                                             : AppThemeData.grey100,
-                                    title: "Pay Now".tr,
+                                    title: "Buyurtma berish".tr,
                                     height: 6,
                                     color:
                                         controller
@@ -1846,24 +1886,6 @@ class CartScreen extends StatelessWidget {
                                         controller.isOrderPlaced.value = true;
                                         await controller.getCashback();
                                         if (controller
-                                                .selectedPaymentMethod
-                                                .value ==
-                                            PaymentGateway.stripe.name) {
-                                          controller.stripeMakePayment(
-                                            amount:
-                                                controller.totalAmount.value
-                                                    .toString(),
-                                          );
-                                        } else if (controller
-                                                .selectedPaymentMethod
-                                                .value ==
-                                            PaymentGateway.paypal.name) {
-                                          controller.paypalPaymentSheet(
-                                            controller.totalAmount.value
-                                                .toString(),
-                                            context,
-                                          );
-                                        } else if (controller
                                                 .selectedPaymentMethod
                                                 .value ==
                                             PaymentGateway.payStack.name) {
@@ -1944,47 +1966,12 @@ class CartScreen extends StatelessWidget {
                                                 .selectedPaymentMethod
                                                 .value ==
                                             PaymentGateway.payme.name) {
-                                          controller.paymeMakePayment(
+                                          await controller.paymeMakePayment(
                                             context: context,
                                             amount:
                                                 controller.totalAmount.value
                                                     .toString(),
                                           );
-                                        } else if (controller
-                                                .selectedPaymentMethod
-                                                .value ==
-                                            PaymentGateway.razorpay.name) {
-                                          RazorPayController()
-                                              .createOrderRazorPay(
-                                                amount: double.parse(
-                                                  controller.totalAmount.value
-                                                      .toString(),
-                                                ),
-                                                razorpayModel:
-                                                    controller
-                                                        .razorPayModel
-                                                        .value,
-                                              )
-                                              .then((value) {
-                                                if (value == null) {
-                                                  Get.back();
-                                                  ShowToastDialog.showToast(
-                                                    "Something went wrong, please contact admin."
-                                                        .tr,
-                                                  );
-                                                } else {
-                                                  CreateRazorPayOrderModel
-                                                  result = value;
-                                                  controller.openCheckout(
-                                                    amount:
-                                                        controller
-                                                            .totalAmount
-                                                            .value
-                                                            .toString(),
-                                                    orderId: result.id,
-                                                  );
-                                                }
-                                              });
                                         } else {
                                           controller.isOrderPlaced.value =
                                               false;

@@ -1,3 +1,6 @@
+// Register early so plugin modules (e.g. stripe_android) pick up Lint overrides.
+apply(from = rootProject.file("disable_problematic_lint.gradle"))
+
 allprojects {
     repositories {
         google()

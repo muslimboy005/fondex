@@ -12,7 +12,7 @@ import '../../themes/app_them_data.dart';
 import '../../themes/show_toast_dialog.dart';
 import '../../utils/network_image_widget.dart';
 import '../../widget/place_picker/location_picker_screen.dart';
-import '../auth_screens/login_screen.dart';
+import '../auth_screens/phone_registration_screen.dart';
 import '../location_enable_screens/address_list_screen.dart';
 import 'book_parcel_screen.dart';
 
@@ -55,7 +55,7 @@ class HomeParcelScreen extends StatelessWidget {
                         Constant.userModel == null
                             ? InkWell(
                               onTap: () {
-                                Get.offAll(const LoginScreen());
+                                Get.offAll(const PhoneRegistrationScreen());
                               },
                               child: Text("Login".tr, style: AppThemeData.boldTextStyle(fontSize: 14, color: AppThemeData.grey900)),
                             )
@@ -180,7 +180,7 @@ class HomeParcelScreen extends StatelessWidget {
       child: InkWell(
         onTap: () {
           if (Constant.userModel == null) {
-            Get.to(const LoginScreen());
+            Get.to(() => const PhoneRegistrationScreen());
           } else {
             Get.to(const BookParcelScreen(), arguments: {'parcelCategory': item});
           }

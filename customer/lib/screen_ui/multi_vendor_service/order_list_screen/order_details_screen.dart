@@ -24,6 +24,14 @@ import 'live_tracking_screen.dart';
 class OrderDetailsScreen extends StatelessWidget {
   const OrderDetailsScreen({super.key});
 
+  String _paymentMethodLabel(String method) {
+    final normalized = method.trim().toLowerCase();
+    if (normalized == 'cod') {
+      return "Cash on Delivery".tr;
+    }
+    return method.toUpperCase();
+  }
+
   @override
   Widget build(BuildContext context) {
     final themeController = Get.find<ThemeController>();
@@ -655,42 +663,46 @@ class OrderDetailsScreen extends StatelessWidget {
                                                             CrossAxisAlignment
                                                                 .start,
                                                         children: [
-                                                          Text(
-                                                            "${controller.orderModel.value.address!.addressAs}",
-                                                            textAlign:
-                                                                TextAlign.start,
-                                                            style: TextStyle(
-                                                              fontFamily:
-                                                                  AppThemeData
-                                                                      .semiBold,
-                                                              fontSize: 16,
-                                                              color:
-                                                                  isDark
-                                                                      ? AppThemeData
-                                                                          .primary300
-                                                                      : AppThemeData
-                                                                          .primary300,
+                                                          Obx(
+                                                            () => Text(
+                                                              controller
+                                                                  .deliveryAddressTitle
+                                                                  .value,
+                                                              textAlign:
+                                                                  TextAlign.start,
+                                                              style: TextStyle(
+                                                                fontFamily:
+                                                                    AppThemeData
+                                                                        .semiBold,
+                                                                fontSize: 16,
+                                                                color:
+                                                                    isDark
+                                                                        ? AppThemeData
+                                                                            .primary300
+                                                                        : AppThemeData
+                                                                            .primary300,
+                                                              ),
                                                             ),
                                                           ),
-                                                          Text(
-                                                            controller
-                                                                .orderModel
-                                                                .value
-                                                                .address!
-                                                                .getFullAddress(),
-                                                            textAlign:
-                                                                TextAlign.start,
-                                                            style: TextStyle(
-                                                              fontFamily:
-                                                                  AppThemeData
-                                                                      .medium,
-                                                              fontSize: 14,
-                                                              color:
-                                                                  isDark
-                                                                      ? AppThemeData
-                                                                          .grey300
-                                                                      : AppThemeData
-                                                                          .grey600,
+                                                          Obx(
+                                                            () => Text(
+                                                              controller
+                                                                  .deliveryAddressSubtitle
+                                                                  .value,
+                                                              textAlign:
+                                                                  TextAlign.start,
+                                                              style: TextStyle(
+                                                                fontFamily:
+                                                                    AppThemeData
+                                                                        .medium,
+                                                                fontSize: 14,
+                                                                color:
+                                                                    isDark
+                                                                        ? AppThemeData
+                                                                            .grey300
+                                                                        : AppThemeData
+                                                                            .grey600,
+                                                              ),
                                                             ),
                                                           ),
                                                         ],
@@ -1207,46 +1219,23 @@ class OrderDetailsScreen extends StatelessWidget {
                                                     ),
                                                   ],
                                                 ),
-                                                double.parse(
-                                                          cartProductModel.discountPrice ==
-                                                                      null ||
-                                                                  cartProductModel
-                                                                      .discountPrice!
-                                                                      .isEmpty
-                                                              ? "0.0"
-                                                              : cartProductModel
-                                                                  .discountPrice
-                                                                  .toString(),
-                                                        ) <=
-                                                        0
-                                                    ? Text(
-                                                      Constant.amountShow(
-                                                        amount:
-                                                            cartProductModel
-                                                                .price,
-                                                      ),
-                                                      style: TextStyle(
-                                                        fontSize: 16,
-                                                        color:
-                                                            isDark
-                                                                ? AppThemeData
-                                                                    .grey50
-                                                                : AppThemeData
-                                                                    .grey900,
-                                                        fontFamily:
-                                                            AppThemeData
-                                                                .semiBold,
-                                                        fontWeight:
-                                                            FontWeight.w600,
-                                                      ),
-                                                    )
-                                                    : Row(
+                                                (controller
+                                                            .lineOriginalUnitPrice(
+                                                              cartProductModel,
+                                                            ) >
+                                                        controller.lineUnitPrice(
+                                                              cartProductModel,
+                                                            ) +
+                                                            0.0001)
+                                                    ? Row(
                                                       children: [
                                                         Text(
                                                           Constant.amountShow(
                                                             amount:
-                                                                cartProductModel
-                                                                    .discountPrice
+                                                                controller
+                                                                    .lineUnitPrice(
+                                                                      cartProductModel,
+                                                                    )
                                                                     .toString(),
                                                           ),
                                                           style: TextStyle(
@@ -1270,8 +1259,11 @@ class OrderDetailsScreen extends StatelessWidget {
                                                         Text(
                                                           Constant.amountShow(
                                                             amount:
-                                                                cartProductModel
-                                                                    .price,
+                                                                controller
+                                                                    .lineOriginalUnitPrice(
+                                                                      cartProductModel,
+                                                                    )
+                                                                    .toString(),
                                                           ),
                                                           style: TextStyle(
                                                             fontSize: 14,
@@ -1298,14 +1290,38 @@ class OrderDetailsScreen extends StatelessWidget {
                                                           ),
                                                         ),
                                                       ],
+                                                    )
+                                                    : Text(
+                                                      Constant.amountShow(
+                                                        amount:
+                                                            controller
+                                                                .lineUnitPrice(
+                                                                  cartProductModel,
+                                                                )
+                                                                .toString(),
+                                                      ),
+                                                      style: TextStyle(
+                                                        fontSize: 16,
+                                                        color:
+                                                            isDark
+                                                                ? AppThemeData
+                                                                    .grey50
+                                                                : AppThemeData
+                                                                    .grey900,
+                                                        fontFamily:
+                                                            AppThemeData
+                                                                .semiBold,
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                      ),
                                                     ),
                                                 Align(
                                                   alignment:
                                                       Alignment.centerRight,
                                                   child: RoundedButtonFill(
                                                     title: "Rate us".tr,
-                                                    height: 3.8,
-                                                    width: 20,
+                                                    height: 4.2,
+                                                    width: 26,
                                                     color:
                                                         isDark
                                                             ? AppThemeData
@@ -2103,11 +2119,13 @@ class OrderDetailsScreen extends StatelessWidget {
                                         ),
                                       ),
                                       Text(
-                                        controller
-                                            .orderModel
-                                            .value
-                                            .paymentMethod
-                                            .toString(),
+                                        _paymentMethodLabel(
+                                          controller
+                                              .orderModel
+                                              .value
+                                              .paymentMethod
+                                              .toString(),
+                                        ),
                                         textAlign: TextAlign.start,
                                         style: TextStyle(
                                           fontFamily: AppThemeData.regular,

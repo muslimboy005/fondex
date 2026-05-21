@@ -3,9 +3,7 @@
 // import 'dart:io';
 // import 'package:cloud_firestore/cloud_firestore.dart';
 // import 'package:flutter/material.dart';
-// import 'package:flutter_stripe/flutter_stripe.dart';
 // import 'package:get/get.dart';
-// import 'package:razorpay_flutter/razorpay_flutter.dart';
 // import 'package:vendor/constant/constant.dart';
 // import 'package:vendor/constant/show_toast_dialog.dart';
 // import 'package:vendor/controller/stripe_failed_model.dart';
@@ -38,7 +36,6 @@
 // import 'package:vendor/themes/app_them_data.dart';
 // import 'package:vendor/utils/fire_store_utils.dart';
 // import 'package:vendor/utils/preferences.dart';
-// import 'package:flutter_paypal/flutter_paypal.dart';
 // import 'dart:math' as maths;
 // import 'package:http/http.dart' as http;
 

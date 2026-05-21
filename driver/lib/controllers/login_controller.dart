@@ -7,6 +7,7 @@ import 'package:driver/constant/constant.dart';
 import 'package:driver/constant/show_toast_dialog.dart';
 import 'package:driver/models/user_model.dart';
 import 'package:driver/utils/fire_store_utils.dart';
+import 'package:driver/utils/firebase_phone_login_emails.dart';
 import 'package:driver/utils/notification_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -25,27 +26,40 @@ class LoginController extends GetxController {
   }
 
   Future<void> loginWithEmailAndPassword() async {
-    // Validate email and password before attempting login
-    final email = emailEditingController.value.text.toLowerCase().trim();
+    final rawInput = emailEditingController.value.text.trim();
     final password = passwordEditingController.value.text.trim();
-    
-    if (email.isEmpty) {
+
+    final attempts = firebasePhoneLoginEmailAttempts(rawInput);
+    if (attempts.isEmpty) {
       ShowToastDialog.showToast("Please enter your email address.".tr);
       return;
     }
-    
+
     if (password.isEmpty) {
       ShowToastDialog.showToast("Please enter your password.".tr);
       return;
     }
-    
+
     ShowToastDialog.showLoader("Please wait".tr);
     try {
-      final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-      UserModel? userModel = await FireStoreUtils.getUserProfile(credential.user!.uid);
+      late UserCredential credential;
+      for (var i = 0; i < attempts.length; i++) {
+        try {
+          credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+            email: attempts[i],
+            password: password,
+          );
+          break;
+        } on FirebaseAuthException catch (e) {
+          if (firebasePhoneLoginShouldTryNextEmail(e) &&
+              i < attempts.length - 1) {
+            continue;
+          }
+          rethrow;
+        }
+      }
+      UserModel? userModel =
+          await FireStoreUtils.getUserProfile(credential.user!.uid);
       if (userModel?.role == Constant.userRoleDriver) {
         if (userModel?.active == true) {
           userModel?.fcmToken = await NotificationService.getToken();
@@ -76,14 +90,12 @@ class LoginController extends GetxController {
       }
     } on FirebaseAuthException catch (e) {
       print("Firebase Auth Error: ${e.code} - ${e.message}");
-      if (e.code == 'user-not-found') {
-        ShowToastDialog.showToast("No user found for that email.".tr);
+      if (e.code == 'user-not-found' || e.code == 'invalid-credential') {
+        ShowToastDialog.showToast("User not found in Firebase.".tr);
       } else if (e.code == 'wrong-password') {
         ShowToastDialog.showToast("Wrong password provided for that user.".tr);
       } else if (e.code == 'invalid-email') {
         ShowToastDialog.showToast("Invalid Email.".tr);
-      } else if (e.code == 'invalid-credential') {
-        ShowToastDialog.showToast("Invalid email or password. Please check your credentials and try again.".tr);
       } else if (e.code == 'too-many-requests') {
         ShowToastDialog.showToast("Too many failed login attempts. Please try again later.".tr);
       } else if (e.code == 'network-request-failed') {

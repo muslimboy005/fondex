@@ -6,6 +6,7 @@ import 'package:driver/models/car_model.dart';
 import 'package:driver/models/section_model.dart';
 import 'package:driver/models/user_model.dart';
 import 'package:driver/models/vehicle_type.dart';
+import 'package:driver/utils/uzbek_car_plate_formatter.dart';
 import 'package:driver/utils/fire_store_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -65,7 +66,8 @@ class VehicleInformationController extends GetxController {
       UserModel? model = await FireStoreUtils.getUserProfile(FireStoreUtils.getCurrentUid());
       if (model != null) {
         userModel.value = model;
-        carPlatNumberEditingController.value.text = userModel.value.carNumber ?? '';
+        carPlatNumberEditingController.value.text =
+            UzbekCarPlateFormatter.normalize(userModel.value.carNumber ?? '');
 
         selectedService.value = getReadableServiceType(userModel.value.serviceType!);
         if (!service.contains(selectedService.value)) {
@@ -180,7 +182,9 @@ class VehicleInformationController extends GetxController {
       userModel.value.sectionId = selectedSection.value.id;
 
       if (!isDelivery) {
-        userModel.value.carNumber = carPlatNumberEditingController.value.text.trim();
+        userModel.value.carNumber = UzbekCarPlateFormatter.normalize(
+          carPlatNumberEditingController.value.text.trim(),
+        );
         userModel.value.vehicleType = selectedVehicleType.value.name;
         userModel.value.vehicleId = selectedVehicleType.value.id;
         userModel.value.carMakes = selectedCarMakes.value.name;

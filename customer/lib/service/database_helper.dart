@@ -32,8 +32,9 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: _createDB,
+      onUpgrade: _upgradeDB,
     );
   }
 
@@ -54,10 +55,19 @@ class DatabaseHelper {
       quantity $intType,
       extras_price $textType,
       extras $textType,
-      variant_info $textType NULL
+      variant_info $textType NULL,
+      api_product_id INTEGER NULL
     )
     ''');
     print('Table cart_products created'); // Debugging
+  }
+
+  Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await db.execute(
+        'ALTER TABLE cart_products ADD COLUMN api_product_id INTEGER NULL',
+      );
+    }
   }
 
   Future<void> insertCartProduct(CartProductModel product) async {

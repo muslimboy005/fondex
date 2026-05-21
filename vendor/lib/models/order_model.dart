@@ -1,3 +1,5 @@
+import 'dart:developer' as developer;
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:vendor/models/cart_product_model.dart';
 import 'package:vendor/models/cashback_model.dart';
@@ -73,60 +75,118 @@ class OrderModel {
   });
 
   OrderModel.fromJson(Map<String, dynamic> json) {
-    address =
-    json['address'] != null
-        ? ShippingAddress.fromJson(json['address'])
-        : null;
-    status = json['status'];
-    couponId = json['couponId'];
-    vendorID = json['vendorID'];
-    driverID = json['driverID'];
-    discount = json['discount'];
-    authorID = json['authorID'];
-    estimatedTimeToPrepare = json['estimatedTimeToPrepare'];
-    createdAt = json['createdAt'];
-    courierCompanyName = json['courierCompanyName'];
-    courierTrackingId = json['courierTrackingId'];
-    triggerDelivery = json['triggerDelevery'] ?? Timestamp.now();
-    if (json['taxSetting'] != null) {
-      taxSetting = <TaxModel>[];
-      json['taxSetting'].forEach((v) {
-        taxSetting!.add(TaxModel.fromJson(v));
-      });
+    String step = '<init>';
+    try {
+      step = 'address';
+      address =
+      json['address'] != null
+          ? ShippingAddress.fromJson(json['address'])
+          : null;
+      step = 'status';
+      status = json['status'];
+      step = 'couponId';
+      couponId = json['couponId'];
+      step = 'vendorID';
+      vendorID = json['vendorID'];
+      step = 'driverID';
+      driverID = json['driverID'];
+      step = 'discount';
+      discount = json['discount'];
+      step = 'authorID';
+      authorID = json['authorID'];
+      step = 'estimatedTimeToPrepare';
+      estimatedTimeToPrepare = json['estimatedTimeToPrepare'];
+      step = 'createdAt';
+      createdAt = json['createdAt'];
+      step = 'courierCompanyName';
+      courierCompanyName = json['courierCompanyName'];
+      step = 'courierTrackingId';
+      courierTrackingId = json['courierTrackingId'];
+      step = 'triggerDelivery';
+      triggerDelivery = json['triggerDelevery'] ?? Timestamp.now();
+      step = 'taxSetting';
+      if (json['taxSetting'] != null) {
+        taxSetting = <TaxModel>[];
+        json['taxSetting'].forEach((v) {
+          taxSetting!.add(TaxModel.fromJson(v));
+        });
+      }
+      step = 'paymentMethod';
+      paymentMethod = json['payment_method'];
+      step = 'products';
+      if (json['products'] != null) {
+        products = <CartProductModel>[];
+        json['products'].forEach((v) {
+          products!.add(CartProductModel.fromJson(v));
+        });
+      }
+      step = 'adminCommissionType';
+      adminCommissionType = json['adminCommissionType'];
+      step = 'vendor';
+      vendor =
+      json['vendor'] != null ? VendorModel.fromJson(json['vendor']) : null;
+      step = 'id';
+      id = json['id'];
+      step = 'adminCommission';
+      adminCommission = json['adminCommission'];
+      step = 'couponCode';
+      couponCode = json['couponCode'];
+      step = 'sectionId';
+      sectionId = json['section_id'];
+      step = 'specialDiscount';
+      specialDiscount = json['specialDiscount'];
+      step = 'deliveryCharge';
+      deliveryCharge =
+      json['deliveryCharge'].toString().isEmpty
+          ? "0.0"
+          : json['deliveryCharge'] ?? '0.0';
+      step = 'scheduleTime';
+      scheduleTime = json['scheduleTime'];
+      step = 'tipAmount';
+      tipAmount =
+      json['tip_amount'].toString().isEmpty
+          ? "0.0"
+          : json['tip_amount'] ?? "0.0";
+      step = 'notes';
+      notes = json['notes'];
+      step = 'author';
+      author = json['author'] != null ? UserModel.fromJson(json['author']) : null;
+      step = 'driver';
+      driver = json['driver'] != null ? UserModel.fromJson(json['driver']) : null;
+      step = 'takeAway';
+      takeAway = json['takeAway'];
+      step = 'rejectedByDrivers';
+      rejectedByDrivers = json['rejectedByDrivers'] ?? [];
+      step = 'cashback';
+      cashback =
+      json['cashback'] != null
+          ? CashbackModel.fromJson(json['cashback'])
+          : null;
+    } catch (e, st) {
+      final raw = json[_resolveJsonKey(step)];
+      developer.log(
+        '❌ [OrderModel.fromJson] field="$step" '
+        'value=$raw (${raw?.runtimeType}) error=$e',
+        error: e,
+        stackTrace: st,
+      );
+      rethrow;
     }
-    paymentMethod = json['payment_method'];
-    if (json['products'] != null) {
-      products = <CartProductModel>[];
-      json['products'].forEach((v) {
-        products!.add(CartProductModel.fromJson(v));
-      });
+  }
+
+  static String _resolveJsonKey(String step) {
+    switch (step) {
+      case 'paymentMethod':
+        return 'payment_method';
+      case 'sectionId':
+        return 'section_id';
+      case 'tipAmount':
+        return 'tip_amount';
+      case 'triggerDelivery':
+        return 'triggerDelevery';
+      default:
+        return step;
     }
-    adminCommissionType = json['adminCommissionType'];
-    vendor =
-    json['vendor'] != null ? VendorModel.fromJson(json['vendor']) : null;
-    id = json['id'];
-    adminCommission = json['adminCommission'];
-    couponCode = json['couponCode'];
-    sectionId = json['section_id'];
-    specialDiscount = json['specialDiscount'];
-    deliveryCharge =
-    json['deliveryCharge'].toString().isEmpty
-        ? "0.0"
-        : json['deliveryCharge'] ?? '0.0';
-    scheduleTime = json['scheduleTime'];
-    tipAmount =
-    json['tip_amount'].toString().isEmpty
-        ? "0.0"
-        : json['tip_amount'] ?? "0.0";
-    notes = json['notes'];
-    author = json['author'] != null ? UserModel.fromJson(json['author']) : null;
-    driver = json['driver'] != null ? UserModel.fromJson(json['driver']) : null;
-    takeAway = json['takeAway'];
-    rejectedByDrivers = json['rejectedByDrivers'] ?? [];
-    cashback =
-    json['cashback'] != null
-        ? CashbackModel.fromJson(json['cashback'])
-        : null;
   }
 
   Map<String, dynamic> toJson() {
@@ -142,6 +202,9 @@ class OrderModel {
     data['authorID'] = authorID;
     data['estimatedTimeToPrepare'] = estimatedTimeToPrepare;
     data['createdAt'] = createdAt;
+    // fromJson typo'li 'triggerDelevery' kalitini o'qiydi — yozishda ikkala
+    // kalitni ham qoldiramiz (back/forward compat).
+    data['triggerDelevery'] = triggerDelivery;
     data['triggerDelivery'] = triggerDelivery;
     if (taxSetting != null) {
       data['taxSetting'] = taxSetting!.map((v) => v.toJson()).toList();

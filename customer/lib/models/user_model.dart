@@ -12,6 +12,7 @@ class UserModel {
   String? email;
   String? profilePictureURL;
   String? fcmToken;
+  String? voipToken;
   String? countryCode;
   String? phoneNumber;
   num? walletAmount;
@@ -59,6 +60,7 @@ class UserModel {
     this.email,
     this.profilePictureURL,
     this.fcmToken,
+    this.voipToken,
     this.countryCode,
     this.phoneNumber,
     this.walletAmount,
@@ -112,6 +114,7 @@ class UserModel {
     lastName = json['lastName'];
     profilePictureURL = json['profilePictureURL'];
     fcmToken = json['fcmToken'];
+    voipToken = json['voipToken'];
     countryCode = json['countryCode'];
     phoneNumber = json['phoneNumber'];
     walletAmount = json['wallet_amount'] ?? 0;
@@ -170,6 +173,7 @@ class UserModel {
     data['lastName'] = lastName;
     data['profilePictureURL'] = profilePictureURL;
     data['fcmToken'] = fcmToken;
+    data['voipToken'] = voipToken;
     data['countryCode'] = countryCode;
     data['phoneNumber'] = phoneNumber;
     data['wallet_amount'] = walletAmount ?? 0;

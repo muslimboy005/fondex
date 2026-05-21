@@ -3,8 +3,6 @@ import 'dart:developer' as developer;
 import 'package:customer/models/coupon_model.dart';
 import 'package:customer/models/tax_model.dart';
 import 'package:customer/models/vehicle_type.dart';
-import 'package:customer/payment/createRazorPayOrderModel.dart';
-import 'package:customer/payment/rozorpayConroller.dart';
 import 'package:customer/screen_ui/cab_service_screens/cab_coupon_code_screen.dart';
 import 'package:customer/screen_ui/multi_vendor_service/chat_screens/chat_screen.dart';
 import 'package:customer/screen_ui/multi_vendor_service/wallet_screen/wallet_screen.dart';
@@ -123,7 +121,7 @@ class CabBookingScreen extends StatelessWidget {
                         left: Constant.isRtl ? null : 20,
                         right: Constant.isRtl ? 20 : null,
                         child: InkWell(
-                          onTap: () {
+                          onTap: () async {
                             if (controller.bottomSheetType.value ==
                                 "vehicleSelection") {
                               // Vehicle selection'dan back bosilganda cab home screen'ga qaytish
@@ -145,10 +143,45 @@ class CabBookingScreen extends StatelessWidget {
                                 "conformRide") {
                               controller.bottomSheetType.value = "payment";
                             } else if (controller.bottomSheetType.value ==
-                                    "waitingDriver" ||
+                                    "waitingForDriver" ||
                                 controller.bottomSheetType.value ==
-                                    "driverDetails") {
-                              Get.back(result: true);
+                                    "driverDetails" ||
+                                controller.bottomSheetType.value ==
+                                    "arrivedAtPickup") {
+                              // Active ride'dan back bosilganda — tasdiqlash
+                              // dialogi ko'rsatamiz, aks holda haydovchi
+                              // Accept bosgan paytda tasodifan bekor qilib
+                              // qo'yiladi.
+                              final confirmed = await showDialog<bool>(
+                                context: context,
+                                builder: (dialogContext) => AlertDialog(
+                                  title: Text(
+                                    "Buyurtmani bekor qilasizmi?".tr,
+                                  ),
+                                  content: Text(
+                                    "Bekor qilsangiz haydovchi sizga yo'naltirilmaydi."
+                                        .tr,
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Navigator.of(
+                                        dialogContext,
+                                      ).pop(false),
+                                      child: Text("Yo'q".tr),
+                                    ),
+                                    TextButton(
+                                      onPressed: () => Navigator.of(
+                                        dialogContext,
+                                      ).pop(true),
+                                      child: Text("Ha, bekor qilish".tr),
+                                    ),
+                                  ],
+                                ),
+                              );
+                              if (confirmed == true) {
+                                await controller.cancelActiveRide();
+                                Get.back();
+                              }
                             } else {
                               Get.back();
                             }
@@ -191,6 +224,9 @@ class CabBookingScreen extends StatelessWidget {
                           ? waitingDialog(context, controller, isDark)
                           : controller.bottomSheetType.value == "driverDetails"
                           ? driverDialog(context, controller, isDark)
+                          : controller.bottomSheetType.value ==
+                              "arrivedAtPickup"
+                          ? arrivedDialog(context, controller, isDark)
                           : SizedBox(),
                     ],
                   ),
@@ -528,13 +564,12 @@ class CabBookingScreen extends StatelessWidget {
                                                 '',
                                                 result['address'] ?? '',
                                                 () async {
-                                                  if (Constant
-                                                          .selectedMapType ==
-                                                      'osm') {
-                                                    final lat =
-                                                        result['lat'] as double;
-                                                    final lng =
-                                                        result['lon'] as double;
+                                                  final lat =
+                                                      result['lat'] as double?;
+                                                  final lng =
+                                                      result['lon'] as double?;
+                                                  if (lat != null &&
+                                                      lng != null) {
                                                     controller
                                                             .destinationTextEditController
                                                             .value
@@ -542,35 +577,9 @@ class CabBookingScreen extends StatelessWidget {
                                                         result['address'] ?? '';
                                                     controller
                                                         .setDestinationMarker(
-                                                          lat,
-                                                          lng,
-                                                        );
-                                                  } else {
-                                                    final placeId =
-                                                        result['place_id']
-                                                            as String?;
-                                                    if (placeId != null) {
-                                                      final details =
-                                                          await controller
-                                                              .getPlaceDetailsGoogle(
-                                                                placeId,
-                                                              );
-                                                      if (details != null) {
-                                                        controller
-                                                                .destinationTextEditController
-                                                                .value
-                                                                .text =
-                                                            details['address'] ??
-                                                            '';
-                                                        controller
-                                                            .setDestinationMarker(
-                                                              details['lat']
-                                                                  as double,
-                                                              details['lng']
-                                                                  as double,
-                                                            );
-                                                      }
-                                                    }
+                                                      lat,
+                                                      lng,
+                                                    );
                                                   }
                                                   destinationFocusNode
                                                       .unfocus();
@@ -595,14 +604,6 @@ class CabBookingScreen extends StatelessWidget {
                           .isEmpty) {
                         ShowToastDialog.showToast(
                           "Please select source location".tr,
-                        );
-                      } else if (controller
-                          .destinationTextEditController
-                          .value
-                          .text
-                          .isEmpty) {
-                        ShowToastDialog.showToast(
-                          "Please select destination location".tr,
                         );
                       } else {
                         controller.bottomSheetType.value = "vehicleSelection";
@@ -949,38 +950,40 @@ class CabBookingScreen extends StatelessWidget {
                                               overflow: TextOverflow.ellipsis,
                                             ),
                                             const SizedBox(height: 2),
-                                            // Price
-                                            Text(
-                                              " ${Constant.amountShow(amount: controller.getAmount(vehicleType).toString())}",
-                                              style:
-                                                  AppThemeData.mediumTextStyle(
-                                                    fontSize: 12,
-                                                    color:
-                                                        isSelected
-                                                            ? Colors.white
-                                                            : (isDark
-                                                                ? AppThemeData
-                                                                    .grey300
-                                                                : AppThemeData
-                                                                    .grey600),
-                                                  ),
-                                            ),
-                                            // Duration
-                                            Text(
-                                              "(${controller.duration.value})",
-                                              style:
-                                                  AppThemeData.regularTextStyle(
-                                                    fontSize: 11,
-                                                    color:
-                                                        isSelected
-                                                            ? Colors.white
-                                                            : (isDark
-                                                                ? AppThemeData
-                                                                    .grey400
-                                                                : AppThemeData
-                                                                    .grey500),
-                                                  ),
-                                            ),
+                                            if (controller.hasDestination) ...[
+                                              // Price
+                                              Text(
+                                                " ${Constant.amountShow(amount: controller.getAmount(vehicleType).toString())}",
+                                                style:
+                                                    AppThemeData.mediumTextStyle(
+                                                      fontSize: 12,
+                                                      color:
+                                                          isSelected
+                                                              ? Colors.white
+                                                              : (isDark
+                                                                  ? AppThemeData
+                                                                      .grey300
+                                                                  : AppThemeData
+                                                                      .grey600),
+                                                    ),
+                                              ),
+                                              // Duration
+                                              Text(
+                                                "(${controller.duration.value})",
+                                                style:
+                                                    AppThemeData.regularTextStyle(
+                                                      fontSize: 11,
+                                                      color:
+                                                          isSelected
+                                                              ? Colors.white
+                                                              : (isDark
+                                                                  ? AppThemeData
+                                                                      .grey400
+                                                                  : AppThemeData
+                                                                      .grey500),
+                                                    ),
+                                              ),
+                                            ],
                                           ],
                                         ),
                                       ),
@@ -1052,43 +1055,57 @@ class CabBookingScreen extends StatelessWidget {
                         const SizedBox(width: 10),
                         // Order button
                         Expanded(
-                          child: ElevatedButton(
-                            onPressed: () async {
-                              if (auth.FirebaseAuth.instance.currentUser == null) {
-                                ShowToastDialog.showToast(
-                                  "Please login first".tr,
-                                );
-                                Get.to(() => const AuthScreen());
-                                return;
-                              }
-                              if (controller.selectedVehicleType.value.id !=
-                                  null) {
-                                controller.calculateTotalAmount();
-                                // To'g'ridan to'g'ri buyurtma berish
-                                controller.placeOrder();
-                              } else {
-                                ShowToastDialog.showToast(
-                                  "Please select a vehicle type first.".tr,
-                                );
-                              }
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFFF6839),
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
+                          child: Obx(() {
+                            final disabled = controller.isPlacingOrder.value ||
+                                controller.hasActiveCabRide;
+                            return ElevatedButton(
+                              onPressed: disabled
+                                  ? null
+                                  : () async {
+                                      if (auth.FirebaseAuth.instance
+                                              .currentUser ==
+                                          null) {
+                                        ShowToastDialog.showToast(
+                                          "Please login first".tr,
+                                        );
+                                        Get.to(() => const AuthScreen());
+                                        return;
+                                      }
+                                      if (controller.selectedVehicleType.value
+                                              .id !=
+                                          null) {
+                                        controller.calculateTotalAmount();
+                                        // To'g'ridan to'g'ri buyurtma berish
+                                        controller.placeOrder();
+                                      } else {
+                                        ShowToastDialog.showToast(
+                                          "Please select a vehicle type first."
+                                              .tr,
+                                        );
+                                      }
+                                    },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFFF6839),
+                                foregroundColor: Colors.white,
+                                disabledBackgroundColor:
+                                    const Color(0xFFFF6839).withOpacity(0.5),
+                                disabledForegroundColor: Colors.white,
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                elevation: 0,
                               ),
-                              elevation: 0,
-                            ),
-                            child: Text(
-                              "Buyurtma berish".tr,
-                              style: AppThemeData.semiBoldTextStyle(
-                                fontSize: 15,
-                                color: Colors.white,
+                              child: Text(
+                                "Buyurtma berish".tr,
+                                style: AppThemeData.semiBoldTextStyle(
+                                  fontSize: 15,
+                                  color: Colors.white,
+                                ),
                               ),
-                            ),
-                          ),
+                            );
+                          }),
                         ),
                       ],
                     ),
@@ -1108,10 +1125,6 @@ class CabBookingScreen extends StatelessWidget {
         return Icons.account_balance_wallet;
       case 'cod':
         return Icons.money;
-      case 'stripe':
-        return Icons.credit_card;
-      case 'paypal':
-        return Icons.payment;
       default:
         return Icons.money;
     }
@@ -1132,14 +1145,11 @@ class CabBookingScreen extends StatelessWidget {
         final hasCod =
             controller.cashOnDeliverySettingModel.value.isEnabled == true;
         final hasWallet = controller.walletSettingModel.value.isEnabled == true;
-        final hasStripe = controller.stripeModel.value.isEnabled == true;
-        final hasPaypal = controller.payPalModel.value.isEnabled == true;
         final hasPayStack = controller.payStackModel.value.isEnable == true;
         final hasMercado = controller.mercadoPagoModel.value.isEnabled == true;
         final hasFlutterWave =
             controller.flutterWaveModel.value.isEnable == true;
         final hasPayFast = controller.payFastModel.value.isEnable == true;
-        final hasRazorpay = controller.razorPayModel.value.isEnabled == true;
         final hasMidTrans = controller.midTransModel.value.enable == true;
         final hasOrange = controller.orangeMoneyModel.value.enable == true;
         final hasXendit = controller.xenditModel.value.enable == true;
@@ -1149,13 +1159,10 @@ class CabBookingScreen extends StatelessWidget {
         final hasAny =
             hasCod ||
             hasWallet ||
-            hasStripe ||
-            hasPaypal ||
             hasPayStack ||
             hasMercado ||
             hasFlutterWave ||
             hasPayFast ||
-            hasRazorpay ||
             hasMidTrans ||
             hasOrange ||
             hasXendit ||
@@ -1193,24 +1200,6 @@ class CabBookingScreen extends StatelessWidget {
                   'Hamyon',
                   Icons.account_balance_wallet,
                 ),
-              if (hasStripe)
-                _buildPaymentOption(
-                  context,
-                  controller,
-                  isDark,
-                  'stripe',
-                  'Karta',
-                  Icons.credit_card,
-                ),
-              if (hasPaypal)
-                _buildPaymentOption(
-                  context,
-                  controller,
-                  isDark,
-                  'paypal',
-                  'PayPal',
-                  Icons.payment,
-                ),
               if (hasPayStack)
                 _buildPaymentOption(
                   context,
@@ -1245,15 +1234,6 @@ class CabBookingScreen extends StatelessWidget {
                   isDark,
                   'payFast',
                   'PayFast',
-                  Icons.payment,
-                ),
-              if (hasRazorpay)
-                _buildPaymentOption(
-                  context,
-                  controller,
-                  isDark,
-                  'razorpay',
-                  'RazorPay',
                   Icons.payment,
                 ),
               if (hasMidTrans)
@@ -1516,28 +1496,6 @@ class CabBookingScreen extends StatelessWidget {
                             children: [
                               Visibility(
                                 visible:
-                                    controller.stripeModel.value.isEnabled ==
-                                    true,
-                                child: cardDecoration(
-                                  controller,
-                                  PaymentGateway.stripe,
-                                  isDark,
-                                  "assets/images/stripe.png",
-                                ),
-                              ),
-                              Visibility(
-                                visible:
-                                    controller.payPalModel.value.isEnabled ==
-                                    true,
-                                child: cardDecoration(
-                                  controller,
-                                  PaymentGateway.paypal,
-                                  isDark,
-                                  "assets/images/paypal.png",
-                                ),
-                              ),
-                              Visibility(
-                                visible:
                                     controller.payStackModel.value.isEnable ==
                                     true,
                                 child: cardDecoration(
@@ -1584,17 +1542,6 @@ class CabBookingScreen extends StatelessWidget {
                                   PaymentGateway.payFast,
                                   isDark,
                                   "assets/images/payfast.png",
-                                ),
-                              ),
-                              Visibility(
-                                visible:
-                                    controller.razorPayModel.value.isEnabled ==
-                                    true,
-                                child: cardDecoration(
-                                  controller,
-                                  PaymentGateway.razorpay,
-                                  isDark,
-                                  "assets/images/razorpay.png",
                                 ),
                               ),
                               Visibility(
@@ -2344,26 +2291,6 @@ class CabBookingScreen extends StatelessWidget {
                                       : controller
                                               .selectedPaymentMethod
                                               .value ==
-                                          PaymentGateway.stripe.name
-                                      ? cardDecorationScreen(
-                                        controller,
-                                        PaymentGateway.stripe,
-                                        isDark,
-                                        "assets/images/stripe.png",
-                                      )
-                                      : controller
-                                              .selectedPaymentMethod
-                                              .value ==
-                                          PaymentGateway.paypal.name
-                                      ? cardDecorationScreen(
-                                        controller,
-                                        PaymentGateway.paypal,
-                                        isDark,
-                                        "assets/images/paypal.png",
-                                      )
-                                      : controller
-                                              .selectedPaymentMethod
-                                              .value ==
                                           PaymentGateway.payStack.name
                                       ? cardDecorationScreen(
                                         controller,
@@ -2431,11 +2358,21 @@ class CabBookingScreen extends StatelessWidget {
                                         isDark,
                                         "assets/images/xendit.png",
                                       )
+                                      : controller
+                                              .selectedPaymentMethod
+                                              .value ==
+                                          PaymentGateway.payme.name
+                                      ? cardDecorationScreen(
+                                        controller,
+                                        PaymentGateway.payme,
+                                        isDark,
+                                        "assets/images/payme.png",
+                                      )
                                       : cardDecorationScreen(
                                         controller,
-                                        PaymentGateway.razorpay,
+                                        PaymentGateway.wallet,
                                         isDark,
-                                        "assets/images/razorpay.png",
+                                        "",
                                       ),
                                   SizedBox(width: 22),
                                   Text(
@@ -2455,41 +2392,54 @@ class CabBookingScreen extends StatelessWidget {
                           ],
                         ),
                       ),
-                      RoundedButtonFill(
-                        title: "Confirm Booking".tr,
-                        onPress: () async {
-                          if (auth.FirebaseAuth.instance.currentUser == null) {
-                            ShowToastDialog.showToast(
-                              "Please login first".tr,
-                            );
-                            Get.to(() => const AuthScreen());
-                            return;
-                          }
-                          // Wallet balansini tekshirish
-                          if (controller.selectedPaymentMethod.value ==
-                              "wallet") {
-                            num walletAmount =
-                                controller.userModel.value.walletAmount ?? 0;
-                            num totalAmount = controller.totalAmount.value;
-                            if (walletAmount < totalAmount) {
-                              // Qizil snackbar ko'rsatish
-                              Get.snackbar(
-                                "Error".tr,
-                                "Insufficient wallet balance".tr,
-                                snackPosition: SnackPosition.TOP,
-                                backgroundColor: Colors.red,
-                                colorText: Colors.white,
-                                duration: const Duration(seconds: 3),
-                                margin: const EdgeInsets.all(16),
-                              );
-                              return;
-                            }
-                          }
-                          controller.placeOrder();
-                        },
-                        color: AppThemeData.primary300,
-                        textColor: AppThemeData.grey900,
-                      ),
+                      Obx(() {
+                        final disabled = controller.isPlacingOrder.value ||
+                            controller.hasActiveCabRide;
+                        return RoundedButtonFill(
+                          title: controller.isPlacingOrder.value
+                              ? "Buyurtma berilmoqda…".tr
+                              : "Confirm Booking".tr,
+                          onPress: disabled
+                              ? () {}
+                              : () async {
+                                  if (auth.FirebaseAuth.instance.currentUser ==
+                                      null) {
+                                    ShowToastDialog.showToast(
+                                      "Please login first".tr,
+                                    );
+                                    Get.to(() => const AuthScreen());
+                                    return;
+                                  }
+                                  // Wallet balansini tekshirish
+                                  if (controller.selectedPaymentMethod.value ==
+                                      "wallet") {
+                                    num walletAmount = controller
+                                            .userModel.value.walletAmount ??
+                                        0;
+                                    num totalAmount =
+                                        controller.totalAmount.value;
+                                    if (walletAmount < totalAmount) {
+                                      // Qizil snackbar ko'rsatish
+                                      Get.snackbar(
+                                        "Error".tr,
+                                        "Insufficient wallet balance".tr,
+                                        snackPosition: SnackPosition.TOP,
+                                        backgroundColor: Colors.red,
+                                        colorText: Colors.white,
+                                        duration: const Duration(seconds: 3),
+                                        margin: const EdgeInsets.all(16),
+                                      );
+                                      return;
+                                    }
+                                  }
+                                  controller.placeOrder();
+                                },
+                          color: disabled
+                              ? AppThemeData.primary300.withOpacity(0.5)
+                              : AppThemeData.primary300,
+                          textColor: AppThemeData.grey900,
+                        );
+                      }),
                     ],
                   ),
                 ),
@@ -2545,6 +2495,23 @@ class CabBookingScreen extends StatelessWidget {
                       color: AppThemeData.grey900,
                     ),
                   ),
+                  Obx(() {
+                    final rejected =
+                        controller.currentOrder.value.rejectedByDrivers;
+                    if (rejected == null || rejected.isEmpty) {
+                      return const SizedBox.shrink();
+                    }
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 6),
+                      child: Text(
+                        "Yangi haydovchi qidirilmoqda".tr,
+                        style: AppThemeData.regularTextStyle(
+                          fontSize: 13,
+                          color: AppThemeData.grey600,
+                        ),
+                      ),
+                    );
+                  }),
                   Image.asset('assets/loader.gif', width: 250),
                   RoundedButtonFill(
                     title: "Cancel Ride".tr,
@@ -2557,6 +2524,13 @@ class CabBookingScreen extends StatelessWidget {
                             order.status = Constant.orderRejected;
                           }
                         });
+
+                        // Cancel listeners and clear local active-ride state
+                        // BEFORE awaiting Firestore writes — otherwise a late
+                        // snapshot from the still-active _orderSub can re-set
+                        // bottomSheetType back to 'waitingForDriver' a moment
+                        // after the user cancels.
+                        controller.clearActiveRideLocalState();
 
                         if (controller.currentOrder.value.id != null) {
                           await FireStoreUtils.updateCabOrder(
@@ -2898,8 +2872,7 @@ class CabBookingScreen extends StatelessWidget {
                                               .driverModel
                                               .value
                                               .averageRating
-                                              .toStringAsFixed(1) ??
-                                          '',
+                                              .toStringAsFixed(1),
                                       width: 20,
                                       height: 3.5,
                                       radius: 10,
@@ -3077,22 +3050,6 @@ class CabBookingScreen extends StatelessWidget {
                                       "assets/images/ic_cash.png",
                                     )
                                     : controller.selectedPaymentMethod.value ==
-                                        PaymentGateway.stripe.name
-                                    ? cardDecorationScreen(
-                                      controller,
-                                      PaymentGateway.stripe,
-                                      isDark,
-                                      "assets/images/stripe.png",
-                                    )
-                                    : controller.selectedPaymentMethod.value ==
-                                        PaymentGateway.paypal.name
-                                    ? cardDecorationScreen(
-                                      controller,
-                                      PaymentGateway.paypal,
-                                      isDark,
-                                      "assets/images/paypal.png",
-                                    )
-                                    : controller.selectedPaymentMethod.value ==
                                         PaymentGateway.payStack.name
                                     ? cardDecorationScreen(
                                       controller,
@@ -3148,11 +3105,19 @@ class CabBookingScreen extends StatelessWidget {
                                       isDark,
                                       "assets/images/xendit.png",
                                     )
+                                    : controller.selectedPaymentMethod.value ==
+                                        PaymentGateway.payme.name
+                                    ? cardDecorationScreen(
+                                      controller,
+                                      PaymentGateway.payme,
+                                      isDark,
+                                      "assets/images/payme.png",
+                                    )
                                     : cardDecorationScreen(
                                       controller,
-                                      PaymentGateway.razorpay,
+                                      PaymentGateway.wallet,
                                       isDark,
-                                      "assets/images/razorpay.png",
+                                      "",
                                     ),
                                 SizedBox(width: 22),
                                 Expanded(
@@ -3396,17 +3361,6 @@ class CabBookingScreen extends StatelessWidget {
                         title: "Pay Now".tr,
                         onPress: () async {
                           if (controller.selectedPaymentMethod.value ==
-                              PaymentGateway.stripe.name) {
-                            controller.stripeMakePayment(
-                              amount: controller.totalAmount.value.toString(),
-                            );
-                          } else if (controller.selectedPaymentMethod.value ==
-                              PaymentGateway.paypal.name) {
-                            controller.paypalPaymentSheet(
-                              controller.totalAmount.value.toString(),
-                              context,
-                            );
-                          } else if (controller.selectedPaymentMethod.value ==
                               PaymentGateway.payStack.name) {
                             controller.payStackPayment(
                               controller.totalAmount.value.toString(),
@@ -3462,36 +3416,18 @@ class CabBookingScreen extends StatelessWidget {
                               controller.totalAmount.value.toString(),
                             );
                           } else if (controller.selectedPaymentMethod.value ==
-                              PaymentGateway.razorpay.name) {
-                            RazorPayController()
-                                .createOrderRazorPay(
-                                  amount: double.parse(
-                                    controller.totalAmount.value.toString(),
-                                  ),
-                                  razorpayModel: controller.razorPayModel.value,
-                                )
-                                .then((value) {
-                                  if (value == null) {
-                                    Get.back();
-                                    ShowToastDialog.showToast(
-                                      "Something went wrong, please contact admin."
-                                          .tr,
-                                    );
-                                  } else {
-                                    CreateRazorPayOrderModel result = value;
-                                    controller.openCheckout(
-                                      amount:
-                                          controller.totalAmount.value
-                                              .toString(),
-                                      orderId: result.id,
-                                    );
-                                  }
-                                });
-                          } else if (controller.selectedPaymentMethod.value ==
                               PaymentGateway.payme.name) {
+                            final oid = controller.currentOrder.value.id;
+                            if (oid == null || oid.isEmpty) {
+                              ShowToastDialog.showToast(
+                                "Order not found. Please try again.".tr,
+                              );
+                              return;
+                            }
                             controller.paymeMakePayment(
                               context: context,
                               amount: controller.totalAmount.value.toString(),
+                              firebaseOrderId: oid,
                             );
                           } else {
                             ShowToastDialog.showToast(
@@ -3505,6 +3441,32 @@ class CabBookingScreen extends StatelessWidget {
                     } else {
                       return const SizedBox.shrink();
                     }
+                  }),
+                  const SizedBox(height: 8),
+                  Obx(() {
+                    final status = controller.currentOrder.value.status;
+                    final showArrival = status == Constant.driverAccepted ||
+                        status == Constant.orderInTransit;
+                    if (!showArrival) return const SizedBox.shrink();
+                    final confirmed =
+                        controller.currentOrder.value.customerConfirmedArrival ==
+                            true;
+                    return RoundedButtonFill(
+                      title: confirmed
+                          ? "Yetib kelganingiz tasdiqlandi".tr
+                          : "Yetib keldik".tr,
+                      onPress: confirmed
+                          ? () {}
+                          : () async {
+                              await controller.confirmArrival();
+                            },
+                      color: confirmed
+                          ? AppThemeData.grey200
+                          : AppThemeData.success400,
+                      textColor: confirmed
+                          ? AppThemeData.grey600
+                          : Colors.white,
+                    );
                   }),
                 ],
               ),
@@ -3729,6 +3691,206 @@ class CabBookingScreen extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget arrivedDialog(
+    BuildContext context,
+    CabBookingController controller,
+    bool isDark,
+  ) {
+    return Positioned.fill(
+      child: DraggableScrollableSheet(
+        initialChildSize: 0.45,
+        minChildSize: 0.35,
+        maxChildSize: 0.7,
+        expand: false,
+        builder: (context, scrollController) {
+          return Container(
+            decoration: BoxDecoration(
+              color: isDark ? AppThemeData.grey700 : Colors.white,
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(30),
+                topRight: Radius.circular(30),
+              ),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 12,
+              ),
+              child: ListView(
+                controller: scrollController,
+                children: [
+                  Center(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        color: AppThemeData.grey400,
+                      ),
+                      height: 4,
+                      width: 33,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: AppThemeData.primary300.withOpacity(0.15),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.directions_car_filled,
+                          color: AppThemeData.primary300,
+                          size: 28,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Haydovchi yetib keldi".tr,
+                              style: AppThemeData.semiBoldTextStyle(
+                                fontSize: 18,
+                                color: isDark
+                                    ? AppThemeData.grey50
+                                    : AppThemeData.grey900,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              "Iltimos, haydovchi mashinasiga o'tiring".tr,
+                              style: AppThemeData.regularTextStyle(
+                                fontSize: 13,
+                                color: isDark
+                                    ? AppThemeData.grey300
+                                    : AppThemeData.grey600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  Obx(() {
+                    final driver = controller.driverModel.value;
+                    final name = ((driver.firstName ?? '') +
+                            ' ' +
+                            (driver.lastName ?? ''))
+                        .trim();
+                    final phone = driver.phoneNumber ?? '';
+                    final fullName = name.isEmpty ? "Haydovchi".tr : name;
+                    return Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? AppThemeData.grey800
+                            : AppThemeData.grey100,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            radius: 22,
+                            backgroundColor: AppThemeData.grey300,
+                            backgroundImage: (driver.profilePictureURL ?? '')
+                                    .isNotEmpty
+                                ? NetworkImage(driver.profilePictureURL!)
+                                : null,
+                            child: (driver.profilePictureURL ?? '').isEmpty
+                                ? const Icon(
+                                    Icons.person,
+                                    color: Colors.white,
+                                  )
+                                : null,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  fullName,
+                                  style: AppThemeData.semiBoldTextStyle(
+                                    fontSize: 15,
+                                    color: isDark
+                                        ? AppThemeData.grey50
+                                        : AppThemeData.grey900,
+                                  ),
+                                ),
+                                if (phone.isNotEmpty) ...[
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    phone,
+                                    style: AppThemeData.regularTextStyle(
+                                      fontSize: 12,
+                                      color: isDark
+                                          ? AppThemeData.grey300
+                                          : AppThemeData.grey600,
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                          if (phone.isNotEmpty)
+                            IconButton(
+                              icon: Icon(
+                                Icons.phone,
+                                color: AppThemeData.primary300,
+                              ),
+                              onPressed: () {
+                                Constant.makePhoneCall(phone);
+                              },
+                            ),
+                        ],
+                      ),
+                    );
+                  }),
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppThemeData.primary300.withOpacity(0.08),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.info_outline,
+                          color: AppThemeData.primary300,
+                          size: 18,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            "Haydovchi sizni kutmoqda".tr,
+                            style: AppThemeData.regularTextStyle(
+                              fontSize: 13,
+                              color: isDark
+                                  ? AppThemeData.grey200
+                                  : AppThemeData.grey700,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }

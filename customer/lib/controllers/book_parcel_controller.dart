@@ -283,34 +283,17 @@ class BookParcelController extends GetxController {
   }
 
   Future<void> fetchGoogleRouteWithWaypoints() async {
-    final origin = '${senderLocation.value!.latitude},${senderLocation.value!.longitude}';
-    final destination = '${receiverLocation.value!.latitude},${receiverLocation.value!.longitude}';
-    final url = Uri.parse('https://maps.googleapis.com/maps/api/directions/json?origin=$origin&destination=$destination&mode=driving&key=${Constant.mapAPIKey}');
-
-    try {
-      final response = await http.get(url);
-      final data = json.decode(response.body);
-      if (data['status'] == 'OK') {
-        final route = data['routes'][0];
-        final legs = route['legs'] as List;
-        num totalDistance = 0;
-        num totalDuration = 0;
-        for (var leg in legs) {
-          totalDistance += leg['distance']['value'];
-          totalDuration += leg['duration']['value'];
-        }
-        if (Constant.distanceType.toLowerCase() == "KM".toLowerCase()) {
-          distance.value = totalDistance / 1000.0;
-        } else {
-          distance.value = totalDistance / 1609.34;
-        }
-        duration.value = (totalDuration / 60).round().toDouble();
-      } else {
-        debugPrint('Google Directions API Error: ${data['status']}');
-      }
-    } catch (e) {
-      debugPrint("Google route fetch error: $e");
-    }
+    if (senderLocation.value == null || receiverLocation.value == null) return;
+    await fetchRouteWithWaypoints([
+      LatLng(
+        senderLocation.value!.latitude ?? 0.0,
+        senderLocation.value!.longitude ?? 0.0,
+      ),
+      LatLng(
+        receiverLocation.value!.latitude ?? 0.0,
+        receiverLocation.value!.longitude ?? 0.0,
+      ),
+    ]);
   }
 
   Future<void> fetchRouteWithWaypoints(List<LatLng> points) async {

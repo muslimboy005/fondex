@@ -15,7 +15,6 @@ import 'package:driver/themes/app_them_data.dart';
 import 'package:driver/utils/preferences.dart';
 import 'package:driver/widget/permission_dialog.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
@@ -57,8 +56,10 @@ class Constant {
   static String rentalRadius = '0.0';
 
   static String mapAPIKey = "";
+
   /// Yandex Geocoder API key (geocode-maps.yandex.ru)
-  static const String yandexGeocodeApiKey = 'd40481eb-0884-40a5-bde1-9cfb8d7cfa89';
+  static const String yandexGeocodeApiKey =
+      '8bdf50ea-9772-49d9-b2ed-3d0a3dc6a0c6';
   static String placeHolderImage = "";
   static String defaultCountryCode = "";
   static String defaultCountry = "";
@@ -148,7 +149,8 @@ class Constant {
         ? 0.0
         : (double.tryParse(amount.toString()) ?? 0.0);
     final rounded = roundUpToNearest500(v);
-    final formatted = rounded.toStringAsFixed(currencyModel!.decimalDigits ?? 0);
+    final formatted =
+        rounded.toStringAsFixed(currencyModel!.decimalDigits ?? 0);
     if (currencyModel!.symbolAtRight == true) {
       return "$formatted ${currencyModel!.symbol.toString()}";
     } else {
@@ -540,24 +542,10 @@ class Constant {
 
   static Uri createCoordinatesUrl(double latitude, double longitude,
       [String? label]) {
-    Uri uri;
-    if (kIsWeb) {
-      uri = Uri.https('www.google.com', '/maps/search/',
-          {'api': '1', 'query': '$latitude,$longitude'});
-    } else if (Platform.isAndroid) {
-      var query = '$latitude,$longitude';
-      if (label != null) query += '($label)';
-      uri = Uri(scheme: 'geo', host: '0,0', queryParameters: {'q': query});
-    } else if (Platform.isIOS) {
-      var params = {'ll': '$latitude,$longitude'};
-      if (label != null) params['q'] = label;
-      uri = Uri.https('maps.apple.com', '/', params);
-    } else {
-      uri = Uri.https('www.google.com', '/maps/search/',
-          {'api': '1', 'query': '$latitude,$longitude'});
-    }
-
-    return uri;
+    final point = '$latitude,$longitude';
+    return Uri.parse(
+      'https://yandex.com/maps/?ll=$longitude,$latitude&z=16&pt=$point',
+    );
   }
 
   /// Calculate tax amount for a single tax model

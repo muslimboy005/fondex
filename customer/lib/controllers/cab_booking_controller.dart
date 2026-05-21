@@ -16,11 +16,8 @@ import 'package:customer/models/payment_model/mid_trans.dart';
 import 'package:customer/models/payment_model/orange_money.dart';
 import 'package:customer/models/payment_model/pay_fast_model.dart';
 import 'package:customer/models/payment_model/pay_stack_model.dart';
-import 'package:customer/models/payment_model/paypal_model.dart';
 import 'package:customer/models/payment_model/payme_model.dart';
 import 'package:customer/models/payment_model/paytm_model.dart';
-import 'package:customer/models/payment_model/razorpay_model.dart';
-import 'package:customer/models/payment_model/stripe_model.dart';
 import 'package:customer/models/payment_model/wallet_setting_model.dart';
 import 'package:customer/models/payment_model/xendit.dart';
 import 'package:customer/models/tax_model.dart';
@@ -32,11 +29,9 @@ import 'package:customer/payment/PayFastScreen.dart';
 import 'package:customer/payment/getPaytmTxtToken.dart';
 import 'package:customer/payment/midtrans_screen.dart';
 import 'package:customer/payment/orangePayScreen.dart';
-import 'package:customer/payment/PaymeScreen.dart';
 import 'package:customer/payment/paystack/pay_stack_screen.dart';
 import 'package:customer/payment/paystack/pay_stack_url_model.dart';
 import 'package:customer/payment/paystack/paystack_url_genrater.dart';
-import 'package:customer/payment/stripe_failed_model.dart';
 import 'package:customer/payment/xenditModel.dart';
 import 'package:customer/payment/xenditScreen.dart';
 import 'package:customer/service/fire_store_utils.dart';
@@ -46,22 +41,24 @@ import 'package:customer/themes/show_toast_dialog.dart';
 import 'package:customer/utils/preferences.dart';
 import 'package:customer/utils/utils.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_paypal/flutter_paypal.dart';
-import 'package:flutter_polyline_points/flutter_polyline_points.dart';
-import 'package:flutter_stripe/flutter_stripe.dart';
+import 'package:flutter/services.dart' show MissingPluginException;
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:yandex_mapkit/yandex_mapkit.dart' as ym;
 import 'package:http/http.dart' as http;
 import 'package:location/location.dart';
-import 'package:razorpay_flutter/razorpay_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:uuid/uuid.dart';
 import 'package:customer/models/lat_lng.dart' as app_lat_lng;
 import 'package:customer/utils/yandex_map_utils.dart';
 import '../screen_ui/multi_vendor_service/wallet_screen/wallet_screen.dart';
+import '../screen_ui/cab_service_screens/cab_payment_summary_screen.dart';
 import '../themes/app_them_data.dart';
 
-class CabBookingController extends GetxController {
+class CabBookingController extends GetxController with WidgetsBindingObserver {
+  static const Duration _driverAcceptTimeout = Duration(minutes: 5);
+  static const Duration _driverAcceptTimeoutCheckInterval =
+      Duration(seconds: 15);
   GoogleMapController? mapController;
   ym.YandexMapController? yandexMapController;
 
@@ -85,6 +82,10 @@ class CabBookingController extends GetxController {
   final Rx<LatLng> departureLatLong = const LatLng(0.0, 0.0).obs;
   final Rx<LatLng> destinationLatLong = const LatLng(0.0, 0.0).obs;
 
+  bool get hasDestination =>
+      destinationLatLong.value.latitude != 0.0 &&
+      destinationLatLong.value.longitude != 0.0;
+
   // 2 bosqichli loading - UI tez ko'rinadi, ma'lumotlar keyin to'ldiriladi
   final RxBool isLoading = true.obs;
   final RxBool isInitialLoading = true.obs; // Kritik ma'lumotlar yuklanmoqda
@@ -107,9 +108,31 @@ class CabBookingController extends GetxController {
   Rx<UserModel> userModel = UserModel().obs;
   Rx<UserModel> driverModel = UserModel().obs;
   Rx<CabOrderModel> currentOrder = CabOrderModel().obs;
+  /// Just-completed order kept in memory so the payment summary screen can
+  /// render its fare breakdown after the active-ride state is cleared.
+  Rx<CabOrderModel> completedOrder = CabOrderModel().obs;
 
   final RxString selectedPaymentMethod = ''.obs;
   final RxString bottomSheetType = 'location'.obs;
+
+  /// True while a cab order is being created and dispatched. Guards the
+  /// "Buyurtma berish" / "Confirm Booking" buttons against double-tap and
+  /// against placing a second order before the first one has reached the
+  /// "waiting for driver" state.
+  final RxBool isPlacingOrder = false.obs;
+
+  /// True when the customer already has an active cab ride in progress
+  /// (either still searching for a driver, or driver assigned). Buttons are
+  /// disabled while this is true.
+  bool get hasActiveCabRide {
+    if (_activeRideId != null && _activeRideId!.isNotEmpty) return true;
+    if (!_inProgressValidated.value &&
+        userModel.value.inProgressOrderID?.isNotEmpty == true) {
+      return true;
+    }
+    final t = bottomSheetType.value;
+    return t == 'waitingForDriver' || t == 'driverDetails';
+  }
 
   RxDouble subTotal = 0.0.obs;
   RxDouble discount = 0.0.obs;
@@ -153,12 +176,98 @@ class CabBookingController extends GetxController {
   /// Bitta nuqta rejimida: har 12 sekundda joriy joyni orderga yozib, narxni yangilash
   Timer? _liveSourceUpdateTimer;
   static const _liveSourceUpdateInterval = Duration(seconds: 12);
+  Timer? _driverAcceptTimeoutTimer;
+  String? _activeRideId;
+  StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _userSub;
+  StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _orderSub;
+  StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _driverSub;
+  bool _driverAcceptExpiredNotified = false;
+  bool _isAutoCancellingExpiredOrder = false;
+  bool _hasInitializedIdleBookingState = false;
+  final RxBool _inProgressValidated = false.obs;
+
+  /// Ride IDs the user has just cancelled locally. We keep them here so that
+  /// stale Firestore snapshots (user-doc snapshot from before the cancel write
+  /// propagates) don't re-establish an order listener for an already cancelled
+  /// ride. Entries are removed once the server-side state confirms the ride
+  /// is gone from `inProgressOrderID`.
+  final Set<String> _locallyCancelledRideIds = <String>{};
+
+  /// Sticky flag: once a driver has been assigned for the current active ride,
+  /// remains true until the ride reaches a final state. Prevents stale/racy
+  /// snapshots from kicking the UI back to "searching for driver" after the
+  /// customer has already seen "driver found". Reset only when a new ride
+  /// starts or the active ride ends.
+  bool _driverAssignedForActiveRide = false;
+
+  @override
+  void onClose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _stopLiveSourceLocationUpdates();
+    _driverAcceptTimeoutTimer?.cancel();
+    _driverAcceptTimeoutTimer = null;
+    _userSub?.cancel();
+    _orderSub?.cancel();
+    _driverSub?.cancel();
+    yandexMapController = null;
+    super.onClose();
+  }
 
   @override
   void onInit() {
     super.onInit();
+    WidgetsBinding.instance.addObserver(this);
     taxList.value = Constant.taxList;
     initData();
+  }
+
+  /// On app resume (e.g. coming back from Yandex Maps), force-refresh the
+  /// active order from the server so the UI doesn't briefly revert to the
+  /// "searching for driver" state due to a stale cached snapshot.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.resumed) {
+      _refreshActiveOrderOnResume();
+    }
+  }
+
+  Future<void> _refreshActiveOrderOnResume() async {
+    final rideId = _activeRideId;
+    if (rideId == null || rideId.isEmpty) return;
+    try {
+      // Server-only read avoids the local Firestore cache which can lag and
+      // briefly report an outdated status when the app returns from
+      // background (the root cause of the "back to searching" regression).
+      final snap = await FireStoreUtils.fireStore
+          .collection(CollectionName.cabBookingOrders)
+          .doc(rideId)
+          .get(const GetOptions(source: Source.server));
+      if (snap.exists) {
+        _handleOrderSnapshot(snap, rideId);
+      }
+    } catch (e) {
+      log("[CAB_RESUME] server refresh failed: $e");
+    }
+  }
+
+  /// Returns true when the server (not the local cache) reports that the
+  /// ride is still in an active, non-terminal state.
+  Future<bool> _verifyActiveRideStillOpen(String rideId) async {
+    try {
+      final snap = await FireStoreUtils.fireStore
+          .collection(CollectionName.cabBookingOrders)
+          .doc(rideId)
+          .get(const GetOptions(source: Source.server));
+      if (!snap.exists) return false;
+      final status = (snap.data()?['status'] ?? '').toString();
+      return !_isFinalCabStatus(status);
+    } catch (e) {
+      log("[CAB_RESUME] verify ride open failed: $e");
+      // Network failure — be conservative: assume the ride is still active
+      // to avoid the user being kicked back to the search screen.
+      return true;
+    }
   }
 
   // Optimizatsiya qilingan initData - parallel loading va lazy loading
@@ -305,20 +414,38 @@ class CabBookingController extends GetxController {
 
   // User listener ni sozlash
   void _setupUserListener() {
-    FireStoreUtils.fireStore
+    final uid = FireStoreUtils.getCurrentUidOrNull();
+    if (uid == null) return;
+    _userSub?.cancel();
+    _userSub = FireStoreUtils.fireStore
         .collection(CollectionName.users)
-        .doc(FireStoreUtils.getCurrentUid())
+        .doc(uid)
         .snapshots()
         .listen((userSnapshot) async {
           if (!userSnapshot.exists) return;
 
           userModel.value = UserModel.fromJson(userSnapshot.data()!);
 
+          // Drop any locally-cancelled rideIds that the server now agrees are
+          // gone from inProgressOrderID. This keeps the set bounded.
+          final currentInProgress =
+              userModel.value.inProgressOrderID ?? const <String>[];
+          _locallyCancelledRideIds.removeWhere(
+            (id) => !currentInProgress.contains(id),
+          );
+
           if (userModel.value.inProgressOrderID != null &&
               userModel.value.inProgressOrderID!.isNotEmpty) {
             String? validRideId;
+            // Collect cab-ride IDs that are confirmed in a final state on the
+            // server. We'll remove them from the user doc after the loop so
+            // they don't keep tripping this validation on every snapshot.
+            final staleFinalisedRideIds = <String>[];
 
             for (String id in userModel.value.inProgressOrderID!) {
+              // Skip rides the user has just cancelled locally — even if the
+              // Firestore order doc hasn't propagated status=rejected yet.
+              if (_locallyCancelledRideIds.contains(id)) continue;
               var rideDoc =
                   await FireStoreUtils.fireStore
                       .collection(CollectionName.cabBookingOrders)
@@ -336,15 +463,113 @@ class CabBookingController extends GetxController {
                           .toString()
                           .toLowerCase() ==
                       "ride") {
+                final rideStatus =
+                    (rideDoc.data()?['status'] ?? '').toString();
+                // Skip rides in a final state (rejected/cancelled/completed)
+                // so a stale user-snapshot doesn't re-establish an order
+                // listener for a ride the user has just cancelled.
+                if (_isFinalCabStatus(rideStatus)) {
+                  staleFinalisedRideIds.add(id);
+                  continue;
+                }
                 validRideId = id;
                 break;
               }
             }
 
+            // Auto-cleanup: remove confirmed-final cab ride IDs from the user
+            // doc so this validation doesn't keep firing for them on every
+            // snapshot. Only touch the user doc if we actually need to.
+            if (staleFinalisedRideIds.isNotEmpty &&
+                userModel.value.inProgressOrderID != null) {
+              userModel.value.inProgressOrderID!.removeWhere(
+                (id) => staleFinalisedRideIds.contains(id),
+              );
+              userModel.refresh();
+              try {
+                await FireStoreUtils.updateUser(userModel.value);
+                if (Constant.userModel != null) {
+                  Constant.userModel!.inProgressOrderID =
+                      userModel.value.inProgressOrderID;
+                }
+              } catch (e) {
+                log('Failed to clean stale inProgressOrderID: $e');
+              }
+            }
+
+            _inProgressValidated.value = true;
+            // Re-check after all awaits: a cancel may have happened while we
+            // were fetching ride docs, which would have added the validRideId
+            // to _locallyCancelledRideIds. Without this re-check, we'd
+            // re-establish _activeRideId for an already-cancelled ride.
+            if (validRideId != null &&
+                _locallyCancelledRideIds.contains(validRideId)) {
+              validRideId = null;
+            }
             if (validRideId != null) {
               _setupOrderListener(validRideId);
+            } else {
+              // No valid cab ride was found in this validation pass. BUT we
+              // must NOT tear down an active _orderSub just because of a
+              // transient lookup miss (network blip, Firestore cache quirk,
+              // first snapshot returning stale data). Only clean up if the
+              // currently-tracked _activeRideId is GONE from the server-side
+              // inProgressOrderID list (meaning the ride truly left the
+              // user's active set).
+              final activeId = _activeRideId;
+              final stillTracked = activeId != null &&
+                  activeId.isNotEmpty &&
+                  (userModel.value.inProgressOrderID
+                          ?.cast<dynamic>()
+                          .map((e) => e.toString())
+                          .contains(activeId) ??
+                      false);
+              if (!stillTracked) {
+                _orderSub?.cancel();
+                _orderSub = null;
+                _driverSub?.cancel();
+                _driverSub = null;
+                _activeRideId = null;
+                _driverAssignedForActiveRide = false;
+                if (bottomSheetType.value == 'waitingForDriver' ||
+                    bottomSheetType.value == 'driverDetails' ||
+                    bottomSheetType.value == 'arrivedAtPickup') {
+                  bottomSheetType.value = 'location';
+                }
+              } else {
+                log(
+                  "[CAB_SYNC] validation pass found no validRideId but "
+                  "_activeRideId=$activeId is still tracked. Keeping listener alive.",
+                );
+              }
             }
           } else {
+            // CRITICAL: the user doc says `inProgressOrderID` is empty, but
+            // this may be a stale cached snapshot (common when resuming from
+            // an external app such as Yandex Maps). Before tearing down the
+            // active ride state, verify against the server so we don't drop
+            // the customer back onto the "searching for driver" screen while
+            // a ride is in fact still active.
+            final hadActiveRide = _activeRideId != null && _activeRideId!.isNotEmpty;
+            if (hadActiveRide) {
+              final stillActive = await _verifyActiveRideStillOpen(_activeRideId!);
+              if (stillActive) {
+                // Server confirms the ride is still alive — ignore the stale
+                // user snapshot and keep current state intact.
+                return;
+              }
+            }
+            _orderSub?.cancel();
+            _orderSub = null;
+            _driverSub?.cancel();
+            _driverSub = null;
+            _activeRideId = null;
+            _driverAssignedForActiveRide = false;
+            _inProgressValidated.value = true;
+            if (hadActiveRide || !_hasInitializedIdleBookingState) {
+              _resetTransientBookingState();
+              _hasInitializedIdleBookingState = true;
+            }
             bottomSheetType.value = 'location';
             final lat = _effectiveDepartureLat();
             final lng = _effectiveDepartureLng();
@@ -366,13 +591,110 @@ class CabBookingController extends GetxController {
         });
   }
 
+  /// Foydalanuvchi "Sayohatni bekor qilish" tugmasini bosgani keyin, eski order
+  /// listenerlardan kelayotgan kechikan snapshotlar UI ni qaytadan
+  /// "waitingForDriver" ga olib kelishining oldini olish uchun darhol mahalliy
+  /// state ni tozalaydi.
+  /// Foydalanuvchining "Sayohatni bekor qilish" yoki active-ride'dan back-arrow
+  /// bosishi natijasidagi to'liq bekor qilish oqimi: order doc status'ini
+  /// rejected'ga o'tkazadi, foydalanuvchi doc'idagi inProgressOrderID dan
+  /// olib tashlaydi va mahalliy state'ni tozalaydi.
+  Future<void> cancelActiveRide() async {
+    final rideId = _activeRideId ?? currentOrder.value.id;
+    // Avval mahalliy state'ni tozalaymiz — keyingi snapshot'lar buni qaytarib
+    // qo'ya olmaydi.
+    clearActiveRideLocalState();
+    try {
+      if (rideId != null && rideId.isNotEmpty) {
+        currentOrder.update((order) {
+          if (order != null) {
+            order.status = Constant.orderRejected;
+          }
+        });
+        if (currentOrder.value.id != null) {
+          await FireStoreUtils.updateCabOrder(currentOrder.value);
+        }
+      }
+      // Reset user-side in-progress array
+      if (Constant.userModel != null) {
+        Constant.userModel!.inProgressOrderID = null;
+        await FireStoreUtils.updateUser(Constant.userModel!);
+      }
+    } catch (e) {
+      log('cancelActiveRide error: $e');
+    }
+  }
+
+  void clearActiveRideLocalState() {
+    final cancelledId = _activeRideId;
+    if (cancelledId != null && cancelledId.isNotEmpty) {
+      _locallyCancelledRideIds.add(cancelledId);
+    }
+    _orderSub?.cancel();
+    _orderSub = null;
+    _driverSub?.cancel();
+    _driverSub = null;
+    _stopLiveSourceLocationUpdates();
+    _stopDriverAcceptTimeoutMonitor();
+    _activeRideId = null;
+    _driverAssignedForActiveRide = false;
+    // Safety net: if a placeOrder() call is mid-flight and the user has just
+    // cancelled (e.g. via back arrow), reset the placing flag so the button
+    // isn't stuck disabled when they return to the booking screen.
+    isPlacingOrder.value = false;
+    // Also strip the cancelled ride from our local userModel so the next
+    // hasActiveCabRide read can't trip on a stale-snapshot inProgressOrderID
+    // before the Firestore write propagates back.
+    if (cancelledId != null &&
+        cancelledId.isNotEmpty &&
+        userModel.value.inProgressOrderID != null) {
+      userModel.value.inProgressOrderID!.remove(cancelledId);
+      userModel.refresh();
+    }
+    bottomSheetType.value = 'location';
+    _resetTransientBookingState();
+  }
+
+  /// Faol ride tugagandan keyin eski destination/route state qolib ketmasligi uchun
+  /// yangi buyurtma uchun vaqtinchalik holatlarni tozalaydi.
+  void _resetTransientBookingState() {
+    destinationLatLong.value = const LatLng(0.0, 0.0);
+    destinationTextEditController.value.clear();
+    destinationSearchResults.clear();
+    isSearchingDestination.value = false;
+    searchError.value = '';
+    isDestinationFocused.value = false;
+    destinationFocusNode.unfocus();
+
+    // Faqat destination marker va route elementlarni o'chiramiz; departure qayta o'rnatiladi.
+    markers.removeWhere((marker) => marker.markerId.value == 'Destination');
+    polyLines.clear();
+    routePoints.clear();
+    distance.value = 0.0;
+    duration.value = '';
+    _updateCanProceedToVehicleSelection();
+  }
+
   // Order listener (cab_booking_orders)
   void _setupOrderListener(String validRideId) {
-    FireStoreUtils.fireStore
+    if (_activeRideId == validRideId && _orderSub != null) {
+      return;
+    }
+    _driverAcceptExpiredNotified = false;
+    if (_activeRideId != validRideId) {
+      _driverAssignedForActiveRide = false;
+    }
+    _activeRideId = validRideId;
+    _orderSub?.cancel();
+    _orderSub = FireStoreUtils.fireStore
         .collection(CollectionName.cabBookingOrders)
         .doc(validRideId)
         .snapshots()
         .listen((rideSnapshot) async {
+          log(
+            "[CAB_SYNC] order snapshot received id=$validRideId "
+            "exists=${rideSnapshot.exists}",
+          );
           if (rideSnapshot.exists) {
             _handleOrderSnapshot(rideSnapshot, validRideId);
           }
@@ -385,12 +707,88 @@ class CabBookingController extends GetxController {
   ) async {
     if (!rideSnapshot.exists) return;
     final rideData = rideSnapshot.data()!;
-    currentOrder.value = CabOrderModel.fromJson(rideData);
-    final status = currentOrder.value.status;
+    // Guard against empty or malformed snapshots (e.g. transient cache
+    // misses) wiping out the populated order in memory.
+    if (rideData.isEmpty || (rideData['status'] == null && rideData['id'] == null)) {
+      log("[CAB_STATE] snapshot ignored: empty/malformed payload");
+      return;
+    }
+    final previousStatus = currentOrder.value.status;
+    final previousDriverId = currentOrder.value.driverId?.trim() ?? '';
+    final newOrder = CabOrderModel.fromJson(rideData);
+    final status = newOrder.status;
+    log(
+      "[CAB_SYNC] handle snapshot id=$validRideId "
+      "prevStatus=$previousStatus newStatus=$status "
+      "prevDriverId=$previousDriverId newDriverId=${newOrder.driverId?.trim() ?? ''} "
+      "bottomSheet=${bottomSheetType.value} "
+      "driverAssignedFlag=$_driverAssignedForActiveRide",
+    );
+
+    // ABSOLUTE GUARD: if a driver was previously assigned to this ride in our
+    // local state, and this snapshot is trying to roll us back to a
+    // pre-acceptance state with no driverId (e.g. because some stale write
+    // wiped server-side fields), reject the snapshot outright. Do NOT update
+    // `currentOrder.value`, do NOT touch `bottomSheetType`. Refresh from the
+    // server to recover instead of replaying the bad snapshot.
+    final newDriverIdRaw =
+        (rideData['driverId'] is String ? rideData['driverId'] as String : '')
+            .trim();
+    final newOrderDriverId = newOrder.driverId?.trim() ?? '';
+    final newDriverIdEmpty =
+        newDriverIdRaw.isEmpty && newOrderDriverId.isEmpty;
+    final newStatusIsSearching = status == Constant.orderPlaced ||
+        status == Constant.driverPending ||
+        status == Constant.driverRejected ||
+        (status == Constant.orderAccepted && newOrderDriverId.isEmpty);
+    if (previousDriverId.isNotEmpty &&
+        newDriverIdEmpty &&
+        newStatusIsSearching) {
+      log("🛑 [CAB_STATE] snapshot would wipe assigned driver "
+          "(prevDriverId=$previousDriverId, newStatus=$status). "
+          "Ignoring snapshot.");
+      // Best-effort: trigger a server-only refresh so we eventually
+      // reconverge with whatever the real state is.
+      unawaited(_refreshActiveOrderOnResume());
+      return;
+    }
+
+    if (!_isAllowedCabStateTransition(
+      previousStatus,
+      status,
+      previousDriverIdAssigned: previousDriverId.isNotEmpty,
+    )) {
+      log("⚠️ [CAB_STATE] Invalid transition ignored: $previousStatus -> $status");
+      return;
+    }
+    currentOrder.value = newOrder;
+    _activeRideId = validRideId;
+
+    // Once a driver has ever been assigned (either previously known to us or
+    // present in this snapshot), do NOT fall back to the "searching for
+    // driver" UI. Guards against late driver-side writes (e.g. another
+    // notified driver pressing Reject after this one already accepted) that
+    // would otherwise stamp `status` back to `driverRejected`/`driverPending`
+    // on the server.
+    final hasAssignedDriver = previousDriverId.isNotEmpty ||
+        ((newOrder.driverId?.trim().isNotEmpty) ?? false);
+    if (hasAssignedDriver) {
+      _driverAssignedForActiveRide = true;
+    }
+
+    if (_isPendingDriverAcceptance(currentOrder.value) &&
+        _isOrderExpired(currentOrder.value)) {
+      await _autoCancelExpiredOrder(validRideId);
+      return;
+    }
 
     if (status == Constant.driverAccepted ||
+        status == Constant.orderShipped ||
         status == Constant.orderInTransit) {
       _setupDriverListener(currentOrder.value.driverId);
+    } else {
+      _driverSub?.cancel();
+      _driverSub = null;
     }
 
     // Real-time lokatsiya va narx: faol order bo'lganda boshlash, tugasa to'xtatish
@@ -402,15 +800,53 @@ class CabBookingController extends GetxController {
       _stopLiveSourceLocationUpdates();
     }
 
+    if (_isPendingDriverAcceptance(currentOrder.value)) {
+      _startDriverAcceptTimeoutMonitor(validRideId);
+    } else {
+      _stopDriverAcceptTimeoutMonitor();
+      _driverAcceptExpiredNotified = false;
+    }
+
     print("Current Ride Status: $status");
-    if (status == Constant.orderPlaced ||
+    final currentDriverIdTrimmed =
+        currentOrder.value.driverId?.trim() ?? '';
+    final isSearchingStatus = status == Constant.orderPlaced ||
         status == Constant.driverPending ||
         status == Constant.driverRejected ||
         (status == Constant.orderAccepted &&
-            currentOrder.value.driverId == null)) {
+            currentDriverIdTrimmed.isEmpty);
+    // Once a driver has been assigned to this ride in our session, the sticky
+    // flag stays true until the ride ends. This is the last line of defence
+    // against snapshots that wipe driverId (e.g. cached/stale reads, racy
+    // driver-side writes) and would otherwise drop the customer back onto
+    // the "searching for driver" sheet after they already saw the assigned
+    // driver — the reported "ozidan ozi qayta taxi izlab qolebdi" regression.
+    final driverEverAssigned =
+        hasAssignedDriver || _driverAssignedForActiveRide;
+    if (isSearchingStatus && !driverEverAssigned) {
+      // A driver who saw this order just rejected it. Let the user know
+      // we're searching for the next driver instead of leaving the screen
+      // silently unchanged.
+      if (status == Constant.driverRejected &&
+          previousStatus != Constant.driverRejected) {
+        ShowToastDialog.showToast("Boshqa haydovchi qidirilmoqda...".tr);
+      }
       bottomSheetType.value = 'waitingForDriver';
+    } else if (status == Constant.orderShipped) {
+      // Driver pickup nuqtasiga yetib keldi. Yangi state.
+      bottomSheetType.value = 'arrivedAtPickup';
+      sourceTextEditController.value.text =
+          currentOrder.value.sourceLocationName ?? '';
+      destinationTextEditController.value.text =
+          currentOrder.value.destinationLocationName ?? '';
+      selectedPaymentMethod.value = currentOrder.value.paymentMethod ?? '';
     } else if (status == Constant.driverAccepted ||
-        status == Constant.orderInTransit) {
+        status == Constant.orderInTransit ||
+        // Driver already assigned to this ride — keep the customer on the
+        // "driver found" sheet even if the latest snapshot tries to push us
+        // back to a pre-acceptance status (e.g. another notified driver
+        // pressing Reject after acceptance).
+        (driverEverAssigned && isSearchingStatus)) {
       bottomSheetType.value = 'driverDetails';
       sourceTextEditController.value.text =
           currentOrder.value.sourceLocationName ?? '';
@@ -424,11 +860,228 @@ class CabBookingController extends GetxController {
       }
     } else if (status == Constant.orderCompleted) {
       _stopLiveSourceLocationUpdates();
-      userModel.value.inProgressOrderID!.remove(validRideId);
-      await FireStoreUtils.updateUser(userModel.value);
+      // Snapshot the completed order before tearing down active-ride state so
+      // the payment summary screen has something to render.
+      completedOrder.value = currentOrder.value;
+      if (userModel.value.inProgressOrderID != null) {
+        userModel.value.inProgressOrderID!.remove(validRideId);
+        await FireStoreUtils.updateUser(userModel.value);
+      }
+      _activeRideId = null;
+      _driverAssignedForActiveRide = false;
       bottomSheetType.value = 'location';
-      Get.back();
+      _resetTransientBookingState();
+      Get.to(() => const CabPaymentSummaryScreen());
+    } else if (status == Constant.orderCancelled ||
+        status == Constant.orderRejected) {
+      _stopLiveSourceLocationUpdates();
+      if (userModel.value.inProgressOrderID != null) {
+        userModel.value.inProgressOrderID!.remove(validRideId);
+        await FireStoreUtils.updateUser(userModel.value);
+      }
+      _activeRideId = null;
+      _driverAssignedForActiveRide = false;
+      bottomSheetType.value = 'location';
+      _stopDriverAcceptTimeoutMonitor();
+      _resetTransientBookingState();
     }
+    // Force a UI rebuild even when bottomSheetType was assigned the same
+    // value — guards against the case where the Rx listener was paused
+    // while the app was in the background.
+    bottomSheetType.refresh();
+    currentOrder.refresh();
+  }
+
+  /// Customer-initiated arrival confirmation. Called from the
+  /// driverDetails bottom sheet "Yetib keldik" button. Doesn't change
+  /// status — the driver still issues the final `Order Completed` write.
+  Future<void> confirmArrival() async {
+    final rideId = _activeRideId ?? currentOrder.value.id ?? '';
+    if (rideId.isEmpty) {
+      ShowToastDialog.showToast("Faol buyurtma topilmadi".tr);
+      return;
+    }
+    if (currentOrder.value.customerConfirmedArrival == true) {
+      ShowToastDialog.showToast("Yetib kelganingiz allaqachon tasdiqlangan".tr);
+      return;
+    }
+    try {
+      await FireStoreUtils.fireStore
+          .collection(CollectionName.cabBookingOrders)
+          .doc(rideId)
+          .set(
+            {
+              'customerConfirmedArrival': true,
+              'customerArrivedAt': FieldValue.serverTimestamp(),
+            },
+            SetOptions(merge: true),
+          );
+      currentOrder.value.customerConfirmedArrival = true;
+      currentOrder.refresh();
+      ShowToastDialog.showToast(
+        "Yetib kelganingiz tasdiqlandi, haydovchi yakunlaydi".tr,
+      );
+    } catch (e) {
+      log("[CAB_ARRIVAL] confirmArrival failed: $e");
+      ShowToastDialog.showToast("Xatolik: $e");
+    }
+  }
+
+  bool _isPendingDriverAcceptance(CabOrderModel order) {
+    final status = order.status;
+    return status == Constant.orderPlaced ||
+        status == Constant.driverPending ||
+        status == Constant.driverRejected ||
+        (status == Constant.orderAccepted &&
+            (order.driverId == null || order.driverId!.isEmpty));
+  }
+
+  bool _isFinalCabStatus(String? status) {
+    return status == Constant.orderCompleted ||
+        status == Constant.orderCancelled ||
+        status == Constant.orderRejected;
+  }
+
+  bool _isAllowedCabStateTransition(
+    String? from,
+    String? to, {
+    bool previousDriverIdAssigned = false,
+  }) {
+    if (to == null || to.isEmpty) return true;
+    if (from == null || from.isEmpty) return true;
+    if (from == to) return true;
+    if (_isFinalCabStatus(from)) return false;
+
+    switch (from) {
+      case Constant.orderPlaced:
+      case Constant.driverPending:
+        return to == Constant.orderPlaced ||
+            to == Constant.driverPending ||
+            to == Constant.driverRejected ||
+            to == Constant.orderAccepted ||
+            to == Constant.driverAccepted ||
+            to == Constant.orderShipped ||
+            to == Constant.orderInTransit ||
+            to == Constant.orderCancelled ||
+            to == Constant.orderRejected;
+      case Constant.driverRejected:
+        // If a driver has already been assigned, ignore any snapshot that
+        // tries to send us back to a pre-acceptance state — it's a stale or
+        // racy write from a different notified driver.
+        if (previousDriverIdAssigned) {
+          return to == Constant.driverAccepted ||
+              to == Constant.orderShipped ||
+              to == Constant.orderInTransit ||
+              to == Constant.orderCancelled ||
+              to == Constant.orderRejected ||
+              to == Constant.orderCompleted;
+        }
+        return to == Constant.orderPlaced ||
+            to == Constant.driverPending ||
+            to == Constant.driverRejected ||
+            to == Constant.orderAccepted ||
+            to == Constant.driverAccepted ||
+            to == Constant.orderShipped ||
+            to == Constant.orderInTransit ||
+            to == Constant.orderCancelled ||
+            to == Constant.orderRejected;
+      case Constant.orderAccepted:
+      case Constant.driverAccepted:
+        return to == Constant.orderShipped ||
+            to == Constant.orderInTransit ||
+            to == Constant.orderCompleted ||
+            to == Constant.orderCancelled ||
+            to == Constant.orderRejected;
+      case Constant.orderShipped:
+        return to == Constant.orderInTransit ||
+            to == Constant.orderCompleted ||
+            to == Constant.orderCancelled ||
+            to == Constant.orderRejected;
+      case Constant.orderInTransit:
+        return to == Constant.orderCompleted ||
+            to == Constant.orderCancelled;
+      default:
+        return true;
+    }
+  }
+
+  bool _isOrderExpired(CabOrderModel order) {
+    final createdAt = order.createdAt;
+    if (createdAt == null) return false;
+    final elapsed = DateTime.now().difference(createdAt.toDate());
+    return elapsed >= _driverAcceptTimeout;
+  }
+
+  void _notifyDriverAcceptExpired() {
+    if (_driverAcceptExpiredNotified) return;
+    _driverAcceptExpiredNotified = true;
+    _stopDriverAcceptTimeoutMonitor();
+    ShowToastDialog.showToast(
+      "Haydovchi topilmadi. Buyurtma avtomatik bekor qilindi.".tr,
+    );
+  }
+
+  Future<void> _autoCancelExpiredOrder(String rideId) async {
+    if (_isAutoCancellingExpiredOrder) return;
+    _isAutoCancellingExpiredOrder = true;
+    try {
+      final order = currentOrder.value;
+      final orderId = order.id?.trim() ?? '';
+      if (orderId.isEmpty || orderId != rideId) return;
+      if (!_isPendingDriverAcceptance(order)) return;
+      if ((order.driverId?.trim().isNotEmpty ?? false)) return;
+
+      order.status = Constant.orderCancelled;
+      await FireStoreUtils.updateCabOrder(order);
+      await FireStoreUtils.clearCabOrderRequestFromDrivers(order);
+
+      if (userModel.value.inProgressOrderID != null) {
+        userModel.value.inProgressOrderID!
+            .removeWhere((e) => e.toString() == rideId);
+        await FireStoreUtils.updateUser(userModel.value);
+      }
+
+      _stopLiveSourceLocationUpdates();
+      _activeRideId = null;
+      _driverAssignedForActiveRide = false;
+      _notifyDriverAcceptExpired();
+      update();
+    } catch (e) {
+      log('_autoCancelExpiredOrder error: $e');
+    } finally {
+      _isAutoCancellingExpiredOrder = false;
+    }
+  }
+
+  void _startDriverAcceptTimeoutMonitor(String rideId) {
+    _driverAcceptTimeoutTimer?.cancel();
+    _driverAcceptTimeoutTimer = Timer.periodic(
+      _driverAcceptTimeoutCheckInterval,
+      (_) async {
+        final activeId = _activeRideId;
+        if (activeId == null || activeId.isEmpty || activeId != rideId) {
+          _stopDriverAcceptTimeoutMonitor();
+          return;
+        }
+        final status = currentOrder.value.status;
+        if (!_isPendingDriverAcceptance(currentOrder.value)) {
+          _stopDriverAcceptTimeoutMonitor();
+          return;
+        }
+        if (_isOrderExpired(currentOrder.value)) {
+          await _autoCancelExpiredOrder(activeId);
+        } else if (status == Constant.orderCancelled ||
+            status == Constant.orderRejected ||
+            status == Constant.orderCompleted) {
+          _stopDriverAcceptTimeoutMonitor();
+        }
+      },
+    );
+  }
+
+  void _stopDriverAcceptTimeoutMonitor() {
+    _driverAcceptTimeoutTimer?.cancel();
+    _driverAcceptTimeoutTimer = null;
   }
 
   void _stopLiveSourceLocationUpdates() {
@@ -567,7 +1220,8 @@ class CabBookingController extends GetxController {
   void _setupDriverListener(String? driverId) {
     if (driverId == null || driverId.isEmpty) return;
 
-    FireStoreUtils.fireStore
+    _driverSub?.cancel();
+    _driverSub = FireStoreUtils.fireStore
         .collection(CollectionName.users)
         .doc(driverId)
         .snapshots()
@@ -738,37 +1392,11 @@ class CabBookingController extends GetxController {
     LatLng originPoint,
     LatLng destPoint,
   ) async {
-    final origin = '${originPoint.latitude},${originPoint.longitude}';
-    final destination = '${destPoint.latitude},${destPoint.longitude}';
-    final url = Uri.parse(
-      'https://maps.googleapis.com/maps/api/directions/json'
-      '?origin=$origin&destination=$destination'
-      '&mode=driving&key=${Constant.mapAPIKey}',
-    );
-
     try {
-      final response = await http.get(url);
-      final data = json.decode(response.body);
-
-      if (data['status'] == 'OK') {
-        final route = data['routes'][0];
-        final encodedPolyline = route['overview_polyline']['points'];
-        final decodedPoints = PolylinePoints.decodePolyline(encodedPolyline);
-        final coordinates =
-            decodedPoints.map((e) => LatLng(e.latitude, e.longitude)).toList();
-
-        addPolyLine(coordinates);
-
-        // Distance + duration update
-        final leg = route['legs'][0];
-        final totalDistance = leg['distance']['value'] / 1000.0;
-        final totalDuration = leg['duration']['value'] / 60.0;
-
-        distance.value = totalDistance;
-        duration.value = '${totalDuration.toStringAsFixed(0)} min';
-      } else {
-        print('Google Directions API error: ${data['status']}');
-      }
+      await fetchRouteWithWaypoints([
+        app_lat_lng.LatLng(originPoint.latitude, originPoint.longitude),
+        app_lat_lng.LatLng(destPoint.latitude, destPoint.longitude),
+      ]);
     } catch (e) {
       print("Error fetching driver route: $e");
     }
@@ -926,6 +1554,21 @@ class CabBookingController extends GetxController {
   }
 
   Future<void> placeOrder() async {
+    // Double-tap / duplicate-placement guard. A new cab order must not be
+    // created while the previous one is still being dispatched or has not
+    // yet been resolved (waiting-for-driver / driverDetails). Without this
+    // guard a rapid double-tap on "Buyurtma berish" / "Confirm Booking"
+    // creates two separate orders and dispatches to every online driver
+    // twice — the user-reported "ketma-ket zakaz kelebdi" symptom.
+    if (isPlacingOrder.value) {
+      ShowToastDialog.showToast("Buyurtma berilmoqda…".tr);
+      return;
+    }
+    if (hasActiveCabRide) {
+      ShowToastDialog.showToast("Sizda aktiv buyurtma bor".tr);
+      return;
+    }
+
     // Wallet bilan to'lov tanlangan bo'lsa, balansni tekshirish
     if (selectedPaymentMethod.value == PaymentGateway.wallet.name) {
       num walletAmount = userModel.value.walletAmount ?? 0;
@@ -948,6 +1591,32 @@ class CabBookingController extends GetxController {
         return; // Zakaz berilmaydi
       }
     }
+
+    final previousBottomSheetType = bottomSheetType.value;
+    isPlacingOrder.value = true;
+    try {
+      await _placeOrderInternal();
+    } catch (e, s) {
+      log('placeOrder error: $e\n$s');
+      bottomSheetType.value = previousBottomSheetType;
+      ShowToastDialog.showToast(
+        "Buyurtma berishda xatolik yuz berdi. Qaytadan urinib ko'ring.".tr,
+      );
+    } finally {
+      isPlacingOrder.value = false;
+    }
+  }
+
+  Future<void> _placeOrderInternal() async {
+    // New ride: clear sticky "driver-assigned" flag so the first snapshot of
+    // this order is interpreted from a clean baseline.
+    _driverAssignedForActiveRide = false;
+
+    // Flip the bottom sheet to "waitingForDriver" immediately so the user
+    // sees the searching-for-taxi UI right after tapping, instead of being
+    // stuck on the booking screen while async writes complete. The caller
+    // (placeOrder) reverts this on error.
+    bottomSheetType.value = 'waitingForDriver';
 
     final srcLat = departureLatLong.value.latitude;
     final srcLng = departureLatLong.value.longitude;
@@ -1026,14 +1695,21 @@ class CabBookingController extends GetxController {
     log("Order Model : ${orderModel.toJson()}");
 
     await FireStoreUtils.cabOrderPlace(orderModel);
+    _activeRideId = orderModel.id;
 
     userModel.value.inProgressOrderID ??= [];
     userModel.value.inProgressOrderID!.add(orderModel.id);
     await FireStoreUtils.updateUser(userModel.value);
+    _setupOrderListener(orderModel.id!);
 
-    _sendCabOrderNotificationToDrivers(orderModel);
+    await _sendCabOrderNotificationToDrivers(orderModel);
 
-    bottomSheetType.value = 'waitingForDriver';
+    // NOTE: bottomSheetType was already set to 'waitingForDriver' at the top
+    // of this method (line ~1619). Do NOT re-assign it here — by the time we
+    // reach this point, the driver may have already accepted and the order
+    // listener has transitioned bottomSheetType to 'driverDetails'. Setting
+    // it back to 'waitingForDriver' here was the cause of the reported
+    // "driverDetails dan izlashga yana qaytebdi" regression.
   }
 
   Future<void> _sendCabOrderNotificationToDrivers(
@@ -1048,6 +1724,11 @@ class CabBookingController extends GetxController {
         sectionId,
         vehicleId: vehicleId?.isNotEmpty == true ? vehicleId : null,
       );
+      if (drivers.isEmpty) {
+        log('_sendCabOrderNotificationToDrivers: mos onlayn haydovchi topilmadi');
+        return;
+      }
+      await FireStoreUtils.dispatchCabOrderRequestToDrivers(orderModel, drivers);
       final orderId = orderModel.id ?? '';
       if (orderId.isEmpty) return;
       final payload = <String, dynamic>{
@@ -1058,14 +1739,24 @@ class CabBookingController extends GetxController {
       final body = 'New taxi booking request'.tr;
       for (final driver in drivers) {
         final token = driver.fcmToken?.trim();
-        if (token != null && token.isNotEmpty) {
-          await SendNotification.sendOneNotification(
-            token: token,
-            title: title,
-            body: body,
-            payload: payload,
-          );
-        }
+        if (token == null || token.isEmpty) continue;
+
+        // CallKit-style incoming-ride push (Android high priority + iOS VoIP).
+        await SendNotification.sendCallKitNotification(
+          type: 'cab_new_order',
+          token: token,
+          voipToken: driver.voipToken,
+          iosBundleId: 'felix.fondex.driver',
+          data: {...payload, 'title': title, 'body': body},
+        );
+
+        // Legacy fallback notification (tray entry).
+        await SendNotification.sendOneNotification(
+          token: token,
+          title: title,
+          body: body,
+          payload: payload,
+        );
       }
     } catch (e) {
       log('_sendCabOrderNotificationToDrivers error: $e');
@@ -1281,59 +1972,16 @@ class CabBookingController extends GetxController {
         destinationLatLong.value.latitude == 0.0) {
       return;
     }
-
-    final origin =
-        '${departureLatLong.value.latitude},${departureLatLong.value.longitude}';
-    final destination =
-        '${destinationLatLong.value.latitude},${destinationLatLong.value.longitude}';
-
-    final url = Uri.parse(
-      'https://maps.googleapis.com/maps/api/directions/json'
-      '?origin=$origin&destination=$destination'
-      '&mode=driving&key=${Constant.mapAPIKey}',
-    );
-
-    try {
-      final response = await http.get(url);
-      final data = json.decode(response.body);
-      log("=======>$data");
-      if (data['status'] == 'OK') {
-        final route = data['routes'][0];
-        final legs = route['legs'] as List;
-
-        // Polyline
-        final encodedPolyline = route['overview_polyline']['points'];
-        final decodedPoints = PolylinePoints.decodePolyline(encodedPolyline);
-        final coordinates =
-            decodedPoints.map((e) => LatLng(e.latitude, e.longitude)).toList();
-
-        addPolyLine(coordinates);
-
-        // Distance & Duration
-        num totalDistance = 0;
-        num totalDuration = 0;
-        for (var leg in legs) {
-          totalDistance += leg['distance']['value']!; // meters
-          totalDuration += leg['duration']['value']!; // seconds
-        }
-
-        // Convert distance to KM or Miles
-        if (Constant.distanceType.toLowerCase() == "KM".toLowerCase()) {
-          distance.value = totalDistance / 1000.0;
-        } else {
-          distance.value = totalDistance / 1609.34;
-        }
-
-        // Format duration
-        final hours = totalDuration ~/ 3600;
-        final minutes = ((totalDuration % 3600) / 60).round();
-        duration.value = '${hours}h ${minutes}m';
-      } else {
-        print('Google Directions API Error: ${data['status']}');
-      }
-    } catch (e) {
-      print("Google route fetch error: $e");
-    }
+    await fetchRouteWithWaypoints([
+      app_lat_lng.LatLng(
+        departureLatLong.value.latitude,
+        departureLatLong.value.longitude,
+      ),
+      app_lat_lng.LatLng(
+        destinationLatLong.value.latitude,
+        destinationLatLong.value.longitude,
+      ),
+    ]);
   }
 
   Future<void> fetchRouteWithWaypoints(List<app_lat_lng.LatLng> points) async {
@@ -1357,6 +2005,15 @@ class CabBookingController extends GetxController {
         routePoints.addAll(
           geometry.map((coord) => app_lat_lng.LatLng(coord[1], coord[0])),
         );
+
+        // Google Maps polyline ni ham yangilash (Yandex routePoints bilan parallel)
+        final googlePoints = geometry
+            .map((coord) => LatLng(
+                  (coord[1] as num).toDouble(),
+                  (coord[0] as num).toDouble(),
+                ))
+            .toList();
+        addPolyLine(googlePoints);
 
         if (Constant.distanceType.toLowerCase() == "KM".toLowerCase()) {
           distance.value = dist / 1000.00;
@@ -1410,12 +2067,19 @@ class CabBookingController extends GetxController {
   Future<void> updateCameraLocationToFitPolylineYandex(
     List<LatLng> points,
   ) async {
-    if (yandexMapController == null || points.isEmpty) return;
+    final mapCtrl = yandexMapController;
+    if (mapCtrl == null || points.isEmpty) return;
     final appPoints = points.map((p) => app_lat_lng.LatLng(p.latitude, p.longitude)).toList();
     final bounds = yandexBoundsFromLatLngs(appPoints);
-    await yandexMapController!.moveCamera(
-      ym.CameraUpdate.newGeometry(ym.Geometry.fromBoundingBox(bounds)),
-    );
+    try {
+      await mapCtrl.moveCamera(
+        ym.CameraUpdate.newGeometry(ym.Geometry.fromBoundingBox(bounds)),
+      );
+    } on MissingPluginException {
+      if (identical(yandexMapController, mapCtrl)) {
+        yandexMapController = null;
+      }
+    }
   }
 
   Future<void> updateCameraLocationToFitPolyline(
@@ -1700,189 +2364,17 @@ class CabBookingController extends GetxController {
 
   // Search destination places for OSM
   Future<void> searchDestinationOSM(String query) async {
-    // Minimum uzunlikni 4 ga oshirish - Nominatim rate limit'ni oldini olish uchun
-    final trimmedQuery = query.trim();
-    if (trimmedQuery.isEmpty || trimmedQuery.length < 4) {
-      destinationSearchResults.clear();
-      searchError.value = '';
-      return;
-    }
-
-    isSearchingDestination.value = true;
-    searchError.value = ''; // Error'ni tozalash
-
-    try {
-      // URL encoding qo'shish
-      final encodedQuery = Uri.encodeComponent(trimmedQuery);
-      final url = Uri.parse(
-        'https://nominatim.openstreetmap.org/search?q=$encodedQuery&format=json&addressdetails=1&limit=10',
-      );
-
-      final response = await http
-          .get(
-            url,
-            headers: {
-              'User-Agent':
-                  'FlutterMapApp/1.0 (menil.siddhiinfosoft@gmail.com)',
-            },
-          )
-          .timeout(
-            const Duration(seconds: 15), // Timeout'ni 15 soniyaga oshirish
-            onTimeout: () {
-              throw TimeoutException('Request timeout');
-            },
-          );
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body) as List;
-        if (data.isEmpty) {
-          destinationSearchResults.clear();
-          searchError.value = ''; // Natija topilmadi - error emas
-        } else {
-          destinationSearchResults.value =
-              data.map((item) {
-                return {
-                  'name': item['display_name'] ?? '',
-                  'lat': double.tryParse(item['lat']?.toString() ?? '0') ?? 0.0,
-                  'lon': double.tryParse(item['lon']?.toString() ?? '0') ?? 0.0,
-                  'address': item['display_name'] ?? '',
-                };
-              }).toList();
-          searchError.value = ''; // Muvaffaqiyatli - error yo'q
-        }
-      } else {
-        destinationSearchResults.clear();
-        // HTTP error'ni faqat log qilish, foydalanuvchiga ko'rsatmaslik
-        log("OSM Search HTTP Error: ${response.statusCode} - ${response.body}");
-        searchError.value = ''; // Error'ni ko'rsatmaslik
-      }
-    } on SocketException catch (e) {
-      log("OSM Search Network Error: $e");
-      destinationSearchResults.clear();
-      // SocketException - haqiqatan ham internet yo'q bo'lishi mumkin
-      // Lekin ba'zida server muammosi ham bo'lishi mumkin
-      // Shuning uchun error'ni ko'rsatmaslik yaxshiroq
-      searchError.value = '';
-    } on TimeoutException catch (e) {
-      log("OSM Search Timeout Error: $e");
-      destinationSearchResults.clear();
-      // Timeout - server sekin javob bergan yoki internet sekin
-      // Error'ni ko'rsatmaslik
-      searchError.value = '';
-    } catch (e) {
-      log("OSM Search Error: $e");
-      destinationSearchResults.clear();
-      // Barcha boshqa error'larni ham ko'rsatmaslik
-      // Faqat log qilish
-      searchError.value = '';
-    } finally {
-      isSearchingDestination.value = false;
-    }
+    await searchDestinationYandex(query);
   }
 
   // Search destination places for Google Maps
   Future<void> searchDestinationGoogle(String query) async {
-    // Minimum uzunlikni 4 ga oshirish - so'rovlar sonini kamaytirish uchun
-    final trimmedQuery = query.trim();
-    if (trimmedQuery.isEmpty || trimmedQuery.length < 4) {
-      destinationSearchResults.clear();
-      searchError.value = '';
-      return;
-    }
-
-    isSearchingDestination.value = true;
-    searchError.value = ''; // Error'ni tozalash
-
-    try {
-      // URL encoding qo'shish
-      final encodedQuery = Uri.encodeComponent(trimmedQuery);
-      final url = Uri.parse(
-        'https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$encodedQuery&key=${Constant.mapAPIKey}&language=en',
-      );
-
-      final response = await http
-          .get(url)
-          .timeout(
-            const Duration(seconds: 15), // Timeout'ni 15 soniyaga oshirish
-            onTimeout: () {
-              throw TimeoutException('Request timeout');
-            },
-          );
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        if (data['status'] == 'OK') {
-          final predictions = data['predictions'] as List;
-          if (predictions.isEmpty) {
-            destinationSearchResults.clear();
-            searchError.value = ''; // Natija topilmadi - error emas
-          } else {
-            destinationSearchResults.value =
-                predictions
-                    .map(
-                      (item) => {
-                        'name': item['description'] ?? '',
-                        'place_id': item['place_id'] ?? '',
-                        'address': item['description'] ?? '',
-                      },
-                    )
-                    .toList();
-            searchError.value = ''; // Muvaffaqiyatli - error yo'q
-          }
-        } else {
-          destinationSearchResults.clear();
-          // API error'ni faqat log qilish
-          log("Google Search API Error: ${data['status']}");
-          searchError.value = ''; // Error'ni ko'rsatmaslik
-        }
-      } else {
-        destinationSearchResults.clear();
-        log(
-          "Google Search HTTP Error: ${response.statusCode} - ${response.body}",
-        );
-        searchError.value = ''; // Error'ni ko'rsatmaslik
-      }
-    } on SocketException catch (e) {
-      log("Google Search Network Error: $e");
-      destinationSearchResults.clear();
-      searchError.value = ''; // Error'ni ko'rsatmaslik
-    } on TimeoutException catch (e) {
-      log("Google Search Timeout Error: $e");
-      destinationSearchResults.clear();
-      searchError.value = ''; // Error'ni ko'rsatmaslik
-    } catch (e) {
-      log("Google Search Error: $e");
-      destinationSearchResults.clear();
-      searchError.value = ''; // Error'ni ko'rsatmaslik
-    } finally {
-      isSearchingDestination.value = false;
-    }
+    await searchDestinationYandex(query);
   }
 
   // Get place details from Google place_id
   Future<Map<String, dynamic>?> getPlaceDetailsGoogle(String placeId) async {
-    try {
-      final url = Uri.parse(
-        'https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&key=${Constant.mapAPIKey}',
-      );
-
-      final response = await http.get(url);
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        if (data['status'] == 'OK') {
-          final result = data['result'];
-          return {
-            'name': result['name'] ?? '',
-            'address': result['formatted_address'] ?? '',
-            'lat': result['geometry']['location']['lat'],
-            'lng': result['geometry']['location']['lng'],
-          };
-        }
-      }
-    } catch (e) {
-      log("Get Place Details Error: $e");
-    }
+    // Google Places o'chirilgan. place_id bilan ishlash yo'q.
     return null;
   }
 
@@ -1923,152 +2415,12 @@ class CabBookingController extends GetxController {
 
   // Search source places for OSM
   Future<void> searchSourceOSM(String query) async {
-    final trimmedQuery = query.trim();
-    if (trimmedQuery.isEmpty || trimmedQuery.length < 4) {
-      sourceSearchResults.clear();
-      sourceSearchError.value = '';
-      return;
-    }
-
-    isSearchingSource.value = true;
-    sourceSearchError.value = '';
-
-    try {
-      final encodedQuery = Uri.encodeComponent(trimmedQuery);
-      final url = Uri.parse(
-        'https://nominatim.openstreetmap.org/search?q=$encodedQuery&format=json&addressdetails=1&limit=10',
-      );
-
-      final response = await http
-          .get(
-            url,
-            headers: {
-              'User-Agent':
-                  'FlutterMapApp/1.0 (menil.siddhiinfosoft@gmail.com)',
-            },
-          )
-          .timeout(
-            const Duration(seconds: 15),
-            onTimeout: () {
-              throw TimeoutException('Request timeout');
-            },
-          );
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body) as List;
-        if (data.isEmpty) {
-          sourceSearchResults.clear();
-          sourceSearchError.value = '';
-        } else {
-          sourceSearchResults.value =
-              data.map((item) {
-                return {
-                  'name': item['display_name'] ?? '',
-                  'lat': double.tryParse(item['lat']?.toString() ?? '0') ?? 0.0,
-                  'lon': double.tryParse(item['lon']?.toString() ?? '0') ?? 0.0,
-                  'address': item['display_name'] ?? '',
-                };
-              }).toList();
-          sourceSearchError.value = '';
-        }
-      } else {
-        sourceSearchResults.clear();
-        log(
-          "OSM Source Search HTTP Error: ${response.statusCode} - ${response.body}",
-        );
-        sourceSearchError.value = '';
-      }
-    } on SocketException catch (e) {
-      log("OSM Source Search Network Error: $e");
-      sourceSearchResults.clear();
-      sourceSearchError.value = '';
-    } on TimeoutException catch (e) {
-      log("OSM Source Search Timeout Error: $e");
-      sourceSearchResults.clear();
-      sourceSearchError.value = '';
-    } catch (e) {
-      log("OSM Source Search Error: $e");
-      sourceSearchResults.clear();
-      sourceSearchError.value = '';
-    } finally {
-      isSearchingSource.value = false;
-    }
+    await searchSourceYandex(query);
   }
 
   // Search source places for Google Maps
   Future<void> searchSourceGoogle(String query) async {
-    final trimmedQuery = query.trim();
-    if (trimmedQuery.isEmpty || trimmedQuery.length < 4) {
-      sourceSearchResults.clear();
-      sourceSearchError.value = '';
-      return;
-    }
-
-    isSearchingSource.value = true;
-    sourceSearchError.value = '';
-
-    try {
-      final encodedQuery = Uri.encodeComponent(trimmedQuery);
-      final url = Uri.parse(
-        'https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$encodedQuery&key=${Constant.mapAPIKey}&language=en',
-      );
-
-      final response = await http
-          .get(url)
-          .timeout(
-            const Duration(seconds: 15),
-            onTimeout: () {
-              throw TimeoutException('Request timeout');
-            },
-          );
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        if (data['status'] == 'OK') {
-          final predictions = data['predictions'] as List;
-          if (predictions.isEmpty) {
-            sourceSearchResults.clear();
-            sourceSearchError.value = '';
-          } else {
-            sourceSearchResults.value =
-                predictions
-                    .map(
-                      (item) => {
-                        'name': item['description'] ?? '',
-                        'place_id': item['place_id'] ?? '',
-                        'address': item['description'] ?? '',
-                      },
-                    )
-                    .toList();
-            sourceSearchError.value = '';
-          }
-        } else {
-          sourceSearchResults.clear();
-          log("Google Source Search API Error: ${data['status']}");
-          sourceSearchError.value = '';
-        }
-      } else {
-        sourceSearchResults.clear();
-        log(
-          "Google Source Search HTTP Error: ${response.statusCode} - ${response.body}",
-        );
-        sourceSearchError.value = '';
-      }
-    } on SocketException catch (e) {
-      log("Google Source Search Network Error: $e");
-      sourceSearchResults.clear();
-      sourceSearchError.value = '';
-    } on TimeoutException catch (e) {
-      log("Google Source Search Timeout Error: $e");
-      sourceSearchResults.clear();
-      sourceSearchError.value = '';
-    } catch (e) {
-      log("Google Source Search Error: $e");
-      sourceSearchResults.clear();
-      sourceSearchError.value = '';
-    } finally {
-      isSearchingSource.value = false;
-    }
+    await searchSourceYandex(query);
   }
 
   @override
@@ -2081,14 +2433,10 @@ class CabBookingController extends GetxController {
   Rx<CodSettingModel> cashOnDeliverySettingModel = CodSettingModel().obs;
   Rx<PayFastModel> payFastModel = PayFastModel().obs;
   Rx<MercadoPagoModel> mercadoPagoModel = MercadoPagoModel().obs;
-  Rx<PayPalModel> payPalModel = PayPalModel().obs;
-  Rx<StripeModel> stripeModel = StripeModel().obs;
   Rx<FlutterWaveModel> flutterWaveModel = FlutterWaveModel().obs;
   Rx<PayStackModel> payStackModel = PayStackModel().obs;
   Rx<PaytmModel> paytmModel = PaytmModel().obs;
   Rx<PaymeModel> paymeModel = PaymeModel().obs;
-  Rx<RazorPayModel> razorPayModel = RazorPayModel().obs;
-
   Rx<MidTrans> midTransModel = MidTrans().obs;
   Rx<OrangeMoney> orangeMoneyModel = OrangeMoney().obs;
   Rx<Xendit> xenditModel = Xendit().obs;
@@ -2128,16 +2476,6 @@ class CabBookingController extends GetxController {
     }
 
     trySet(
-      Preferences.stripeSettings,
-      StripeModel.fromJson,
-      (v) => stripeModel.value = v,
-    );
-    trySet(
-      Preferences.paypalSettings,
-      PayPalModel.fromJson,
-      (v) => payPalModel.value = v,
-    );
-    trySet(
       Preferences.payStack,
       PayStackModel.fromJson,
       (v) => payStackModel.value = v,
@@ -2161,11 +2499,6 @@ class CabBookingController extends GetxController {
       Preferences.payFastSettings,
       PayFastModel.fromJson,
       (v) => payFastModel.value = v,
-    );
-    trySet(
-      Preferences.razorpaySettings,
-      RazorPayModel.fromJson,
-      (v) => razorPayModel.value = v,
     );
     trySet(
       Preferences.midTransSettings,
@@ -2209,10 +2542,6 @@ class CabBookingController extends GetxController {
       selectedPaymentMethod.value = PaymentGateway.cod.name;
     } else if (walletSettingModel.value.isEnabled == true) {
       selectedPaymentMethod.value = PaymentGateway.wallet.name;
-    } else if (stripeModel.value.isEnabled == true) {
-      selectedPaymentMethod.value = PaymentGateway.stripe.name;
-    } else if (payPalModel.value.isEnabled == true) {
-      selectedPaymentMethod.value = PaymentGateway.paypal.name;
     } else if (payStackModel.value.isEnable == true) {
       selectedPaymentMethod.value = PaymentGateway.payStack.name;
     } else if (mercadoPagoModel.value.isEnabled == true) {
@@ -2221,8 +2550,6 @@ class CabBookingController extends GetxController {
       selectedPaymentMethod.value = PaymentGateway.flutterWave.name;
     } else if (payFastModel.value.isEnable == true) {
       selectedPaymentMethod.value = PaymentGateway.payFast.name;
-    } else if (razorPayModel.value.isEnabled == true) {
-      selectedPaymentMethod.value = PaymentGateway.razorpay.name;
     } else if (midTransModel.value.enable == true) {
       selectedPaymentMethod.value = PaymentGateway.midTrans.name;
     } else if (orangeMoneyModel.value.enable == true) {
@@ -2235,102 +2562,7 @@ class CabBookingController extends GetxController {
     } else {
       selectedPaymentMethod.value = PaymentGateway.cod.name;
     }
-    if ((Preferences.getString(Preferences.stripeSettings)).isNotEmpty) {
-      Stripe.publishableKey = stripeModel.value.clientpublishableKey.toString();
-      Stripe.merchantIdentifier = 'eMart Customer';
-      Stripe.instance.applySettings();
-    }
     setRef();
-    razorPay.on(Razorpay.EVENT_PAYMENT_SUCCESS, handlePaymentSuccess);
-    razorPay.on(Razorpay.EVENT_EXTERNAL_WALLET, handleExternalWaller);
-    razorPay.on(Razorpay.EVENT_PAYMENT_ERROR, handlePaymentError);
-  }
-
-  // Strip
-  Future<void> stripeMakePayment({required String amount}) async {
-    log(double.parse(amount).toStringAsFixed(0));
-    try {
-      Map<String, dynamic>? paymentIntentData = await createStripeIntent(
-        amount: amount,
-      );
-      log("stripe Responce====>$paymentIntentData");
-      if (paymentIntentData!.containsKey("error")) {
-        Get.back();
-        ShowToastDialog.showToast(
-          "Something went wrong, please contact admin.".tr,
-        );
-      } else {
-        await Stripe.instance.initPaymentSheet(
-          paymentSheetParameters: SetupPaymentSheetParameters(
-            paymentIntentClientSecret: paymentIntentData['client_secret'],
-            allowsDelayedPaymentMethods: false,
-            googlePay: const PaymentSheetGooglePay(
-              merchantCountryCode: 'US',
-              testEnv: true,
-              currencyCode: "USD",
-            ),
-            customFlow: true,
-            style: ThemeMode.system,
-            appearance: PaymentSheetAppearance(
-              colors: PaymentSheetAppearanceColors(
-                primary: AppThemeData.primary300,
-              ),
-            ),
-            merchantDisplayName: 'GoRide',
-          ),
-        );
-        displayStripePaymentSheet(amount: amount);
-      }
-    } catch (e, s) {
-      log("$e \n$s");
-      ShowToastDialog.showToast("exception:$e \n$s");
-    }
-  }
-
-  Future<void> displayStripePaymentSheet({required String amount}) async {
-    try {
-      await Stripe.instance.presentPaymentSheet().then((value) {
-        ShowToastDialog.showToast("Payment successfully".tr);
-        completeOrder();
-      });
-    } on StripeException catch (e) {
-      var lo1 = jsonEncode(e);
-      var lo2 = jsonDecode(lo1);
-      StripePayFailedModel lom = StripePayFailedModel.fromJson(lo2);
-      ShowToastDialog.showToast(lom.error.message);
-    } catch (e) {
-      ShowToastDialog.showToast(e.toString());
-    }
-  }
-
-  Future createStripeIntent({required String amount}) async {
-    try {
-      Map<String, dynamic> body = {
-        'amount': ((double.parse(amount) * 100).round()).toString(),
-        'currency': "USD",
-        'payment_method_types[]': 'card',
-        "description": "Strip Payment",
-        "shipping[name]": userModel.value.fullName(),
-        "shipping[address][line1]": "510 Townsend St",
-        "shipping[address][postal_code]": "98140",
-        "shipping[address][city]": "San Francisco",
-        "shipping[address][state]": "CA",
-        "shipping[address][country]": "US",
-      };
-      var stripeSecret = stripeModel.value.stripeSecret;
-      var response = await http.post(
-        Uri.parse('https://api.stripe.com/v1/payment_intents'),
-        body: body,
-        headers: {
-          'Authorization': 'Bearer $stripeSecret',
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-      );
-
-      return jsonDecode(response.body);
-    } catch (e) {
-      log(e.toString());
-    }
   }
 
   //mercadoo
@@ -2383,44 +2615,6 @@ class CabBookingController extends GetxController {
       print('Error creating preference: ${response.body}');
       return null;
     }
-  }
-
-  //Paypal
-  void paypalPaymentSheet(String amount, context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder:
-            (BuildContext context) => UsePaypal(
-              sandboxMode: payPalModel.value.isLive == true ? false : true,
-              clientId: payPalModel.value.paypalClient ?? '',
-              secretKey: payPalModel.value.paypalSecret ?? '',
-              returnURL: "com.parkme://paypalpay",
-              cancelURL: "com.parkme://paypalpay",
-              transactions: [
-                {
-                  "amount": {
-                    "total": amount,
-                    "currency": "USD",
-                    "details": {"subtotal": amount},
-                  },
-                },
-              ],
-              note: "Contact us for any questions on your order.",
-              onSuccess: (Map params) async {
-                completeOrder();
-                ShowToastDialog.showToast("Payment Successful!!".tr);
-              },
-              onError: (error) {
-                Get.back();
-                ShowToastDialog.showToast("Payment UnSuccessful!!".tr);
-              },
-              onCancel: (params) {
-                Get.back();
-                ShowToastDialog.showToast("Payment UnSuccessful!!".tr);
-              },
-            ),
-      ),
-    );
   }
 
   ///PayStack Payment Method
@@ -2668,51 +2862,6 @@ class CabBookingController extends GetxController {
     return GetPaymentTxtTokenModel.fromJson(data);
   }
 
-  ///RazorPay payment function
-  final Razorpay razorPay = Razorpay();
-
-  void openCheckout({required amount, required orderId}) async {
-    var options = {
-      'key': razorPayModel.value.razorpayKey,
-      'amount': amount * 100,
-      'name': 'GoRide',
-      'order_id': orderId,
-      "currency": "INR",
-      'description': 'wallet Topup',
-      'retry': {'enabled': true, 'max_count': 1},
-      'send_sms_hash': true,
-      'prefill': {
-        'contact': userModel.value.phoneNumber,
-        'email': userModel.value.email,
-      },
-      'external': {
-        'wallets': ['paytm'],
-      },
-    };
-
-    try {
-      razorPay.open(options);
-    } catch (e) {
-      debugPrint('Error: $e');
-    }
-  }
-
-  void handlePaymentSuccess(PaymentSuccessResponse response) {
-    Get.back();
-    ShowToastDialog.showToast("Payment Successful!!".tr);
-    completeOrder();
-  }
-
-  void handleExternalWaller(ExternalWalletResponse response) {
-    Get.back();
-    ShowToastDialog.showToast("Payment Processing!! via".tr);
-  }
-
-  void handlePaymentError(PaymentFailureResponse response) {
-    Get.back();
-    ShowToastDialog.showToast("Payment Failed!!".tr);
-  }
-
   bool isCurrentDateInRange(DateTime startDate, DateTime endDate) {
     final currentDate = DateTime.now();
     return currentDate.isAfter(startDate) && currentDate.isBefore(endDate);
@@ -2947,17 +3096,20 @@ class CabBookingController extends GetxController {
     });
   }
 
-  //PaymePayment
+  //PaymePayment (wallet top-up: omit [firebaseOrderId]; taxi: pass Firestore cab order id)
   Future<void> paymeMakePayment({
     required BuildContext context,
     required String amount,
+    String? firebaseOrderId,
   }) async {
-    log('🔵 [PaymePayment] paymeMakePayment boshlandi, amount: $amount');
+    log(
+      '🔵 [PaymePayment] paymeMakePayment boshlandi, amount: $amount, firebaseOrderId: $firebaseOrderId',
+    );
     try {
       ShowToastDialog.showLoader("Processing...".tr);
 
       final url = Uri.parse(
-        'https://emart-web.felix-its.uz/wallet-payme-link/',
+        'https://web.fondex.uz/wallet-payme-link/',
       );
       final headers = {
         'Content-Type': 'application/json',
@@ -2965,10 +3117,15 @@ class CabBookingController extends GetxController {
         'User-Agent':
             'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
       };
-      final body = jsonEncode({
+      final Map<String, dynamic> payload = {
         'phone': '+998${userModel.value.phoneNumber}',
         'amount': double.parse(amount).ceil().toInt(),
-      });
+      };
+      if (firebaseOrderId != null && firebaseOrderId.isNotEmpty) {
+        payload['type'] = 'taxi';
+        payload['firebase_order_id'] = firebaseOrderId;
+      }
+      final body = jsonEncode(payload);
 
       log('🔵 [PaymePayment] Request URL: $url');
       log('🔵 [PaymePayment] Request Headers: $headers');
@@ -3001,30 +3158,18 @@ class CabBookingController extends GetxController {
         try {
           final data = jsonDecode(response.body);
           if (data['status'] == true && data['link'] != null) {
-            // Pass both payment order_id and ride document ID
-            final paymentOrderId = data['order_id'];
-            final rideId = currentOrder.value.id;
+            log('🔵 [PaymePayment] Opening Payme link in external browser');
 
-            log(
-              '🔵 [PaymePayment] Opening PaymeScreen with orderId: $paymentOrderId, rideId: $rideId',
+            final uri = Uri.parse(data['link'].toString());
+            final launched = await launchUrl(
+              uri,
+              mode: LaunchMode.externalApplication,
             );
-
-            Get.to(
-              () => PaymeScreen(
-                initialURl: data['link'],
-                orderId: paymentOrderId,
-                rideId: rideId,
-              ),
-            )!.then((value) {
-              if (value != null &&
-                  value['success'] == true &&
-                  value['is_paid'] == true) {
-                ShowToastDialog.showToast("Payment Successful!!".tr);
-                completeOrder();
-              } else {
-                ShowToastDialog.showToast("Payment Unsuccessful!!".tr);
-              }
-            });
+            if (launched) {
+              ShowToastDialog.showToast("Payme opens in your browser".tr);
+            } else {
+              ShowToastDialog.showToast("Could not open Payme link".tr);
+            }
           } else {
             ShowToastDialog.showToast("Failed to get payment link".tr);
             log('❌ [PaymePayment] Invalid response data: $data');

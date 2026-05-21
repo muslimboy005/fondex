@@ -1,3 +1,26 @@
+Map<String, dynamic> _variantOptionsFromJson(dynamic value) {
+  if (value == null) return <String, dynamic>{};
+  if (value is Map<String, dynamic>) return value;
+  if (value is Map) {
+    return value.map((k, v) => MapEntry(k.toString(), v));
+  }
+  if (value is List) {
+    final out = <String, dynamic>{};
+    for (var i = 0; i < value.length; i++) {
+      final e = value[i];
+      if (e is Map) {
+        for (final entry in e.entries) {
+          out[entry.key.toString()] = entry.value;
+        }
+      } else {
+        out['$i'] = e;
+      }
+    }
+    return out;
+  }
+  return <String, dynamic>{};
+}
+
 class VariantInfo {
   String? variantId;
   String? variantPrice;
@@ -12,7 +35,7 @@ class VariantInfo {
     variantPrice = json['variantPrice'] ?? '';
     variantSku = json['variantSku'] ?? '';
     variant_image = json['variant_image'] ?? '';
-    variant_options = json['variant_options'] ?? {};
+    variant_options = _variantOptionsFromJson(json['variant_options']);
   }
 
   Map<String, dynamic> toJson() {

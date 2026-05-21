@@ -65,10 +65,13 @@ class DeliverOrderController extends GetxController {
       });
     }
     await FireStoreUtils.setOrder(orderModel.value);
-    if (Constant.userModel?.vendorID?.isNotEmpty == true) {
-      Constant.userModel?.orderRequestData?.remove(orderModel.value.id);
-      Constant.userModel?.inProgressOrderID?.remove(orderModel.value.id);
-      await FireStoreUtils.updateUser(Constant.userModel!);
+    // Kuryer (vendorID bo‘sh) ham shu yerda inProgress dan chiqarilishi kerak — aks holda
+    // HomeController yangi zakazni olmay qoladi va xarita "Order Completed" da osilib qoladi.
+    final user = Constant.userModel;
+    if (user != null) {
+      user.orderRequestData?.remove(orderModel.value.id);
+      user.inProgressOrderID?.remove(orderModel.value.id);
+      await FireStoreUtils.updateUser(user);
     }
     await FireStoreUtils.getFirestOrderOrNOt(orderModel.value)
         .then((value) async {

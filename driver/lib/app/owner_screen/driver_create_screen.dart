@@ -9,6 +9,7 @@ import 'package:driver/models/zone_model.dart';
 import 'package:driver/themes/app_them_data.dart';
 import 'package:driver/themes/text_field_widget.dart';
 import 'package:driver/themes/theme_controller.dart';
+import 'package:driver/utils/uzbek_car_plate_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -386,10 +387,7 @@ class DriverCreateScreen extends StatelessWidget {
                                                       hintText: 'Enter Car Plat Number'.tr,
                                                       textInputAction: TextInputAction.next,
                                                       inputFormatters: [
-                                                        TextInputFormatter.withFunction(
-                                                            (oldValue, newValue) =>
-                                                                newValue.copyWith(
-                                                                    text: newValue.text.toUpperCase())),
+                                                        UzbekCarPlateFormatter(),
                                                       ],
                                                     ),
                                                   ],

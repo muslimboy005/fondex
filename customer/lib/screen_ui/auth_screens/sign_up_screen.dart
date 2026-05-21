@@ -13,7 +13,7 @@ import '../../themes/app_them_data.dart';
 import '../../themes/round_button_fill.dart';
 import '../../themes/text_field_widget.dart';
 import 'package:get/get.dart';
-import 'login_screen.dart';
+import 'phone_registration_screen.dart';
 
 class SignUpScreen extends StatelessWidget {
   const SignUpScreen({super.key});
@@ -293,7 +293,7 @@ class SignUpScreen extends StatelessWidget {
                                 recognizer:
                                     TapGestureRecognizer()
                                       ..onTap = () {
-                                        Get.offAll(() => const LoginScreen());
+                                        Get.offAll(() => const PhoneRegistrationScreen());
                                       },
                               ),
                             ],

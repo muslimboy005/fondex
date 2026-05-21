@@ -15,6 +15,7 @@ class ProductModel {
   Map<String, dynamic>? reviewAttributes;
   Map<String, dynamic>? productSpecification;
   ItemAttribute? itemAttribute;
+  int? apiId;
   String? id;
   int? quantity;
   int? grams;
@@ -47,6 +48,7 @@ class ProductModel {
     this.reviewAttributes,
     this.productSpecification,
     this.itemAttribute,
+    this.apiId,
     this.id,
     this.quantity,
     this.grams,
@@ -81,6 +83,8 @@ class ProductModel {
     reviewAttributes = json['reviewAttributes'];
     productSpecification = json['product_specification'];
     itemAttribute = json['item_attribute'] != null ? ItemAttribute.fromJson(json['item_attribute']) : null;
+    final dynamic apiIdRaw = json['api_id'];
+    apiId = apiIdRaw is int ? apiIdRaw : int.tryParse('${apiIdRaw ?? ''}');
     id = json['id'];
     quantity = json['quantity'];
     grams = json['grams'];
@@ -117,6 +121,7 @@ class ProductModel {
     if (itemAttribute != null) {
       data['item_attribute'] = itemAttribute!.toJson();
     }
+    data['api_id'] = apiId;
     data['id'] = id;
     data['quantity'] = quantity;
     data['grams'] = grams;
@@ -172,18 +177,21 @@ class ItemAttribute {
 
 class Attributes {
   String? attributeId;
+  String? attributeName;
   List<String>? attributeOptions;
 
-  Attributes({this.attributeId, this.attributeOptions});
+  Attributes({this.attributeId, this.attributeName, this.attributeOptions});
 
   Attributes.fromJson(Map<String, dynamic> json) {
     attributeId = json['attribute_id'];
+    attributeName = json['attribute_name'];
     attributeOptions = json['attribute_options'].cast<String>();
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['attribute_id'] = attributeId;
+    data['attribute_name'] = attributeName;
     data['attribute_options'] = attributeOptions;
     return data;
   }

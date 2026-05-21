@@ -187,118 +187,37 @@ class CabHomeScreen extends StatelessWidget {
                                       final hasValidLocation =
                                           !(currentLocation.latitude == 0.0 &&
                                               currentLocation.longitude == 0.0);
-                                      final isDark =
-                                          themeController.isDark.value;
-
-                                      return Constant.isYandexMap
-                                          ? ym.YandexMap(
-                                              onMapCreated:
-                                                  (ym.YandexMapController
-                                                      mapController) async {
-                                                controller.yandexMapController =
-                                                    mapController;
-                                                await mapController
-                                                    .toggleUserLayer(
-                                                        visible: true);
-                                                await mapController.moveCamera(
-                                                  ym.CameraUpdate
-                                                      .newCameraPosition(
-                                                    ym.CameraPosition(
-                                                      target: ym.Point(
-                                                        latitude:
-                                                            hasValidLocation
-                                                                ? currentLocation
-                                                                    .latitude
-                                                                : 41.3111,
-                                                        longitude:
-                                                            hasValidLocation
-                                                                ? currentLocation
-                                                                    .longitude
-                                                                : 69.2797,
-                                                      ),
-                                                      zoom: hasValidLocation
-                                                          ? 16
-                                                          : 12,
-                                                    ),
-                                                  ),
-                                                );
-                                                controller
-                                                    .updateGoogleMarkers();
-                                              },
-                                              mapObjects:
-                                                  yandexMapObjectsFromGoogle(
-                                                markers:
-                                                    controller.markers.values,
-                                                polylines:
-                                                    controller.polyLines.values,
-                                              ),
-                                            )
-                                          : google_maps.GoogleMap(
-                                              key: ValueKey(
-                                                  'google_map_${isDark ? 'dark' : 'light'}'),
-                                              onMapCreated: (google_maps
-                                                  .GoogleMapController
-                                                  mapController) {
-                                                // Store controller reference
-                                                controller.mapController =
-                                                    mapController;
-
-                                                // Apply dark mode style if needed
-                                                if (isDark) {
-                                                  mapController.setMapStyle(Utils
-                                                      .getGoogleMapDarkStyle());
-                                                }
-
-                                                // Move to current location
-                                                if (hasValidLocation) {
-                                                  mapController.animateCamera(
-                                                    google_maps.CameraUpdate
-                                                        .newCameraPosition(
-                                                      google_maps
-                                                          .CameraPosition(
-                                                        target:
-                                                            google_maps.LatLng(
-                                                          currentLocation
-                                                              .latitude,
-                                                          currentLocation
-                                                              .longitude,
-                                                        ),
-                                                        zoom: 16,
-                                                      ),
-                                                    ),
-                                                  );
-                                                }
-
-                                                // Update markers after map is created
-                                                controller
-                                                    .updateGoogleMarkers();
-                                              },
-                                              myLocationEnabled: true,
-                                              myLocationButtonEnabled: false,
-                                              mapType:
-                                                  google_maps.MapType.normal,
-                                              zoomControlsEnabled: false,
-                                              polylines:
-                                                  Set<google_maps.Polyline>.of(
-                                                      controller
-                                                          .polyLines.values),
-                                              markers: controller.markers.values
-                                                  .toSet(),
-                                              initialCameraPosition:
-                                                  google_maps.CameraPosition(
-                                                zoom:
-                                                    hasValidLocation ? 16 : 12,
-                                                target: google_maps.LatLng(
-                                                  hasValidLocation
+                                      return ym.YandexMap(
+                                        onMapCreated: (ym.YandexMapController
+                                            mapController) async {
+                                          controller.yandexMapController =
+                                              mapController;
+                                          await mapController.toggleUserLayer(
+                                              visible: true);
+                                          await mapController.moveCamera(
+                                            ym.CameraUpdate.newCameraPosition(
+                                              ym.CameraPosition(
+                                                target: ym.Point(
+                                                  latitude: hasValidLocation
                                                       ? currentLocation.latitude
                                                       : 41.3111,
-                                                  hasValidLocation
+                                                  longitude: hasValidLocation
                                                       ? currentLocation
                                                           .longitude
                                                       : 69.2797,
                                                 ),
+                                                zoom:
+                                                    hasValidLocation ? 16 : 12,
                                               ),
-                                            );
+                                            ),
+                                          );
+                                          controller.updateGoogleMarkers();
+                                        },
+                                        mapObjects: yandexMapObjectsFromGoogle(
+                                          markers: controller.markers.values,
+                                          polylines: controller.polyLines.values,
+                                        ),
+                                      );
                                     }),
                                     // Center location button for Google Map
                                     if (Constant.mapType == "inappmap")
@@ -385,7 +304,7 @@ class CabHomeScreen extends StatelessWidget {
                                         height: 10,
                                       ),
                                       Text(
-                                        "${'Navigate with'.tr} ${Constant.mapType == "google" ? "Google Map" : Constant.mapType == "googleGo" ? "Google Go" : Constant.mapType == "waze" ? "Waze Map" : Constant.mapType == "mapswithme" ? "MapsWithMe Map" : Constant.mapType == "yandexNavi" ? "VandexNavi Map" : Constant.mapType == "yandexMaps" ? "Vandex Map" : ""}",
+                                        "${'Navigate with'.tr} Yandex Map",
                                         style: TextStyle(
                                             color: isDark
                                                 ? AppThemeData.grey50
@@ -394,7 +313,7 @@ class CabHomeScreen extends StatelessWidget {
                                             fontFamily: AppThemeData.semiBold),
                                       ),
                                       Text(
-                                        "${'Easily find your destination with a single tap redirect to'.tr}  ${Constant.mapType == "google" ? "Google Map" : Constant.mapType == "googleGo" ? "Google Go" : Constant.mapType == "waze" ? "Waze Map" : Constant.mapType == "mapswithme" ? "MapsWithMe Map" : Constant.mapType == "yandexNavi" ? "VandexNavi Map" : Constant.mapType == "yandexMaps" ? "Vandex Map" : ""} ${'for seamless navigation.'.tr}",
+                                        "${'Easily find your destination with a single tap redirect to'.tr} Yandex Map ${'for seamless navigation.'.tr}",
                                         textAlign: TextAlign.center,
                                         style: TextStyle(
                                             color: isDark
@@ -408,7 +327,7 @@ class CabHomeScreen extends StatelessWidget {
                                       ),
                                       RoundedButtonFill(
                                         title:
-                                            "${'Redirect'.tr} ${Constant.mapType == "google" ? "Google Map" : Constant.mapType == "googleGo" ? "Google Go" : Constant.mapType == "waze" ? "Waze Map" : Constant.mapType == "mapswithme" ? "MapsWithMe Map" : Constant.mapType == "yandexNavi" ? "VandexNavi Map" : Constant.mapType == "yandexMaps" ? "Vandex Map" : ""}",
+                                            "${'Redirect'.tr} Yandex Map",
                                         width: 55,
                                         height: 5.5,
                                         color: AppThemeData.primary300,
@@ -887,14 +806,12 @@ class CabHomeScreen extends StatelessWidget {
   Container buildOrderActionsCard(isDark, CabHomeController controller) {
     print(
         "Bottom sheet ochildi - buildOrderActionsCard (shouldShowOrderSheet)");
-    double totalAmount = 0.0;
     double discount = 0.0;
     double subTotal = 0.0;
     double taxAmount = 0.0;
     final finalFare = controller.currentOrder.value.finalFare;
     if (finalFare != null) {
       subTotal = finalFare;
-      totalAmount = finalFare;
     } else {
       final rawSubTotal =
           double.parse(controller.currentOrder.value.subTotal.toString());
@@ -908,7 +825,6 @@ class CabHomeScreen extends StatelessWidget {
                   amount: (subTotal - discount).toString(), taxModel: element));
         }
       }
-      totalAmount = (subTotal - discount) + taxAmount;
     }
 
     return Container(
@@ -1696,9 +1612,14 @@ class CabHomeScreen extends StatelessWidget {
           InkWell(
             onTap: () async {
               if (controller.currentOrder.value.status ==
-                      Constant.orderShipped ||
-                  controller.currentOrder.value.status ==
-                      Constant.driverAccepted) {
+                  Constant.driverAccepted) {
+                // Yangi qadam: avval driver pickup'ga yetib kelganini
+                // belgilaymiz (orderShipped). Customer "Haydovchi yetib keldi"
+                // ekranini ko'radi. Keyingi tap'da real Pickup oqimi ishga
+                // tushadi.
+                await controller.markArrivedAtPickup();
+              } else if (controller.currentOrder.value.status ==
+                  Constant.orderShipped) {
                 showVerifyPassengerDialog(Get.context!, isDark, controller);
               } else if (controller.currentOrder.value.status ==
                   Constant.orderInTransit) {
@@ -1737,22 +1658,24 @@ class CabHomeScreen extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 child: Text(
                   controller.currentOrder.value.status ==
-                              Constant.orderShipped ||
-                          controller.currentOrder.value.status ==
-                              Constant.driverAccepted
-                      ? Constant.enableOTPTripStart
-                          ? "Verify Code to customer".tr
-                          : "Pickup Customer".tr
+                          Constant.driverAccepted
+                      ? "Yetib keldim".tr
                       : controller.currentOrder.value.status ==
-                                  Constant.orderInTransit &&
-                              controller.isSinglePointOrder &&
-                              controller.currentOrder.value.finalFare == null
-                          ? "Manzilga yetib keldik".tr
+                              Constant.orderShipped
+                          ? Constant.enableOTPTripStart
+                              ? "Verify Code to customer".tr
+                              : "Pickup Customer".tr
                           : controller.currentOrder.value.status ==
                                       Constant.orderInTransit &&
-                                  controller.isSinglePointOrder
-                              ? "Safarni tugatish".tr
-                              : "Complete Ride".tr,
+                                  controller.isSinglePointOrder &&
+                                  controller.currentOrder.value.finalFare ==
+                                      null
+                              ? "Manzilga yetib keldik".tr
+                              : controller.currentOrder.value.status ==
+                                          Constant.orderInTransit &&
+                                      controller.isSinglePointOrder
+                                  ? "Safarni tugatish".tr
+                                  : "Complete Ride".tr,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: isDark ? AppThemeData.grey50 : AppThemeData.grey50,

@@ -1,8 +1,6 @@
 import 'package:driver/constant/constant.dart';
 import 'package:driver/constant/show_toast_dialog.dart';
 import 'package:driver/controllers/wallet_controller.dart';
-import 'package:driver/payment/createRazorPayOrderModel.dart';
-import 'package:driver/payment/rozorpayConroller.dart';
 import 'package:driver/themes/app_them_data.dart';
 import 'package:driver/themes/round_button_fill.dart';
 import 'package:driver/themes/text_field_widget.dart';
@@ -63,14 +61,6 @@ class PaymentListScreen extends StatelessWidget {
                       child: Column(
                         children: [
                           Visibility(
-                            visible: controller.stripeModel.value.isEnabled == true,
-                            child: cardDecoration(controller, PaymentGateway.stripe, isDark, "assets/images/stripe.png"),
-                          ),
-                          Visibility(
-                            visible: controller.payPalModel.value.isEnabled == true,
-                            child: cardDecoration(controller, PaymentGateway.paypal, isDark, "assets/images/paypal.png"),
-                          ),
-                          Visibility(
                             visible: controller.payStackModel.value.isEnable == true,
                             child: cardDecoration(controller, PaymentGateway.payStack, isDark, "assets/images/paystack.png"),
                           ),
@@ -85,10 +75,6 @@ class PaymentListScreen extends StatelessWidget {
                           Visibility(
                             visible: controller.payFastModel.value.isEnable == true,
                             child: cardDecoration(controller, PaymentGateway.payFast, isDark, "assets/images/payfast.png"),
-                          ),
-                          Visibility(
-                            visible: controller.razorPayModel.value.isEnabled == true,
-                            child: cardDecoration(controller, PaymentGateway.razorpay, isDark, "assets/images/razorpay.png"),
                           ),
                           Visibility(
                             visible: controller.midTransModel.value.enable == true,
@@ -142,11 +128,7 @@ class PaymentListScreen extends StatelessWidget {
                       );
                     } else {
                       if (double.parse(controller.topUpAmountController.value.text) >= double.parse(Constant.minimumAmountToDeposit.toString())) {
-                        if (controller.selectedPaymentMethod.value == PaymentGateway.stripe.name) {
-                          controller.stripeMakePayment(amount: controller.topUpAmountController.value.text);
-                        } else if (controller.selectedPaymentMethod.value == PaymentGateway.paypal.name) {
-                          controller.paypalPaymentSheet(controller.topUpAmountController.value.text, context);
-                        } else if (controller.selectedPaymentMethod.value == PaymentGateway.payStack.name) {
+                        if (controller.selectedPaymentMethod.value == PaymentGateway.payStack.name) {
                           controller.payStackPayment(controller.topUpAmountController.value.text);
                         } else if (controller.selectedPaymentMethod.value == PaymentGateway.mercadoPago.name) {
                           controller.mercadoPagoMakePayment(context: context, amount: controller.topUpAmountController.value.text);
@@ -165,18 +147,6 @@ class PaymentListScreen extends StatelessWidget {
                           print('🔵 [PaymentListScreen] Amount: ${controller.topUpAmountController.value.text}');
                           print('🔵 [PaymentListScreen] Payme enabled: ${controller.paymeModel.value.isEnabled ?? controller.paymeModel.value.enable}');
                           controller.paymeMakePayment(context: context, amount: controller.topUpAmountController.value.text);
-                        } else if (controller.selectedPaymentMethod.value == PaymentGateway.razorpay.name) {
-                          RazorPayController()
-                              .createOrderRazorPay(amount: double.parse(controller.topUpAmountController.value.text), razorpayModel: controller.razorPayModel.value)
-                              .then((value) {
-                            if (value == null) {
-                              Get.back();
-                              ShowToastDialog.showToast("Something went wrong, please contact admin.".tr);
-                            } else {
-                              CreateRazorPayOrderModel result = value;
-                              controller.openCheckout(amount: controller.topUpAmountController.value.text, orderId: result.id);
-                            }
-                          });
                         } else {
                           ShowToastDialog.showToast("Please select payment method".tr);
                         }
@@ -253,4 +223,4 @@ class PaymentListScreen extends StatelessWidget {
   }
 }
 
-enum PaymentGateway { payFast, mercadoPago, paypal, stripe, flutterWave, payStack, paytm, razorpay, cod, wallet, midTrans, orangeMoney, xendit, payme }
+enum PaymentGateway { payFast, mercadoPago, flutterWave, payStack, paytm, cod, wallet, midTrans, orangeMoney, xendit, payme }

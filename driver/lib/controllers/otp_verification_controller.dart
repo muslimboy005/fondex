@@ -17,6 +17,7 @@ import '../app/rental_service/rental_dashboard_screen.dart';
 import '../constant/constant.dart';
 import '../models/user_model.dart';
 import '../utils/fire_store_utils.dart';
+import '../utils/firebase_phone_login_emails.dart';
 import '../utils/notification_service.dart';
 
 /// Default hisob – faqat telefon OTP da akkaunt yo‘q bo‘lganda yashirin ishlatiladi (foydalanuvchiga ko‘rinmasin)
@@ -329,7 +330,7 @@ class OtpVerifyController extends GetxController {
       };
 
       log("🌐 API REQUEST:");
-      log("   URL: https://emart-web.felix-its.uz/confirmOtp");
+      log("   URL: https://web.fondex.uz/confirmOtp");
       log("   Method: POST");
       log("   Headers: Content-Type: application/json");
       log("   Request Body: ${jsonEncode(requestBody)}");
@@ -337,7 +338,7 @@ class OtpVerifyController extends GetxController {
 
       final response = await http
           .post(
-        Uri.parse('https://emart-web.felix-its.uz/confirmOtp'),
+        Uri.parse('https://web.fondex.uz/confirmOtp'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(requestBody),
       )
@@ -454,7 +455,7 @@ class OtpVerifyController extends GetxController {
             // Existing user - login with Firebase
             log("👤 USER TYPE: EXISTING USER");
             log("   Action: Logging in with Firebase");
-            await _loginWithFirebase(firebaseEmail, firebasePassword);
+            await _loginWithFirebase(firebaseEmail, firebasePassword, phoneDigits);
           }
         } catch (parseError, parseStackTrace) {
           log("❌ JSON PARSING ERROR:");
@@ -595,7 +596,11 @@ class OtpVerifyController extends GetxController {
   }
 
   /// Login with Firebase (background)
-  Future<void> _loginWithFirebase(String email, String password) async {
+  Future<void> _loginWithFirebase(
+    String email,
+    String password,
+    String phoneDigits,
+  ) async {
     log("═══════════════════════════════════════════════════════════");
     log("🔥 FIREBASE LOGIN STARTED");
     log("═══════════════════════════════════════════════════════════");
@@ -608,17 +613,73 @@ class OtpVerifyController extends GetxController {
       log("⏳ Signing in with Firebase...");
       log("   Attempting sign in at: ${DateTime.now()}");
 
-      // Sign in with email and password with timeout
-      log("   Calling signInWithEmailAndPassword...");
-      final userCredential = await FirebaseAuth.instance
-          .signInWithEmailAndPassword(email: email, password: password)
-          .timeout(
-        const Duration(seconds: 30),
-        onTimeout: () {
-          log("⏱️ ❌ TIMEOUT: Firebase sign in timed out after 30 seconds");
-          throw TimeoutException("Firebase sign in timeout");
-        },
-      );
+      final attempts = firebasePhoneLoginEmailAttempts(email);
+      final emailsToTry =
+          attempts.isNotEmpty ? attempts : <String>[email];
+      log("   Email attempts: $emailsToTry");
+
+      UserCredential? userCredential;
+      FirebaseAuthException? lastAuthException;
+
+      for (var i = 0; i < emailsToTry.length; i++) {
+        log("   Calling signInWithEmailAndPassword (${emailsToTry[i]})...");
+        try {
+          userCredential = await FirebaseAuth.instance
+              .signInWithEmailAndPassword(
+                email: emailsToTry[i],
+                password: password,
+              )
+              .timeout(
+                const Duration(seconds: 30),
+                onTimeout: () {
+                  log(
+                    "⏱️ ❌ TIMEOUT: Firebase sign in timed out after 30 seconds",
+                  );
+                  throw TimeoutException("Firebase sign in timeout");
+                },
+              );
+          break;
+        } on FirebaseAuthException catch (e) {
+          lastAuthException = e;
+          if (firebasePhoneLoginShouldTryNextEmail(e) &&
+              i < emailsToTry.length - 1) {
+            log(
+              "   ↪ ${e.code} on ${emailsToTry[i]}, trying next alias...",
+            );
+            continue;
+          }
+          break;
+        }
+      }
+
+      if (userCredential == null) {
+        ShowToastDialog.closeLoader();
+        final digitsOnly = phoneDigits.replaceAll(RegExp(r'[^\d]'), '');
+        final aliasAttempts = firebasePhoneLoginEmailAttempts(email);
+        if (lastAuthException != null &&
+            firebasePhoneLoginShouldTryNextEmail(lastAuthException) &&
+            aliasAttempts.length >= 2 &&
+            digitsOnly.length >= 9) {
+          final gmailEmail = '$digitsOnly@gmail.com';
+          log(
+            "🔄 Login failed on all aliases (${lastAuthException.code}); "
+            "registering at $gmailEmail and navigating to signup",
+          );
+          await _registerWithFirebaseAndNavigateToSignup(
+            gmailEmail,
+            password,
+            digitsOnly,
+          );
+          return;
+        }
+        if (lastAuthException != null) {
+          throw lastAuthException;
+        }
+        throw FirebaseAuthException(
+          code: 'unknown',
+          message: 'Firebase login failed',
+        );
+      }
 
       log("✅ FIREBASE LOGIN SUCCESSFUL:");
       log("   Login completed at: ${DateTime.now()}");
@@ -633,7 +694,7 @@ class OtpVerifyController extends GetxController {
       log("   User ID to fetch: ${userCredential.user!.uid}");
       log("   Fetching at: ${DateTime.now()}");
 
-      final userModel = await FireStoreUtils.getUserProfile(
+      UserModel? userModel = await FireStoreUtils.getUserProfile(
         userCredential.user!.uid,
       ).timeout(
         const Duration(seconds: 15),
@@ -648,18 +709,28 @@ class OtpVerifyController extends GetxController {
       log("📥 Firestore response received at: ${DateTime.now()}");
 
       if (userModel == null) {
-        log("❌ ERROR: User profile not found in Firestore");
-        log("   User ID: ${userCredential.user!.uid}");
-        await FirebaseAuth.instance.signOut();
-        log("   Signed out from Firebase");
-        Get.snackbar(
-          "Error".tr,
-          "User not found".tr,
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
+        log(
+          "⚠️ Firestore profile missing for uid ${userCredential.user!.uid} — "
+          "bootstrapping user document (Auth exists without Firestore doc)",
         );
-        return;
+        final fcmTokenBootstrap = await NotificationService.getToken();
+        final digitsOnly = phoneDigits.replaceAll(RegExp(r'[^\d]'), '');
+        userModel = UserModel(
+          id: userCredential.user!.uid,
+          email: userCredential.user!.email ??
+              (digitsOnly.isNotEmpty ? '$digitsOnly@fondex.com' : null),
+          firstName: '',
+          lastName: '',
+          phoneNumber: digitsOnly.isNotEmpty ? digitsOnly : phoneDigits,
+          countryCode: countryCode.value,
+          fcmToken: fcmTokenBootstrap,
+          role: Constant.userRoleDriver,
+          active: true,
+          createdAt: Timestamp.now(),
+          provider: 'phone',
+        );
+        await FireStoreUtils.updateUser(userModel);
+        log("✅ Firestore profile created (OTP login recovery)");
       }
 
       log("✅ USER PROFILE RETRIEVED:");
@@ -771,8 +842,8 @@ class OtpVerifyController extends GetxController {
 
       String errorMessage = "Login failed. Please try again.".tr;
       if (e is FirebaseAuthException) {
-        if (e.code == 'user-not-found') {
-          errorMessage = "User not found. Please register first.".tr;
+        if (e.code == 'user-not-found' || e.code == 'invalid-credential') {
+          errorMessage = "User not found in Firebase.".tr;
         } else if (e.code == 'wrong-password') {
           errorMessage = "Invalid password.".tr;
         } else if (e.code == 'invalid-email') {

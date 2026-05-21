@@ -25,6 +25,7 @@ const Map<String, String> ruRU = {
   'This user does not exist in the customer app.':
       'Этот пользователь не существует в приложении клиента.',
   'No user found for that email.': 'Пользователь с таким email не найден.',
+  'User not found in Firebase.': 'Пользователь не найден в Firebase.',
   'Wrong password provided.': 'Неверный пароль.',
   'Invalid email.': 'Неверный email.',
   'Login failed. Please try again.':
@@ -142,6 +143,28 @@ const Map<String, String> ruRU = {
   'Cancel Ride': 'Отменить поездку',
   'Ride cancelled successfully': 'Поездка успешно отменена',
   'Failed to cancel ride': 'Не удалось отменить поездку',
+  'Boshqa haydovchi qidirilmoqda...': 'Поиск другого водителя...',
+  'Yangi haydovchi qidirilmoqda': 'Ищем нового водителя',
+  'Haydovchi yetib keldi': 'Водитель прибыл',
+  "Iltimos, haydovchi mashinasiga o'tiring":
+      'Пожалуйста, сядьте в машину водителя',
+  'Haydovchi sizni kutmoqda': 'Водитель ждёт вас',
+  'Haydovchi': 'Водитель',
+  'Buyurtmani bekor qilasizmi?': 'Отменить заказ?',
+  "Bekor qilsangiz haydovchi sizga yo'naltirilmaydi.":
+      'Если вы отмените, водитель не будет назначен.',
+  'Ha, bekor qilish': 'Да, отменить',
+  'Sayohat tugadi': 'Поездка завершена',
+  'Masofa': 'Расстояние',
+  'Davomiyligi': 'Длительность',
+  "To'lov turi": 'Способ оплаты',
+  "To'lash": 'Оплатить',
+  'Naqd': 'Наличные',
+  'Hamyon': 'Кошелёк',
+  "To'lov muvaffaqiyatli amalga oshirildi": 'Оплата прошла успешно',
+  'Rahmat! Sayohat yakunlandi.': 'Спасибо! Поездка завершена.',
+  "To'lovda xatolik. Qaytadan urinib ko'ring.":
+      'Ошибка оплаты. Попробуйте снова.',
   'Otp :': 'Otp :',
   'SOS': 'SOS',
   'Please wait...': 'Пожалуйста, подождите...',
@@ -988,6 +1011,8 @@ const Map<String, String> ruRU = {
   'Password and Confirm password doesn\'t match':
       'Пароль и подтверждение пароля не совпадают',
   'Payme Payment': 'Payme Payment',
+  'Payme opens in your browser': 'Payme открыт во внешнем браузере',
+  'Could not open Payme link': 'Не удалось открыть ссылку Payme',
   'Payment error': 'Payment error',
   'Please Enter Amount': 'Please Enter Amount',
   'Please enter Confirm password': 'Пожалуйста, введите подтверждение пароля',
@@ -1052,4 +1077,8 @@ const Map<String, String> ruRU = {
   'Fondex': 'Fondex',
   'No advertisements available': 'No advertisements available',
   'cancelPayment?': 'cancelPayment?',
+  'New version is available': 'Доступна новая версия',
+  'Please update the app to continue':
+      'Пожалуйста, обновите приложение для продолжения',
+  'Update': 'Обновить',
 };

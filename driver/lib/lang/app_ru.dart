@@ -136,6 +136,10 @@ const Map<String, String> ruRU = {
   "Collect Payment from customer": "Получить оплату от клиента",
   "Customer payment is pending": "Ожидается оплата от клиента",
   "Pickup Customer": "Забрать клиента",
+  "Yetib keldim": "Я прибыл",
+  "Avval mijozni qabul qiling": "Сначала примите заказ",
+  "Holatni yangilashda xatolik. Qaytadan urinib ko'ring.":
+      "Ошибка обновления статуса. Попробуйте снова.",
   "Complete Ride": "Завершить поездку",
   "Verify Passenger": "Подтвердить пассажира",
   "Enter the OTP shared by the customer to begin the trip":
@@ -501,6 +505,7 @@ const Map<String, String> ruRU = {
   "No rental requests available in your selected zone.":
       "В зоне нет заявок на аренду.",
   "No user found for that email.": "Пользователь с таким email не найден.",
+  "User not found in Firebase.": "Пользователь не найден в Firebase.",
   "Note: Admin commission will be debited from your wallet balance.\n\nAdmin commission will apply on your booking amount minus discount (if applicable).":
       "Комиссия списывается с кошелька с суммы брони минус скидка.",
   "Nothing found here...": "Здесь пусто...",
@@ -513,6 +518,8 @@ const Map<String, String> ruRU = {
   "Order Delivered": "Заказ доставлен",
   "Order ID": "ID заказа",
   "Payme Payment": "Оплата Payme",
+  "Payme opens in your browser": "Payme открыт во внешнем браузере",
+  "Could not open Payme link": "Не удалось открыть ссылку Payme",
   "Payment Failed": "Оплата не прошла",
   "Payment Failed!!": "Ошибка оплаты!!",
   "Payment Processing!! via": "Обработка оплаты через",
@@ -689,4 +696,8 @@ const Map<String, String> ruRU = {
   "You referral user has complete his this order #%s":
       "Приглашённый пользователь выполнил заказ #%s",
   "Wallet Top-up": "Пополнение кошелька",
+  "New version is available": "Доступна новая версия",
+  "Please update the app to continue":
+      "Пожалуйста, обновите приложение для продолжения",
+  "Update": "Обновить",
 };
