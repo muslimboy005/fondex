@@ -3,6 +3,8 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:google_maps_flutter/google_maps_flutter.dart' as gmap;
 import '../constant/constant.dart';
+import '../constant/send_notification.dart';
+import '../constant/show_toast_dialog.dart';
 import '../models/cab_order_model.dart';
 import '../models/user_model.dart';
 import '../themes/app_them_data.dart';
@@ -102,6 +104,56 @@ class CabOrderDetailsController extends GetxController {
         icon: gmap.BitmapDescriptor.defaultMarkerWithHue(gmap.BitmapDescriptor.hueRed),
       ),
     });
+  }
+
+  /// Cancel an in-progress ride: mark Firestore doc as cancelled and notify
+  /// the customer (FCM + remove from their inProgressOrderID).
+  Future<void> cancelRide({String? reason}) async {
+    ShowToastDialog.showLoader('Cancelling ride...'.tr);
+    try {
+      await FireStoreUtils.updateCabOrderCancel(
+        orderId: cabOrder.value.id!,
+        reason: reason,
+      );
+      cabOrder.value.status = Constant.orderCancelled;
+      cabOrder.value.cancelReason = reason;
+      cabOrder.refresh();
+
+      // Also remove from current driver's inProgressOrderID so the home
+      // controller can pick up new requests again.
+      final driver = Constant.userModel;
+      if (driver != null) {
+        driver.inProgressOrderID?.remove(cabOrder.value.id);
+        await FireStoreUtils.updateUser(driver);
+      }
+
+      final customerId = cabOrder.value.authorID;
+      if (customerId != null && customerId.isNotEmpty) {
+        final customer = await FireStoreUtils.getUserProfile(customerId);
+        if (customer != null) {
+          customer.inProgressOrderID?.remove(cabOrder.value.id);
+          await FireStoreUtils.updateUser(customer);
+          final token = customer.fcmToken;
+          if (token != null && token.isNotEmpty) {
+            await SendNotification.sendOneNotification(
+              token: token,
+              title: 'Cancelled Order'.tr,
+              body: (reason == null || reason.isEmpty)
+                  ? 'Your ride was cancelled by the driver.'.tr
+                  : reason,
+              payload: {'orderId': cabOrder.value.id ?? ''},
+            );
+          }
+        }
+      }
+
+      ShowToastDialog.closeLoader();
+      ShowToastDialog.showToast('Order cancelled successfully'.tr);
+      Get.back(result: true);
+    } catch (e) {
+      ShowToastDialog.closeLoader();
+      ShowToastDialog.showToast(e.toString());
+    }
   }
 
   /// Route polyline (OSRM) - Yandex only flow.

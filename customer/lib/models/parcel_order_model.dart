@@ -46,6 +46,7 @@ class ParcelOrderModel {
   G? sourcePoint;
   G? destinationPoint;
   List<ParcelStatus>? statusHistory;
+  String? cancelReason;
 
 
   ParcelOrderModel({
@@ -89,6 +90,7 @@ class ParcelOrderModel {
     this.receiverZoneId,
     this.driver,
     this.statusHistory,
+    this.cancelReason,
   });
 
   ParcelOrderModel.fromJson(Map<String, dynamic> json) {
@@ -136,6 +138,7 @@ class ParcelOrderModel {
     receiverNote = json['receiverNote'];
     sourcePoint = json['sourcePoint'] != null ? G.fromJson(json['sourcePoint']) : null;
     destinationPoint = json['destinationPoint'] != null ? G.fromJson(json['destinationPoint']) : null;
+    cancelReason = json['cancelReason'];
   }
 
   Map<String, dynamic> toJson() {
@@ -196,6 +199,7 @@ class ParcelOrderModel {
     data['senderZoneId'] = senderZoneId;
     data['receiverZoneId'] = receiverZoneId;
     data['receiverNote'] = receiverNote;
+    data['cancelReason'] = cancelReason;
     return data;
   }
 }

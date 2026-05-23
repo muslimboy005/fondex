@@ -1400,6 +1400,43 @@ class FireStoreUtils {
     return isAdded;
   }
 
+  static Future<bool> updateOrder(OrderModel orderModel) async {
+    try {
+      await fireStore
+          .collection(CollectionName.vendorOrders)
+          .doc(orderModel.id)
+          .set(orderModel.toJson(), SetOptions(merge: true));
+      return true;
+    } catch (error) {
+      log("Failed to update order: $error");
+      return false;
+    }
+  }
+
+  static Future<bool> deleteCashbackRedeem(OrderModel orderModel) async {
+    bool isUpdate = false;
+    try {
+      final querySnapshot = await fireStore
+          .collection(CollectionName.cashbackRedeem)
+          .where('orderId', isEqualTo: orderModel.id)
+          .where('cashbackId', isEqualTo: orderModel.cashback?.id)
+          .get();
+      if (querySnapshot.docs.isNotEmpty) {
+        for (var doc in querySnapshot.docs) {
+          await fireStore
+              .collection(CollectionName.cashbackRedeem)
+              .doc(doc.id)
+              .delete();
+        }
+        isUpdate = true;
+      }
+    } catch (e) {
+      log("Failed to delete cashback redeem: $e");
+      isUpdate = false;
+    }
+    return isUpdate;
+  }
+
   static Future<List<CouponModel>> getOfferByVendorId(String vendorId) async {
     List<CouponModel> couponList = [];
     await fireStore

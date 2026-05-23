@@ -1,16 +1,24 @@
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:esc_pos_utils/esc_pos_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:print_bluetooth_thermal/print_bluetooth_thermal.dart';
+import 'package:uuid/uuid.dart';
+import 'package:vendor/constant/collection_name.dart';
 import 'package:vendor/constant/constant.dart';
+import 'package:vendor/constant/send_notification.dart';
+import 'package:vendor/constant/show_toast_dialog.dart';
 import 'package:vendor/models/cart_product_model.dart';
 import 'package:vendor/models/order_model.dart';
 import 'package:vendor/models/tax_model.dart';
+import 'package:vendor/models/user_model.dart';
+import 'package:vendor/models/wallet_transaction_model.dart';
 import 'package:vendor/themes/app_them_data.dart';
+import 'package:vendor/utils/fire_store_utils.dart';
 
 class OrderDetailsController extends GetxController {
   RxBool isLoading = true.obs;
@@ -69,6 +77,136 @@ class OrderDetailsController extends GetxController {
     }
 
     isLoading.value = false;
+  }
+
+  Future<void> cancelOrder(
+    OrderModel orderModel, {
+    String? reason,
+    required double subTotal,
+    required double specialDiscount,
+    required double taxAmount,
+  }) async {
+    ShowToastDialog.showLoader('Please wait...'.tr);
+    orderModel.status = Constant.orderCancelled;
+    orderModel.cancelReason = reason;
+    if (orderModel.driverID != null) {
+      UserModel? driverModel = await FireStoreUtils.getUserById(
+        orderModel.driverID ?? '',
+      );
+      driverModel?.orderRequestData?.remove(orderModel.id);
+      driverModel?.inProgressOrderID?.remove(orderModel.id);
+      await FireStoreUtils.updateDriverUser(driverModel!);
+      SendNotification.sendFcmMessage(
+        Constant.driverCancelled,
+        driverModel.fcmToken.toString(),
+        {'title': 'Cancelled Order'},
+      );
+    }
+    if (orderModel.cashback?.id != null &&
+        orderModel.cashback?.cashbackValue != null) {
+      await FireStoreUtils.deleteCashbackRedeem(orderModel);
+    }
+    await FireStoreUtils.updateOrder(orderModel);
+    SendNotification.sendFcmMessage(
+      Constant.restaurantCancelled,
+      orderModel.author!.fcmToken.toString(),
+      {},
+    );
+
+    if (orderModel.paymentMethod!.toLowerCase() != 'cod') {
+      double finalAmount =
+          (subTotal +
+                  double.parse(orderModel.discount.toString()) +
+                  specialDiscount +
+                  double.parse(taxAmount.toString())) +
+              double.parse(orderModel.deliveryCharge.toString()) +
+              double.parse(orderModel.tipAmount.toString());
+
+      WalletTransactionModel historyModel = WalletTransactionModel(
+        amount: finalAmount,
+        id: const Uuid().v4(),
+        orderId: orderModel.id,
+        userId: orderModel.author!.id,
+        date: Timestamp.now(),
+        isTopup: true,
+        paymentMethod: "Wallet",
+        paymentStatus: "success",
+        note: "Order Refund success",
+        transactionUser: "user",
+      );
+
+      await FireStoreUtils.fireStore
+          .collection(CollectionName.wallet)
+          .doc(historyModel.id)
+          .set(historyModel.toJson());
+      await FireStoreUtils.updateUserWallet(
+        amount: finalAmount.toString(),
+        userId: orderModel.author!.id.toString(),
+      );
+    }
+
+    double taxAmountData = double.parse(taxAmount.toString());
+
+    double finalAmount = 0;
+    if (orderModel.adminCommission != '0' &&
+        orderModel.adminCommission != '' &&
+        orderModel.adminCommission != null) {
+      finalAmount =
+          (subTotal /
+                  (1 + (double.parse(orderModel.adminCommission!) / 100))) -
+              double.parse(orderModel.discount.toString()) -
+              specialDiscount;
+    } else {
+      finalAmount =
+          subTotal -
+              double.parse(orderModel.discount.toString()) -
+              specialDiscount;
+    }
+    WalletTransactionModel historyTaxModel = WalletTransactionModel(
+      amount: taxAmountData,
+      id: const Uuid().v4(),
+      orderId: orderModel.id,
+      userId: FireStoreUtils.getCurrentUid(),
+      date: Timestamp.now(),
+      isTopup: false,
+      paymentMethod: "tax",
+      paymentStatus: "success",
+      note: "Order tax refunded to customer",
+      transactionUser: "vendor",
+    );
+
+    WalletTransactionModel historyModel = WalletTransactionModel(
+      amount: finalAmount,
+      id: const Uuid().v4(),
+      orderId: orderModel.id,
+      userId: FireStoreUtils.getCurrentUid(),
+      date: Timestamp.now(),
+      isTopup: false,
+      paymentMethod: "Wallet",
+      paymentStatus: "success",
+      note: "Order amount refunded to customer",
+      transactionUser: "vendor",
+    );
+
+    await FireStoreUtils.fireStore
+        .collection(CollectionName.wallet)
+        .doc(historyTaxModel.id)
+        .set(historyTaxModel.toJson());
+    await FireStoreUtils.fireStore
+        .collection(CollectionName.wallet)
+        .doc(historyModel.id)
+        .set(historyModel.toJson());
+    double finalAmountdata = finalAmount + taxAmount;
+    await FireStoreUtils.updateUserWallet(
+      amount: (-finalAmountdata).toString(),
+      userId: FireStoreUtils.getCurrentUid().toString(),
+    );
+
+    this.orderModel.value = orderModel;
+    this.orderModel.refresh();
+
+    ShowToastDialog.closeLoader();
+    ShowToastDialog.showToast("Order cancelled successfully".tr);
   }
 
   Future<void> printTicket(BuildContext context) async {

@@ -1,5 +1,8 @@
 import 'package:driver/constant/constant.dart';
+import 'package:driver/constant/send_notification.dart';
+import 'package:driver/constant/show_toast_dialog.dart';
 import 'package:driver/models/order_model.dart';
+import 'package:driver/utils/fire_store_utils.dart';
 import 'package:get/get.dart';
 
 class OrderDetailsController extends GetxController {
@@ -63,5 +66,59 @@ class OrderDetailsController extends GetxController {
         double.parse(orderModel.value.tipAmount.toString());
 
     isLoading.value = false;
+  }
+
+  /// Cancel an in-progress vendor order: update Firestore, remove from this
+  /// driver's inProgressOrderID, and notify the customer + vendor.
+  Future<void> cancelOrder({String? reason}) async {
+    ShowToastDialog.showLoader('Cancelling order...'.tr);
+    try {
+      orderModel.value.status = Constant.orderCancelled;
+      orderModel.value.cancelReason = reason;
+      await FireStoreUtils.setOrder(orderModel.value);
+
+      // Remove orderId from this driver's inProgressOrderID
+      final driver = Constant.userModel;
+      if (driver != null) {
+        driver.orderRequestData?.remove(orderModel.value.id);
+        driver.inProgressOrderID?.remove(orderModel.value.id);
+        await FireStoreUtils.updateUser(driver);
+      }
+
+      // Notify customer
+      final customerToken = orderModel.value.author?.fcmToken;
+      if (customerToken != null && customerToken.isNotEmpty) {
+        await SendNotification.sendOneNotification(
+          token: customerToken,
+          title: 'Cancelled Order'.tr,
+          body: (reason == null || reason.isEmpty)
+              ? 'Your order was cancelled by the driver.'.tr
+              : reason,
+          payload: {'orderId': orderModel.value.id ?? ''},
+        );
+      }
+
+      // Notify vendor / restaurant
+      final vendorToken = orderModel.value.vendor?.fcmToken;
+      if (vendorToken != null && vendorToken.isNotEmpty) {
+        await SendNotification.sendOneNotification(
+          token: vendorToken,
+          title: 'Cancelled Order'.tr,
+          body: (reason == null || reason.isEmpty)
+              ? 'Order was cancelled by the driver.'.tr
+              : reason,
+          payload: {'orderId': orderModel.value.id ?? ''},
+        );
+      }
+
+      orderModel.refresh();
+      update();
+      ShowToastDialog.closeLoader();
+      ShowToastDialog.showToast('Order cancelled successfully'.tr);
+      Get.back(result: true);
+    } catch (e) {
+      ShowToastDialog.closeLoader();
+      ShowToastDialog.showToast(e.toString());
+    }
   }
 }

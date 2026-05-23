@@ -174,7 +174,9 @@ class Constant {
   static String dineInCanceled = "dinein_canceled";
   static String dineinAccepted = "dinein_accepted";
   static String restaurantRejected = "restaurant_rejected";
+  static String restaurantCancelled = "restaurant_cancelled";
   static String driverCompleted = "driver_completed";
+  static String driverCancelled = "driver_cancelled";
   static String restaurantAccepted = "restaurant_accepted";
   static String takeawayCompleted = "takeaway_completed";
   static String newParcelBook = "new_parcel_book";

@@ -949,7 +949,7 @@ const Map<String, String> ruRU = {
   'Bu raqam bilan boshqa ilovada ro\'yxatdan o\'tgansiz':
       'Bu raqam bilan boshqa ilovada ro\'yxatdan o\'tgansiz',
   'Buyurtma berish': 'Buyurtma berish',
-  'Cancelling order...': 'Cancelling order...',
+  'Cancelling order...': 'Отмена заказа...',
   'Couldn\'t review': 'Couldn\'t review',
   'Davom etish': 'Davom etish',
   'Delivery Man': 'Delivery Man',
@@ -1081,4 +1081,8 @@ const Map<String, String> ruRU = {
   'Please update the app to continue':
       'Пожалуйста, обновите приложение для продолжения',
   'Update': 'Обновить',
+  'Cancel Order': 'Отменить заказ',
+  'Yes, Cancel': 'Да, отменить',
+  'Are you sure you want to cancel this order?':
+      'Вы уверены, что хотите отменить?',
 };

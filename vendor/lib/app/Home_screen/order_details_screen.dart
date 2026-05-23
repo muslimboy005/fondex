@@ -11,6 +11,7 @@ import 'package:vendor/models/tax_model.dart';
 import 'package:vendor/themes/app_them_data.dart';
 import 'package:vendor/themes/round_button_fill.dart';
 import 'package:vendor/utils/network_image_widget.dart';
+import 'package:vendor/widget/cancel_order_dialog.dart';
 import 'package:vendor/widget/my_separator.dart';
 
 class OrderDetailsScreen extends StatelessWidget {
@@ -530,6 +531,31 @@ class OrderDetailsScreen extends StatelessWidget {
                                     },
                                   ),
                                 ),
+                                if (controller.orderModel.value.status == Constant.orderAccepted ||
+                                    controller.orderModel.value.status == Constant.driverPending ||
+                                    controller.orderModel.value.status == Constant.driverAccepted ||
+                                    controller.orderModel.value.status == Constant.orderShipped ||
+                                    controller.orderModel.value.status == Constant.orderInTransit)
+                                  Padding(
+                                    padding: const EdgeInsets.only(bottom: 20),
+                                    child: RoundedButtonFill(
+                                      title: "Cancel Order".tr,
+                                      color: AppThemeData.danger300,
+                                      textColor: AppThemeData.grey50,
+                                      height: 5,
+                                      onPress: () async {
+                                        final reason = await showCancelOrderDialog(context);
+                                        if (reason == null) return;
+                                        await controller.cancelOrder(
+                                          controller.orderModel.value,
+                                          reason: reason,
+                                          subTotal: controller.subTotal.value,
+                                          specialDiscount: controller.specialDiscount.value,
+                                          taxAmount: controller.taxAmount.value,
+                                        );
+                                      },
+                                    ),
+                                  ),
                                 if (controller.orderModel.value.takeAway != true &&
                                     (controller.orderModel.value.status == Constant.orderCompleted ||
                                         controller.orderModel.value.status == Constant.orderInTransit))

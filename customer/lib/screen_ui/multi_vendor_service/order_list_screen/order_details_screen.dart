@@ -8,6 +8,7 @@ import 'package:customer/themes/app_them_data.dart';
 import 'package:customer/themes/responsive.dart';
 import 'package:customer/themes/round_button_fill.dart';
 import 'package:customer/utils/network_image_widget.dart';
+import 'package:customer/widget/cancel_order_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
@@ -2284,7 +2285,36 @@ class OrderDetailsScreen extends StatelessWidget {
                     ),
                   ),
           bottomNavigationBar:
-              controller.orderModel.value.status == Constant.orderShipped ||
+              controller.orderModel.value.status == Constant.orderPlaced ||
+                      controller.orderModel.value.status ==
+                          Constant.orderAccepted ||
+                      controller.orderModel.value.status ==
+                          Constant.driverPending ||
+                      controller.orderModel.value.status ==
+                          Constant.driverAccepted
+                  ? Container(
+                    color: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 20,
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 20),
+                      child: RoundedButtonFill(
+                        title: "Cancel Order".tr,
+                        height: 5.5,
+                        color: AppThemeData.danger300,
+                        textColor: AppThemeData.grey50,
+                        onPress: () async {
+                          final reason = await showCancelOrderDialog(context);
+                          if (reason != null) {
+                            await controller.cancelOrder(reason: reason);
+                          }
+                        },
+                      ),
+                    ),
+                  )
+                  : controller.orderModel.value.status == Constant.orderShipped ||
                       controller.orderModel.value.status ==
                           Constant.orderInTransit ||
                       controller.orderModel.value.status ==

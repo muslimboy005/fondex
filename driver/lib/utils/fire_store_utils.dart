@@ -1179,6 +1179,22 @@ class FireStoreUtils {
     }
   }
 
+  /// Cab orderni bekor qilish: status Cancelled, cancelReason, cancelledAt, isTracking false.
+  static Future<bool> updateCabOrderCancel({required String orderId, String? reason}) async {
+    try {
+      await fireStore.collection(CollectionName.cabBookingOrders).doc(orderId).update({
+        'status': Constant.orderCancelled,
+        'cancelReason': reason,
+        'cancelledAt': FieldValue.serverTimestamp(),
+        'isTracking': false,
+      });
+      return true;
+    } catch (e) {
+      log("updateCabOrderCancel error: $e");
+      return false;
+    }
+  }
+
   /// Safar davomida har 12 sekundda: masofa, joylashuv va (ixtiyoriy) joriy summa yangilanadi
   static Future<bool> updateCabOrderTracking({
     required String orderId,

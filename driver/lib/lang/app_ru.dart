@@ -700,4 +700,21 @@ const Map<String, String> ruRU = {
   "Please update the app to continue":
       "Пожалуйста, обновите приложение для продолжения",
   "Update": "Обновить",
+  "Cancel Order": "Отменить заказ",
+  "Cancel Ride": "Отменить поездку",
+  "Cancel Reason": "Причина отмены",
+  "Cancelling order...": "Отмена заказа...",
+  "Cancelling ride...": "Отмена поездки...",
+  "Yes, Cancel": "Да, отменить",
+  "No": "Нет",
+  "Order cancelled successfully": "Заказ успешно отменён",
+  "Are you sure you want to cancel this order?":
+      "Вы уверены, что хотите отменить?",
+  "Cancelled Order": "Отменённый заказ",
+  "Your ride was cancelled by the driver.":
+      "Ваша поездка была отменена водителем.",
+  "Your order was cancelled by the driver.":
+      "Ваш заказ был отменён водителем.",
+  "Order was cancelled by the driver.":
+      "Заказ был отменён водителем.",
 };

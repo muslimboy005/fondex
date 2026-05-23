@@ -38,6 +38,7 @@ class RentalOrderModel {
   String? endKitoMetersReading;
   String? zoneId;
   G? sourcePoint;
+  String? cancelReason;
 
   RentalOrderModel({
     this.status,
@@ -72,6 +73,7 @@ class RentalOrderModel {
     this.endKitoMetersReading,
     this.zoneId,
     this.sourcePoint,
+    this.cancelReason,
   });
 
   RentalOrderModel.fromJson(Map<String, dynamic> json) {
@@ -122,6 +124,7 @@ class RentalOrderModel {
     zoneId = json['zoneId'];
     sourcePoint =
         json['sourcePoint'] != null ? G.fromJson(json['sourcePoint']) : null;
+    cancelReason = json['cancelReason'];
   }
 
   Map<String, dynamic> toJson() {
@@ -177,6 +180,7 @@ class RentalOrderModel {
     if (sourcePoint != null) {
       data['sourcePoint'] = sourcePoint!.toJson();
     }
+    data['cancelReason'] = cancelReason;
     return data;
   }
 }

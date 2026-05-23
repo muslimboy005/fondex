@@ -740,4 +740,21 @@ const Map<String, String> uzUZ = {
   "Please update the app to continue":
       "Davom etish uchun ilovani yangilang",
   "Update": "Yangilash",
+  "Cancel Order": "Buyurtmani bekor qilish",
+  "Cancel Ride": "Sayohatni bekor qilish",
+  "Cancel Reason": "Bekor qilish sababi",
+  "Cancelling order...": "Bekor qilinmoqda...",
+  "Cancelling ride...": "Sayohat bekor qilinmoqda...",
+  "Yes, Cancel": "Ha, bekor qilish",
+  "No": "Yoq",
+  "Order cancelled successfully": "Buyurtma muvaffaqiyatli bekor qilindi",
+  "Are you sure you want to cancel this order?":
+      "Buyurtmani bekor qilishga aminmisiz?",
+  "Cancelled Order": "Bekor qilingan buyurtma",
+  "Your ride was cancelled by the driver.":
+      "Sayohatingiz haydovchi tomonidan bekor qilindi.",
+  "Your order was cancelled by the driver.":
+      "Buyurtmangiz haydovchi tomonidan bekor qilindi.",
+  "Order was cancelled by the driver.":
+      "Buyurtma haydovchi tomonidan bekor qilindi.",
 };

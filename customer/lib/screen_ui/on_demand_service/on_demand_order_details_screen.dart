@@ -10,6 +10,7 @@ import '../../themes/app_them_data.dart';
 import '../../constant/constant.dart';
 import '../../themes/round_button_fill.dart';
 import '../../themes/show_toast_dialog.dart';
+import '../../widget/cancel_order_dialog.dart';
 import '../multi_vendor_service/chat_screens/chat_screen.dart';
 import 'on_demand_payment_screen.dart';
 import 'on_demand_review_screen.dart';
@@ -655,8 +656,11 @@ class OnDemandOrderDetailsScreen extends StatelessWidget {
                                             title: "Cancel Booking".tr,
                                             color: AppThemeData.primary300,
                                             textColor: AppThemeData.grey50,
-                                            onPress: () {
-                                              showCancelBookingDialog(controller, isDark);
+                                            onPress: () async {
+                                              final reason = await showCancelOrderDialog(context);
+                                              if (reason != null) {
+                                                await controller.cancelBooking(reason: reason);
+                                              }
                                             },
                                           ),
                                         )

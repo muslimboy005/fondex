@@ -79,6 +79,12 @@ const Map<String, String> ruRU = {
   "Camera": "Камера",
   "Cancel": "Отмена",
   "Cancel Order": "Отменить заказ",
+  "Cancel Reason": "Причина отмены",
+  "Cancelling order...": "Отмена заказа...",
+  "Yes, Cancel": "Да, отменить",
+  "Order cancelled successfully": "Заказ успешно отменён",
+  "Are you sure you want to cancel this order?":
+      "Вы уверены, что хотите отменить?",
   "Cancel Payment": "Cancel Payment",
   "Cancelled": "Отменено",
   "Cancelled Orders Not found": "Отменённых заказов нет",

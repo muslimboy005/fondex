@@ -1,6 +1,14 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:customer/constant/collection_name.dart';
 import 'package:customer/constant/constant.dart';
 import 'package:customer/models/cart_product_model.dart';
 import 'package:customer/models/order_model.dart';
+import 'package:customer/models/user_model.dart';
+import 'package:customer/models/wallet_transaction_model.dart';
+import 'package:customer/screen_ui/multi_vendor_service/wallet_screen/wallet_screen.dart';
+import 'package:customer/service/fire_store_utils.dart';
+import 'package:customer/service/send_notification.dart';
+import 'package:customer/themes/show_toast_dialog.dart';
 import 'dart:developer';
 import 'package:get/get.dart';
 import 'package:customer/service/yandex_geocoding_service.dart';
@@ -185,5 +193,82 @@ class OrderDetailsController extends GetxController {
   void addToCart({required CartProductModel cartProductModel}) {
     cartProvider.addToCart(Get.context!, cartProductModel, cartProductModel.quantity!);
     update();
+  }
+
+  Future<void> cancelOrder({String? reason}) async {
+    ShowToastDialog.showLoader("Cancelling order...".tr);
+    try {
+      orderModel.value.cancelReason = reason;
+      orderModel.value.status = Constant.orderCancelled;
+
+      if (orderModel.value.driverID != null && orderModel.value.driverID!.isNotEmpty) {
+        UserModel? driverModel = await FireStoreUtils.getUserProfile(orderModel.value.driverID ?? '');
+        if (driverModel != null) {
+          driverModel.orderRequestData?.remove(orderModel.value.id);
+          driverModel.inProgressOrderID?.remove(orderModel.value.id);
+          await FireStoreUtils.updateUser(driverModel);
+          SendNotification.sendFcmMessage(
+            Constant.driverCancelled,
+            driverModel.fcmToken.toString(),
+            {'title': 'Cancelled Order'},
+          );
+        }
+      }
+
+      if (orderModel.value.cashback?.id != null) {
+        await FireStoreUtils.deleteCashbackRedeem(orderModel.value);
+      }
+
+      await FireStoreUtils.updateOrder(orderModel.value);
+
+      if (orderModel.value.author?.fcmToken != null) {
+        SendNotification.sendFcmMessage(
+          Constant.restaurantCancelled,
+          orderModel.value.author!.fcmToken.toString(),
+          {},
+        );
+      }
+
+      if ((orderModel.value.paymentMethod ?? '').toLowerCase() != 'cod') {
+        double subTotalValue = subTotal.value;
+        double discountValue = double.tryParse(orderModel.value.discount?.toString() ?? '0') ?? 0.0;
+        double specialDiscountValue = specialDiscountAmount.value;
+        double taxValue = taxAmount.value;
+        double deliveryValue = double.tryParse(orderModel.value.deliveryCharge?.toString() ?? '0') ?? 0.0;
+        double tipValue = double.tryParse(orderModel.value.tipAmount?.toString() ?? '0') ?? 0.0;
+
+        double finalAmount = (subTotalValue + discountValue + specialDiscountValue + taxValue) + deliveryValue + tipValue;
+
+        WalletTransactionModel walletTransaction = WalletTransactionModel(
+          id: Constant.getUuid(),
+          amount: finalAmount,
+          date: Timestamp.now(),
+          paymentMethod: PaymentGateway.wallet.name,
+          transactionUser: "customer",
+          userId: FireStoreUtils.getCurrentUid(),
+          isTopup: true,
+          orderId: orderModel.value.id,
+          note: "Refund for cancelled order",
+          paymentStatus: "success",
+        );
+
+        await FireStoreUtils.fireStore
+            .collection(CollectionName.wallet)
+            .doc(walletTransaction.id)
+            .set(walletTransaction.toJson());
+        await FireStoreUtils.updateUserWallet(
+          amount: finalAmount.toString(),
+          userId: FireStoreUtils.getCurrentUid(),
+        );
+      }
+
+      ShowToastDialog.closeLoader();
+      ShowToastDialog.showToast("Order cancelled successfully".tr);
+      Get.back(result: true);
+    } catch (e) {
+      ShowToastDialog.closeLoader();
+      log('cancelOrder error: $e');
+      ShowToastDialog.showToast("Failed to cancel order".tr);
+    }
   }
 }

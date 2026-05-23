@@ -58,6 +58,7 @@ class CabOrderModel {
   Timestamp? driverActiveAt;
   Timestamp? customerArrivedAt;
   bool? customerConfirmedArrival;
+  String? cancelReason;
 
   CabOrderModel({
     this.status,
@@ -110,6 +111,7 @@ class CabOrderModel {
     this.driverActiveAt,
     this.customerArrivedAt,
     this.customerConfirmedArrival,
+    this.cancelReason,
   });
 
   CabOrderModel.fromJson(Map<String, dynamic> json) {
@@ -168,6 +170,7 @@ class CabOrderModel {
     driverActiveAt = json['driverActiveAt'] is Timestamp ? json['driverActiveAt'] as Timestamp : null;
     customerArrivedAt = json['customerArrivedAt'] is Timestamp ? json['customerArrivedAt'] as Timestamp : null;
     customerConfirmedArrival = json['customerConfirmedArrival'] is bool ? json['customerConfirmedArrival'] as bool : null;
+    cancelReason = json['cancelReason'];
   }
 
   Map<String, dynamic> toJson() {
@@ -240,6 +243,7 @@ class CabOrderModel {
     if (driverActiveAt != null) data['driverActiveAt'] = driverActiveAt;
     if (customerArrivedAt != null) data['customerArrivedAt'] = customerArrivedAt;
     if (customerConfirmedArrival != null) data['customerConfirmedArrival'] = customerConfirmedArrival;
+    data['cancelReason'] = cancelReason;
     return data;
   }
 }

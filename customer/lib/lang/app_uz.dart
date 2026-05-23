@@ -1088,4 +1088,8 @@ const Map<String, String> uzUZ = {
   'Please update the app to continue':
       'Davom etish uchun ilovani yangilang',
   'Update': 'Yangilash',
+  'Cancel Order': 'Buyurtmani bekor qilish',
+  'Yes, Cancel': 'Ha, bekor qilish',
+  'Are you sure you want to cancel this order?':
+      'Buyurtmani bekor qilishga aminmisiz?',
 };

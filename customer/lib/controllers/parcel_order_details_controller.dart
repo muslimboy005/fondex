@@ -86,8 +86,9 @@ class ParcelOrderDetailsController extends GetxController {
     order.statusHistory = history;
   }
 
-  Future<void> cancelParcelOrder() async {
+  Future<void> cancelParcelOrder({String? reason}) async {
     ShowToastDialog.showLoader("Cancelling order...".tr);
+    parcelOrder.value.cancelReason = reason;
     parcelOrder.value.status = Constant.orderCancelled;
     if (parcelOrder.value.paymentMethod?.toLowerCase() != "cod") {
       WalletTransactionModel walletTransaction = WalletTransactionModel(

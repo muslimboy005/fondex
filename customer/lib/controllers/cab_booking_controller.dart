@@ -599,7 +599,7 @@ class CabBookingController extends GetxController with WidgetsBindingObserver {
   /// bosishi natijasidagi to'liq bekor qilish oqimi: order doc status'ini
   /// rejected'ga o'tkazadi, foydalanuvchi doc'idagi inProgressOrderID dan
   /// olib tashlaydi va mahalliy state'ni tozalaydi.
-  Future<void> cancelActiveRide() async {
+  Future<void> cancelActiveRide({String? reason}) async {
     final rideId = _activeRideId ?? currentOrder.value.id;
     // Avval mahalliy state'ni tozalaymiz — keyingi snapshot'lar buni qaytarib
     // qo'ya olmaydi.
@@ -609,6 +609,7 @@ class CabBookingController extends GetxController with WidgetsBindingObserver {
         currentOrder.update((order) {
           if (order != null) {
             order.status = Constant.orderRejected;
+            order.cancelReason = reason;
           }
         });
         if (currentOrder.value.id != null) {

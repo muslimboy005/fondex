@@ -916,4 +916,10 @@ const Map<String, String> enUS = {
   'New version is available': 'New version is available',
   'Please update the app to continue': 'Please update the app to continue',
   'Update': 'Update',
+  'Cancel Order': 'Cancel Order',
+  'Yes, Cancel': 'Yes, Cancel',
+  'Are you sure you want to cancel this order?':
+      'Are you sure you want to cancel this order?',
+  'Cancelling order...': 'Cancelling order...',
+  'Failed to cancel order': 'Failed to cancel order',
 };

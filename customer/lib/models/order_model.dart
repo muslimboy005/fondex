@@ -41,6 +41,7 @@ class OrderModel {
   String? totalAmount;
   double? latitude;
   double? longitude;
+  String? cancelReason;
 
   OrderModel({
     this.address,
@@ -77,6 +78,7 @@ class OrderModel {
     this.totalAmount,
     this.latitude,
     this.longitude,
+    this.cancelReason,
   });
 
   OrderModel.fromJson(Map<String, dynamic> json) {
@@ -137,6 +139,7 @@ class OrderModel {
         json['cashback'] != null
             ? CashbackModel.fromJson(json['cashback'])
             : null;
+    cancelReason = json['cancelReason'];
   }
 
   Map<String, dynamic> toJson() {
@@ -192,6 +195,7 @@ class OrderModel {
     data['takeAway'] = takeAway;
     data['rejectedByDrivers'] = rejectedByDrivers;
     data['cashback'] = cashback?.toJson();
+    data['cancelReason'] = cancelReason;
     return data;
   }
 }

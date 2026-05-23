@@ -10,6 +10,7 @@ import '../../constant/constant.dart';
 import '../../controllers/my_rental_booking_controller.dart';
 import '../../controllers/theme_controller.dart';
 import '../../themes/app_them_data.dart';
+import '../../widget/cancel_order_dialog.dart';
 
 class MyRentalBookingScreen extends StatelessWidget {
   const MyRentalBookingScreen({super.key});
@@ -246,7 +247,12 @@ class MyRentalBookingScreen extends StatelessWidget {
                                                 ? Expanded(
                                                   child: RoundedButtonFill(
                                                     title: "Cancel Booking",
-                                                    onPress: () => controller.cancelRentalRequest(order, taxList: order.taxSetting),
+                                                    onPress: () async {
+                                                      final reason = await showCancelOrderDialog(context);
+                                                      if (reason != null) {
+                                                        await controller.cancelRentalRequest(order, taxList: order.taxSetting, reason: reason);
+                                                      }
+                                                    },
                                                     color: AppThemeData.danger300,
                                                     textColor: AppThemeData.surface,
                                                   ),

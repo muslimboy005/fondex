@@ -1,5 +1,7 @@
 import 'package:dotted_border/dotted_border.dart';
 import 'package:driver/themes/responsive.dart';
+import 'package:driver/themes/round_button_fill.dart';
+import 'package:driver/widget/cancel_order_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
@@ -503,12 +505,35 @@ class CabOrderDetails extends StatelessWidget {
                                 ),
                               ),
                             ),
+                      if (_canCancelCab(controller.cabOrder.value.status)) ...[
+                        const SizedBox(height: 16),
+                        RoundedButtonFill(
+                          title: "Cancel Ride".tr,
+                          color: AppThemeData.danger300,
+                          textColor: AppThemeData.grey50,
+                          isCenter: true,
+                          onPress: () async {
+                            final reason =
+                                await showCancelOrderDialog(context);
+                            if (reason != null) {
+                              await controller.cancelRide(reason: reason);
+                            }
+                          },
+                        ),
+                      ],
                     ],
                   ),
                 ),
         );
       },
     );
+  }
+
+  bool _canCancelCab(String? status) {
+    return status == Constant.orderAccepted ||
+        status == Constant.driverAccepted ||
+        status == Constant.orderShipped ||
+        status == Constant.orderInTransit;
   }
 
   Widget _iconTile(String value, title, icon, bool isDark) {

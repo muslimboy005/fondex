@@ -13,6 +13,7 @@ import '../../themes/round_button_border.dart';
 import '../../themes/round_button_fill.dart';
 import '../../themes/show_toast_dialog.dart';
 import '../../utils/network_image_widget.dart';
+import '../../widget/cancel_order_dialog.dart';
 import '../multi_vendor_service/chat_screens/chat_screen.dart';
 
 class ParcelOrderDetails extends StatelessWidget {
@@ -417,8 +418,11 @@ class ParcelOrderDetails extends StatelessWidget {
                     padding: const EdgeInsets.all(16.0),
                     child: RoundedButtonFill(
                       title: "Cancel Parcel".tr,
-                      onPress: () {
-                        controller.cancelParcelOrder();
+                      onPress: () async {
+                        final reason = await showCancelOrderDialog(context);
+                        if (reason != null) {
+                          await controller.cancelParcelOrder(reason: reason);
+                        }
                       },
                       height: 5,
                       borderRadius: 15,

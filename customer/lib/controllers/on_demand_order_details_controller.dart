@@ -140,7 +140,7 @@ class OnDemandOrderDetailsController extends GetxController {
     }
   }
 
-  Future<void> cancelBooking() async {
+  Future<void> cancelBooking({String? reason}) async {
     final order = onProviderOrder.value;
     if (order == null) return;
 
@@ -231,7 +231,7 @@ class OnDemandOrderDetailsController extends GetxController {
 
       // Update order status & reason
       order.status = Constant.orderCancelled;
-      order.reason = cancelBookingController.value.text;
+      order.reason = reason ?? cancelBookingController.value.text;
 
       await FireStoreUtils.updateOnDemandOrder(order); // Ensure this completes
 

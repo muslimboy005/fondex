@@ -39,6 +39,7 @@ class OrderModel {
   CashbackModel? cashback;
   String? courierCompanyName;
   String? courierTrackingId;
+  String? cancelReason;
 
   OrderModel({
     this.address,
@@ -72,6 +73,7 @@ class OrderModel {
     this.cashback,
     this.courierCompanyName,
     this.courierTrackingId,
+    this.cancelReason,
   });
 
   OrderModel.fromJson(Map<String, dynamic> json) {
@@ -162,6 +164,8 @@ class OrderModel {
       json['cashback'] != null
           ? CashbackModel.fromJson(json['cashback'])
           : null;
+      step = 'cancelReason';
+      cancelReason = json['cancelReason'];
     } catch (e, st) {
       final raw = json[_resolveJsonKey(step)];
       developer.log(
@@ -237,6 +241,7 @@ class OrderModel {
     data['takeAway'] = takeAway;
     data['rejectedByDrivers'] = rejectedByDrivers;
     data['cashback'] = cashback?.toJson();
+    data['cancelReason'] = cancelReason;
     return data;
   }
 }

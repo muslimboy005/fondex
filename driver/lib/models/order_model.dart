@@ -35,6 +35,7 @@ class OrderModel {
   List<dynamic>? rejectedByDrivers;
   CashbackModel? cashback;
   String? sectionId;
+  String? cancelReason;
 
   OrderModel(
       {this.address,
@@ -65,7 +66,8 @@ class OrderModel {
       this.takeAway,
       this.rejectedByDrivers,
       this.cashback,
-      this.sectionId});
+      this.sectionId,
+      this.cancelReason});
 
   OrderModel.fromJson(Map<String, dynamic> json) {
     address = json['address'] != null ? ShippingAddress.fromJson(json['address']) : null;
@@ -107,6 +109,7 @@ class OrderModel {
     rejectedByDrivers = json['rejectedByDrivers'] ?? [];
     cashback = json['cashback'] != null ? CashbackModel.fromJson(json['cashback']) : null;
     sectionId = json['section_id'];
+    cancelReason = json['cancelReason'];
   }
 
   Map<String, dynamic> toJson() {
@@ -155,6 +158,7 @@ class OrderModel {
     data['rejectedByDrivers'] = rejectedByDrivers;
     data['cashback'] = cashback?.toJson();
     data['section_id'] = sectionId;
+    data['cancelReason'] = cancelReason;
     return data;
   }
 }

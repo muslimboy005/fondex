@@ -23,6 +23,7 @@ import 'package:vendor/constant/send_notification.dart';
 import 'package:vendor/constant/show_toast_dialog.dart';
 import 'package:vendor/controller/dash_board_controller.dart';
 import 'package:vendor/controller/home_controller.dart';
+import 'package:vendor/controller/order_details_controller.dart';
 import 'package:vendor/models/cart_product_model.dart';
 import 'package:vendor/models/order_model.dart';
 import 'package:vendor/models/user_model.dart';
@@ -34,6 +35,7 @@ import 'package:vendor/themes/app_them_data.dart';
 import 'package:vendor/themes/text_field_widget.dart';
 import 'package:vendor/utils/fire_store_utils.dart';
 import 'package:vendor/utils/network_image_widget.dart';
+import 'package:vendor/widget/cancel_order_dialog.dart';
 import 'package:vendor/widget/my_separator.dart';
 
 import '../../themes/round_button_fill.dart';
@@ -1005,7 +1007,9 @@ class HomeScreen extends StatelessWidget {
                           height: 5,
                           onPress: () async {
                             ShowToastDialog.showLoader('Please wait...'.tr);
-                            await AudioPlayerService.playSound(false);
+                            // stopAll() race-condition'ga chidamli: setSource()
+                            // hali yuklanayotgan paytda ham ovozni darhol to'xtatadi.
+                            unawaited(AudioPlayerService.stopAll());
                             unawaited(CallKitService.endCall(orderModel.id ?? ''));
                             orderModel.status = Constant.orderRejected;
                             if (orderModel.cashback?.id != null &&
@@ -1185,7 +1189,7 @@ class HomeScreen extends StatelessWidget {
                                           .selectedSection!
                                           .serviceTypeFlag ==
                                       'ecommerce-service') {
-                                    await AudioPlayerService.playSound(false);
+                                    unawaited(AudioPlayerService.stopAll());
                                     unawaited(CallKitService.endCall(orderModel.id ?? ''));
                                     showDialog(
                                       context: context,
@@ -1808,145 +1812,20 @@ class HomeScreen extends StatelessWidget {
                           textColor: AppThemeData.grey50,
                           height: 5,
                           onPress: () async {
-                            ShowToastDialog.showLoader('Please wait...'.tr);
-                            orderModel.status = Constant.orderCancelled;
-                            if (orderModel.driverID != null) {
-                              UserModel? driverModel =
-                                  await FireStoreUtils.getUserById(
-                                    orderModel.driverID ?? '',
-                                  );
-                              driverModel?.orderRequestData?.remove(
-                                orderModel.id,
-                              );
-                              driverModel?.inProgressOrderID?.remove(
-                                orderModel.id,
-                              );
-                              await FireStoreUtils.updateDriverUser(
-                                driverModel!,
-                              );
-                              SendNotification.sendFcmMessage(
-                                Constant.driverCancelled,
-                                driverModel.fcmToken.toString(),
-                                {'title': 'Cancelled Order'},
-                              );
-                            }
-                            if (orderModel.cashback?.id != null &&
-                                orderModel.cashback?.cashbackValue != null) {
-                              await FireStoreUtils.deleteCashbackRedeem(
-                                orderModel,
-                              );
-                            }
-                            await FireStoreUtils.updateOrder(orderModel);
-                            SendNotification.sendFcmMessage(
-                              Constant.restaurantCancelled,
-                              orderModel.author!.fcmToken.toString(),
-                              {},
-                            );
-
-                            if (orderModel.paymentMethod!.toLowerCase() !=
-                                'cod') {
-                              double finalAmount =
-                                  (subTotal +
-                                      double.parse(
-                                        orderModel.discount.toString(),
-                                      ) +
-                                      specialDiscount +
-                                      double.parse(taxAmount.toString())) +
-                                  double.parse(
-                                    orderModel.deliveryCharge.toString(),
-                                  ) +
-                                  double.parse(orderModel.tipAmount.toString());
-
-                              WalletTransactionModel historyModel =
-                                  WalletTransactionModel(
-                                    amount: finalAmount,
-                                    id: const Uuid().v4(),
-                                    orderId: orderModel.id,
-                                    userId: orderModel.author!.id,
-                                    date: Timestamp.now(),
-                                    isTopup: true,
-                                    paymentMethod: "Wallet",
-                                    paymentStatus: "success",
-                                    note: "Order Refund success",
-                                    transactionUser: "user",
-                                  );
-
-                              await FireStoreUtils.fireStore
-                                  .collection(CollectionName.wallet)
-                                  .doc(historyModel.id)
-                                  .set(historyModel.toJson());
-                              await FireStoreUtils.updateUserWallet(
-                                amount: finalAmount.toString(),
-                                userId: orderModel.author!.id.toString(),
-                              );
-                            }
-
-                            double taxAmountData = double.parse(
-                              taxAmount.toString(),
-                            );
-
-                            double finalAmount = 0;
-                            if (orderModel.adminCommission != '0' &&
-                                orderModel.adminCommission != '' &&
-                                orderModel.adminCommission != null) {
-                              finalAmount =
-                                  (subTotal /
-                                      (1 +
-                                          (double.parse(
-                                                orderModel.adminCommission!,
-                                              ) /
-                                              100))) -
-                                  double.parse(orderModel.discount.toString()) -
-                                  specialDiscount;
-                            } else {
-                              finalAmount =
-                                  subTotal -
-                                  double.parse(orderModel.discount.toString()) -
-                                  specialDiscount;
-                            }
-                            WalletTransactionModel historyTaxModel =
-                                WalletTransactionModel(
-                                  amount: taxAmountData,
-                                  id: const Uuid().v4(),
-                                  orderId: orderModel.id,
-                                  userId: FireStoreUtils.getCurrentUid(),
-                                  date: Timestamp.now(),
-                                  isTopup: false,
-                                  paymentMethod: "tax",
-                                  paymentStatus: "success",
-                                  note: "Order tax refunded to customer",
-                                  transactionUser: "vendor",
-                                );
-
-                            WalletTransactionModel historyModel =
-                                WalletTransactionModel(
-                                  amount: finalAmount,
-                                  id: const Uuid().v4(),
-                                  orderId: orderModel.id,
-                                  userId: FireStoreUtils.getCurrentUid(),
-                                  date: Timestamp.now(),
-                                  isTopup: false,
-                                  paymentMethod: "Wallet",
-                                  paymentStatus: "success",
-                                  note: "Order amount refunded to customer",
-                                  transactionUser: "vendor",
-                                );
-
-                            await FireStoreUtils.fireStore
-                                .collection(CollectionName.wallet)
-                                .doc(historyTaxModel.id)
-                                .set(historyTaxModel.toJson());
-                            await FireStoreUtils.fireStore
-                                .collection(CollectionName.wallet)
-                                .doc(historyModel.id)
-                                .set(historyModel.toJson());
-                            double finalAmountdata = finalAmount + taxAmount;
-                            await FireStoreUtils.updateUserWallet(
-                              amount: (-finalAmountdata).toString(),
-                              userId: FireStoreUtils.getCurrentUid().toString(),
+                            final reason = await showCancelOrderDialog(context);
+                            if (reason == null) return;
+                            final orderDetailsController =
+                                Get.isRegistered<OrderDetailsController>()
+                                    ? Get.find<OrderDetailsController>()
+                                    : Get.put(OrderDetailsController());
+                            await orderDetailsController.cancelOrder(
+                              orderModel,
+                              reason: reason,
+                              subTotal: subTotal,
+                              specialDiscount: specialDiscount,
+                              taxAmount: taxAmount,
                             );
                             await controller.getOrder();
-                            ShowToastDialog.closeLoader();
                           },
                         ),
                       ),
@@ -2026,7 +1905,7 @@ class HomeScreen extends StatelessWidget {
                                       'Please wait...'.tr,
                                     );
                                     orderModel.status = Constant.orderCompleted;
-                                    await AudioPlayerService.playSound(false);
+                                    unawaited(AudioPlayerService.stopAll());
                                     unawaited(CallKitService.endCall(orderModel.id ?? ''));
                                     await FireStoreUtils.updateOrder(
                                       orderModel,
@@ -2872,7 +2751,7 @@ class HomeScreen extends StatelessWidget {
                                 controller.selectDriverUser.value.id != '') {
                               Get.back();
                               ShowToastDialog.showLoader('Please wait...'.tr);
-                              await AudioPlayerService.playSound(false);
+                              unawaited(AudioPlayerService.stopAll());
                               unawaited(CallKitService.endCall(orderModel.id ?? ''));
 
                               orderModel.notes = "";
@@ -3135,7 +3014,7 @@ class HomeScreen extends StatelessWidget {
                                 orderModel.status =
                                     Constant.orderAccepted;
                                 await FireStoreUtils.updateOrder(orderModel);
-                                unawaited(AudioPlayerService.playSound(false));
+                                unawaited(AudioPlayerService.stopAll());
                                 unawaited(CallKitService.endCall(orderModel.id ?? ''));
                                 Get.back();
                                 final orderCopy = orderModel;
@@ -3256,7 +3135,7 @@ class HomeScreen extends StatelessWidget {
                                   .value
                                   .text;
                               orderModel.status = Constant.orderShipped;
-                              await AudioPlayerService.playSound(false);
+                              unawaited(AudioPlayerService.stopAll());
                               unawaited(CallKitService.endCall(orderModel.id ?? ''));
                               await FireStoreUtils.updateOrder(orderModel);
                               await FireStoreUtils.restaurantVendorWalletSet(

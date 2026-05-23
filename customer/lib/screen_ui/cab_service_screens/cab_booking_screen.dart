@@ -27,6 +27,7 @@ import '../../themes/app_them_data.dart';
 import '../../themes/round_button_fill.dart';
 import '../../themes/show_toast_dialog.dart';
 import '../../themes/text_field_widget.dart';
+import '../../widget/cancel_order_dialog.dart';
 import '../../screen_ui/auth_screens/auth_screen.dart';
 import '../../widget/place_picker/location_picker_screen.dart';
 import '../../widget/place_picker/selected_location_model.dart';
@@ -152,34 +153,13 @@ class CabBookingScreen extends StatelessWidget {
                               // dialogi ko'rsatamiz, aks holda haydovchi
                               // Accept bosgan paytda tasodifan bekor qilib
                               // qo'yiladi.
-                              final confirmed = await showDialog<bool>(
-                                context: context,
-                                builder: (dialogContext) => AlertDialog(
-                                  title: Text(
-                                    "Buyurtmani bekor qilasizmi?".tr,
-                                  ),
-                                  content: Text(
-                                    "Bekor qilsangiz haydovchi sizga yo'naltirilmaydi."
-                                        .tr,
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () => Navigator.of(
-                                        dialogContext,
-                                      ).pop(false),
-                                      child: Text("Yo'q".tr),
-                                    ),
-                                    TextButton(
-                                      onPressed: () => Navigator.of(
-                                        dialogContext,
-                                      ).pop(true),
-                                      child: Text("Ha, bekor qilish".tr),
-                                    ),
-                                  ],
-                                ),
+                              final reason = await showCancelOrderDialog(
+                                context,
                               );
-                              if (confirmed == true) {
-                                await controller.cancelActiveRide();
+                              if (reason != null) {
+                                await controller.cancelActiveRide(
+                                  reason: reason,
+                                );
                                 Get.back();
                               }
                             } else {
@@ -3445,27 +3425,26 @@ class CabBookingScreen extends StatelessWidget {
                   const SizedBox(height: 8),
                   Obx(() {
                     final status = controller.currentOrder.value.status;
-                    final showArrival = status == Constant.driverAccepted ||
-                        status == Constant.orderInTransit;
-                    if (!showArrival) return const SizedBox.shrink();
-                    final confirmed =
-                        controller.currentOrder.value.customerConfirmedArrival ==
-                            true;
+                    // Haydovchi mijozni hali olmagan bo'lsa (driverAccepted
+                    // yoki orderShipped — pickup'ga ketmoqda yoki yetib kelgan,
+                    // ammo trip boshlanmagan) — mijoz bekor qila olishi kerak.
+                    final canCancel = status == Constant.driverAccepted ||
+                        status == Constant.orderShipped;
+                    if (!canCancel) return const SizedBox.shrink();
                     return RoundedButtonFill(
-                      title: confirmed
-                          ? "Yetib kelganingiz tasdiqlandi".tr
-                          : "Yetib keldik".tr,
-                      onPress: confirmed
-                          ? () {}
-                          : () async {
-                              await controller.confirmArrival();
-                            },
-                      color: confirmed
-                          ? AppThemeData.grey200
-                          : AppThemeData.success400,
-                      textColor: confirmed
-                          ? AppThemeData.grey600
-                          : Colors.white,
+                      title: "Cancel Order".tr,
+                      color: AppThemeData.danger300,
+                      textColor: AppThemeData.grey50,
+                      onPress: () async {
+                        final reason = await showCancelOrderDialog(context);
+                        if (reason != null) {
+                          await controller.cancelActiveRide(reason: reason);
+                          ShowToastDialog.showToast(
+                            "Ride cancelled successfully".tr,
+                          );
+                          Get.back();
+                        }
+                      },
                     );
                   }),
                 ],

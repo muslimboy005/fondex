@@ -4,8 +4,10 @@ import 'package:driver/models/cart_product_model.dart';
 import 'package:driver/models/tax_model.dart';
 import 'package:driver/themes/app_them_data.dart';
 import 'package:driver/themes/responsive.dart';
+import 'package:driver/themes/round_button_fill.dart';
 import 'package:driver/themes/theme_controller.dart';
 import 'package:driver/utils/network_image_widget.dart';
+import 'package:driver/widget/cancel_order_dialog.dart';
 import 'package:driver/widget/my_separator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -721,11 +723,34 @@ class OrderDetailsScreen extends StatelessWidget {
                           const SizedBox(
                             height: 14,
                           ),
+                          if (_canCancelOrder(
+                              controller.orderModel.value.status)) ...[
+                            RoundedButtonFill(
+                              title: "Cancel Order".tr,
+                              color: AppThemeData.danger300,
+                              textColor: AppThemeData.grey50,
+                              isCenter: true,
+                              onPress: () async {
+                                final reason =
+                                    await showCancelOrderDialog(context);
+                                if (reason != null) {
+                                  await controller.cancelOrder(reason: reason);
+                                }
+                              },
+                            ),
+                            const SizedBox(height: 14),
+                          ],
                         ],
                       ),
                     ),
                   ),
           );
         });
+  }
+
+  bool _canCancelOrder(String? status) {
+    return status == Constant.driverAccepted ||
+        status == Constant.orderShipped ||
+        status == Constant.orderInTransit;
   }
 }

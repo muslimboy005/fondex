@@ -167,6 +167,12 @@ const Map<String, String> uzUZ = {
   'You have reached the maximum order capacity for your current plan. Upgrade your subscription to continue accepting orders seamlessly!.':
       'Siz joriy rejangizning maksimal buyurtma quvvatiga yetdingiz. Buyurtmalarni qabul qilishni davom ettirish uchun obunangizni yangilang!.',
   'Cancel Order': 'Buyurtmani bekor qilish',
+  'Cancel Reason': 'Bekor qilish sababi',
+  'Cancelling order...': 'Bekor qilinmoqda...',
+  'Yes, Cancel': 'Ha, bekor qilish',
+  'Order cancelled successfully': 'Buyurtma muvaffaqiyatli bekor qilindi',
+  'Are you sure you want to cancel this order?':
+      'Buyurtmani bekor qilishga aminmisiz?',
   'Order Completed': 'Buyurtma bajarildi',
   'Order Cancelled': 'Buyurtma bekor qilindi',
   'Order Rejected': 'Buyurtma rad etildi',

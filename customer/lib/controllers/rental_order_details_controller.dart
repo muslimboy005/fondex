@@ -201,10 +201,11 @@ class RentalOrderDetailsController extends GetxController {
     }
   }
 
-  Future<void> cancelRentalRequest(RentalOrderModel order, {List<TaxModel>? taxList}) async {
+  Future<void> cancelRentalRequest(RentalOrderModel order, {List<TaxModel>? taxList, String? reason}) async {
     try {
       isLoading.value = true;
 
+      order.cancelReason = reason;
       order.status = Constant.orderCancelled;
       await FireStoreUtils.rentalOrderPlace(order);
 

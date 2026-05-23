@@ -16,6 +16,7 @@ import '../../service/fire_store_utils.dart';
 import '../../themes/app_them_data.dart';
 import '../../themes/round_button_border.dart';
 import '../../themes/round_button_fill.dart';
+import '../../widget/cancel_order_dialog.dart';
 import '../multi_vendor_service/chat_screens/chat_screen.dart';
 
 class RentalOrderDetailsScreen extends StatelessWidget {
@@ -574,8 +575,11 @@ class RentalOrderDetailsScreen extends StatelessWidget {
                               Expanded(
                                 child: RoundedButtonFill(
                                   title: "Cancel Booking",
-                                  onPress: () {
-                                    controller.cancelRentalRequest(controller.order.value);
+                                  onPress: () async {
+                                    final reason = await showCancelOrderDialog(context);
+                                    if (reason != null) {
+                                      await controller.cancelRentalRequest(controller.order.value, reason: reason);
+                                    }
                                   },
                                   color: AppThemeData.danger300,
                                   textColor: AppThemeData.surface,
